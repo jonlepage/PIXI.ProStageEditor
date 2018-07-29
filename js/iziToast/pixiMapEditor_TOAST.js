@@ -22,7 +22,7 @@ _PME.prototype.izit_loading1 = function() { // load all sprites dependency for e
     };
 };
     
-    
+    // open the scene stage editor
 _PME.prototype.mapSetupEditor = function() {
     // get BG list "only on a Scene editor" , all maps use rmmv editor 
     let listBG = [];
@@ -74,6 +74,21 @@ _PME.prototype.tileSetupEditor = function(InMapObj){
     };
 };
 
+_PME.prototype.savedComplette = function(){
+    return{
+        transitionOut: 'fadeOutUp',
+        id:'izit_loading1',
+        timeout:1000,
+        theme: 'dark',
+        icon: 'icon-person',
+        title: 'SAVED JSON:',
+        message: `COMPLETTE`,
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        progressBarColor: 'rgb(0, 255, 184)',
+        backgroundColor: '#3f3f3f',
+        progressBarColor:'#f44242',
+    };
+};
 
 
 

@@ -650,7 +650,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // └------------------------------------------------------------------------------┘
     // create data id for HTML JSON, if existe , return Data_Values
     function getDataJson(OBJ){
-        if(OBJ.Data_Values){return OBJ.Data_Values};
+        //if(OBJ.Data_Values){return OBJ.Data_Values};
         if(OBJ.isStage){
             return { // id html
                 BackGround:{def:false, value:OBJ.Background.name}, // props:{def:, value:, checked:}
@@ -667,6 +667,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             return { // id html
                 groupID:{def:"default", value:"default"},
+                position:{def:[0,0], value:[OBJ.position.x,OBJ.position.y]}, // hidding
+                anchor:{def:[0,0], value:[_OBJ.anchor.x,_OBJ.anchor.y]},
                 scale:{def:[0,0], value:[OBJ.scale.x,OBJ.scale.y]},
                 skew:{def:[0,0], value:[OBJ.skew.x,OBJ.skew.y]},
                 pivot:{def:[0,0], value:[OBJ.pivot.x,OBJ.pivot.y]},
@@ -922,8 +924,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
             // checkbox
             for (const key in Data_CheckBox) {
-                c = document.getElementById("_"+key)
-                c.checked = Data_CheckBox[key];
+                c = document.getElementById("_"+key);
+                if(c){
+                    c.checked = Data_CheckBox[key];
+                };
             }
         }
     };
@@ -1591,6 +1595,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function start_DataSavesFromKey_CTRL_S(options) {
         create_JsonPerma();
         create_SceneJSON();
+        iziToast.warning( $PME.savedComplette() );
     };
 
     function create_JsonPerma(options) {

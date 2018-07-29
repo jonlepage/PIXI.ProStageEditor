@@ -54,16 +54,22 @@ Scene_Local.prototype.create_ObjFromJson = function() {
         cage.addChild(sprite_d, sprite_n);
         console.log('cage: ', cage); //TODO: POSITIONS
         this.CAGE_MAP.addChild(cage);
+        this.SpritesNoEvent.push(cage);
+
         // setup props
         for (const key in e.Data_Values) {
             const value = e.Data_Values[key];
             switch (key) {
-                case "scale":case "skew":case "pivot":
-                    cage[key].set(...e.Data_Values[key]);
+                case "scale":case "skew":case "pivot":case "position":
+                    cage[key].set(...value);
                 break;
                 case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
                 case "alpha":case "rotation":case "groupID":
                     cage[key] = !isFinite(value) && value || +value;
+                break;
+                case "anchor":
+                    sprite_d[key].set(...value);
+                    sprite_n[key].set(...value);
                 break;
                 case "blendMode":
                     sprite_n[key] = +value;
@@ -72,7 +78,8 @@ Scene_Local.prototype.create_ObjFromJson = function() {
                     sprite_d[key] = +value;
                 break;
             };
-        }
+        };
+        cage.getBounds();
             
     });
 };
