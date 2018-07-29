@@ -1,0 +1,419 @@
+
+pixiMapEditor2.png
+size: 1024,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+All
+  rotate: false
+  xy: 418, 1214
+  size: 19, 14
+  orig: 19, 14
+  offset: 0, 0
+  index: -1
+BG_R_TilesScreen
+  rotate: false
+  xy: 222, 1428
+  size: 654, 618
+  orig: 654, 618
+  offset: 0, 0
+  index: -1
+Buildings
+  rotate: false
+  xy: 327, 1194
+  size: 65, 18
+  orig: 65, 18
+  offset: 0, 0
+  index: -1
+Characteres
+  rotate: false
+  xy: 587, 1412
+  size: 84, 14
+  orig: 84, 14
+  offset: 0, 0
+  index: -1
+Cliffs
+  rotate: false
+  xy: 531, 1352
+  size: 36, 14
+  orig: 36, 14
+  offset: 0, 0
+  index: -1
+DirectionalLight
+  rotate: false
+  xy: 60, 235
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+Divers copie
+  rotate: true
+  xy: 270, 631
+  size: 44, 14
+  orig: 44, 14
+  offset: 0, 0
+  index: -1
+FurnitureEXT
+  rotate: true
+  xy: 270, 677
+  size: 90, 14
+  orig: 90, 14
+  offset: 0, 0
+  index: -1
+FurnitureINT
+  rotate: false
+  xy: 327, 1214
+  size: 89, 14
+  orig: 89, 14
+  offset: 0, 0
+  index: -1
+Grass
+  rotate: false
+  xy: 673, 1413
+  size: 40, 13
+  orig: 40, 13
+  offset: 0, 0
+  index: -1
+Objets
+  rotate: false
+  xy: 450, 1231
+  size: 47, 18
+  orig: 47, 18
+  offset: 0, 0
+  index: -1
+PointLight
+  rotate: false
+  xy: 185, 361
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+Rocks
+  rotate: false
+  xy: 587, 1396
+  size: 42, 14
+  orig: 42, 14
+  offset: 0, 0
+  index: -1
+SheetsTypelogo
+  rotate: false
+  xy: 499, 1396
+  size: 86, 30
+  orig: 86, 30
+  offset: 0, 0
+  index: -1
+Spines
+  rotate: true
+  xy: 902, 1813
+  size: 42, 15
+  orig: 42, 15
+  offset: 0, 0
+  index: -1
+SpriteSheets
+  rotate: true
+  xy: 902, 1857
+  size: 79, 15
+  orig: 79, 15
+  offset: 0, 0
+  index: -1
+Sprites
+  rotate: true
+  xy: 43, 163
+  size: 44, 15
+  orig: 44, 15
+  offset: 0, 0
+  index: -1
+TileSheets
+  rotate: false
+  xy: 958, 1977
+  size: 64, 12
+  orig: 64, 12
+  offset: 0, 0
+  index: -1
+Top_R_TileScreen
+  rotate: true
+  xy: 290, 772
+  size: 654, 35
+  orig: 654, 35
+  offset: 0, 0
+  index: -1
+Trees
+  rotate: false
+  xy: 327, 1179
+  size: 39, 13
+  orig: 39, 13
+  offset: 0, 0
+  index: -1
+altlasBG
+  rotate: false
+  xy: 327, 1251
+  size: 170, 175
+  orig: 170, 175
+  offset: 0, 0
+  index: -1
+bgAniObj
+  rotate: true
+  xy: 2, 444
+  size: 1602, 148
+  orig: 1602, 148
+  offset: 0, 0
+  index: -1
+circleLogo
+  rotate: false
+  xy: 43, 349
+  size: 108, 93
+  orig: 108, 93
+  offset: 0, 0
+  index: -1
+displayRectangleGroup
+  rotate: true
+  xy: 246, 475
+  size: 292, 22
+  orig: 292, 22
+  offset: 0, 0
+  index: -1
+drawLine
+  rotate: true
+  xy: 104, 296
+  size: 18, 26
+  orig: 18, 26
+  offset: 0, 0
+  index: -1
+filt_A_Z
+  rotate: false
+  xy: 575, 1372
+  size: 33, 22
+  orig: 33, 22
+  offset: 0, 0
+  index: -1
+filt_Z_A
+  rotate: false
+  xy: 919, 1914
+  size: 33, 22
+  orig: 33, 22
+  offset: 0, 0
+  index: -1
+filterBG
+  rotate: true
+  xy: 246, 769
+  size: 657, 42
+  orig: 657, 42
+  offset: 0, 0
+  index: -1
+filterSubNG
+  rotate: true
+  xy: 189, 444
+  size: 1602, 31
+  orig: 1602, 31
+  offset: 0, 0
+  index: -1
+gb0
+  rotate: false
+  xy: 222, 446
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb1
+  rotate: false
+  xy: 394, 1194
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb2
+  rotate: false
+  xy: 610, 1376
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb3
+  rotate: false
+  xy: 992, 1957
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb4
+  rotate: false
+  xy: 327, 1159
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb5
+  rotate: false
+  xy: 499, 1288
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+gb6
+  rotate: false
+  xy: 60, 215
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+iconRenderable
+  rotate: false
+  xy: 958, 1952
+  size: 32, 23
+  orig: 32, 23
+  offset: 0, 0
+  index: -1
+icon_PinGrid
+  rotate: false
+  xy: 153, 356
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+icon_cat
+  rotate: false
+  xy: 499, 1368
+  size: 74, 26
+  orig: 74, 26
+  offset: 0, 0
+  index: -1
+icon_grid
+  rotate: false
+  xy: 499, 1336
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+icon_sortToGrid
+  rotate: false
+  xy: 104, 316
+  size: 31, 31
+  orig: 31, 31
+  offset: 0, 0
+  index: -1
+icon_sun
+  rotate: false
+  xy: 499, 1308
+  size: 26, 26
+  orig: 26, 26
+  offset: 0, 0
+  index: -1
+lockAll
+  rotate: false
+  xy: 919, 1867
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+masterBar
+  rotate: true
+  xy: 152, 444
+  size: 1602, 35
+  orig: 1602, 35
+  offset: 0, 0
+  index: -1
+pathicon
+  rotate: false
+  xy: 919, 1887
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+pixidsplayLogo
+  rotate: false
+  xy: 327, 1230
+  size: 121, 19
+  orig: 121, 19
+  offset: 0, 0
+  index: -1
+playPause
+  rotate: true
+  xy: 43, 138
+  size: 23, 15
+  orig: 23, 15
+  offset: 0, 0
+  index: -1
+recBGCategory
+  rotate: true
+  xy: 222, 466
+  size: 960, 22
+  orig: 960, 22
+  offset: 0, 0
+  index: -1
+recBGSheetType
+  rotate: true
+  xy: 878, 1664
+  size: 382, 22
+  orig: 382, 22
+  offset: 0, 0
+  index: -1
+rotateicon
+  rotate: false
+  xy: 902, 1938
+  size: 54, 51
+  orig: 54, 51
+  offset: 0, 0
+  index: -1
+saveIcon
+  rotate: false
+  xy: 60, 262
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+scaleicon
+  rotate: false
+  xy: 153, 388
+  size: 56, 54
+  orig: 56, 54
+  offset: 0, 0
+  index: -1
+skewicon
+  rotate: false
+  xy: 43, 293
+  size: 59, 54
+  orig: 59, 54
+  offset: 0, 0
+  index: -1
+sliderButton
+  rotate: true
+  xy: 28, 10
+  size: 16, 13
+  orig: 16, 13
+  offset: 0, 0
+  index: -1
+sliderObj
+  rotate: false
+  xy: 878, 1524
+  size: 8, 138
+  orig: 8, 138
+  offset: 0, 0
+  index: -1
+spineLogo
+  rotate: false
+  xy: 902, 1991
+  size: 119, 55
+  orig: 119, 55
+  offset: 0, 0
+  index: -1
+sunNigth
+  rotate: false
+  xy: 2, 2
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+textVisualiser
+  rotate: true
+  xy: 43, 209
+  size: 82, 15
+  orig: 82, 15
+  offset: 0, 0
+  index: -1
+tooBox
+  rotate: false
+  xy: 2, 28
+  size: 39, 414
+  orig: 39, 414
+  offset: 0, 0
+  index: -1

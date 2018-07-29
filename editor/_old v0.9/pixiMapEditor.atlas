@@ -1,0 +1,237 @@
+
+pixiMapEditor.png
+size: 1793,336
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+MouseXY
+  rotate: false
+  xy: 1186, 67
+  size: 73, 26
+  orig: 73, 26
+  offset: 0, 0
+  index: -1
+Save-icon
+  rotate: false
+  xy: 1287, 71
+  size: 22, 22
+  orig: 22, 22
+  offset: 0, 0
+  index: -1
+altlasBG
+  rotate: true
+  xy: 1606, 14
+  size: 320, 175
+  orig: 320, 175
+  offset: 0, 0
+  index: -1
+bgAniObj
+  rotate: false
+  xy: 2, 186
+  size: 1602, 148
+  orig: 1602, 148
+  offset: 0, 0
+  index: -1
+circleLogo
+  rotate: false
+  xy: 1076, 21
+  size: 108, 93
+  orig: 108, 93
+  offset: 0, 0
+  index: -1
+displayRectangleGroup
+  rotate: false
+  xy: 661, 92
+  size: 292, 22
+  orig: 292, 22
+  offset: 0, 0
+  index: -1
+dog-bone-black-hi
+  rotate: false
+  xy: 461, 33
+  size: 23, 13
+  orig: 23, 13
+  offset: 0, 0
+  index: -1
+drawLine
+  rotate: true
+  xy: 287, 11
+  size: 18, 26
+  orig: 18, 26
+  offset: 0, 0
+  index: -1
+filterBG
+  rotate: false
+  xy: 2, 72
+  size: 657, 42
+  orig: 657, 42
+  offset: 0, 0
+  index: -1
+filterSubNG
+  rotate: false
+  xy: 2, 116
+  size: 1602, 31
+  orig: 1602, 31
+  offset: 0, 0
+  index: -1
+iconChildMode
+  rotate: false
+  xy: 1337, 96
+  size: 14, 18
+  orig: 14, 18
+  offset: 0, 0
+  index: -1
+iconParentMode
+  rotate: true
+  xy: 1186, 21
+  size: 18, 20
+  orig: 18, 20
+  offset: 0, 0
+  index: -1
+lockAll
+  rotate: false
+  xy: 1261, 49
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+masterBar
+  rotate: false
+  xy: 2, 149
+  size: 1602, 35
+  orig: 1602, 35
+  offset: 0, 0
+  index: -1
+mousePosRect
+  rotate: false
+  xy: 418, 48
+  size: 192, 22
+  orig: 192, 22
+  offset: 0, 0
+  index: -1
+move
+  rotate: false
+  xy: 1186, 41
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+numberGroup
+  rotate: false
+  xy: 661, 74
+  size: 142, 16
+  orig: 142, 16
+  offset: 0, 0
+  index: -1
+pivot
+  rotate: false
+  xy: 1212, 43
+  size: 23, 22
+  orig: 23, 22
+  offset: 0, 0
+  index: -1
+pixidsplayLogo
+  rotate: false
+  xy: 1186, 95
+  size: 121, 19
+  orig: 121, 19
+  offset: 0, 0
+  index: -1
+playPause
+  rotate: false
+  xy: 884, 75
+  size: 23, 15
+  orig: 23, 15
+  offset: 0, 0
+  index: -1
+rotateicon
+  rotate: false
+  xy: 1237, 46
+  size: 22, 19
+  orig: 22, 19
+  offset: 0, 0
+  index: -1
+scaleicon
+  rotate: false
+  xy: 261, 7
+  size: 24, 22
+  orig: 24, 22
+  offset: 0, 0
+  index: -1
+skewicon
+  rotate: true
+  xy: 237, 2
+  size: 27, 22
+  orig: 27, 22
+  offset: 0, 0
+  index: -1
+sliderButton
+  rotate: true
+  xy: 1783, 178
+  size: 16, 6
+  orig: 16, 6
+  offset: 0, 0
+  index: -1
+sliderObj
+  rotate: false
+  xy: 1783, 196
+  size: 8, 138
+  orig: 8, 138
+  offset: 0, 0
+  index: -1
+sortAZ
+  rotate: false
+  xy: 1309, 95
+  size: 26, 19
+  orig: 26, 19
+  offset: 0, 0
+  index: -1
+spine_logo.thumb.png.2cf67a7e727bfa4f090eff75fc713a3b
+  rotate: false
+  xy: 955, 59
+  size: 119, 55
+  orig: 119, 55
+  offset: 0, 0
+  index: -1
+spines
+  rotate: false
+  xy: 418, 31
+  size: 41, 15
+  orig: 41, 15
+  offset: 0, 0
+  index: -1
+spriteSheets
+  rotate: false
+  xy: 805, 75
+  size: 77, 15
+  orig: 77, 15
+  offset: 0, 0
+  index: -1
+sprites
+  rotate: false
+  xy: 612, 55
+  size: 43, 15
+  orig: 43, 15
+  offset: 0, 0
+  index: -1
+sunNigth
+  rotate: false
+  xy: 1261, 69
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+textVisualiser
+  rotate: false
+  xy: 2, 14
+  size: 233, 15
+  orig: 233, 15
+  offset: 0, 0
+  index: -1
+tooBox
+  rotate: true
+  xy: 2, 31
+  size: 39, 414
+  orig: 39, 414
+  offset: 0, 0
+  index: -1

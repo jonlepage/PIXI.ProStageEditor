@@ -1,0 +1,279 @@
+
+pixiMapEditor1.png
+size: 1024,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1f513
+  rotate: false
+  xy: 34, 2
+  size: 28, 28
+  orig: 28, 28
+  offset: 0, 0
+  index: -1
+Rectangle 1
+  rotate: false
+  xy: 134, 1039
+  size: 654, 1007
+  orig: 654, 1007
+  offset: 0, 0
+  index: -1
+Rectangle 1 copie
+  rotate: true
+  xy: 2, 150
+  size: 1896, 130
+  orig: 1896, 130
+  offset: 0, 0
+  index: -1
+TileBarLeft
+  rotate: false
+  xy: 134, 998
+  size: 654, 39
+  orig: 654, 39
+  offset: 0, 0
+  index: -1
+TileBarLeft copie
+  rotate: false
+  xy: 134, 890
+  size: 307, 33
+  orig: 307, 33
+  offset: 0, 0
+  index: -1
+TileBarLeft copie 2
+  rotate: false
+  xy: 134, 961
+  size: 654, 35
+  orig: 654, 35
+  offset: 0, 0
+  index: -1
+TileBarLeft copie 3
+  rotate: false
+  xy: 545, 939
+  size: 240, 20
+  orig: 240, 20
+  offset: 0, 0
+  index: -1
+bar_G
+  rotate: false
+  xy: 914, 991
+  size: 88, 1055
+  orig: 88, 1055
+  offset: 0, 0
+  index: -1
+displayRectangleGroup
+  rotate: false
+  xy: 134, 925
+  size: 409, 34
+  orig: 409, 34
+  offset: 0, 0
+  index: -1
+filterBG
+  rotate: true
+  xy: 790, 779
+  size: 1267, 122
+  orig: 1267, 122
+  offset: 0, 0
+  index: -1
+filter_animation
+  rotate: false
+  xy: 914, 806
+  size: 26, 27
+  orig: 26, 27
+  offset: 0, 0
+  index: -1
+filter_normal
+  rotate: false
+  xy: 443, 893
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+filter_spine
+  rotate: false
+  xy: 2, 2
+  size: 30, 28
+  orig: 30, 28
+  offset: 0, 0
+  index: -1
+filter_texturePacker
+  rotate: false
+  xy: 943, 841
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+gb0
+  rotate: false
+  xy: 134, 628
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb1
+  rotate: false
+  xy: 194, 687
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb2
+  rotate: false
+  xy: 254, 746
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb3
+  rotate: false
+  xy: 392, 864
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb4
+  rotate: false
+  xy: 64, 6
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb5
+  rotate: false
+  xy: 475, 899
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+gb6
+  rotate: false
+  xy: 975, 847
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+greenPivotPoint
+  rotate: false
+  xy: 1004, 2034
+  size: 12, 12
+  orig: 12, 12
+  offset: 0, 0
+  index: -1
+icon_Save
+  rotate: false
+  xy: 943, 932
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_darkMode
+  rotate: false
+  xy: 2, 32
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_drawLine
+  rotate: false
+  xy: 65, 91
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_events
+  rotate: false
+  xy: 134, 772
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_grid
+  rotate: false
+  xy: 196, 831
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_light
+  rotate: false
+  xy: 943, 873
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_masterLight
+  rotate: false
+  xy: 62, 32
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_move
+  rotate: false
+  xy: 134, 713
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_pathMaker
+  rotate: false
+  xy: 194, 772
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_pivot
+  rotate: false
+  xy: 316, 849
+  size: 74, 39
+  orig: 74, 39
+  offset: 0, 0
+  index: -1
+icon_rotation
+  rotate: false
+  xy: 256, 831
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_scale
+  rotate: false
+  xy: 134, 654
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_setup
+  rotate: false
+  xy: 134, 831
+  size: 60, 57
+  orig: 60, 57
+  offset: 0, 0
+  index: -1
+icon_showHideSprites
+  rotate: false
+  xy: 194, 713
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_skew
+  rotate: false
+  xy: 254, 772
+  size: 58, 57
+  orig: 58, 57
+  offset: 0, 0
+  index: -1
+icon_spotLight
+  rotate: false
+  xy: 2, 91
+  size: 61, 57
+  orig: 61, 57
+  offset: 0, 0
+  index: -1
+pixidsplayLogo
+  rotate: true
+  xy: 914, 835
+  size: 154, 27
+  orig: 154, 27
+  offset: 0, 0
+  index: -1

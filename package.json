@@ -1,0 +1,16 @@
+{
+    "name": "game",
+    "main": "index.html",
+    "js-flags": "--expose-gc",
+    "chromium-args" : "--enable-devtools-experiments --ignore-gpu-blacklist --force-gpu-mem-available-mb=14000 --show-fps-counter --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers ",
+
+    "window": {
+        "title": "",
+        "toolbar": false,
+        "width": 816,
+        "height": 624,
+        "icon": "icon/icon.png",
+        "position": "mouse"
+    },
+    "_comment": "--disable-gpu-vsync"
+}

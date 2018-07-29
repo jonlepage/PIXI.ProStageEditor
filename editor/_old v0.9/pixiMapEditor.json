@@ -1,0 +1,240 @@
+{ "skeleton": { "images": "images/" },
+"bones": [
+	{ "name": "root" }
+],
+"slots": [
+	{ "name": "filterSubNG", "bone": "root", "attachment": "filterSubNG" },
+	{ "name": "filterBG", "bone": "root", "attachment": "filterBG" },
+	{ "name": "bgAniObj", "bone": "root", "attachment": "bgAniObj" },
+	{ "name": "sliderObj", "bone": "root", "attachment": "sliderObj" },
+	{ "name": "sliderButton", "bone": "root", "attachment": "sliderButton" },
+	{ "name": "altlasBG", "bone": "root", "attachment": "altlasBG" },
+	{ "name": "textVisualiser", "bone": "root", "attachment": "textVisualiser" },
+	{ "name": "tooBox", "bone": "root", "attachment": "tooBox" },
+	{ "name": "masterBar", "bone": "root", "attachment": "masterBar" },
+	{ "name": "circleLogo", "bone": "root", "attachment": "circleLogo" },
+	{ "name": "spineLogo", "bone": "root", "attachment": "spineLogo" },
+	{ "name": "displayRectangleGroup", "bone": "root", "attachment": "displayRectangleGroup" },
+	{ "name": "recBGCategory", "bone": "root", "attachment": "recBGCategory" },
+	{ "name": "gb0", "bone": "root", "attachment": "gb0" },
+	{ "name": "gb1", "bone": "root", "attachment": "gb1" },
+	{ "name": "gb2", "bone": "root", "attachment": "gb2" },
+	{ "name": "gb3", "bone": "root", "attachment": "gb3" },
+	{ "name": "gb4", "bone": "root", "attachment": "gb4" },
+	{ "name": "gb5", "bone": "root", "attachment": "gb5" },
+	{ "name": "gb6", "bone": "root", "attachment": "gb6" },
+	{ "name": "pixidsplayLogo", "bone": "root", "attachment": "pixidsplayLogo" },
+	{ "name": "recBGSheetType", "bone": "root", "attachment": "recBGSheetType" },
+	{ "name": "icon_cat", "bone": "root", "attachment": "icon_cat" },
+	{ "name": "SheetsTypelogo", "bone": "root", "attachment": "SheetsTypelogo" },
+	{ "name": "filt_A_Z", "bone": "root", "attachment": "filt_A_Z" },
+	{ "name": "filt_Z_A", "bone": "root", "attachment": "filt_Z_A" },
+	{ "name": "Spines", "bone": "root", "attachment": "Spines" },
+	{ "name": "SpriteSheets", "bone": "root", "attachment": "SpriteSheets" },
+	{ "name": "Sprites", "bone": "root", "attachment": "Sprites" },
+	{ "name": "TileSheets", "bone": "root", "attachment": "TileSheets" },
+	{ "name": "All", "bone": "root", "attachment": "All" },
+	{ "name": "Characteres", "bone": "root", "attachment": "Characteres" },
+	{ "name": "Rocks", "bone": "root", "attachment": "Rocks" },
+	{ "name": "Trees", "bone": "root", "attachment": "Trees" },
+	{ "name": "Buildings", "bone": "root", "attachment": "Buildings" },
+	{ "name": "Grass", "bone": "root", "attachment": "Grass" },
+	{ "name": "FurnitureINT", "bone": "root", "attachment": "FurnitureINT" },
+	{ "name": "FurnitureEXT", "bone": "root", "attachment": "FurnitureEXT" },
+	{ "name": "Cliffs", "bone": "root", "attachment": "Cliffs" },
+	{ "name": "Objets", "bone": "root", "attachment": "Objets" },
+	{ "name": "Divers copie", "bone": "root", "attachment": "Divers copie" },
+	{ "name": "iconParentMode", "bone": "root", "attachment": "iconParentMode" },
+	{ "name": "iconChildMode", "bone": "root", "attachment": "iconChildMode" },
+	{ "name": "iconRenderable", "bone": "root", "attachment": "iconRenderable" },
+	{ "name": "boneMode", "bone": "root", "attachment": "boneMode" },
+	{ "name": "move", "bone": "root", "attachment": "move" },
+	{ "name": "pivot", "bone": "root", "attachment": "pivot" },
+	{ "name": "sunNigth", "bone": "root", "attachment": "sunNigth" },
+	{ "name": "drawLine", "bone": "root", "attachment": "drawLine" },
+	{ "name": "lockAll", "bone": "root", "attachment": "lockAll" },
+	{ "name": "playPause", "bone": "root", "attachment": "playPause" },
+	{ "name": "scaleicon", "bone": "root", "attachment": "scaleicon" },
+	{ "name": "skewicon", "bone": "root", "attachment": "skewicon" },
+	{ "name": "rotateicon", "bone": "root", "attachment": "rotateicon" },
+	{ "name": "saveIcon", "bone": "root", "attachment": "saveIcon" },
+	{ "name": "icon_grid", "bone": "root", "attachment": "icon_grid" },
+	{ "name": "icon_PinGrid", "bone": "root", "attachment": "icon_PinGrid" }
+],
+"skins": {
+	"default": {
+		"filterSubNG": {
+			"filterSubNG": { "x": 800, "y": -205.5, "width": 1602, "height": 31 }
+		},
+		"filterBG": {
+			"filterBG": { "x": 1272.5, "y": -211, "width": 657, "height": 42 }
+		},
+		"bgAniObj": {
+			"bgAniObj": { "x": 800, "y": -292, "width": 1602, "height": 148 }
+		},
+		"sliderObj": {
+			"sliderObj": { "x": 1423, "y": -291, "width": 8, "height": 138 }
+		},
+		"sliderButton": {
+			"sliderButton": { "x": 1423, "y": -227.5, "width": 16, "height": 13 }
+		},
+		"altlasBG": {
+			"altlasBG": { "x": 1516, "y": -277.5, "width": 170, "height": 175 }
+		},
+		"textVisualiser": {
+			"textVisualiser": { "x": 1520, "y": -206.5, "width": 82, "height": 15 }
+		},
+		"tooBox": {
+			"tooBox": { "x": 18.5, "y": -206, "width": 39, "height": 414 }
+		},
+		"masterBar": {
+			"masterBar": { "x": 800, "y": -391.5, "width": 1602, "height": 35 }
+		},
+		"circleLogo": {
+			"circleLogo": { "x": 58, "y": -389.5, "width": 108, "height": 93 }
+		},
+		"spineLogo": {
+			"spineLogo": { "x": 58.5, "y": -381.5, "width": 119, "height": 55 }
+		},
+		"displayRectangleGroup": {
+			"displayRectangleGroup": { "x": 286, "y": -391, "width": 292, "height": 22 }
+		},
+		"recBGCategory": {
+			"recBGCategory": { "x": 931, "y": -391, "width": 960, "height": 22 }
+		},
+		"gb0": {
+			"gb0": { "x": 290, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb1": {
+			"gb1": { "x": 311, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb2": {
+			"gb2": { "x": 332, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb3": {
+			"gb3": { "x": 353, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb4": {
+			"gb4": { "x": 374, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb5": {
+			"gb5": { "x": 395, "y": -391, "width": 18, "height": 18 }
+		},
+		"gb6": {
+			"gb6": { "x": 416, "y": -391, "width": 18, "height": 18 }
+		},
+		"pixidsplayLogo": {
+			"pixidsplayLogo": { "x": 206.5, "y": -389.5, "width": 121, "height": 19 }
+		},
+		"recBGSheetType": {
+			"recBGSheetType": { "x": 1220, "y": -205, "width": 382, "height": 22 }
+		},
+		"icon_cat": {
+			"icon_cat": { "x": 488, "y": -389, "width": 74, "height": 26 }
+		},
+		"SheetsTypelogo": {
+			"SheetsTypelogo": { "x": 1068, "y": -205, "width": 86, "height": 30 }
+		},
+		"filt_A_Z": {
+			"filt_A_Z": { "x": 980.5, "y": -207, "width": 33, "height": 22 }
+		},
+		"filt_Z_A": {
+			"filt_Z_A": { "x": 980.5, "y": -205, "width": 33, "height": 22 }
+		},
+		"Spines": {
+			"Spines": { "x": 1322, "y": -205.5, "width": 42, "height": 15 }
+		},
+		"SpriteSheets": {
+			"SpriteSheets": { "x": 1167.5, "y": -205.5, "width": 79, "height": 15 }
+		},
+		"Sprites": {
+			"Sprites": { "x": 1377, "y": -205.5, "width": 44, "height": 15 }
+		},
+		"TileSheets": {
+			"TileSheets": { "x": 1253, "y": -204, "width": 64, "height": 12 }
+		},
+		"All": {
+			"All": { "x": 561.5, "y": -391, "width": 19, "height": 14 }
+		},
+		"Characteres": {
+			"Characteres": { "x": 635, "y": -391, "width": 84, "height": 14 }
+		},
+		"Rocks": {
+			"Rocks": { "x": 714, "y": -391, "width": 42, "height": 14 }
+		},
+		"Trees": {
+			"Trees": { "x": 779.5, "y": -391.5, "width": 39, "height": 13 }
+		},
+		"Buildings": {
+			"Buildings": { "x": 855.5, "y": -393, "width": 65, "height": 18 }
+		},
+		"Grass": {
+			"Grass": { "x": 935, "y": -391.5, "width": 40, "height": 13 }
+		},
+		"FurnitureINT": {
+			"FurnitureINT": { "x": 1027.5, "y": -391, "width": 89, "height": 14 }
+		},
+		"FurnitureEXT": {
+			"FurnitureEXT": { "x": 1137, "y": -391, "width": 90, "height": 14 }
+		},
+		"Cliffs": {
+			"Cliffs": { "x": 1233, "y": -391, "width": 36, "height": 14 }
+		},
+		"Objets": {
+			"Objets": { "x": 1301.5, "y": -393, "width": 47, "height": 18 }
+		},
+		"Divers copie": {
+			"Divers copie": { "x": 1378, "y": -391, "width": 44, "height": 14 }
+		},
+		"iconParentMode": {
+			"iconParentMode": { "x": 16, "y": -17, "width": 18, "height": 20 }
+		},
+		"iconChildMode": {
+			"iconChildMode": { "x": 16, "y": -18, "width": 14, "height": 18 }
+		},
+		"iconRenderable": {
+			"iconRenderable": { "x": 1445, "y": -392.5, "width": 32, "height": 23 }
+		},
+		"boneMode": {
+			"boneMode": { "x": 15.5, "y": -19.5, "width": 23, "height": 13 }
+		},
+		"move": {
+			"move": { "x": 14, "y": -46, "width": 24, "height": 24 }
+		},
+		"pivot": {
+			"pivot": { "x": 13.5, "y": -78, "width": 23, "height": 22 }
+		},
+		"sunNigth": {
+			"sunNigth": { "x": 15, "y": -272, "width": 24, "height": 24 }
+		},
+		"drawLine": {
+			"drawLine": { "x": 14, "y": -240, "width": 18, "height": 26 }
+		},
+		"lockAll": {
+			"lockAll": { "x": 15, "y": -305, "width": 18, "height": 18 }
+		},
+		"playPause": {
+			"playPause": { "x": 14.5, "y": -338.5, "width": 23, "height": 15 }
+		},
+		"scaleicon": {
+			"scaleicon": { "x": 13, "y": -111, "width": 24, "height": 22 }
+		},
+		"skewicon": {
+			"skewicon": { "x": 14.5, "y": -143, "width": 27, "height": 22 }
+		},
+		"rotateicon": {
+			"rotateicon": { "x": 14, "y": -175.5, "width": 22, "height": 19 }
+		},
+		"saveIcon": {
+			"saveIcon": { "x": 1577.5, "y": -391.5, "width": 29, "height": 29 }
+		},
+		"icon_grid": {
+			"icon_grid": { "x": 1529, "y": -391, "width": 30, "height": 30 }
+		},
+		"icon_PinGrid": {
+			"icon_PinGrid": { "x": 1485, "y": -391, "width": 30, "height": 30 }
+		}
+	}
+},
+"animations": { "animation": {} }
+}
