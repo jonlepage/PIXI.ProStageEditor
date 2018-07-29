@@ -38,50 +38,8 @@ Scene_Local.prototype.create = function() {
 
 // create Objs from json
 Scene_Local.prototype.create_ObjFromJson = function() {
-    const dataObjs = $Loader.loaderSet.Scene_Local_data.OBJS;
-    dataObjs.forEach(e => {
-        const data = $Loader.Data2[e.Data.name];
-        console.log('data: ', data);
-        
-//TODO: MAKE A CONSTRUCTOR OBJS
-        const cage = new PIXI.Container();
-        const sprite_d = new PIXI.Sprite(data.textures[e.textureName]);
-        const sprite_n = new PIXI.Sprite(data.textures_n[e.textureName+"_n"]);
-        // asign group display
-        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-        sprite_n.parentGroup = PIXI.lights.normalGroup;
-        cage.parentGroup = $displayGroup.group[0];
-        cage.addChild(sprite_d, sprite_n);
-        console.log('cage: ', cage); //TODO: POSITIONS
-        this.CAGE_MAP.addChild(cage);
-        this.SpritesNoEvent.push(cage);
-
-        // setup props
-        for (const key in e.Data_Values) {
-            const value = e.Data_Values[key];
-            switch (key) {
-                case "scale":case "skew":case "pivot":case "position":
-                    cage[key].set(...value);
-                break;
-                case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
-                case "alpha":case "rotation":case "groupID":
-                    cage[key] = !isFinite(value) && value || +value;
-                break;
-                case "anchor":
-                    sprite_d[key].set(...value);
-                    sprite_n[key].set(...value);
-                break;
-                case "blendMode":
-                    sprite_n[key] = +value;
-                break;
-                case "tint":
-                    sprite_d[key] = +value;
-                break;
-            };
-        };
-        cage.getBounds();
-            
-    });
+    $Objs.createFromList($Loader.loaderSet.Scene_Local_data.OBJS);
+    this.CAGE_MAP.addChild(...$Objs.list_master);
 };
 
 
