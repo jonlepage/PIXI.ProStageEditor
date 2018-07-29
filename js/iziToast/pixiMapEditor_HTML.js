@@ -1027,7 +1027,7 @@ return message = /*html*/ `
                             <small class="text-muted">groupID:</small>
                             </div>
                         </div>
-                        <input type="text" autocomplete="on" placeholder="ex:tree123" class="form-control" id="groupID">
+                        <input type="text" autocomplete="on" value:"default" class="form-control" id="groupID">
                     </div>
                 </td>
             </tr>

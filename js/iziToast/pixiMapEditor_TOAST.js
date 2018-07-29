@@ -34,7 +34,7 @@ _PME.prototype.mapSetupEditor = function() {
     return{
         title: '',
         message: message,
-        id:'mapSetupEditor',
+        id:'dataEditor',
         layout: 2,
         transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
         transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
@@ -57,7 +57,7 @@ _PME.prototype.tileSetupEditor = function(InMapObj){
     return{
         title: '',
         message: message,
-        id:'tileSetupEditor',
+        id:'dataEditor',
         layout: 2,
         transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
         transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX

@@ -664,14 +664,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
         if(OBJ.parent.name === "CAGE_MAP"){ // it a tiles map obj
+            _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             return { // id html
+                groupID:{def:"default", value:"default"},
                 scale:{def:[0,0], value:[OBJ.scale.x,OBJ.scale.y]},
                 skew:{def:[0,0], value:[OBJ.skew.x,OBJ.skew.y]},
                 pivot:{def:[0,0], value:[OBJ.pivot.x,OBJ.pivot.y]},
                 rotation:{def:0, value:OBJ.rotation},
                 alpha:{def:1, value:OBJ.alpha},
-                blendMode:{def:0, value:OBJ.blendMode},
-                tint:{def:"0xffffff", value:OBJ.tint},
+                blendMode:{def:0, value:_OBJ.blendMode},
+                tint:{def:"0xffffff", value:_OBJ.tint},
                 autoDisplayGroup:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
                 //setDark:{def:[0,0,0], value:[0,0,0]},
                 //setLight:{def:[1,1,1], value:[1,1,1]},
@@ -731,7 +733,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // for tiles on map
     function start_tileSetupEditor(_jscolor,OBJ){
-        console.log('OBJ: ', OBJ);
         const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
         //STEP2: refresh html with json
         //STEP3: edit html data
@@ -755,7 +756,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(!!e.attributes.id2){// is2D isArray props
                     Data_Values[e.id].value[+e.attributes.id2.value] = +e.value;
                 }else{
-                    Data_Values[e.id].value = +e.value;
+                    Data_Values[e.id].value = !isFinite(e.value) && e.value || +e.value;
                 }
             };
             setObjWithData(Data_Values, Data_CheckBox, OBJ);
@@ -764,14 +765,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // ========= control global scene light ===========
         // JSCOLOR, when change color from color Box
         _jscolor.onFineChange = function(){
-            if(Data_Values.color){
-                Data_Values.color.value = "0x"+_jscolor.targetElement.value;
-                setObjWithData(Data_Values, Data_CheckBox, OBJ);
-            }
-            if(Data_Values.color){
-                Data_Values.color.tint = "0x"+_jscolor.targetElement.value;
-                setObjWithData(Data_Values, Data_CheckBox, OBJ);
-            }
+            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
+            Data_Values.tint && (Data_Values.tint.value = "0x"+_jscolor.targetElement.value);
+            setObjWithData(Data_Values, Data_CheckBox, OBJ);
         };
         // Bootstrape sliders, when change value
         //_Falloff.kc.on("slide", function(value) { Data_Values.falloff.value[0] = value });
@@ -797,7 +793,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // for scene setup ONLY
-    function start_mapSetupEditor(_jscolor,_Falloff,OBJ){
+    /*function start_mapSetupEditor(_jscolor,_Falloff,OBJ){
         console.log('OBJ: ', OBJ);
         const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
         //STEP2: refresh html with json
@@ -828,7 +824,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // ========= control global scene light ===========
         // JSCOLOR, when change color from color Box
         _jscolor.onFineChange = function(){
-            Data_Values.color.value = "0x"+_jscolor.targetElement.value;
+            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
+            Data_Values.tint && (Data_Values.tint = "0x"+_jscolor.targetElement.value);
             setObjWithData(Data_Values, Data_CheckBox, STAGE.light_Ambient);
         };
         // Bootstrape sliders, when change value
@@ -852,17 +849,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 };
             };
         };
-    };
+    };*/
 
     // asign props value to objet, if checked, type: of objs updated ? light, tiles
     function setObjWithData(Data_Values, Data_CheckBox, obj) {
-        console.log1('setObjWithData: ', obj);
-        console.log1('setObjWithData Data_Values: ', Data_Values);
-        console.log1('Data_CheckBox: ', Data_CheckBox);
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
-            const value = checked && Data_Values[key].value || Data_Values[key].def;
-            
+            const value = !checked && Data_Values[key].def || Data_Values[key].value;
+            const _obj = obj.Sprites && obj.Sprites.d || obj.Sprites.s;
+            const _obj_n = _obj && obj.Sprites.n
             switch (key) {
                 case "BackGround":
                     STAGE.createBackground(DATA[value]);
@@ -870,8 +865,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 case "scale":case "skew":case "pivot":
                     obj[key].set(...value);
                 break;
-                case "blendMode":case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
-                    obj[key] = +value || value; // number..NaN=>array
+                case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
+                case "alpha":case "rotation":case "groupID":
+                    obj[key] = !isFinite(value) && value || +value;
+                    
+                break;
+                case "blendMode":
+                    if (_obj_n) {
+                        _obj_n[key] = +value;
+                    }else{
+                        obj[key] = +value;
+                    }
+                break;
+                case "tint":
+                    _obj[key] = +value;
                 break;
             };
         }
@@ -879,7 +886,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to HTML izit
     function setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) {
-        console.log('setHTMLWithData Data_CheckBox: ', Data_CheckBox);
         for (const key in Data_Values) {
             const value = Data_Values[key].value;
             const _value = true; // checked value
@@ -895,8 +901,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         e.value = Data_Values[key].value[arrId];
                     });
                 break;
-                case "blendMode":case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":
-                case "tint":case "rotation":case "alpha":
+                case "blendMode":case "lightHeight":case "brightness":case "radius":case "drawMode":
+                case "rotation":case "alpha":case "groupID":
                     //STAGE.light_Ambient[key] = +value || value;
                     e = document.getElementById(key);
                     e.value = Data_Values[key].value;
@@ -906,6 +912,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _Falloff.kl.setValue(Data_Values[key].value[1]);
                 _Falloff.kq.setValue(Data_Values[key].value[2]);
                 break;
+                case "tint":case "color":
+                    e = document.getElementById(key);
+                    e.value = PIXI.utils.hex2string(+Data_Values[key].value).substring(1);
+                    
+                break;
+               
             };
 
             // checkbox
@@ -918,10 +930,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // close the dataEditor
     function close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox){
-        console.log2('OBJ: ', OBJ);
         OBJ.Data_Values = Data_Values;
         OBJ.Data_CheckBox = Data_CheckBox;
-        iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("mapSetupEditor") );
+        iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") );
         iziToast.opened = false;
         document.body.requestPointerLock(); // pointlocker API
     };
@@ -1390,7 +1401,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(CAGE_MOUSE.previewsShowed){
             CAGE_MOUSE.previews.pivot.x = mX>1920/2 && CAGE_MOUSE.previews.width/2 || 0;
             CAGE_MOUSE.previews.x =  mX/3;
-           
             CAGE_MOUSE.previews.y = 900;
         }
     };
