@@ -30,10 +30,53 @@ Scene_Local.prototype.initialize = function(loaderSets,callBackScene,firstTime) 
 Scene_Local.prototype.create = function() {
     const bgName = $Loader.loaderSet.Scene_Local_data.SCENE.BackGround || false;
     this.createBackground(bgName); //TODO:
+    this.create_ObjFromJson();
     //this.createLocalFlags();
     //this.createTexts();
     //this.createSpineAvatar();
 };
+
+// create Objs from json
+Scene_Local.prototype.create_ObjFromJson = function() {
+    const dataObjs = $Loader.loaderSet.Scene_Local_data.OBJS;
+    dataObjs.forEach(e => {
+        const data = $Loader.Data2[e.Data.name];
+        console.log('data: ', data);
+        
+//TODO: MAKE A CONSTRUCTOR OBJS
+        const cage = new PIXI.Container();
+        const sprite_d = new PIXI.Sprite(data.textures[e.textureName]);
+        const sprite_n = new PIXI.Sprite(data.textures_n[e.textureName+"_n"]);
+        // asign group display
+        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
+        sprite_n.parentGroup = PIXI.lights.normalGroup;
+        cage.parentGroup = $displayGroup.group[0];
+        cage.addChild(sprite_d, sprite_n);
+        console.log('cage: ', cage); //TODO: POSITIONS
+        this.CAGE_MAP.addChild(cage);
+        // setup props
+        for (const key in e.Data_Values) {
+            const value = e.Data_Values[key];
+            switch (key) {
+                case "scale":case "skew":case "pivot":
+                    cage[key].set(...e.Data_Values[key]);
+                break;
+                case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
+                case "alpha":case "rotation":case "groupID":
+                    cage[key] = !isFinite(value) && value || +value;
+                break;
+                case "blendMode":
+                    sprite_n[key] = +value;
+                break;
+                case "tint":
+                    sprite_d[key] = +value;
+                break;
+            };
+        }
+            
+    });
+};
+
 
 // allow pass a sting reference data, or a full Data
 Scene_Local.prototype.createBackground = function(bgName) {

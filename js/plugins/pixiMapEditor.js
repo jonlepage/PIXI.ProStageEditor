@@ -1587,31 +1587,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // ┌------------------------------------------------------------------------------┐
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
-    function spriteToJson(e) { // RENDU ICI VERIFIER CE QUI CLOCHE , ET FORCER LE ZOOM
-        const json = {
-            name: e.name,
-            cage: {
-                x: e.x,
-                y: e.y,
-                rotation: e.rotation,
-                alpha: e.alpha,
-                blendMode: e.blendMode,
-                tint: e.tint,
-                scale: {x:e.scale.x, y:e.scale.y},
-                skew: {x:e.skew.x, y:e.skew.y},
-                pivot: {x:e.pivot.x, y:e.pivot.y},
-                autoDisplayGroup: "TODO",
-                parentGroup: e.parentGroup.zIndex,
-                zIndex: e.zIndex,
-            },
-            sprites:{
-                scale: {x:e.sprite_d.scale.x, y:e.sprite_d.scale.y},
-            },
-            data:e.data,
-        };
-        return json;
-    };
-
     //call fast save with ctrl+s
     function start_DataSavesFromKey_CTRL_S(options) {
         create_JsonPerma();
@@ -1636,12 +1611,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function create_SceneJSON(options) {
         const currentScene = STAGE.constructor.name;
         let SCENE = computeSave_SCENE(STAGE);
-        let OBJS = computeSave_OBJ(STAGE.CAGE_MAP);
+        let OBJS = computeSave_OBJ(STAGE.SpritesNoEvent);
         let SHEETS = computeSave_SHEETS(SCENE,OBJS);
         const data = {SCENE:SCENE,OBJS:OBJS,SHEETS:SHEETS};
         const path = `data/${currentScene}_data.json`; // Map001_data.json
         const fs = require('fs');
-        //const content = JSON.stringify(data, null, '\t'); //human read format
+        const content = JSON.stringify(data, null, '\t'); //human read format
         fs.writeFile(path, content, 'utf8', function (err) { 
             if(err){return console.log(err)} return console.log9("create_SceneJSON FINISH",data);
         });
@@ -1657,9 +1632,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
     };
 
-    function computeSave_OBJ(CAGE_MAP) {
-        console.log('CAGE_MAP: ', CAGE_MAP);
-        return [];
+    function computeSave_OBJ(SpritesNoEvent) {
+        const objs = [];
+        SpritesNoEvent.forEach(e => {
+            const Data_Values = getDataJson(e);
+            const Data_CheckBox = getDataCheckBoxWith(e, Data_Values);
+            const _Data_Values = {};
+            for (const key in Data_Values) {
+                _Data_Values[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
+            };
+            objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.Sprites.groupTexureName});
+        });
+        return objs;
     };
 
     // check all elements and add base data need for loader
@@ -1668,6 +1652,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(SCENE.BackGround){
             data[SCENE.BackGround] = $PME.Data2[SCENE.BackGround];
         };
+        OBJS.forEach(e => {
+            data[e.Data.name] = $PME.Data2[e.Data.name];
+        });
         return data;
     };
 

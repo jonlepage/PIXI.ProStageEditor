@@ -983,7 +983,6 @@ function html_mapSetupEditor(listBG) {
   //#region [rgba(200, 10, 10,0.5)]
 //#endregion
 function htlm_tileSetupEditor(InMapObj) {
-    console.log7('htlm_tileSetupEditor: ', InMapObj);
 
 return message = /*html*/ `
 <div class="container" id="dataIntepretor">
