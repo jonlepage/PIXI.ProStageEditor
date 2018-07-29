@@ -3,6 +3,7 @@
 var $plugins =
 [
 {"name":"Community_Basic","status":true,"description":"Plugin used to set basic parameters.","parameters":{"cacheLimit":"20","screenWidth":"1920","screenHeight":"1080","changeWindowWidthTo":"800","changeWindowHeightTo":"","renderingMode":"auto","alwaysDash":"off"}},
+{"name":"core_ObjsEvents","status":true,"description":"Manage ,create game objs and events for Scene stage\r\nV.1.0\r\nLicense:© M.I.T\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────┘\r\nPermet de constuire des objets specifiques selon leur type.\r\nVoir le Stages","parameters":{}},
 {"name":"core_displayGroupe","status":true,"description":"","parameters":{}},
 {"name":"core_Loader","status":true,"description":"loader class\r\nV.1.0\r\nLicense:© M.I.T\r\nVERY IMPORTANT NOTE: Export from texturePacker with trimmed Name (remove extention.png for use tile normal)\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘","parameters":{}},
 {"name":"core_Camera","status":true,"description":"create player and setup for whole game\r\nV.0.1a\r\nLicense:© M.I.T\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────┘","parameters":{}},
