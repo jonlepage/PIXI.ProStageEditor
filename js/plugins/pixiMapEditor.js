@@ -406,6 +406,7 @@ _PME.prototype.startEditor = function() {
     let InMask = null;
     let InLibs = null;
     let InTiles = null;
+    let InButtons = null;
     let InMapObj = null;
     let mX = 0, mY = 0; // mosue screen
     let mMX = 0, mMY = 0; // mouse map 
@@ -505,6 +506,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
     //force select layer button 
     //update_DisplayGroup(1);
+    }).bind(this)();
+
+    // convert current objs to editor format
+    (function() {
+        $Objs.list_master.forEach(cage => {
+            const data = DATA[cage.Sprites.sheetName];
+            const type = cage.Type;
+            const sprites = cage.Sprites;
+            const useNormal = true;
+            const debug = create_DebugElements(type,data,sprites);
+            setup_Reference.call(cage,type,data,sprites,debug,useNormal);
+            setup_Proprety(type,data,sprites,debug,useNormal);
+            setup_Parenting.call(cage,type,data,sprites,debug,useNormal);
+            setup_LayerGroup.call(cage,type,data,sprites,debug,useNormal);
+            cage.getBounds();
+            debug.bg.getBounds();
+        });
     }).bind(this)();
 
     //#region [rgba(10, 80, 10,0.08)]
@@ -633,7 +651,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
             // no contact, add to current point
             tmp_list.push(cage);
-            CACHETILESSORT[cage.Sprites.groupName][cage.Sprites.groupTexureName] = new PIXI.Point(x,y); //REGISTER
+            CACHETILESSORT[cage.Sprites.sheetName][cage.Sprites.groupTexureName] = new PIXI.Point(x,y); //REGISTER
             refresh(cage,x,y);
             cage._boundsRect.pad(pad,pad);
             //cage.DebugElements.bg._boundsRect.pad(pad,pad);
@@ -1006,7 +1024,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             sprites.n && (sprites.n.parentGroup = PIXI.lights.normalGroup);
             debug.bg.parentGroup = PIXI.lights.diffuseGroup;
             this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
-            this.zIndex = mMY;
+            this.zIndex = this.zIndex || mMY; //TODO:
         };
     };
 
@@ -1044,7 +1062,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(type === "tileSheet"){
             //TODO: A BESOIN DE L'OBJECT OLD COPY pour prend les informations, essayer de fusionner le system
-            debug.bg.anchor.set(0,0); // TODO: from tilesObj
+            debug.bg.anchor.set(sprites.d.anchor.x,sprites.d.anchor.y); // TODO: from tilesObj
             debug.bg.width = sprites.d.width;
             debug.bg.height =  sprites.d.height;
             debug.an.tint = 0xee5000;
@@ -1118,17 +1136,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(type === "tileSheet"){
             const sprite_d = new PIXI.Sprite(data.textures[name]); // take first tex for thumbs, preview will take all array
             const sprite_n = data.textures_n[`${name}_n`] && new PIXI.Sprite(data.textures_n[`${name}_n`]) || false; // allow swap texture hover tile
-            return {d:sprite_d, n:sprite_n, groupName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
+            return {d:sprite_d, n:sprite_n, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
         };
         if(type === "animationSheet"){
             const sprite_d = new PIXI.extras.AnimatedSprite(data.textures[name]);
             const sprite_n =  data.textures_n[name] && new PIXI.Sprite(data.textures_n[name][0]); // use firse texture
-            return {d:sprite_d, n:sprite_n, groupName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
+            return {d:sprite_d, n:sprite_n, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
         };
         if(type === "spineSheet"){
             const skinName = name; // use texturesName to spine skin name
             const spine = new PIXI.spine.Spine(data.spineData);
-            return {s:spine, groupName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
+            return {s:spine, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
         };
     };
 
@@ -1172,7 +1190,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         setup_Parenting.call(cage, type, data, sprites, debug, useNormal);
         setup_LayerGroup.call(cage, type, data, sprites, debug, useNormal);
         cage.getBounds();
-        cage.DebugElements.bg.getBounds();
+    cage.DebugElements.bg.getBounds();
         return cage;
     };
  
@@ -1213,7 +1231,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             pathFindSheet(list,1000,15);
         }else{ // alrealy exist caches positions
             list.forEach(cage => {
-                cage.position.copy( CACHETILESSORT[cage.Sprites.groupName][cage.Sprites.groupTexureName] ); 
+                cage.position.copy( CACHETILESSORT[cage.Sprites.sheetName][cage.Sprites.groupTexureName] ); 
                 cage.getBounds();
                 cage.DebugElements.bg.getBounds();
             });
@@ -1265,7 +1283,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         CAGE_MAP.addChild(cage);
         cage.getBounds();  //getBoundsMap(cage); // with camera factor
         // register
-        STAGE.SpritesNoEvent.push(cage); // element no interactions
+        $Objs.list_master.push(cage);
     };
 
     function execute_buttons(InButtons) {
@@ -1445,7 +1463,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             InButtons = !InLibs && !InTiles &&  check_In(ButtonsSlots) || false;
             if(event.ctrlKey && !InButtons){ // check if on a map objs elements
                 // TODO: USE + ALT FOR REVERSE CHECK
-                InMapObj = check_In(STAGE.SpritesNoEvent) || false;
+                InMapObj = check_In($Objs.list_master) || false;
             };
         };
 
@@ -1616,7 +1634,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function create_SceneJSON(options) {
         const currentScene = STAGE.constructor.name;
         let SCENE = computeSave_SCENE(STAGE);
-        let OBJS = computeSave_OBJ(STAGE.SpritesNoEvent);
+        let OBJS = computeSave_OBJ($Objs.list_master);
         let SHEETS = computeSave_SHEETS(SCENE,OBJS);
         const data = {SCENE:SCENE,OBJS:OBJS,SHEETS:SHEETS};
         const path = `data/${currentScene}_data.json`; // Map001_data.json
@@ -1637,9 +1655,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
     };
 
-    function computeSave_OBJ(SpritesNoEvent) {
+    function computeSave_OBJ(list_master) {
         const objs = [];
-        SpritesNoEvent.forEach(e => {
+        list_master.forEach(e => {
             const Data_Values = getDataJson(e);
             const Data_CheckBox = getDataCheckBoxWith(e, Data_Values);
             const _Data_Values = {};

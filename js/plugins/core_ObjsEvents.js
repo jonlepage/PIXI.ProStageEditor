@@ -53,7 +53,10 @@ _objs.prototype.createFromList = function(LIST) {
     cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
     //cage.zIndex = mMY; //TODO: add to json addAttr_default
     // reference
-    cage.sprites = {d:sprite_d, n:sprite_n};
+    sprite_d.name = textureName;
+    sprite_n.name = textureName+"_n";
+    cage.Sprites = {d:sprite_d, n:sprite_n, sheetName:Data.name, groupTexureName:textureName, groupType:Data.type};
+    cage.Type = Data.type;
     // proprety attributs
     this.addAttr_default(cage, Data_Values);
     cage.getBounds(cage); //TODO: BOUND MAP
@@ -72,14 +75,14 @@ _objs.prototype.addAttr_default = function(cage, Data_Values){
                 cage[key] = !isFinite(value) && value || +value;
             break;
             case "anchor":
-                cage.sprites.d[key].set(...value);
-                cage.sprites.n[key].set(...value);
+                cage.Sprites.d[key].set(...value);
+                cage.Sprites.n[key].set(...value);
             break;
             case "blendMode":
-                cage.sprites.n[key] = +value;
+                cage.Sprites.n[key] = +value;
             break;
             case "tint":
-                cage.sprites.d[key] = +value;
+                cage.Sprites.d[key] = +value;
             break;
         };
     };
