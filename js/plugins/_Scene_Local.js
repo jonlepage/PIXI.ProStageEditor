@@ -39,7 +39,7 @@ Scene_Local.prototype.create = function() {
 // create Objs from json
 Scene_Local.prototype.create_ObjFromJson = function() {
     $Objs.createFromList($Loader.loaderSet.Scene_Local_data.OBJS);
-    this.CAGE_MAP.addChild(...$Objs.list_master);
+    $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
 };
 
 

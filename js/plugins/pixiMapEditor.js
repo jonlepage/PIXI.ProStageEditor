@@ -695,6 +695,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 blendMode:{def:0, value:_OBJ.blendMode},
                 tint:{def:"0xffffff", value:_OBJ.tint},
                 autoDisplayGroup:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
+                zIndex:{def:0, value:OBJ.zIndex},
                 //setDark:{def:[0,0,0], value:[0,0,0]},
                 //setLight:{def:[1,1,1], value:[1,1,1]},
             };

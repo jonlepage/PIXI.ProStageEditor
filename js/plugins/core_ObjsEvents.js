@@ -42,6 +42,7 @@ _objs.prototype.createFromList = function(LIST) {
 };
 
  _objs.prototype.create_fromTileSheet = function(Data, Data_Values, textureName){
+     console.log('Data_Values: ', Data_Values);
     const cage = new PIXI.Container();
     const sprite_d = new PIXI.Sprite(Data.textures[textureName]);
     const sprite_n = new PIXI.Sprite(Data.textures_n[textureName+"_n"]);
@@ -83,6 +84,9 @@ _objs.prototype.addAttr_default = function(cage, Data_Values){
             break;
             case "tint":
                 cage.Sprites.d[key] = +value;
+            break;
+            case "zIndex":
+                cage.zIndex = +value;
             break;
         };
     };
