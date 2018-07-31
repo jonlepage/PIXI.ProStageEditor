@@ -668,9 +668,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // └------------------------------------------------------------------------------┘
     // create data id for HTML JSON, if existe , return Data_Values
     function getDataJson(OBJ){
-        //if(OBJ.Data_Values){return OBJ.Data_Values};
+        // data for the scene setup
+        let data;
         if(OBJ.isStage){
-            return { // id html
+            data = { // id html
                 BackGround:{def:false, value:OBJ.Background.name}, // props:{def:, value:, checked:}
                 blendMode:{def:1, value:OBJ.light_Ambient.blendMode},
                 lightHeight:{def:0.075, value:OBJ.light_Ambient.lightHeight},
@@ -681,9 +682,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 falloff:{def:[0.75, 3, 20], value:OBJ.light_Ambient.falloff},
             };
         };
-        if(OBJ.parent.name === "CAGE_MAP"){ // it a tiles map obj
+         // data base for sprites
+        if(OBJ.parent.name === "CAGE_MAP"){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
-            return { // id html
+            data = { // id html
                 groupID:{def:"default", value:"default"},
                 position:{def:[0,0], value:[OBJ.position.x,OBJ.position.y]}, // hidding
                 anchor:{def:[0,0], value:[_OBJ.anchor.x,_OBJ.anchor.y]},
@@ -700,6 +702,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 //setLight:{def:[1,1,1], value:[1,1,1]},
             };
         };
+        if(OBJ.Type === "animationSheet"){
+            console.log('OBJ: ', OBJ);
+            data = {...data,
+                animationSpeed:{def:1, value:OBJ.animationSpeed},
+            }
+    
+        };
+        return data;
     };
 
     // create data checkbox with Data_Values
@@ -1141,8 +1151,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(type === "animationSheet"){
             const sprite_d = new PIXI.extras.AnimatedSprite(data.textures[name]);
-            const sprite_n =  data.textures_n[name] && new PIXI.Sprite(data.textures_n[name][0]); // use firse texture
-            return {d:sprite_d, n:sprite_n, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
+            //const sprite_n =  data.textures_n[name] && new PIXI.Sprite(data.textures_n[name][0]); // use firse texture
+            return {d:sprite_d, n:null, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
         };
         if(type === "spineSheet"){
             const skinName = name; // use texturesName to spine skin name
@@ -1150,6 +1160,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             return {s:spine, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
         };
     };
+
+    // create container based on type
+    function create_Containers(type){
+        if(type === "animationSheet"){
+            return new PIXI.ContainerAnimations();
+        };
+        return new PIXI.Container();
+    };
+
+    
 
     function create_FromData(data){
         const cage = new PIXI.Container();
@@ -1166,8 +1186,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create tiles from type with texture name
     function create_FromLibrary(data,name){
-        const cage = new PIXI.Container();// store {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)}
         const type = data.type;
+        const cage = create_Containers(type);// store {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)}
         const sprites = create_Sprites(type, data, name);
         const debug = create_DebugElements(type, data, sprites);
         setup_Reference.call(cage ,type, data, sprites, debug);
@@ -1181,9 +1201,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create obj for mouse with current data setup from 
     function create_FromTileSheet(data,name){
-        const cage = new PIXI.Container();// store {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)}
         const type = data.type;
         const useNormal = true;
+        const cage = create_Containers(type);// store {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)}
         const sprites = create_Sprites(type, data, name);
         const debug = create_DebugElements(type, data, sprites);
         setup_Reference.call(cage ,type, data, sprites, debug);

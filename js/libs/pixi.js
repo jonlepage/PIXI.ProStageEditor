@@ -30894,8 +30894,6 @@ var AnimatedSprite = function (_core$Sprite) {
          * @private
          */
         var _this = _possibleConstructorReturn(this, _core$Sprite.call(this, textures[0] instanceof core.Texture ? textures[0] : textures[0].texture));
-        console.log4('_this: ', _this);
-
         _this._textures = null;
 
         /**
