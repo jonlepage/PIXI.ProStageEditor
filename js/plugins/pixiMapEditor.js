@@ -1018,7 +1018,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
 
     function setup_Propretys(fromCage){
-        if(this.Type === "tileSheet"){
+        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             let anX = (fromCage.Debug.an.position.x/fromCage.Debug.bg.width) || fromCage.Sprites.d.anchor.x; // value pos/w
             let anY = (fromCage.Debug.an.position.y/fromCage.Debug.bg.height) || fromCage.Sprites.d.anchor.y; // value pos/h
             this.Sprites.d.anchor.set(anX, anY);
@@ -1028,7 +1028,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function setup_LayerGroup(){
-        if(this.Type === "tileSheet"){
+        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
             this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
@@ -1044,7 +1044,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.getBounds();
             this.Debug.bg.getBounds();
         };
-        if(this.Type === "tileSheet"){
+        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an);
             this.getBounds();
             this.Debug.bg.getBounds();
@@ -1104,7 +1104,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.previews = previews;
             this.Debug.ico = icons;
         };
-        if(this.Type === "tileSheet"){
+        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const an = new PIXI.Sprite(PIXI.Texture.WHITE); // anchorPoint
             // setup
@@ -1149,12 +1149,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Sprites.d = sprite_d;
             this.Sprites.n = sprite_n;
         };
-        /*if(type === "animationSheet"){
-            const sprite_d = new PIXI.extras.AnimatedSprite(data.textures[name]);
-            //const sprite_n =  data.textures_n[name] && new PIXI.Sprite(data.textures_n[name][0]); // use firse texture
-            return {d:sprite_d, n:null, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
+        if(this.Type === "animationSheet"){
+            const sprite_d = new PIXI.extras.AnimatedSprite(this.Data.textures[this.TexName]);
+            this.Sprites.d = sprite_d;
+            const sprite_n = this.addNormal(this.Data.textures_n[this.TexName]);
+            this.Sprites.n = sprite_n;
+            this.play(0);
         };
-        if(type === "spineSheet"){
+        /*if(type === "spineSheet"){
             const skinName = name; // use texturesName to spine skin name
             const spine = new PIXI.spine.Spine(data.spineData);
             return {s:spine, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
