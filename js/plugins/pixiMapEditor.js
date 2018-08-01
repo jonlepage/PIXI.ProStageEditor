@@ -1056,7 +1056,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(!useNormal && sprites.n){ this.addChildAt(sprites.n,1) }; // show below, when mouse hover, just renderable preview n
         };*/
         if(this.Type === "spineSheet"){
-            this.addChild(this.Sprites.d);
+            this.addChild(this.Debug.bg, this.Sprites.d);
         };
     };
 
@@ -1127,11 +1127,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const an = new PIXI.Sprite(PIXI.Texture.WHITE); // anchorPoint
             // setup
             let d = this.Sprites.d;
-            console.log('d: ', d);
-            bg.width = d.width;
-            bg.height = d.height;
+            let vertices = d.skeleton.findSlot("bounds").attachment.vertices;
+            bg._bounds.addQuad(vertices);
+            bg._bounds.rect = bg._bounds.getRectangle();
+            
+            bg.width = bg._bounds.rect.width;
+            bg.height = bg._bounds.rect.height;
             bg.tint = 0xffffff;
-            bg.anchor.set(d.anchor.x, d.anchor.y);
+            bg.anchor.set(0.5,1);
 
             an.width = 24;
             an.height = 24;
@@ -1169,7 +1172,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             spine.skeleton.setSkinByName(this.TexName)//();
             spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
             spine.skeleton.setSlotsToSetupPose();
-            spine.position.set(300,300);
             this.Sprites.d = spine;
             //this.Sprites.n // TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
@@ -1246,7 +1248,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
         if(!CACHETILESSORT[InLibs.name]){
-           // CACHETILESSORT[InLibs.name] = pathFindSheet(list,20);
+            CACHETILESSORT[InLibs.name] = pathFindSheet(list,20);
         }else{ // alrealy exist caches positions
             list.forEach(cage => {
                 cage.position.copy( CACHETILESSORT[InLibs.name][cage.TexName] ); 
