@@ -1156,11 +1156,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Sprites.n = sprite_n;
             this.play(0);
         };
-        /*if(type === "spineSheet"){
-            const skinName = name; // use texturesName to spine skin name
-            const spine = new PIXI.spine.Spine(data.spineData);
-            return {s:spine, sheetName:data.name, groupType:type, groupTexureName:name}; // {d:(diffuse sprite), n:(normal sprite), s:(spine sprite), t:(tumb sprite), p:(preview sprites)} 
-        };*/
+        if(this.Type === "spineSheet"){
+            const spine = new PIXI.spine.Spine(this.Data.spineData);
+            console.log('spine: ', spine);
+            this.Sprites.d = spine;
+        };
     };
 
     // create container based on type
@@ -1219,14 +1219,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // └------------------------------------------------------------------------------┘
 
     function show_tileSheet(InLibs) {
+        console.log('InLibs: ', InLibs);
         // check if alrealy opened ???  open_tileSheet // return hide
         if(check_tileSheetStatus(CAGE_TILESHEETS,InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
         const list = [];
-        const elements = InLibs.Data.textures || InLibs.Data.spineData.skins;
+        const elements = InLibs.Data.textures || InLibs.Data.data.skins;
         Object.keys(elements).forEach(textureName => {
             const cage = build_tileLibs(InLibs, textureName);
-            cage.Sprites.n.renderable = false;
+            cage.Sprites.n && (cage.Sprites.n.renderable = false);
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage)
         });
