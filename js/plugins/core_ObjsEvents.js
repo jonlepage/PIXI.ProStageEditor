@@ -37,8 +37,74 @@ _objs.prototype.createFromList = function(LIST) {
             case "tileSheet":
                 this.list_master[i] = this.create_fromTileSheet(Data,Data_Values,textureName);
             break;
+            case "animationSheet":
+                this.list_master[i] = this.create_fromAnimationSheet(Data,Data_Values,textureName);
+            break;
+            case "spineSheet":
+                this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
+            break;
         };
     };
+};
+
+_objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName){
+    console.log('Data_Values: ', Data_Values);
+    const cage = new PIXI.Container();
+
+    const spine = new PIXI.spine.Spine(Data.spineData);
+    spine.skeleton.setSkinByName(textureName)//();
+    spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
+    spine.skeleton.setSlotsToSetupPose();
+    sprite_d = spine;
+
+   // asign group display
+   sprite_d.parentGroup = PIXI.lights.diffuseGroup;
+   //sprite_n.parentGroup = PIXI.lights.normalGroup; TODO: ASK IVAN
+   //parenting
+   cage.addChild(sprite_d);
+   cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
+   //cage.zIndex = mMY; //TODO: add to json addAttr_default
+   // reference
+   sprite_d.name = textureName;
+    cage.Sprites = {d:sprite_d, n:null};
+   
+   cage.Type = Data.type;
+   cage.name = Data.name;
+   cage.TexName = textureName || false;
+
+   // proprety attributs
+   this.addAttr_default(cage, Data_Values);
+   cage.getBounds(cage); //TODO: BOUND MAP
+   return cage;
+};
+
+_objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureName){
+    console.log('Data_Values: ', Data_Values);
+   const cage = new PIXI.ContainerAnimations();
+        cage.Sprites = {d:null, n:null}; // need befor because 'addNormal' useIt
+   const sprite_d = new PIXI.extras.AnimatedSprite(Data.textures[textureName]);
+        cage.Sprites.d = sprite_d;
+   const sprite_n = cage.addNormal(Data.textures_n[textureName]);
+        cage.Sprites.n = sprite_n; // FIXME: voir constructeur
+   // asign group display
+   sprite_d.parentGroup = PIXI.lights.diffuseGroup;
+   sprite_n.parentGroup = PIXI.lights.normalGroup;
+   //parenting
+   cage.addChild(sprite_d, sprite_n);
+   cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
+   //cage.zIndex = mMY; //TODO: add to json addAttr_default
+   // reference
+   sprite_d.name = textureName;
+   sprite_n.name = textureName+"_n";
+   
+   cage.Type = Data.type;
+   cage.name = Data.name;
+   cage.TexName = textureName || false;
+
+   // proprety attributs
+   this.addAttr_default(cage, Data_Values);
+   cage.getBounds(cage); //TODO: BOUND MAP
+   return cage;
 };
 
  _objs.prototype.create_fromTileSheet = function(Data, Data_Values, textureName){
@@ -56,8 +122,11 @@ _objs.prototype.createFromList = function(LIST) {
     // reference
     sprite_d.name = textureName;
     sprite_n.name = textureName+"_n";
-    cage.Sprites = {d:sprite_d, n:sprite_n, sheetName:Data.name, groupTexureName:textureName, groupType:Data.type};
+    cage.Sprites = {d:sprite_d, n:sprite_n};
     cage.Type = Data.type;
+    cage.name = Data.name;
+    cage.TexName = textureName || false;
+
     // proprety attributs
     this.addAttr_default(cage, Data_Values);
     cage.getBounds(cage); //TODO: BOUND MAP
@@ -76,8 +145,10 @@ _objs.prototype.addAttr_default = function(cage, Data_Values){
                 cage[key] = !isFinite(value) && value || +value;
             break;
             case "anchor":
-                cage.Sprites.d[key].set(...value);
-                cage.Sprites.n[key].set(...value);
+                if(Number.isFinite(value[0])){
+                    cage.Sprites.d[key].set(...value);
+                    cage.Sprites.n[key].set(...value);
+                };
             break;
             case "blendMode":
                 cage.Sprites.n[key] = +value;

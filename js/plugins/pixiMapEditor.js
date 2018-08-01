@@ -509,19 +509,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // convert current objs to editor format
     (function() {
-        /*$Objs.list_master.forEach(cage => {
-            const data = DATA[cage.Sprites.sheetName];
-            const type = cage.Type;
-            const sprites = cage.Sprites;
-            const useNormal = true;
-            const debug = create_DebugElements(type,data,sprites);
-            setup_Reference.call(cage,type,data,sprites,debug,useNormal);
-            setup_Proprety(type,data,sprites,debug,useNormal);
-            setup_Parenting.call(cage,type,data,sprites,debug,useNormal);
-            setup_LayerGroup.call(cage,type,data,sprites,debug,useNormal);
-            cage.getBounds();
-            debug.bg.getBounds();
-        });*/
+        $Objs.list_master.forEach(cage => {
+            cage.Data = DATA[cage.name];         
+
+            create_DebugElements.call(cage);
+            setup_Parenting.call(cage);
+            setup_LayerGroup.call(cage);
+            setup_Propretys.call(cage,cage);
+            // if animations, in editorMode we play loop
+            if(cage.play){
+                cage.loop = true;
+                cage.play();
+            };
+        });
     }).bind(this)();
 
     //#region [rgba(10, 80, 10,0.08)]
@@ -665,6 +665,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // └------------------------------------------------------------------------------┘
     // create data id for HTML JSON, if existe , return Data_Values
     function getDataJson(OBJ){
+        console.log('OBJ: ', OBJ);
         // data for the scene setup
         let data;
         if(OBJ.isStage){
@@ -679,13 +680,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 falloff:{def:[0.75, 3, 20], value:OBJ.light_Ambient.falloff},
             };
         };
-         // data base for sprites
-        if(OBJ.parent.name === "CAGE_MAP"){
+         // data base for sprites, spine animations..
+        if(!OBJ.isStage){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             data = { // id html
                 groupID:{def:"default", value:"default"},
                 position:{def:[0,0], value:[OBJ.position.x,OBJ.position.y]}, // hidding
-                anchor:{def:[0,0], value:[_OBJ.anchor.x,_OBJ.anchor.y]},
+                anchor:{def:[0,0], value:[_OBJ.anchor&&_OBJ.anchor.x, _OBJ.anchor&&_OBJ.anchor.y]}, // spine no have anchor
                 scale:{def:[0,0], value:[OBJ.scale.x,OBJ.scale.y]},
                 skew:{def:[0,0], value:[OBJ.skew.x,OBJ.skew.y]},
                 pivot:{def:[0,0], value:[OBJ.pivot.x,OBJ.pivot.y]},
@@ -700,7 +701,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
         if(OBJ.Type === "animationSheet"){
-            console.log('OBJ: ', OBJ);
             data = {...data,
                 animationSpeed:{def:1, value:OBJ.animationSpeed},
             }
@@ -1056,45 +1056,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
 
         };
-        /*if(type === "animationSheet"){
-            this.addChild(debug.bg, sprites.d, debug.an);
-            if(useNormal && sprites.n){ this.addChildAt(sprites.n,2) }; 
-            if(!useNormal && sprites.n){ this.addChildAt(sprites.n,1) }; // show below, when mouse hover, just renderable preview n
-        };*/
         if(this.Type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
-    };
-
-    // set default proprety
-    function ___setup_Proprety(type,data,sprites,debug,useNormal){
-        if(this.Type === "thumbs"){
-        };
-
-        /*if(type === "animationSheet"){
-            debug.bg.anchor.set(0,0); // TODO: from tilesObj
-            debug.bg.width = sprites.d.width;
-            debug.bg.height =  sprites.d.height;
-            debug.an.tint = 0xee5000;
-            debug.bg.tint = useNormal && 0x000000 || 0xffffff;
-            debug.an.width = 24, debug.an.height = 24;
-            debug.an.anchor.set(0.5,0.5);
-            sprites.d.normalWith(sprites.n, data.textures_n[sprites.groupTexureName]);
-            sprites.d.gotoAndPlay(0);
-            if(sprites.n && !useNormal){ // hide normal for tileSheets use:"ctrl+n" for swape renderable
-                sprites.n.renderable = false;
-            };
-        };
-        if(type === "spineSheet"){
-            useNormal && (cage.x = mMX, cage.y = mMY);
-            sprites.s.skeleton.setSkinByName(sprites.groupTexureName);
-            const baseAnimation = sprites.s.spineData.findAnimation("idle") && "idle" || Object.keys[data.data.animations][0];
-            sprites.s.state.setAnimation(0, baseAnimation, true); // alway use idle base animations or 1er..
-            sprites.s.skeleton.setSlotsToSetupPose();
-            debug.bg.anchor.set(0.5,1);
-        };*/
     };
 
     function create_DebugElements(){
@@ -1138,7 +1104,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             let vertices = d.skeleton.findSlot("bounds").attachment.vertices;
             bg._bounds.addQuad(vertices);
             bg._bounds.rect = bg._bounds.getRectangle();
-            console.log('bg: ', bg);
             
             bg.width = bg._bounds.rect.width;
             bg.height = bg._bounds.rect.height;
@@ -1303,6 +1268,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.x = mMX;
         cage.y = mMY;
         CAGE_MAP.addChild(cage);
+        $Objs.list_master.push(cage);
+        
 /*  
         const cage = create_FromTileSheet(obj.Data, obj.Sprites.groupTexureName);
         cage.Sprites.d && cage.Sprites.d.anchor.copy(obj.Sprites.d.anchor);
@@ -1543,11 +1510,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return CAGE_MOUSE.list = null;
             }
             if(InMapObj){//TODO: delete the current objsmap selected
-                CAGE_MOUSE.currentSprite = InMapObj;
-                REGISTER.indexOf(InMapObj);
-                const index =  REGISTER.indexOf(InMapObj);
+                
+                const index = $Objs.list_master.indexOf(InMapObj);
                 if(index>-1){
-                    REGISTER.splice(index, 1)
+                    CAGE_MAP.removeChild(InMapObj);
+                    $Objs.list_master.splice(index, 1)
                 }
                 InMapObj = null;
             };
@@ -1665,7 +1632,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // creer la list des data nessesaire
     function create_SceneJSON(options) {
         const currentScene = STAGE.constructor.name;
-        let SCENE = computeSave_SCENE(STAGE);
+        let SCENE = computeSave_SCENE(STAGE); // scene configuration
         let OBJS = computeSave_OBJ($Objs.list_master);
         let SHEETS = computeSave_SHEETS(SCENE,OBJS);
         const data = {SCENE:SCENE,OBJS:OBJS,SHEETS:SHEETS};
@@ -1688,6 +1655,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function computeSave_OBJ(list_master) {
+        console.log('list_master: ', list_master);
         const objs = [];
         list_master.forEach(e => {
             const Data_Values = getDataJson(e);
@@ -1696,7 +1664,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             for (const key in Data_Values) {
                 _Data_Values[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
             };
-            objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.Sprites.groupTexureName});
+            objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.TexName });
         });
         return objs;
     };
@@ -1704,7 +1672,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // check all elements and add base data need for loader
     function computeSave_SHEETS(SCENE,OBJS) {
         const data = {};
-        if(SCENE.BackGround){
+        if(SCENE.BackGround){ // add the background sprite
             data[SCENE.BackGround] = $PME.Data2[SCENE.BackGround];
         };
         OBJS.forEach(e => {
