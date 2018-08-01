@@ -408,7 +408,7 @@ _PME.prototype.startEditor = function() {
     let InTiles = null;
     let InButtons = null;
     let InMapObj = null;
-    let mX = 0, mY = 0; // mosue screen
+    let mX = 100, mY = 100; // mosue screen
     let mMX = 0, mMY = 0; // mouse map 
     let HoldX = 0, HoldY = 0; // mouse map 
     // scoller 
@@ -1054,10 +1054,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.addChild(debug.bg, sprites.d, debug.an);
             if(useNormal && sprites.n){ this.addChildAt(sprites.n,2) }; 
             if(!useNormal && sprites.n){ this.addChildAt(sprites.n,1) }; // show below, when mouse hover, just renderable preview n
-        };
-        if(type === "spineSheet"){
-            this.addChild(debug.bg, sprites.s, debug.an);
         };*/
+        if(this.Type === "spineSheet"){
+            this.addChild(this.Sprites.d);
+        };
     };
 
     // set default proprety
@@ -1122,17 +1122,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg = bg;
             this.Debug.an = an;
         };
-        /*if(type === "spineSheet"){
+        if(this.Type === "spineSheet"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const anchorPoint = new PIXI.Sprite(PIXI.Texture.WHITE);
-            anchorPoint.tint = 0xee5000;
-            anchorPoint.width = 24, anchorPoint.height = 24;
-            anchorPoint.anchor.set(0.5,0.5);
-            bg.width = sprites.s.width; // TODO:  from zoomer
-            bg.height =  sprites.s.height;
-            bg.getBounds(); // for help anchorPoint
-            return {bg:bg, an:anchorPoint}; 
-        };*/
+            const an = new PIXI.Sprite(PIXI.Texture.WHITE); // anchorPoint
+            // setup
+            let d = this.Sprites.d;
+            console.log('d: ', d);
+            bg.width = d.width;
+            bg.height = d.height;
+            bg.tint = 0xffffff;
+            bg.anchor.set(d.anchor.x, d.anchor.y);
+
+            an.width = 24;
+            an.height = 24;
+            an.tint = 0xee5000;
+            an.anchor.set(0.5,0.5);
+
+            this.Debug.bg = bg;
+            this.Debug.an = an;
+        };
     };
 
     // create sprites elements
@@ -1158,8 +1166,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(this.Type === "spineSheet"){
             const spine = new PIXI.spine.Spine(this.Data.spineData);
-            console.log('spine: ', spine);
+            spine.skeleton.setSkinByName(this.TexName)//();
+            spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
+            spine.skeleton.setSlotsToSetupPose();
+            spine.position.set(300,300);
             this.Sprites.d = spine;
+            //this.Sprites.n // TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
     };
 
@@ -1234,7 +1246,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
         if(!CACHETILESSORT[InLibs.name]){
-            CACHETILESSORT[InLibs.name] = pathFindSheet(list,20);
+           // CACHETILESSORT[InLibs.name] = pathFindSheet(list,20);
         }else{ // alrealy exist caches positions
             list.forEach(cage => {
                 cage.position.copy( CACHETILESSORT[InLibs.name][cage.TexName] ); 
