@@ -1036,6 +1036,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
         };
+        if(this.Type === "spineSheet"){
+            this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
+            this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
+            this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
+            this.zIndex = this.zIndex || mMY; //TODO:
+        };
     };
 
     function setup_Parenting(){
@@ -1057,6 +1063,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };*/
         if(this.Type === "spineSheet"){
             this.addChild(this.Debug.bg, this.Sprites.d);
+            this.getBounds();
+            this.Debug.bg.getBounds();
         };
     };
 
@@ -1130,6 +1138,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             let vertices = d.skeleton.findSlot("bounds").attachment.vertices;
             bg._bounds.addQuad(vertices);
             bg._bounds.rect = bg._bounds.getRectangle();
+            console.log('bg: ', bg);
             
             bg.width = bg._bounds.rect.width;
             bg.height = bg._bounds.rect.height;
