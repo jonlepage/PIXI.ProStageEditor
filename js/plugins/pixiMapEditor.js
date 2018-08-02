@@ -452,10 +452,10 @@ const CAGE_LIBRARY = new PIXI.Container(); // Store all avaibles libary
 // CAGE_TILESHEETS ________________
 const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask = new PIXI.Sprite(PIXI.Texture.WHITE); //Mask for scroll bottom libs
-    CAGE_TILESHEETS.addChild(CAGE_TILESHEETS.mask);
+    //CAGE_TILESHEETS.addChild(CAGE_TILESHEETS.mask);
     // setup && hack
     CAGE_TILESHEETS.position.set(1280,50);
-    CAGE_TILESHEETS.mask.position.set(-8,-8); // marge outline filters
+    CAGE_TILESHEETS.mask.position.set(1280-8, 50-8);
     CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 1000;
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.open = false;
@@ -1449,10 +1449,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
         InMask = check_InMask(mX,mY);
-        if(MouseHold){
+        if(MouseHold){ // drag library
             CAGE_TILESHEETS.list.forEach(cage => {
                 cage.x+= event.movementX*0.7;//performe scroll libs mouse
                 cage.y+= event.movementY*0.7;//performe scroll libs mouse
+                cage.getBounds();
+                
             });
         };
         if(InMask){
@@ -1527,19 +1529,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // zoom camera
     function wheel_Editor(event) {
         if(iziToast.opened){return}; // dont use mouse when toast editor
+        // zoom in Libs
         if(InMask && InMask === "CAGE_TILESHEETS" && CAGE_TILESHEETS.open){
-            CAGE_TILESHEETS.list.forEach(cage => {
-                if(event.wheelDeltaY>0){
-                    cage.scale.x+=0.1;
-                    cage.scale.y+=0.1;
-                }else{
-                    if(cage.scale._x>0.4){
-                        cage.scale.x-=0.1; 
-                        cage.scale.y-=0.1;
-                    }; 
-                };
-                cage.getBounds(true);
-            });
+            if(event.wheelDeltaY>0){
+                CAGE_TILESHEETS.scale.x+=0.1;
+                CAGE_TILESHEETS.scale.y+=0.1;
+            }else{
+                if(CAGE_TILESHEETS.scale._x>0.4){
+                    CAGE_TILESHEETS.scale.x-=0.1; 
+                    CAGE_TILESHEETS.scale.y-=0.1;
+                }; 
+            };
+            CAGE_TILESHEETS.getBounds();
         }else{
             const pos = new PIXI.Point(mX,mY);
             STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
