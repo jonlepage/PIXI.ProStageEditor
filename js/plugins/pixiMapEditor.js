@@ -1270,6 +1270,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         cage.x = mMX;
         cage.y = mMY;
+        cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
         $Objs.list_master.push(cage);
         cage.getBounds();
@@ -1485,6 +1486,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function mouseup_Editor(event) {
+        if(MouseHold){ return startMouseHold(false) }; // break if was hold
         startMouseHold(false);
         if(iziToast.opened){return  document.exitPointerLock()}; // dont use mouse when toast editor
         const _clickRight = event.button === 0;
@@ -1579,8 +1581,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     }
                 });
             }
-            
         };
+        if (event.ctrlKey) { // refresh position for inMap obj
+            $Objs.list_master.forEach(cage => {
+              cage.getBounds();
+            });
+        };
+
     };
 
 
