@@ -428,7 +428,8 @@ _PME.prototype.startEditor = function() {
     const MemCoorZoom1 = new PIXI.Point(), MemCoorZoom2 = new PIXI.Point(); // for control zoom memory
     let MouseTimeOut = null; // store mouse hold timeOut when hold click
     let MouseHold = null; // click mouse is held ?
-
+    let LineDraw = null;
+    const LineList = []; // store all lines , allow to lock on line
 
  
 // TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
@@ -539,7 +540,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return ('0x' + Math.floor(Math.random() * 16777215).toString(16) || 0xffffff);
     };
 
-    // draw a grafics lines
+    // draw a grafics lines sXY[x,eX]
     function drawLine(sXY,eXY,l,c,a){
         const graphics = new PIXI.Graphics();
         graphics.lineStyle(l||2, c||0xffffff, a||1);
@@ -589,6 +590,27 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         STAGE.CAGE_MAP.addChild(sprite);
     };
 
+    function addDebugLineToMouse() { // LineList LineDraw
+        if(LineDraw){ // if exist just 
+           const rad =  22.5 * (Math.PI/180);
+           LineDraw.change+=1;
+           LineDraw.pinable = !(LineDraw.change%4); // allow pinable fo horizontal vertical
+           if(LineDraw.pinable){
+                LineDraw.horizon = !LineDraw.horizon;
+           };
+           return LineDraw.rotation+=rad;
+        }
+        const renderer = Graphics._renderer
+        const texture = renderer.generateTexture( drawLine([0,0],[1920*2,0],10,"0x000000") );
+        LineDraw = new PIXI.Sprite(texture);
+        LineDraw.position.set(mX,mY);
+        LineDraw.anchor.set(0.5,0.5);
+        LineDraw.change = 0;
+        LineDraw.pinable = true;
+        LineDraw.horizon = true; // is lock on x or y
+        STAGE.addChild(LineDraw);
+       
+    };
     //#endregion
 
     //#region [rgba(0, 140, 0,0.08)]
@@ -1059,7 +1081,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an);
             this.getBounds();
             this.Debug.bg.getBounds();
-
         };
         if(this.Type === "spineSheet"){
             this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an);
@@ -1272,8 +1293,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // add to map new obj + Obj.Asign a copy unique of html Editor json asigned addtomap
     function add_toScene(obj) {
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-        cage.x = mMX;
-        cage.y = mMY;
+        if(CAGE_MOUSE.list.pined){ // if pined in a line. get position of old prite obj
+            cage.x = (obj.x/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
+            cage.y = (obj.y/Zoom.x)+STAGE.CAGE_MAP.pivot.y;
+        }else{
+            cage.x = mMX;
+            cage.y = mMY;
+        }
         cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
         $Objs.list_master.push(cage);
@@ -1306,6 +1332,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             //open_dataEditor();
             open_mapSetupEditor(); // edit ligth brigth , and custom BG
         };
+        if(InButtons.currentSpriteName.contains("icon_drawLine")){
+            addDebugLineToMouse();
+        }
     };
 
 //#endregion
@@ -1419,7 +1448,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // refresh all variable mouse
+    const __mXY = new PIXI.Point();
     function refreshMouse() {
+        __mXY.x = +mX; // store befor x, need if line lock
+        __mXY.y = +mY; // store befor x, need if line lock
         mX = $mouse.x, mY = $mouse.y;
         mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
         mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
@@ -1435,6 +1467,24 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             CAGE_MOUSE.previews.x =  mX/3;
             CAGE_MOUSE.previews.y = 900;
         }
+        if(LineDraw){
+            LineDraw.position.set(mX,mY);
+        };
+        // lock position to line if in line
+        if(CAGE_MOUSE.list){
+            let pined = false;
+            LineList.forEach(line => {
+                if(line.pinable && line._boundsRect.contains(mMX,mMY)){
+                    pined = true;
+                    if(line.horizon){ // true === Horz
+                        CAGE_MOUSE.list.y = line._boundsRect.y+(line._boundsRect.height/2);
+                    }else{
+                        CAGE_MOUSE.list.x = line._boundsRect.x+(line._boundsRect.width/2);
+                    };
+                };
+            });
+            CAGE_MOUSE.list.pined = pined;
+        };
     };
 
     function startMouseHold(active){
@@ -1514,6 +1564,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 // focus position objs
                 return open_tileSetupEditor(InMapObj);
             }
+            if(LineDraw){
+                CAGE_MAP.addChild(LineDraw);
+                LineDraw.getBounds();
+                LineDraw._boundsRect.pad(16,16);
+                LineList.push(LineDraw);
+                return LineDraw = null;
+            }
         };
 
         if(clickLeft_){// => leftClick
@@ -1539,7 +1596,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function wheel_Editor(event) {
         if(iziToast.opened){return}; // dont use mouse when toast editor
         // zoom in Libs
-        if(InMask && InMask === "CAGE_TILESHEETS" && CAGE_TILESHEETS.open){
+        if(InMask && InMask === "CAGE_TILESHEETS" && CAGE_TILESHEETS.opened){
             if(event.wheelDeltaY>0){
                 CAGE_TILESHEETS.scale.x+=0.1;
                 CAGE_TILESHEETS.scale.y+=0.1;
