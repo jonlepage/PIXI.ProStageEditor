@@ -90,7 +90,23 @@ _PME.prototype.savedComplette = function(){
     };
 };
 
-
+_PME.prototype.removeSprite = function(InMapObj,index){
+    return{
+        transitionOut: 'fadeOutUp',
+        id:'izit_loading1',
+        layout: 2,
+        timeout:2500,
+        theme: 'dark',
+        icon: 'icon-person',
+        title: `DELETE: ${InMapObj.name}`,
+        message: `Aat index: ${index}`,
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        progressBar:false,
+        backgroundColor: '#3f3f3f',
+        titleSize: '11',
+        messageSize: '10',
+    };
+};
 
 
 

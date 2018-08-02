@@ -1269,6 +1269,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.y = mMY;
         CAGE_MAP.addChild(cage);
         $Objs.list_master.push(cage);
+        cage.getBounds();
         
 /*  
         const cage = create_FromTileSheet(obj.Data, obj.Sprites.groupTexureName);
@@ -1514,7 +1515,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 const index = $Objs.list_master.indexOf(InMapObj);
                 if(index>-1){
                     CAGE_MAP.removeChild(InMapObj);
-                    $Objs.list_master.splice(index, 1)
+                    $Objs.list_master.splice(index, 1);
+                    iziToast.info( $PME.removeSprite(InMapObj,index) );
                 }
                 InMapObj = null;
             };
