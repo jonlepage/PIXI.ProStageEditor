@@ -1294,8 +1294,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function add_toScene(obj) {
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         if(CAGE_MOUSE.list.pined){ // if pined in a line. get position of old prite obj
-            cage.x = (obj.x/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
-            cage.y = (obj.y/Zoom.x)+STAGE.CAGE_MAP.pivot.y;
+            console.log5('obj: ', obj);
+            // mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
+            cage.x = ((obj.getGlobalPosition().x/Zoom.x)+STAGE.CAGE_MAP.pivot.x);
+            cage.y = ((obj.getGlobalPosition().y/Zoom.y)+STAGE.CAGE_MAP.pivot.y);
         }else{
             cage.x = mMX;
             cage.y = mMY;
@@ -1509,7 +1511,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
         InMask = check_InMask(mX,mY);
-        if(MouseHold){ // drag library
+        if(MouseHold && InMask === "CAGE_TILESHEETS"){ // drag library
             CAGE_TILESHEETS.list.forEach(cage => {
                 cage.x+= event.movementX*0.7;//performe scroll libs mouse
                 cage.y+= event.movementY*0.7;//performe scroll libs mouse
@@ -1564,11 +1566,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 // focus position objs
                 return open_tileSetupEditor(InMapObj);
             }
-            if(LineDraw){
+            if(LineDraw){ // add line to stage
                 CAGE_MAP.addChild(LineDraw);
-                LineDraw.getBounds();
+                LineDraw.position.set(mMX,mMY);
+                LineDraw.getBounds(); // TODO: NEED GETBOUND WHEN NO ZOOM OR FIND A FORMULA
                 LineDraw._boundsRect.pad(16,16);
                 LineList.push(LineDraw);
+                
                 return LineDraw = null;
             }
         };
@@ -1643,7 +1647,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if (event.ctrlKey) { // refresh position for inMap obj
             $Objs.list_master.forEach(cage => {
-              cage.getBounds();
+                cage.getBounds();
             });
             if(event.ctrlKey){ // if in Obj, make other transparent
                 $Objs.list_master.forEach(cage => {
