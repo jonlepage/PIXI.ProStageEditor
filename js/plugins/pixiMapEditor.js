@@ -621,6 +621,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // build a sheets objList with pathFinding => [vertical to horizontal]
     function pathFindSheet(list, pad) {
+        CAGE_TILESHEETS.scale.set(1,1); // reset zoom if first time 
         const yMax = CAGE_TILESHEETS.mask.height;
         const tmp_list = []; // new list
         let cache = {};
@@ -1091,6 +1092,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             an.width = 24;
             an.height = 24;
             an.tint = 0xee5000;
+            an.alpha = 0.7;
             an.anchor.set(0.5,0.5);
 
             this.Debug.bg = bg;
@@ -1113,6 +1115,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             an.width = 24;
             an.height = 24;
             an.tint = 0xee5000;
+            an.alpha = 0.7;
             an.anchor.set(0.5,0.5);
 
             this.Debug.bg = bg;
@@ -1249,7 +1252,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             CAGE_TILESHEETS.open = true;
         }
         // reset clear
-        CAGE_TILESHEETS.children.splice(1, CAGE_TILESHEETS.children.length);
+        CAGE_TILESHEETS.removeChildren();
         PIXI.utils.clearTextureCache();
         return hide;
     };
@@ -1320,23 +1323,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // mX,mY: mouse Position
     function checkAnchor(cage) {
-        let b = cage.Debug.bg._boundsRect;
-        let vec4H = b.width/4;
-        let vec4V = b.height/4;
-        let vec3H = [0, b.width/2, b.width];
-        let vec3V = [0, b.height/2, b.height];
-        let inX = mX - (b.x);
-        let inY = mY - (b.y);
-        let x,y;
-        if(inX>vec4H*3){ x = vec3H[2] };
-        if(inX<vec4H*3){ x = vec3H[1] };
-        if(inX<vec4H*1){ x = vec3H[0] };
-        if(inY>vec4V*3){ y = vec3V[2] };
-        if(inY<vec4V*3){ y = vec3V[1] };
-        if(inY<vec4V*1){ y = vec3V[0] };
-        cage.Debug.an.position.set(x,y);
-       
-   
+        if (cage.Type === "spineSheet") { return }
+        if(cage.Debug.bg._boundsRect.contains(mX,mY)){ // if in bg (no padding)
+            const z = CAGE_TILESHEETS.scale.x;
+            let b = cage.Debug.bg._boundsRect;
+            let vec4H = b.width/4;
+            let vec4V = b.height/4;
+            let vec3H = [0, b.width/2, b.width];
+            let vec3V = [0, b.height/2, b.height];
+            let inX = mX - (b.x);
+            let inY = mY - (b.y);
+            let x,y;
+            if(inX>vec4H*3){ x = vec3H[2] };
+            if(inX<vec4H*3){ x = vec3H[1] };
+            if(inX<vec4H*1){ x = vec3H[0] };
+            if(inY>vec4V*3){ y = vec3V[2] };
+            if(inY<vec4V*3){ y = vec3V[1] };
+            if(inY<vec4V*1){ y = vec3V[0] };
+            cage.Debug.an.position.set(x/z,y/z);
+        };
     };
 
     function activeFilters(cage){
@@ -1541,6 +1546,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 }; 
             };
             CAGE_TILESHEETS.getBounds();
+            CAGE_TILESHEETS.list.forEach(cage => { cage.getBounds() });
         }else{
             const pos = new PIXI.Point(mX,mY);
             STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
