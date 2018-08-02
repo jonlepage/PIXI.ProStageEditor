@@ -396,7 +396,13 @@ _PME.prototype.startEditor = function() {
     const FILTERS = {
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
+        OutlineFilterx6White: new PIXI.filters.OutlineFilter (6, 0xffffff, 1),
+        ColorMatrixFilter: new PIXI.filters.ColorMatrixFilter(),
+        PixelateFilter12: new PIXI.filters.PixelateFilter(12),
+        BlurFilter: new PIXI.filters.BlurFilter (10, 3),
     }
+    FILTERS.ColorMatrixFilter.desaturate();
+
     const STAGE = SceneManager._scene; 
     console.log2('STAGE: ', STAGE);
     const DATA = this.Data2;
@@ -458,7 +464,7 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask.position.set(1280-8, 50-8);
     CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 1000;
     CAGE_TILESHEETS.mask.getBounds();
-    CAGE_TILESHEETS.open = false;
+    CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = false; // store list of tile
     // reference
     STAGE.CAGE_EDITOR.addChild(CAGE_TILESHEETS);
@@ -531,13 +537,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // get ran hexa color
     function hexColors() { 
         return ('0x' + Math.floor(Math.random() * 16777215).toString(16) || 0xffffff);
-    };
-
-    // check colition from _boundsMap
-    function hitCheck(a, b){ // colision
-        var ab = a._boundsMap._pad
-        var bb = b._boundsMap
-        return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width && ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
     };
 
     // draw a grafics lines
@@ -736,6 +735,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // TODO: double click obj sur map pour editer ces props, et click sur icons eventMode pour editer ces composant interactif
     // when right click on a tiles
     function open_tileSetupEditor(InMapObj) {
+        console.log('InMapObj: ', InMapObj);
         clear_tileSheet(true,CAGE_TILESHEETS);
         iziToast.opened = true;
         document.exitPointerLock();
@@ -744,6 +744,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const _jscolor = new jscolor(document.getElementById("tint")); // for case:id="_color" slider:id="color"
         _jscolor.zIndex = 9999999;
         //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
+        // focuse on objet
+        ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
+        ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
+
         start_tileSetupEditor(_jscolor, InMapObj);
     };
 
@@ -1243,13 +1247,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function clear_tileSheet(hide,CAGE_TILESHEETS,InLibs) {
         // remove all, but keep the mask as child[0]
         if(hide){
-            CAGE_TILESHEETS.open = false;
+            CAGE_TILESHEETS.opened = false;
             CAGE_TILESHEETS.name = null;
             EDITOR.state.setAnimation(2, 'hideTileSheets', false);
         }else{
-            !CAGE_TILESHEETS.open && EDITOR.state.setAnimation(2, 'showTileSheets', false);
+            !CAGE_TILESHEETS.opened && EDITOR.state.setAnimation(2, 'showTileSheets', false);
             CAGE_TILESHEETS.name = InLibs.name;
-            CAGE_TILESHEETS.open = true;
+            CAGE_TILESHEETS.opened = true;
         }
         // reset clear
         CAGE_TILESHEETS.removeChildren();
@@ -1355,7 +1359,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.Debug.bg.renderable = true;
             cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
         }else{
-            const sprite =  cage.Sprites.t ||  cage.Sprites.d ||  cage.Sprites.s;
+            const sprite =  cage.Sprites.d;
             sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
             cage._filters = [ FILTERS.OutlineFilterx16 ];
             cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
@@ -1389,7 +1393,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function check_InMask(mX,mY) {
         let inValue = false;
         if(CAGE_LIBRARY.mask._boundsRect.contains(mX,mY)){ inValue= "CAGE_LIBRARY" };
-        if(CAGE_TILESHEETS.mask._boundsRect.contains(mX,mY)){ inValue= "CAGE_TILESHEETS" };
+        if(CAGE_TILESHEETS.opened && CAGE_TILESHEETS.mask._boundsRect.contains(mX,mY)){ inValue= "CAGE_TILESHEETS" };
         if(!inValue && !!(InLibs || InTiles)){
            clearFilters(InLibs && CAGE_LIBRARY.list || InTiles && CAGE_TILESHEETS.list);
         };
@@ -1465,7 +1469,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(InMask){
             InLibs = check_In(CAGE_LIBRARY.list) || false;
-            InTiles = !InLibs && CAGE_TILESHEETS.open && check_In(CAGE_TILESHEETS.list) || false;
+            InTiles = !InLibs && CAGE_TILESHEETS.opened && check_In(CAGE_TILESHEETS.list) || false;
         }else{
             InLibs = false, InTiles = false;
             InButtons = !InLibs && !InTiles &&  check_In(ButtonsSlots) || false;
@@ -1508,8 +1512,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
             if (InMapObj) { // in Right library tile
                 // focus position objs
-                ScrollX = mX-1400;
-                ScrollY = mY-(900);
                 return open_tileSetupEditor(InMapObj);
             }
         };
@@ -1586,8 +1588,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             $Objs.list_master.forEach(cage => {
               cage.getBounds();
             });
+            if(event.ctrlKey){ // if in Obj, make other transparent
+                $Objs.list_master.forEach(cage => {
+                    if(InMapObj && InMapObj !== cage && cage.zIndex>InMapObj.zIndex){
+                        const hit = hitCheck(InMapObj,cage);
+                        cage.alpha =  hit ? 0.3:1;
+                        cage.Sprites.d._filters = hit ? [ FILTERS.PixelateFilter12, FILTERS.OutlineFilterx6White]: null;
+                        if(cage.Sprites.n){ cage.Sprites.n.renderable = false };
+                        cage.Debug.an.renderable = false;
+                    }else{
+                        cage.alpha = 1;
+                        cage.Sprites.d._filters = null;
+                        cage.Sprites.n && (cage.Sprites.n.renderable = true);
+                        cage.Debug.an.renderable = true;
+                    };
+                });
+            }
         };
-
     };
 
 
