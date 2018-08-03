@@ -41,6 +41,7 @@ Scene_Local.prototype.create = function() {
 Scene_Local.prototype.create_ObjFromJson = function() { //TODO: METTRE DANS BASE SCENE
     $Objs.createFromList($Loader.loaderSet.Scene_Local_data.OBJS);
     $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
+    $Objs.list_master.forEach(cage => { cage.getBounds() }); //TODO: BOUND MAP zoom pivot ... 
 };
 
 
@@ -104,8 +105,10 @@ Scene_Local.prototype.setupFlags = function() {
         const txt = new PIXI.Text(text_language, style);
         txt.anchor.set(0.5,0)
         flag.addChild(txt);
-        
+        flag.loop = false;
+        flag.text_language = text_language;
     });
+    this.Flags = flags;
    
 };
 
@@ -134,7 +137,6 @@ Scene_Local.prototype.createTitleTexte = function() {
     txt.y = SceneManager._boxHeight/5*3;
     this.CAGE_MAP.addChild(txt);
     this.titleSelect = txt;
- 
 };
 
 Scene_Local.prototype.setupAvatarLocal = function() {
@@ -143,13 +145,15 @@ Scene_Local.prototype.setupAvatarLocal = function() {
         avatar.scale.set(2,2);
         avatar.Sprites.d.state.setAnimation(0, 'idle', true);
         avatar.Sprites.d.state.setAnimation(2, 'hair_idle1', true);
+        avatar.Sprites.d.stateData.defaultMix = 0.2;
         //reference
-        this.avatar = avatar;
+        this.avatar1 = avatar;
     };
 };
 
 Scene_Local.prototype.isReady = function() {
     // check scene stabilisator // TODO:
+    Graphics.render(this); // force spike lag
     this.waitReady--;
    return !this.waitReady;
 };
@@ -160,51 +164,44 @@ Scene_Local.prototype.start = function() {
 };
 
 Scene_Local.prototype.update = function() {
-    /*if(!this.busy){
-        this.mX = $mouse.x, this.mY = $mouse.y;
-        this.update_Light();
-        this.update_Flags();
-    };*/
-};
-
-// scene mouse update
-Scene_Local.prototype.update_Light = function() {
-    this.light_sunScreen.x =  this.mX, this.light_sunScreen.y = this.mY;
-};
-
-// scene mouse update
-Scene_Local.prototype.update_Flags = function() {
-    const flags = this.cageFlags.children;
-    let valueIn;
-    for (let i = 0, l = flags.length; i < l; i++) {
-        const flag = flags[i];
-        if(flag._boundsRect.contains(this.mX, this.mY)){
-            valueIn = flag;
-        };
-       };
-
-    if(valueIn){
-        if(valueIn === this.currentHoverFlag){return}
-        else {
-            if(this.currentHoverFlag){
-                this.currentHoverFlag._filters = null;
-                this.currentHoverFlag.sprite_d._filters = null;
-                this.currentHoverFlag.sprite_d.gotoAndStop(0);
-            }
-            this.currentHoverFlag = valueIn;
-            valueIn.sprite_d.gotoAndPlay(0);
-            valueIn._filters = [ new PIXI.filters.OutlineFilter (6, 0xffffff, 1) ]; // thickness, color, quality
-            valueIn.sprite_d._filters = [ new PIXI.filters.OutlineFilter (12, 0xffffff, 1) ]; // thickness, color, quality
-            //this.avatar1.skeleton.skin = null; // not work, this keep hold skin slots
-            this.avatar1.skeleton.setSkinByName("local_"+valueIn.localID);
-            //this.avatar1.state.addAnimationByName(1,'idle_local_'+valueIn.localID,true,1)
-            this.avatar1.state.setAnimation(1, 'idle_local_'+valueIn.localID, true);
-            this.avatar1.skeleton.setSlotsToSetupPose(); // work
-            this.titleSelect.text = valueIn.txt2;
-        }
+    if(!this.busy){
+        const mX = $mouse.x, mY = $mouse.y;
+        this.update_Light(mX,mY);
+        this.update_Flags(mX,mY);
     };
 };
 
+
+
+// scene mouse update
+Scene_Local.prototype.update_Light = function(mX,mY) {
+    this.light_sunScreen.x =  mX, this.light_sunScreen.y = mY;
+};
+
+// scene mouse update
+Scene_Local.prototype.update_Flags = function(mX,mY) {
+    this.Flags;
+    let valueIn;
+    for (let i = 0, l = this.Flags.length; i < l; i++) {
+        const flag = this.Flags[i];
+        if(flag._boundsRect.contains(mX, mY)){
+            if(flag.TexName === (this.__inFlag && this.__inFlag.TexName) ){ return };
+            // if flag was selected , play reverse   
+            if(this.__inFlag){
+                this.__inFlag.animationSpeed = -2;
+                this.__inFlag.play();
+            };
+            flag.animationSpeed = 1;
+            flag.play();
+            this.__inFlag = flag;
+            // avatar //TODO: CREER UNE CLASS SPINE CONTAINER
+            this.avatar1.Sprites.d.skeleton.setSkinByName(flag.text_language[0]);
+            this.avatar1.Sprites.d.skeleton.setSlotsToSetupPose();
+            this.avatar1.Sprites.d.state.setAnimation(1, flag.text_language[0], true)
+            break;
+        };
+    };
+};
 
 // onMouseDown for this scene
 Scene_Local.prototype.onMouseDown = function(event) {
@@ -213,6 +210,9 @@ Scene_Local.prototype.onMouseDown = function(event) {
 
 // onMouseup for this scene
 Scene_Local.prototype.onMouseup = function(event) {
+    if(this.__inFlag){
+        this.event1(this.__inFlag);
+    }
    /* const selected = this.currentHoverFlag;
    if(this.currentHoverFlag && selected._boundsRect.contains(this.mX, this.mY) ){
         this.event1(selected);
@@ -222,9 +222,8 @@ Scene_Local.prototype.onMouseup = function(event) {
 
 // flag selected, close scene with animation //TODO:    
 // problem detuit texture , mais les atlas reste.
-Scene_Local.prototype.event1 = function(selected) {
-    console.log('selected: ', selected);
+Scene_Local.prototype.event1 = function(flag) {
+    console.log('flag: ', flag);
     this.busy = true;
-    SceneManager.goto(Scene_Loader,"loaderSet_TitleScene",Scene_Title);
-
+    SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
 };

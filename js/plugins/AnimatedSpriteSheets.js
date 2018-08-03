@@ -14,6 +14,7 @@ PIXI.ContainerAnimations = (function () {
         set currentFrame(value) { this.Sprites.d.currentFrame = value };
         get totalFrames() { return this.Sprites.d.totalFrames };
         set totalFrames(value) { this.Sprites.d.totalFrames = value };
+
     };
     
     ContainerAnimations.prototype.addNormal = function(tex_n) {
@@ -47,7 +48,10 @@ PIXI.ContainerAnimations = (function () {
        };
     };
 
-    return ContainerAnimations;
+
+
+//END
+return ContainerAnimations;
 })();
 
 

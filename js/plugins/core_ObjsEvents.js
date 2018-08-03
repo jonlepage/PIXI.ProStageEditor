@@ -126,7 +126,6 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
 
     // proprety attributs
     this.addAttr_default(cage, Data_Values);
-    cage.getBounds(cage); //TODO: BOUND MAP
     return cage;
 };
 
