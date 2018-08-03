@@ -29,22 +29,22 @@ Scene_Local.prototype.initialize = function(loaderSets,callBackScene,firstTime) 
 
 Scene_Local.prototype.create = function() {
     const bgName = $Loader.loaderSet.Scene_Local_data.SCENE.BackGround || false;
-    this.createBackground(bgName); //TODO: metre dans base
-    this.create_ObjFromJson(); // metre dans base
+    this.createBackground(bgName); //TODO: METTRE DANS BASE SCENE
+    this.create_ObjFromJson(); //TODO: METTRE DANS BASE SCENE
 
-    this.createLocalFlags();
-    //this.createTexts();
-    //this.createSpineAvatar();
+    this.setupFlags();
+    this.setupAvatarLocal();
+    this.createTitleTexte();
 };
 
 // create Objs from json
-Scene_Local.prototype.create_ObjFromJson = function() {
+Scene_Local.prototype.create_ObjFromJson = function() { //TODO: METTRE DANS BASE SCENE
     $Objs.createFromList($Loader.loaderSet.Scene_Local_data.OBJS);
     $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
 };
 
 
-// allow pass a sting reference data, or a full Data
+// allow pass a sting reference data, or a full Data //TODO: METTRE DANS BASE SCENE
 Scene_Local.prototype.createBackground = function(bgName) {
     if(this.Background){
         this.CAGE_MAP.removeChild(this.Background);
@@ -70,7 +70,7 @@ Scene_Local.prototype.createBackground = function(bgName) {
 };
 
 //get flags, and setup
-Scene_Local.prototype.createLocalFlags = function() {
+Scene_Local.prototype.setupFlags = function() {
     function asignText(id){
         switch (id) { // return code langue + translate
             case "ara": return ["ara","العربية "]; break;
@@ -109,7 +109,9 @@ Scene_Local.prototype.createLocalFlags = function() {
    
 };
 
-Scene_Local.prototype.createTexts = function() {
+Scene_Local.prototype.createTitleTexte = function() {
+    //TODO: PREND TEXY DANS $CORETEXT, creer un class text animations, gerer les local text
+    // delete me , just pour example
     const style = new PIXI.TextStyle({
         dropShadow: true,
         dropShadowAlpha: 0.2,
@@ -125,40 +127,26 @@ Scene_Local.prototype.createTexts = function() {
         padding: 12,
         strokeThickness: 8
     });
-
-    const titleSelect = new PIXI.Text(`PLEASE SELECT YOUR LANGUAGE`, style); //TODO: PREND TEXY DANS $CORETEXT
-    titleSelect.pivot.x = titleSelect.width/2;
-    titleSelect.x = SceneManager._boxWidth/2;
-    titleSelect.y = SceneManager._boxHeight/5*3;
-    this.CAGE_MAP.addChild(titleSelect);
-    this.titleSelect = titleSelect;
-
-    // assign text to flags
-    this.cageFlags.children.forEach(cage => {
-        const text = new PIXI.Text(cage.txt1, style);
-        cage.addChild(text);
-        text.pivot.x = text.width/2;
-        text.x = 234/2;
-    });
+    // title traduit
+    const txt = new PIXI.Text(`PLEASE SELECT YOUR LANGUAGE`, style); 
+    txt.pivot.x = txt.width/2;
+    txt.x = SceneManager._boxWidth/2;
+    txt.y = SceneManager._boxHeight/5*3;
+    this.CAGE_MAP.addChild(txt);
+    this.titleSelect = txt;
  
 };
 
-
-Scene_Local.prototype.createSpineAvatar = function() {
-    const player = new PIXI.spine.Spine($Loader.reg._avatar._A1.avatarLocal.spineData);
-    //player.convertToNormal("_n",true);
-    // add render
-    player.x = 930,player.y = 550;
-    player.scale.set(2,2)
-    this.CAGE_MAP.addChild(player);
-    player.state.setAnimation(0, 'idle', true);
-    player.state.setAnimation(2, 'hair_idle1', true);
-    //reference
-    this.avatar1 = player;
-
+Scene_Local.prototype.setupAvatarLocal = function() {
+    const avatar = $Objs.getsByName("Hero1_Big");
+    if(avatar){
+        avatar.scale.set(2,2);
+        avatar.Sprites.d.state.setAnimation(0, 'idle', true);
+        avatar.Sprites.d.state.setAnimation(2, 'hair_idle1', true);
+        //reference
+        this.avatar = avatar;
+    };
 };
-
-
 
 Scene_Local.prototype.isReady = function() {
     // check scene stabilisator // TODO:

@@ -160,12 +160,19 @@ _objs.prototype.addAttr_default = function(cage, Data_Values){
     };
 };
 
-
-
 _objs.prototype.getsByID = function(id) {
     const list = [];
     for (let i=0, l=this.list_master.length; i<l; i++) {
         this.list_master[i].groupID === id && list.push(this.list_master[i]);
     };
     return list;
+};
+
+_objs.prototype.getsByName = function(name) {
+    for (let i=0, l=this.list_master.length; i<l; i++) {
+        if(this.list_master[i].name === name){
+            return this.list_master[i];
+        } 
+    };
+    return null;
 };

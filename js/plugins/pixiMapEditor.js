@@ -1572,7 +1572,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 LineDraw.getBounds(); // TODO: NEED GETBOUND WHEN NO ZOOM OR FIND A FORMULA
                 LineDraw._boundsRect.pad(16,16);
                 LineList.push(LineDraw);
-                
                 return LineDraw = null;
             }
         };

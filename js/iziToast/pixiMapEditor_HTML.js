@@ -1217,4 +1217,3 @@ return message = /*html*/ `
     <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
 </div>`//end
 };
-
