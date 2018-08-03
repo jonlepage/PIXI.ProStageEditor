@@ -16,10 +16,9 @@ Voir le Stages
 class _objs{
     constructor() {
         this.list_master = []; // Full Objs Lists
-        this.list_noEvents = [];
-        this.list_events = [];
-        this.list_cases = [];
-
+        //this.list_noEvents = [];
+        //this.list_events = [];
+        //this.list_cases = [];
     };
 };
 $Objs = new _objs();
@@ -48,7 +47,6 @@ _objs.prototype.createFromList = function(LIST) {
 };
 
 _objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName){
-    console.log('Data_Values: ', Data_Values);
     const cage = new PIXI.Container();
 
     const spine = new PIXI.spine.Spine(Data.spineData);
@@ -79,7 +77,6 @@ _objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName)
 };
 
 _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureName){
-    console.log('Data_Values: ', Data_Values);
    const cage = new PIXI.ContainerAnimations();
         cage.Sprites = {d:null, n:null}; // need befor because 'addNormal' useIt
    const sprite_d = new PIXI.extras.AnimatedSprite(Data.textures[textureName]);
@@ -161,4 +158,14 @@ _objs.prototype.addAttr_default = function(cage, Data_Values){
             break;
         };
     };
+};
+
+
+
+_objs.prototype.getsByID = function(id) {
+    const list = [];
+    for (let i=0, l=this.list_master.length; i<l; i++) {
+        this.list_master[i].groupID === id && list.push(this.list_master[i]);
+    };
+    return list;
 };

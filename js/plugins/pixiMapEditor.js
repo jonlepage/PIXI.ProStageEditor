@@ -706,7 +706,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(!OBJ.isStage){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             data = { // id html
-                groupID:{def:"default", value:"default"},
+                groupID:{def:"default", value:OBJ.groupID || "default"},
                 position:{def:[0,0], value:[OBJ.position.x,OBJ.position.y]}, // hidding
                 anchor:{def:[0,0], value:[_OBJ.anchor&&_OBJ.anchor.x, _OBJ.anchor&&_OBJ.anchor.y]}, // spine no have anchor
                 scale:{def:[0,0], value:[OBJ.scale.x,OBJ.scale.y]},
@@ -1499,10 +1499,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }, 160);
         };
     };
-
+    
 //#endregion
 
-
+ 
 //#region [rgba(0, 5, 5,0.5)]
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE

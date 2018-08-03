@@ -29,9 +29,10 @@ Scene_Local.prototype.initialize = function(loaderSets,callBackScene,firstTime) 
 
 Scene_Local.prototype.create = function() {
     const bgName = $Loader.loaderSet.Scene_Local_data.SCENE.BackGround || false;
-    this.createBackground(bgName); //TODO:
-    this.create_ObjFromJson();
-    //this.createLocalFlags();
+    this.createBackground(bgName); //TODO: metre dans base
+    this.create_ObjFromJson(); // metre dans base
+
+    this.createLocalFlags();
     //this.createTexts();
     //this.createSpineAvatar();
 };
@@ -68,45 +69,44 @@ Scene_Local.prototype.createBackground = function(bgName) {
     this.Background = cage;
 };
 
+//get flags, and setup
 Scene_Local.prototype.createLocalFlags = function() {
-    const cageFlags = new PIXI.Container();
-    const flagsList = $Loader.reg._misc._flags;
-    // create all flags
-    let x = 40, y = 700, i = 0;
-    for (const key in flagsList) {
-        // execute only on diffuse obj, bypass normal
-        const data = flagsList[key];
-        const cage = new PIXI.Container(); // cage for _d,_n // TODO: MAKE A CONTROLER ANIMATION CLASS
-        const tex_d = data.textures;
-        const tex_n = data.textures_n;
-        const sprite_d = new PIXI.extras.AnimatedSprite(tex_d);
-        const sprite_n = new PIXI.Sprite(tex_n[0]);
-            sprite_d.normalWith(sprite_n, tex_n); // pass (sprite normal, textures normal)
-        // asign group display
-        sprite_n.parentGroup = PIXI.lights.normalGroup;
-        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-        cage.parentGroup = $displayGroup.group[0];
-        cage.zIndex = 1;
-        // parenting
-        cage.addChild(sprite_d, sprite_n);
-        cageFlags.addChild(cage);
-        //setup
-        cage.x = x+(cage.width*i++);
-        cage.y = y;
-        cage.reversed = false;
-        cage.getBounds();
-        sprite_d.loop = false;
-        // reference
-        cage.name = data.name;
-        cage.txt1 = data.dataFromSet.txt1;
-        cage.txt2 = data.dataFromSet.txt2;
-        cage.sprite_d = sprite_d;
-        cage.sprite_n = sprite_n;
-        cage.localID = i;
+    function asignText(id){
+        switch (id) { // return code langue + translate
+            case "ara": return ["ara","العربية "]; break;
+            case "en-us": return ["en-us","English"]; break;
+            case "fr-ca": return ["fr-ca","Français"]; break;
+            case "ger": return ["ger","Deutsch"]; break;
+            case "ru": return ["rus","русский язык"]; break;
+            case "ch": return ["chi","中国语文"]; break;
+            case "jp": return ["jpn","日本語"]; break;
+            case "sp": return ["spa","Español"]; break;
+        };
     };
-    //this.setupFlags();
-    this.cageFlags = cageFlags;
-    this.CAGE_MAP.addChild(cageFlags);
+    const style = new PIXI.TextStyle({
+        dropShadow: true,
+        dropShadowAlpha: 0.2,
+        dropShadowAngle: 0,
+        dropShadowBlur: 18,
+        dropShadowColor: "white",
+        dropShadowDistance: 0,
+        fill: "white",
+        fontFamily: "\"Arial Black\", Gadget, sans-serif",
+        fontSize: 18,
+        letterSpacing: 1,
+        lineJoin: "round",
+        padding: 12,
+        strokeThickness: 8
+    });
+    const flags = $Objs.getsByID('flags');
+    flags.forEach(flag => {
+        const text_language = asignText(flag.TexName);
+        const txt = new PIXI.Text(text_language, style);
+        txt.anchor.set(0.5,0)
+        flag.addChild(txt);
+        
+    });
+   
 };
 
 Scene_Local.prototype.createTexts = function() {
