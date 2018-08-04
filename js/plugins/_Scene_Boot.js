@@ -79,7 +79,7 @@ Scene_Boot.prototype.start = function() {
     this.checkPlayerLocation();
     DataManager.setupNewGame();
     //$player.transferMap(1,1,1); // transfer + loader  //SceneManager.goto(Scene_Loader,"loaderSet_sceneIntroVideo",Scene_IntroVideo);
-    SceneManager.goto(Scene_Loader,"Scene_IntroVideo",Scene_IntroVideo);
+    SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
     Window_TitleCommand.initCommandPosition();
     //this.updateDocumentTitle();
 };

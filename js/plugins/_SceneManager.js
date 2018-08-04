@@ -151,12 +151,16 @@ Scene_Base.prototype.initialize = function(loaderSet) {
     this._fadeDuration = 0;
     this._fadeSprite = null;
     this._imageReservationId = Utils.generateRuntimeId();
-    // improtan props
+
     this.Background = null;
-    this.SpritesNoEvent = []; // element no interactions
-    this.loaderSet = loaderSet;
+    this.loaderSet = $Loader.loaderSet[loaderSet];
+
     this.asignDisplayGroup();
     this.create_Cages();
+    if(this.loaderSet){ // TODO: probablement separer les scenes et sceneMap qui a tous les carte mais sur loaderSet diferent
+        this.createBackground(this.loaderSet.SCENE.BackGround || false);
+        this.create_ObjFromJson();
+    };
 };
 
 Scene_Base.prototype.asignDisplayGroup = function() {
@@ -170,7 +174,7 @@ Scene_Base.prototype.asignDisplayGroup = function() {
         this.addChild(layersGroup[i]);
     };
     //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
-    const dataScene = this.loaderSet && $Loader.loaderSet[this.loaderSet].SCENE || {color:0xffffff, brightness:1};
+    const dataScene = this.loaderSet && this.loaderSet.SCENE || {color:0xffffff, brightness:1};
     this.light_Ambient = new PIXI.lights.AmbientLight(dataScene.color, dataScene.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
     this.light_sunScreen =  new PIXI.lights.PointLight(0xffffff,3); // the sceen FX sun TODO: in Editor
     this.light_sunScreen.position.set(0, 0);
@@ -178,12 +182,46 @@ Scene_Base.prototype.asignDisplayGroup = function() {
 };
 
 Scene_Base.prototype.create_Cages = function() {
-    this.CAGE_MOUSE = new PIXI.Container();
     this.CAGE_MAP = new PIXI.Container();
     this.CAGE_GUI = new PIXI.Container();
-    this.CAGE_MOUSE.name = "CAGE_MOUSE";
+    this.CAGE_MOUSE = new PIXI.Container();
+
     this.CAGE_MAP.name = "CAGE_MAP";
     this.CAGE_GUI.name = "CAGE_GUI";
+    this.CAGE_MOUSE.name = "CAGE_MOUSE";
+
     this.addChild( this.CAGE_MAP, this.CAGE_GUI, this.CAGE_MOUSE);
-    $mouse.cursor && this.CAGE_MOUSE.addChild($mouse.cursor);
+    $mouse.cursor && this.CAGE_MOUSE.addChild($mouse.cursor);//TODO: faire une method asignation
 };
+
+// scene only, voir si on peut le mettre pour map
+Scene_Base.prototype.createBackground = function(bg) {
+    if(this.Background){ this.CAGE_MAP.removeChild(this.Background) }; // for editor
+
+    const cage = new PIXI.Container();
+    if(bg){
+        const data = (typeof bg === 'string') && $Loader.Data2[bg] || bg;
+        //const data = _data || $Loader.reg._misc._bg.backgroud; // bg
+        const sprite_d = new PIXI.Sprite(data.textures);
+        const sprite_n = new PIXI.Sprite(data.textures_n);
+        // asign group display
+        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
+        sprite_n.parentGroup = PIXI.lights.normalGroup;
+        cage.parentGroup = $displayGroup.group[0];
+        cage.addChild(sprite_d, sprite_n);
+    };
+    cage.name = typeof bg === 'string' &&  bg || bg && bg.name || false;
+
+    this.Background = cage;
+    this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
+};
+
+// create Objs from json
+Scene_Base.prototype.create_ObjFromJson = function() {
+    $Objs.createFromList(this.loaderSet.OBJS);
+    $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
+    $Objs.list_master.forEach(cage => { cage.getBounds() });
+};
+
+
+

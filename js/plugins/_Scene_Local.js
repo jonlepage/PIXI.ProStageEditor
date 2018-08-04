@@ -12,14 +12,14 @@ NOTE AND HELP:
     this.CAGE_GUI.name = "CAGE_GUI";
 */
 
-function Scene_Local(loaderSets,callBackScene,firstTime) {
-    this.initialize.apply(this, arguments);
+function Scene_Local() {
+    this.initialize.apply(this, arguments); //apply all argument passed
 }
 
 Scene_Local.prototype = Object.create(Scene_Base.prototype);
 Scene_Local.prototype.constructor = Scene_Local;
 
-Scene_Local.prototype.initialize = function(loaderSets,callBackScene,firstTime) {
+Scene_Local.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this,"Scene_Local_data"); // pass loaderset for setup Scene ambiant
     this.mX = 0;
     this.mY = 0;
@@ -28,46 +28,9 @@ Scene_Local.prototype.initialize = function(loaderSets,callBackScene,firstTime) 
 };
 
 Scene_Local.prototype.create = function() {
-    const bgName = $Loader.loaderSet.Scene_Local_data.SCENE.BackGround || false;
-    this.createBackground(bgName); //TODO: METTRE DANS BASE SCENE
-    this.create_ObjFromJson(); //TODO: METTRE DANS BASE SCENE
-
-    this.setupFlags();
-    this.setupAvatarLocal();
-    this.createTitleTexte();
-};
-
-// create Objs from json
-Scene_Local.prototype.create_ObjFromJson = function() { //TODO: METTRE DANS BASE SCENE
-    $Objs.createFromList($Loader.loaderSet.Scene_Local_data.OBJS);
-    $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
-    $Objs.list_master.forEach(cage => { cage.getBounds() }); //TODO: BOUND MAP zoom pivot ... 
-};
-
-
-// allow pass a sting reference data, or a full Data //TODO: METTRE DANS BASE SCENE
-Scene_Local.prototype.createBackground = function(bgName) {
-    if(this.Background){
-        this.CAGE_MAP.removeChild(this.Background);
-    };
-    const cage = new PIXI.Container();
-    if(bgName){
-        const data = typeof bgName === 'string' && $Loader.Data2[bgName] || bgName;
-        //const data = _data || $Loader.reg._misc._bg.backgroud; // bg
-        const sprite_d = new PIXI.Sprite(data.textures);
-        const sprite_n = new PIXI.Sprite(data.textures_n);
-        // asign group display
-        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-        sprite_n.parentGroup = PIXI.lights.normalGroup;
-        cage.parentGroup = $displayGroup.group[0];
-        cage.addChild(sprite_d, sprite_n);
-    };
-
-    cage.name = typeof bgName === 'string' &&  bgName || bgName && bgName.name || false;
-    // parenting
-    this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
-    // reference
-    this.Background = cage;
+    this.setupFlags(); // setup the flags language
+    this.setupAvatarLocal(); // setup the avatar spine
+    this.createTitleTexte(); // add text 
 };
 
 //get flags, and setup
@@ -171,8 +134,6 @@ Scene_Local.prototype.update = function() {
     };
 };
 
-
-
 // scene mouse update
 Scene_Local.prototype.update_Light = function(mX,mY) {
     this.light_sunScreen.x =  mX, this.light_sunScreen.y = mY;
@@ -221,7 +182,6 @@ Scene_Local.prototype.onMouseup = function(event) {
 };
 
 // flag selected, close scene with animation //TODO:    
-// problem detuit texture , mais les atlas reste.
 Scene_Local.prototype.event1 = function(flag) {
     console.log('flag: ', flag);
     this.busy = true;

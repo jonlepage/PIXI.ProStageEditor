@@ -38,8 +38,10 @@ class _coreLoader {
                 value: {
                     MapInfos:"data/MapInfos.json", // also load all maps Map###_data.json and create galaxi register
                     Perma:"data/perma.json", // perma , Enemies,cursor,loader,Avatar...
+                    Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
                     Scene_Local_data:"data/Scene_Local_data.json",
-                    //Scene_IntroVideo:"data/Scene_IntroVideo.json",
+                    //Scene_Title_data:"data/Scene_Title_data.json",
+                    
                     //Scene_Boot:"data/Scene_Boot.json",
                     //Scene_IntroVideo:"data/Scene_IntroVideo.json",
                     //Scene_Local_data:"data/Scene_Local_data.json",
@@ -48,7 +50,7 @@ class _coreLoader {
             }
           });
           Object.defineProperties(this, {
-            "_permaName": { // perma name for editor build meta.json, juste the name are ok
+            "_permaName": { // PERMA LIST IN GAME 
                 value: ["gloves",],
             }
           });
@@ -74,7 +76,7 @@ _coreLoader.prototype.updateSceneLoader = function(res) {
 //└------------------------------------------------------------------------------┘
 // $Loader.preLoad_Json();
 _coreLoader.prototype.preLoad_Json = function() {
-    // MapInfos and Scene### base
+    // add loaderSet: ...MapInfos and Scene### base
     const L0 = function(){
         const loader0 = new PIXI.loaders.Loader();
         for (const key in this._JsonPath) {
@@ -156,7 +158,9 @@ _coreLoader.prototype.load = function(set) {
     console.log6('load_________________________________set: ', set);
     this._scene = SceneManager._scene;
     for (const key in this.Data2) { delete this.Data2[key] }; // clear all cache when load new scene
+    console.log('1this: ', this);
     if(!this.loaderSet[set]){return this._scene.isLoading = false};
+    console.log('2this: ', this);
     let empty = !!this.loaderSet[set].SHEETS;
     this._tmpData = this.loaderSet[set].SHEETS;
 

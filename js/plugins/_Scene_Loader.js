@@ -64,7 +64,6 @@ Scene_Loader.prototype.initialize = function(loaderSets,callBackScene,firstTime)
     this._progress = 0;
     this._progressTxt = [];
     document.title = document.title+" || "+"Scene_Loader:set=>"+String(loaderSets);
-    console.log2('Scene_Loader.initialize', this);
 };
 
 Scene_Loader.prototype.create = function() {
