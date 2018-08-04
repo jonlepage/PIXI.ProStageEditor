@@ -12,6 +12,10 @@ NOTE AND HELP:
     this.CAGE_GUI.name = "CAGE_GUI";
 */
 
+//#region [rgba(0, 0, 0,0.3)]
+// ┌------------------------------------------------------------------------------┐
+// HEADER SCENE
+// └------------------------------------------------------------------------------┘
 function Scene_Title() {
     this.initialize.apply(this, arguments);
 }
@@ -20,27 +24,34 @@ Scene_Title.prototype = Object.create(Scene_Base.prototype);
 Scene_Title.prototype.constructor = Scene_Title;
 
 Scene_Title.prototype.initialize = function() {
-    Scene_Base.prototype.initialize.call(this);
-    this.currentHoverCommand = null;
-    this.command = {}; // store Command by name{}
-    this.waitReady = 40; // stabiliser
+    Scene_Base.prototype.initialize.call(this,"Scene_Title_data"); // pass loaderset for setup Scene ambiant
+    this.waitReady = 65; // stabiliser
 };
 
-
+// create element for scene.
 Scene_Title.prototype.create = function() {
-    this.createSunLight(); // container background (diff,n)
-    this.createBackgroundVideo(); // container background (diff,n)
-    this.createTitleLogo();
-    this.createCommandBGFX();
-    this.createCommands();
-};  
-Scene_Title.prototype.createSunLight = function() {
-    this.light_sunny =  new PIXI.lights.PointLight(0xffffff,10); // the sceen FX sun
-    this.light_sunny.position.set(380, 240);
-    this.addChild(this.light_sunny);
+     // this.createBackgroundVideo();
+};
 
-};   
+Scene_Title.prototype.isReady = function() {
+    // check scene stabilisator // TODO:
+    Graphics.render(this); // force spike lag
+    this.waitReady--;
+   return !this.waitReady;
+};
 
+// start Loader
+Scene_Title.prototype.start = function() {
+   
+};
+
+Scene_Title.prototype.update = function() {
+    if(!this.busy){
+
+    };
+};
+
+//#endregion
 
 Scene_Title.prototype.createBackgroundVideo = function() {
     const data = $Loader.reg._videos._title.bgVidTitle; // bg
@@ -67,105 +78,6 @@ Scene_Title.prototype.createBackgroundVideo = function() {
     this.CAGE_MAP.addChild(cage);
     // reference
     this.bgVideoControler = video_controler;
-};
-
-Scene_Title.prototype.createTitleLogo = function() {
-    const data = $Loader.reg._misc._title.logoTitle; // title logo
-    const cage = new PIXI.Container();
-    const tex_d = data.textures;
-    const tex_n = data.textures_n;
-    const sprite_d = new PIXI.extras.AnimatedSprite(tex_d);
-    const sprite_n = new PIXI.Sprite(tex_n[0]);
-        sprite_d.normalWith(sprite_n, tex_n); // convert ani to [diff,normal]
-    // asign group display
-    sprite_n.parentGroup = PIXI.lights.normalGroup;
-    sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-    cage.parentGroup = $displayGroup.group[0];
-    cage.zIndex = 1;
-    // setup && hack
-    cage.x = 350,cage.y = -100;
-    sprite_d.animationSpeed = 0.2;
-    sprite_d.play();
-    // parenting
-    cage.addChild(sprite_d, sprite_n);
-    this.CAGE_MAP.addChild(cage);
-    // reference
-    cage.name = data.name;
-
-};
-
-Scene_Title.prototype.createCommandBGFX = function() {
-    const data = $Loader.reg._misc._title.BGFX; // title logo
-    const cage = new PIXI.Container(); // TODO: MAKE CUSTOM CONTROLER ANI CLASS
-    const tetxure = data.textures;
-    const spriteAni = new PIXI.extras.AnimatedSprite(tetxure);
-    // setup or hack
-    spriteAni.blendMode = 1;
-    spriteAni.x = 1600,spriteAni.y = 600;
-    spriteAni.animationSpeed = 0.2;
-    spriteAni.getBounds();
-    spriteAni.play();
-    // filter aread for pad
-    spriteAni.filterArea = spriteAni._boundsRect.clone();
-    spriteAni.filterArea.pad(200,200)
-    // parenting
-    cage.addChild(spriteAni);
-    this.CAGE_MAP.addChild(cage);
-    // reference
-    spriteAni.name = "BGCommandFX";
-    this.BGFX = spriteAni;
-};
-
-Scene_Title.prototype.createCommands = function() {
-    const data = $Loader.reg._misc._title.commandesTitles; // title logo
-    const cage = new PIXI.Container(); // TODO: MAKE CUSTOM CONTROLER ANI CLASS
-    let i = 0;
-    data.dataFromSet.splitter.forEach(name => {
-        const textures = data['textures'+name];
-        const spriteAni = new PIXI.extras.AnimatedSprite(textures);
-        // parenting
-        cage.addChild(spriteAni);
-        // setup or hack
-        spriteAni.x = 1920;
-        spriteAni.y = 720 + (spriteAni.height*i++);
-        spriteAni.animationSpeed = 0.2;
-        spriteAni.pivot.set(spriteAni.width,spriteAni.height/2)
-        spriteAni.getBounds();
-        spriteAni.play();
-        // filter aread for pad
-        spriteAni.filterArea = spriteAni._boundsRect.clone();
-        spriteAni.filterArea.pad(200,200)
-        
-   
-        // reference
-        spriteAni.name = name;
-        this.command[name] = spriteAni;
-    });
-    this.CAGE_MAP.addChild(cage);
-};
-
-Scene_Title.prototype.isReady = function() {
-    // check scene stabilisator // TODO:
-    Graphics.render(this);
-    this.waitReady--;
-   return !this.waitReady;
-};
-
-Scene_Title.prototype.start = function() {
-    
-};
-
-Scene_Title.prototype.update = function() {
-    if(!this.busy){
-        this.mX = $mouse.x, this.mY = $mouse.y;
-        this.update_Light();
-        this.update_Command();
-    };
-};
-
-// scene mouse update
-Scene_Title.prototype.update_Light = function() {
-    this.light_sunScreen.x =  this.mX, this.light_sunScreen.y = this.mY;
 };
 
 
@@ -200,14 +112,22 @@ Scene_Title.prototype.update_Command = function() {
         };
     };
 };
+//#region [rgba(0, 5, 5,0.5)]
+// ┌------------------------------------------------------------------------------┐
+// CHECK INTERACTION MOUSE
+// └------------------------------------------------------------------------------┘
+// onMouseDown for this scene
+Scene_Title.prototype.onMouseDown = function(event) {
+
+};
 
 // onMouseup for this scene
 Scene_Title.prototype.onMouseup = function(event) {
-    if(this.currentHoverCommand.name === "CnewGame"){
-        this.playCommand_startNewGame();
+    if(this.__inFlag){
+        this.event1(this.__inFlag);
     };
-
 };
+//#endregion
 
 // playCommand_startNewGame
 Scene_Title.prototype.playCommand_startNewGame = function(selected) {

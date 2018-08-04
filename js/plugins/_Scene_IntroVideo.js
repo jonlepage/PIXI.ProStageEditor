@@ -37,7 +37,7 @@ Scene_IntroVideo.prototype.create_IntroVideo = function() {
     videoSprite.width = 1920;
     videoSprite.height = 1080;
 
-    //videoControler.source.currentTime = 12;
+    videoControler.currentTime = 12.2;
     videoControler.onended = function(){
         this.nextVideo();
     }.bind(this);
@@ -46,9 +46,6 @@ Scene_IntroVideo.prototype.create_IntroVideo = function() {
     this.videoControler = videoControler;
 };
 
-Scene_IntroVideo.prototype.nextVideo = function() {
-
-};
 
 Scene_IntroVideo.prototype.isReady = function() {
     // check scene stabilisator // TODO:

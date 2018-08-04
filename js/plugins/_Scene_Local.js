@@ -11,7 +11,10 @@ NOTE AND HELP:
     this.CAGE_MAP.name = "CAGE_MAP";
     this.CAGE_GUI.name = "CAGE_GUI";
 */
-
+//#region [rgba(0, 0, 0,0.3)]
+// ┌------------------------------------------------------------------------------┐
+// HEADER SCENE
+// └------------------------------------------------------------------------------┘
 function Scene_Local() {
     this.initialize.apply(this, arguments); //apply all argument passed
 }
@@ -21,17 +24,37 @@ Scene_Local.prototype.constructor = Scene_Local;
 
 Scene_Local.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this,"Scene_Local_data"); // pass loaderset for setup Scene ambiant
-    this.mX = 0;
-    this.mY = 0;
-    this.currentHoverFlag = null; // when mouse are hover a flag
     this.waitReady = 30; // stabiliser
+    this.currentHoverFlag = null; // when mouse are hover a flag
 };
 
+// create element for scene.
 Scene_Local.prototype.create = function() {
     this.setupFlags(); // setup the flags language
     this.setupAvatarLocal(); // setup the avatar spine
     this.createTitleTexte(); // add text 
 };
+
+Scene_Local.prototype.isReady = function() {
+    // check scene stabilisator // TODO:
+    Graphics.render(this); // force spike lag
+    this.waitReady--;
+   return !this.waitReady;
+};
+
+// start Loader
+Scene_Local.prototype.start = function() {
+   
+};
+
+Scene_Local.prototype.update = function() {
+    if(!this.busy){
+        const mX = $mouse.x, mY = $mouse.y;
+        this.update_Light(mX,mY);
+        this.update_Flags(mX,mY);
+    };
+};
+//#endregion
 
 //get flags, and setup
 Scene_Local.prototype.setupFlags = function() {
@@ -72,7 +95,6 @@ Scene_Local.prototype.setupFlags = function() {
         flag.text_language = text_language;
     });
     this.Flags = flags;
-   
 };
 
 Scene_Local.prototype.createTitleTexte = function() {
@@ -114,26 +136,6 @@ Scene_Local.prototype.setupAvatarLocal = function() {
     };
 };
 
-Scene_Local.prototype.isReady = function() {
-    // check scene stabilisator // TODO:
-    Graphics.render(this); // force spike lag
-    this.waitReady--;
-   return !this.waitReady;
-};
-
-// start Loader
-Scene_Local.prototype.start = function() {
-   
-};
-
-Scene_Local.prototype.update = function() {
-    if(!this.busy){
-        const mX = $mouse.x, mY = $mouse.y;
-        this.update_Light(mX,mY);
-        this.update_Flags(mX,mY);
-    };
-};
-
 // scene mouse update
 Scene_Local.prototype.update_Light = function(mX,mY) {
     this.light_sunScreen.x =  mX, this.light_sunScreen.y = mY;
@@ -164,6 +166,11 @@ Scene_Local.prototype.update_Flags = function(mX,mY) {
     };
 };
 
+//#region [rgba(0, 5, 5,0.5)]
+// ┌------------------------------------------------------------------------------┐
+// CHECK INTERACTION MOUSE
+// └------------------------------------------------------------------------------┘
+
 // onMouseDown for this scene
 Scene_Local.prototype.onMouseDown = function(event) {
 
@@ -173,13 +180,9 @@ Scene_Local.prototype.onMouseDown = function(event) {
 Scene_Local.prototype.onMouseup = function(event) {
     if(this.__inFlag){
         this.event1(this.__inFlag);
-    }
-   /* const selected = this.currentHoverFlag;
-   if(this.currentHoverFlag && selected._boundsRect.contains(this.mX, this.mY) ){
-        this.event1(selected);
-   }
-*/
+    };
 };
+//#endregion
 
 // flag selected, close scene with animation //TODO:    
 Scene_Local.prototype.event1 = function(flag) {
