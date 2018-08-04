@@ -64,6 +64,11 @@ function initializeEditor(event){
             }
             
         })();
+        // hack mouse interaction from scene
+        // we dont whant the scene interaction
+        $mouse.__proto__._mousedown = function(){};
+        $mouse.__proto__._mouseup = function(){};
+
     };
 };
 
@@ -517,6 +522,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // convert current objs to editor format
     (function() {
         $Objs.list_master.forEach(cage => {
+            console.log('cage: ', cage);
             cage.Data = DATA[cage.name];         
 
             create_DebugElements.call(cage);
@@ -692,7 +698,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let data;
         if(OBJ.isStage){
             data = { // id html
-                BackGround:{def:false, value:OBJ.Background.name}, // props:{def:, value:, checked:}
+                BackGround:{def:false, value:OBJ.Background && OBJ.Background.name}, // props:{def:, value:, checked:}
                 blendMode:{def:1, value:OBJ.light_Ambient.blendMode},
                 lightHeight:{def:0.075, value:OBJ.light_Ambient.lightHeight},
                 brightness:{def:1, value:OBJ.light_Ambient.brightness},
@@ -757,7 +763,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // TODO: double click obj sur map pour editer ces props, et click sur icons eventMode pour editer ces composant interactif
     // when right click on a tiles
     function open_tileSetupEditor(InMapObj) {
-        console.log('InMapObj: ', InMapObj);
         clear_tileSheet(true,CAGE_TILESHEETS);
         iziToast.opened = true;
         document.exitPointerLock();
@@ -847,7 +852,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    // for scene setup ONLY
+    // for scene setup ONLY a fusionner avec start_tileSetupEditor
     /*function start_mapSetupEditor(_jscolor,_Falloff,OBJ){
         console.log('OBJ: ', OBJ);
         const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
@@ -1562,7 +1567,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(InButtons){ // in buttons
                 return execute_buttons(InButtons);
             }
-            if (InMapObj) { // in Right library tile
+            if (InMapObj && event.ctrlKey) { // in Right library tile
                 // focus position objs
                 return open_tileSetupEditor(InMapObj);
             }
@@ -1660,7 +1665,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         cage.alpha = 1;
                         cage.Sprites.d._filters = null;
                         cage.Sprites.n && (cage.Sprites.n.renderable = true);
+                        console.log('cage: ', cage);
                         cage.Debug.an.renderable = true;
+                        
                     };
                 });
             }

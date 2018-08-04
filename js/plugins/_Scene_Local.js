@@ -28,7 +28,7 @@ Scene_Local.prototype.initialize = function() {
     this.currentHoverFlag = null; // when mouse are hover a flag
 };
 
-// create element for scene.
+// create element for scene and setup.
 Scene_Local.prototype.create = function() {
     this.setupFlags(); // setup the flags language
     this.setupAvatarLocal(); // setup the avatar spine
@@ -178,9 +178,9 @@ Scene_Local.prototype.onMouseDown = function(event) {
 
 // onMouseup for this scene
 Scene_Local.prototype.onMouseup = function(event) {
-    if(this.__inFlag){
+    /*if(this.__inFlag){
         this.event1(this.__inFlag);
-    };
+    };*/
 };
 //#endregion
 

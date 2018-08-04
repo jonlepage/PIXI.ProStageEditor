@@ -13,7 +13,7 @@ Initialise avantr le loader , seulement pendant la sceneBOOT
 // GLOBAL $mouse CLASS: _mouse
 //└------------------------------------------------------------------------------┘
 
-
+//Graphics._renderer.plugins.interaction
 function _mouse() {
     this.cursor = null;
     this.screenX = 1920;

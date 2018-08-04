@@ -46,7 +46,6 @@ Scene_IntroVideo.prototype.create_IntroVideo = function() {
     this.videoControler = videoControler;
 };
 
-
 Scene_IntroVideo.prototype.isReady = function() {
     // check scene stabilisator // TODO:
    return !this.wait--;

@@ -28,7 +28,7 @@ Scene_Title.prototype.initialize = function() {
     this.waitReady = 65; // stabiliser
 };
 
-// create element for scene.
+// create element for scene and setup.
 Scene_Title.prototype.create = function() {
      // this.createBackgroundVideo();
 };

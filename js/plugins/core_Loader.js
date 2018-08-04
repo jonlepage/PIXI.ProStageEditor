@@ -40,7 +40,7 @@ class _coreLoader {
                     Perma:"data/perma.json", // perma , Enemies,cursor,loader,Avatar...
                     Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
                     Scene_Local_data:"data/Scene_Local_data.json",
-                    //Scene_Title_data:"data/Scene_Title_data.json",
+                    Scene_Title_data:"data/Scene_Title_data.json",
                     
                     //Scene_Boot:"data/Scene_Boot.json",
                     //Scene_IntroVideo:"data/Scene_IntroVideo.json",
@@ -158,9 +158,7 @@ _coreLoader.prototype.load = function(set) {
     console.log6('load_________________________________set: ', set);
     this._scene = SceneManager._scene;
     for (const key in this.Data2) { delete this.Data2[key] }; // clear all cache when load new scene
-    console.log('1this: ', this);
     if(!this.loaderSet[set]){return this._scene.isLoading = false};
-    console.log('2this: ', this);
     let empty = !!this.loaderSet[set].SHEETS;
     this._tmpData = this.loaderSet[set].SHEETS;
 

@@ -97,6 +97,7 @@ Scene_Loader.prototype.isReady = function() {
 Scene_Loader.prototype.start = function() {
     console.log("%cScene_Loader.start. Load => set:", "color: green",'$Loader', this.loaderSets);
     this.isLoading = true;
+    $Objs.list_master = []; // purge objet scene
     $Loader.load(this.loaderSets);
 };
 
