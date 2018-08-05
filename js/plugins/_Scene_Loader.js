@@ -26,7 +26,7 @@ Graphics._createAllElements = function() {
     //this._createUpperCanvas();
     this._createRenderer();
     //this._createFPSMeter();
-    this._createModeBox();
+    //this._createModeBox();
     this._createGameFontLoader();
 };
 
@@ -40,8 +40,24 @@ Graphics._updateAllElements = function() {
     //this._paintUpperCanvas();
 };
 
-Graphics._clearUpperCanvas = function() {
+Graphics._clearUpperCanvas = function() {};
 
+
+
+Graphics._createModeBox = function() {
+    console.log('this: ', this);
+    this._modeBox.style.pointerEvents = 'none'
+    
+};
+
+Graphics._updateVideo = function() {
+    console.log('_updateVideo: ', _updateVideo);
+    this._video.style.pointerEvents = 'none'
+};
+
+Graphics._createUpperCanvas = function() {
+    console.log('_createUpperCanvas: ', _createUpperCanvas);
+    this._upperCanvas.style.pointerEvents = 'none'
 };
 
 // ┌-----------------------------------------------------------------------------┐

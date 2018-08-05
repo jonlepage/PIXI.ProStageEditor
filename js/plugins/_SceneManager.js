@@ -18,20 +18,6 @@ SceneManager.run = function() {
         gui.focus();
         // setup compatibility pointer lock
         const element = document.body; // document.body.requestPointerLock()
-        /*if (element.requestFullScreen) {
-            element.requestFullScreen();
-        } else if (element.mozRequestFullScreen) {
-            element.mozRequestFullScreen();
-        } else if (element.webkitRequestFullScreen) {
-            element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-        } else if (element.msRequestFullscreen) {
-            element.msRequestFullscreen();
-        }*/
-    
-        element.requestPointerLock = element.requestPointerLock ||
-        element.mozRequestPointerLock ||
-        element.webkitPointerLockElement;
-        //element.requestPointerLock(); // pointlocker API
         this.initialize();
         this.goto(Scene_Loader,"Perma",Scene_Boot,true);
         this.requestUpdate();
@@ -191,7 +177,7 @@ Scene_Base.prototype.create_Cages = function() {
     this.CAGE_MOUSE.name = "CAGE_MOUSE";
 
     this.addChild( this.CAGE_MAP, this.CAGE_GUI, this.CAGE_MOUSE);
-    $mouse.cursor && this.CAGE_MOUSE.addChild($mouse.cursor);//TODO: faire une method asignation
+    $mouse && this.addChild($mouse);//TODO: faire une method asignation
 };
 
 // scene only, voir si on peut le mettre pour map

@@ -26,6 +26,8 @@ Scene_Local.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this,"Scene_Local_data"); // pass loaderset for setup Scene ambiant
     this.waitReady = 30; // stabiliser
     this.currentHoverFlag = null; // when mouse are hover a flag
+
+
 };
 
 // create element for scene and setup.
@@ -93,8 +95,13 @@ Scene_Local.prototype.setupFlags = function() {
         flag.addChild(txt);
         flag.loop = false;
         flag.text_language = text_language;
+        // interactive test TODO: MAKE A MANAGER SELON TYPE 
+        flag.Sprites.d.interactive = true;
+        flag.Sprites.d.buttonMode = true;
+        flag.Sprites.d.on('mousedown', function(event){console.log("mousedown succed,",event);})
     });
     this.Flags = flags;
+    console.log('this: ', this);
 };
 
 Scene_Local.prototype.createTitleTexte = function() {
