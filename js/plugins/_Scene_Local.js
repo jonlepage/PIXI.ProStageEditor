@@ -97,7 +97,7 @@ Scene_Local.prototype.setupFlags = function() {
         flag.pixiText = txt;
         // interactive test TODO: MAKE A MANAGER SELON TYPE 
         flag.interactive = true;
-        flag.on('mousedown', this.onMouseup, this );
+        flag.on('pointerup', this.onMouseup, this );
         flag.on('pointerover', this.onButtonOver, this)
         flag.on('pointerout', this.onButtonOut, this);
         
@@ -183,19 +183,18 @@ Scene_Local.prototype.onButtonOut = function(event) {
     this.avatar1.Sprites.d.state.setAnimation(1, flag.text_language[0], true);
 };
 
-// onMouseup for this scene note: hacked pixi.js => interactionEvent.reset();
+// onMouseup for this scene 
 Scene_Local.prototype.onMouseup = function(event) {
-    console.log('this: ', this);
-    console.log('onMouseup: ', event);
-    this.event1();
+
+    this.event1(event.currentTarget);
 };
 //#endregion
 
-// flag selected, close scene with animation //TODO:    
+// flag selected, close scene with animation
 Scene_Local.prototype.event1 = function(flag) {
+    console.log9('flag: ', flag);
     if(!this.busy){
-        console.log('flag: ', flag);
         this.busy = true;
-        SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
+        //SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
     };
 };
