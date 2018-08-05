@@ -36568,7 +36568,7 @@ var InteractionManager = function (_EventEmitter) {
         }
 
         interactionData.originalEvent = pointerEvent;
-        interactionEvent.reset();
+        //interactionEvent.reset();
 
         return interactionEvent;
     };

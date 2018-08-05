@@ -523,6 +523,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     (function() {
         $Objs.list_master.forEach(cage => {
             console.log('cage: ', cage);
+            cage._events = {}; // remove event
             cage.Data = DATA[cage.name];         
 
             create_DebugElements.call(cage);

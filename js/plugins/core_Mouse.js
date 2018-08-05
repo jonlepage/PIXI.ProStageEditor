@@ -18,12 +18,12 @@ Initialise avantr le loader , seulement pendant la sceneBOOT
 
 class _mouse extends PIXI.Container {
     constructor() {
-      super();
-      this.spine = null;
-      this.screenX = 1920;
-      this.screenY = 1080;
-      this.interaction = null;//Graphics._renderer.plugins.interaction;
-
+        super();
+        this.spine = null;
+        this.screenX = 1920;
+        this.screenY = 1080;
+        this.interaction = null;//Graphics._renderer.plugins.interaction;
+        this.light; // add light here secne
     };
   
   };

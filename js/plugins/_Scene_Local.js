@@ -53,7 +53,6 @@ Scene_Local.prototype.update = function() {
     if(!this.busy){
         const mX = $mouse.x, mY = $mouse.y;
         this.update_Light(mX,mY);
-        this.update_Flags(mX,mY);
     };
 };
 //#endregion
@@ -95,10 +94,14 @@ Scene_Local.prototype.setupFlags = function() {
         flag.addChild(txt);
         flag.loop = false;
         flag.text_language = text_language;
+        flag.pixiText = txt;
         // interactive test TODO: MAKE A MANAGER SELON TYPE 
-        flag.Sprites.d.interactive = true;
-        flag.Sprites.d.buttonMode = true;
-        flag.Sprites.d.on('mousedown', function(event){console.log("mousedown succed,",event);})
+        flag.interactive = true;
+        flag.on('mousedown', this.onMouseup, this );
+        flag.on('pointerover', this.onButtonOver, this)
+        flag.on('pointerout', this.onButtonOut, this);
+        
+        
     });
     this.Flags = flags;
     console.log('this: ', this);
@@ -134,10 +137,10 @@ Scene_Local.prototype.createTitleTexte = function() {
 Scene_Local.prototype.setupAvatarLocal = function() {
     const avatar = $Objs.getsByName("Hero1_Big");
     if(avatar){
-        avatar.scale.set(2,2);
+        avatar.scale.set(2);
         avatar.Sprites.d.state.setAnimation(0, 'idle', true);
         avatar.Sprites.d.state.setAnimation(2, 'hair_idle1', true);
-        avatar.Sprites.d.stateData.defaultMix = 0.2;
+        avatar.Sprites.d.stateData.defaultMix = 0.3;
         //reference
         this.avatar1 = avatar;
     };
@@ -148,52 +151,51 @@ Scene_Local.prototype.update_Light = function(mX,mY) {
     this.light_sunScreen.x =  mX, this.light_sunScreen.y = mY;
 };
 
-// scene mouse update
-Scene_Local.prototype.update_Flags = function(mX,mY) {
-    this.Flags;
-    let valueIn;
-    for (let i = 0, l = this.Flags.length; i < l; i++) {
-        const flag = this.Flags[i];
-        if(flag._boundsRect.contains(mX, mY)){
-            if(flag.TexName === (this.__inFlag && this.__inFlag.TexName) ){ return };
-            // if flag was selected , play reverse   
-            if(this.__inFlag){
-                this.__inFlag.animationSpeed = -2;
-                this.__inFlag.play();
-            };
-            flag.animationSpeed = 1;
-            flag.play();
-            this.__inFlag = flag;
-            // avatar //TODO: CREER UNE CLASS SPINE CONTAINER
-            this.avatar1.Sprites.d.skeleton.setSkinByName(flag.text_language[0]);
-            this.avatar1.Sprites.d.skeleton.setSlotsToSetupPose();
-            this.avatar1.Sprites.d.state.setAnimation(1, flag.text_language[0], true)
-            break;
-        };
-    };
-};
+
 
 //#region [rgba(0, 5, 5,0.5)]
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
 
-// onMouseDown for this scene
-Scene_Local.prototype.onMouseDown = function(event) {
+// scene mouse update
+Scene_Local.prototype.onButtonOver = function(event) {
+    const flag = event.currentTarget;
+        flag.loop = false;
+        flag.animationSpeed = 1;
+        flag.play();
+        flag.pixiText.scale.set(1.2);
 
+    this.avatar1.Sprites.d.skeleton.setSkinByName(flag.text_language[0]);
+    this.avatar1.Sprites.d.skeleton.setSlotsToSetupPose();
+    this.avatar1.Sprites.d.state.setAnimation(1, flag.text_language[0], true)
 };
 
-// onMouseup for this scene
+// onMouseDown for this scene
+Scene_Local.prototype.onButtonOut = function(event) {
+    const flag = event.currentTarget;
+        flag.animationSpeed = -2;
+        flag.play();
+        flag.pixiText.scale.set(1);
+
+    this.avatar1.Sprites.d.skeleton.setSkinByName(flag.text_language[0]);
+    this.avatar1.Sprites.d.skeleton.setSlotsToSetupPose();
+    this.avatar1.Sprites.d.state.setAnimation(1, flag.text_language[0], true);
+};
+
+// onMouseup for this scene note: hacked pixi.js => interactionEvent.reset();
 Scene_Local.prototype.onMouseup = function(event) {
-    /*if(this.__inFlag){
-        this.event1(this.__inFlag);
-    };*/
+    console.log('this: ', this);
+    console.log('onMouseup: ', event);
+    this.event1();
 };
 //#endregion
 
 // flag selected, close scene with animation //TODO:    
 Scene_Local.prototype.event1 = function(flag) {
-    console.log('flag: ', flag);
-    this.busy = true;
-    SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
+    if(!this.busy){
+        console.log('flag: ', flag);
+        this.busy = true;
+        SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
+    };
 };
