@@ -57,9 +57,10 @@ _mouse.prototype.create_Sprites = function() {
     mouse.pivot.set(5,5);
 
     // global listener
-    this.hitArea = []; // prevent sprite mouse interaction
+    this.hitArea = []; // prevent sprite mouse interaction,
     this.interactive = true;
     this.on('mousemove', function(event) {
+        // TODO: VOIR PIXI , POIR INTERACTION, le console debugage affiche pas , mais il ce peut que acced direct marche
         this.position.set(event.data.global.x, event.data.global.y);
     });
     // reference

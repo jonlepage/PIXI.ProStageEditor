@@ -496,6 +496,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         for (const key in DATA) { // this._avaibleData === DATA
             if(!DATA[key].BG){ // dont add BG inside library
                 const cage = build_ThumbsLibs(key,"thumbs"); // create from Data ""
+                cage.alpha = 0.75;
+                cage.interactive = true;
+                cage.on('pointerover', onOver_thumbs);
+                cage.on('pointerout', onOut_thumbs);
+                cage.on('pointerup', onPointerup_thumbs);
                 CAGE_LIBRARY.list.push(cage);
             };
         };
@@ -512,7 +517,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 const _slot = this.editorGui.skeleton.findSlot(slot.name);
                 ButtonsSlots.push(_slot);
                 _slot.name = slot.name;
+                _slot.color.a = 0.35;
                 _slot._boundsRect = _slot.currentSprite.getBounds();
+                _slot.currentSprite.interactive = true;
+                _slot.currentSprite.on('pointerover', onOver_buttons,_slot);
+                _slot.currentSprite.on('pointerout', onOut_buttons,_slot);
             };
     };
     //force select layer button 
@@ -522,7 +531,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // convert current objs to editor format
     (function() {
         $Objs.list_master.forEach(cage => {
-            console.log('cage: ', cage);
             cage._events = {}; // remove event
             cage.Data = DATA[cage.name];         
 
@@ -535,6 +543,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 cage.loop = true;
                 cage.play();
             };
+
+            cage.interactive = true;
+            cage.on('pointerover', onOver_objMap);
+            cage.on('pointerout', onOut_objMap);
+            cage.on('mousemove', onMove_objMap);
+            cage.on('pointerup', onPointerup_objMap);
         });
     }).bind(this)();
 
@@ -997,7 +1011,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         OBJ.Data_CheckBox = Data_CheckBox;
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") );
         iziToast.opened = false;
-        document.body.requestPointerLock(); // pointlocker API
+
     };
 
 //#endregion
@@ -1251,7 +1265,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const cage = build_tileLibs(InLibs, textureName);
             cage.Sprites.n && (cage.Sprites.n.renderable = false);
             list.push(cage); // reference,  sheetName
-            CAGE_TILESHEETS.addChild(cage)
+            CAGE_TILESHEETS.addChild(cage);
+            cage.interactive = true;
+            cage.on('pointerover', onOver_tileSheet);
+            cage.on('pointerout', onOut_tileSheet);
+            cage.on('mousemove', onMove_tileSheet);
+            cage.on('pointerup', onPointerup_tileSheet);
         });
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
@@ -1292,15 +1311,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         CAGE_MAP.addChild(cage);
         CAGE_MOUSE.list = cage;
-  
-        
+        return cage;
     };
 
     // add to map new obj + Obj.Asign a copy unique of html Editor json asigned addtomap
     function add_toScene(obj) {
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         if(CAGE_MOUSE.list.pined){ // if pined in a line. get position of old prite obj
-            console.log5('obj: ', obj);
             // mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
             cage.x = ((obj.getGlobalPosition().x/Zoom.x)+STAGE.CAGE_MAP.pivot.x);
             cage.y = ((obj.getGlobalPosition().y/Zoom.y)+STAGE.CAGE_MAP.pivot.y);
@@ -1313,19 +1330,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         $Objs.list_master.push(cage);
         cage.getBounds();
         
-/*  
-        const cage = create_FromTileSheet(obj.Data, obj.Sprites.groupTexureName);
-        cage.Sprites.d && cage.Sprites.d.anchor.copy(obj.Sprites.d.anchor);
-        cage.Sprites.n && cage.Sprites.n.anchor.copy(obj.Sprites.n.anchor);
-        cage.Debug.bg.anchor.copy(obj.Debug.bg.anchor);
-        cage.x = mMX;
-        cage.y = mMY;
-        cage.Debug.bg.renderable = false; //TODO:
-        CAGE_MAP.addChild(cage);
-        cage.getBounds();  //getBoundsMap(cage); // with camera factor
-        // register
-        $Objs.list_master.push(cage);
-        */
+        cage.interactive = true;
+        cage.on('pointerover', onOver_objMap);
+        cage.on('pointerout', onOut_objMap);
+        cage.on('mousemove', onMove_objMap);
+        cage.on('pointerup', onPointerup_objMap);
+        
+
     };
 
     function execute_buttons(InButtons) {
@@ -1352,15 +1363,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
     // mX,mY: mouse Position
-    function show_previews(cage) {
-        if(cage && !CAGE_MOUSE.previewsShowed){
+    function show_previews(cage, show) {
+        CAGE_MOUSE.previews.removeChildren();
+        if(show){
             CAGE_MOUSE.previews.addChild(...cage.Debug.previews);
-            CAGE_MOUSE.previewsShowed  = true;
         }
-        if(!cage && CAGE_MOUSE.previewsShowed){
-            CAGE_MOUSE.previews.removeChildren();
-            CAGE_MOUSE.previewsShowed = false;
-        };
+        CAGE_MOUSE.previewsShowed = !!show;
     };
 
     // mX,mY: mouse Position
@@ -1513,10 +1521,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
-    function mousemove_Editor(event) {
-        if(iziToast.opened){return}; // dont use mouse when toast editor
+
+    $mouse.on('mousemove', function(event) {
+        //if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
-        InMask = check_InMask(mX,mY);
+        /*InMask = check_InMask(mX,mY);
         if(MouseHold && InMask === "CAGE_TILESHEETS"){ // drag library
             CAGE_TILESHEETS.list.forEach(cage => {
                 cage.x+= event.movementX*0.7;//performe scroll libs mouse
@@ -1540,13 +1549,117 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(InTiles){
             checkAnchor(InTiles);
         };
-        show_previews(InLibs);
+        show_previews(InLibs);*/
+    }, STAGE);
+
+    
+    function onPointerup_thumbs(event){
+        show_tileSheet(this);
     };
 
-    function mousedown_Editor(event) {
+    function onOver_thumbs(event){
+        show_previews(this,true);
+        this.Sprites.d._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+        this._filters = [ FILTERS.OutlineFilterx16 ];
+        this.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
+        this.alpha = 1;
+    };
+
+    function onOut_thumbs(event){
+        show_previews(this,false);
+        this.Sprites.d._filters = null; // thickness, color, quality
+        this.Debug.bg._filters = null;
+        this.alpha = 0.75;
+    };
+
+    function onOver_buttons(event){
+        const sprite =  this.currentSprite;
+        sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+        sprite.scale.set(1.2,-1.2);
+        this.color.a = 1;
+    };
+
+    function onOut_buttons(event){
+        const sprite =  this.currentSprite;
+        sprite._filters = null; // thickness, color, quality
+        sprite.scale.set(1,-1);
+        this.color.a = 0.35;
+    };
+
+    function onMove_tileSheet(event){
+        checkAnchor(this);
+        
+    };
+
+    function onOver_tileSheet(event){
+        this.Debug.bg.getBounds();
+        this._filters = [ FILTERS.OutlineFilterx16 ];
+
+    };
+
+    function onOut_tileSheet(event){
+        this._filters = null;
+    };
+
+    function onPointerup_tileSheet(event){
+        const cageInMouse = add_toMouse(this);
+        cageInMouse.interactive = true;
+        cageInMouse.on('pointerup', onPointerup_cageMouseWithSprite);
+    };
+
+    function onPointerup_cageMouseWithSprite(event){
+        const _clickRight = event.data.button === 0;
+        const clickLeft_ = event.data.button === 2;
+        const click_Middle = event.data.button === 1;
+        if(_clickRight){// <=
+            event.data.button
+            add_toScene(this);
+        }
+        if(clickLeft_){// =>
+            CAGE_MAP.removeChild(CAGE_MOUSE.list);
+            return CAGE_MOUSE.list = null;
+        }
+    };
+
+    function onOver_objMap(event){
+        this.Debug.bg.renderable = true;
+        this.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
+
+        $Objs.list_master.forEach(cage => {
+            if(this !== cage && cage.zIndex>this.zIndex){
+                const hit = hitCheck(this,cage);
+                cage.alpha =  hit ? 0.3:1;
+                cage.Sprites.d._filters = hit ? [ FILTERS.PixelateFilter12, FILTERS.OutlineFilterx6White]: null;
+                if(cage.Sprites.n){ cage.Sprites.n.renderable = false };
+                cage.Debug.an.renderable = false;
+            }else{
+                cage.alpha = 1;
+                cage.Sprites.d._filters = null;
+                cage.Sprites.n && (cage.Sprites.n.renderable = true);
+                cage.Debug.an.renderable = true;
+            };
+        });
+    };
+
+    function onOut_objMap(event){
+        this.Debug.bg.renderable = false;
+        this.Debug.bg._filters = null;
+    };
+    function onMove_objMap(event){
+        
+    };
+    function onPointerup_objMap(event){
+        if(event.data.originalEvent.ctrlKey){
+            open_tileSetupEditor(this);
+        };
+    };
+
+
+
+    /*function mousedown_Editor(event) {
         startMouseHold(true); // timeOut check hold click
-    };
-
+    };*/
+/*
     function mouseup_Editor(event) {
         if(MouseHold){ return startMouseHold(false) }; // break if was hold
         startMouseHold(false);
@@ -1599,7 +1712,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
     };
-
+*/
 
     // zoom camera
     function wheel_Editor(event) {
@@ -1676,13 +1789,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
 
-    document.addEventListener('mousemove', mousemove_Editor.bind(this));
-    document.addEventListener('mousedown', mousedown_Editor);
-    document.addEventListener('mouseup',mouseup_Editor.bind(this));
+    //document.addEventListener('mousemove', mousemove_Editor.bind(this));
+    //document.addEventListener('mousedown', mousedown_Editor);
+    //document.addEventListener('mouseup',mouseup_Editor.bind(this));
     document.addEventListener('wheel', wheel_Editor);
     document.addEventListener('keydown', keydown_Editor); // change layers
 //#endregion
-
 
 
     // Tikers for editor update (document Title, check scroll)
