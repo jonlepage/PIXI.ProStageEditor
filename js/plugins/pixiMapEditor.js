@@ -402,6 +402,8 @@ _PME.prototype.startEditor = function() {
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
         OutlineFilterx6White: new PIXI.filters.OutlineFilter (6, 0xffffff, 1),
+        OutlineFilterx6Green: new PIXI.filters.OutlineFilter (6, 0x16b50e, 1),
+        OutlineFilterx8Red: new PIXI.filters.OutlineFilter (8, 0xdb120f, 1),
         ColorMatrixFilter: new PIXI.filters.ColorMatrixFilter(),
         PixelateFilter12: new PIXI.filters.PixelateFilter(12),
         BlurFilter: new PIXI.filters.BlurFilter (10, 3),
@@ -472,6 +474,13 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = false; // store list of tile
+    CAGE_TILESHEETS.interactive = true;
+    CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
+    CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
+    CAGE_TILESHEETS.on('pointerdown', pointer_DW);
+    CAGE_TILESHEETS.on('pointerup', pointer_UP);
+    CAGE_TILESHEETS.on('zoomTileLibs', wheelInLibs);
+
     // reference
     STAGE.CAGE_EDITOR.addChild(CAGE_TILESHEETS);
 // CAGE_MOUSE ________________
@@ -496,11 +505,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         for (const key in DATA) { // this._avaibleData === DATA
             if(!DATA[key].BG){ // dont add BG inside library
                 const cage = build_ThumbsLibs(key,"thumbs"); // create from Data ""
+                cage.buttonType = "thumbs";
                 cage.alpha = 0.75;
                 cage.interactive = true;
-                cage.on('pointerover', onOver_thumbs);
-                cage.on('pointerout', onOut_thumbs);
-                cage.on('pointerup', onPointerup_thumbs);
+                cage.on('pointerover', pointer_overIN);
+                cage.on('pointerout', pointer_overOUT);
+                cage.on('pointerup', pointer_UP);
                 CAGE_LIBRARY.list.push(cage);
             };
         };
@@ -519,9 +529,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _slot.name = slot.name;
                 _slot.color.a = 0.35;
                 _slot._boundsRect = _slot.currentSprite.getBounds();
+                _slot.currentSprite.buttonType = "button";
                 _slot.currentSprite.interactive = true;
-                _slot.currentSprite.on('pointerover', onOver_buttons,_slot);
-                _slot.currentSprite.on('pointerout', onOut_buttons,_slot);
+                _slot.currentSprite.on('pointerover', pointer_overIN,_slot);
+                _slot.currentSprite.on('pointerout', pointer_overOUT,_slot);
+                _slot.currentSprite.on('pointerup', pointer_UP);
+
             };
     };
     //force select layer button 
@@ -545,10 +558,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
 
             cage.interactive = true;
-            cage.on('pointerover', onOver_objMap);
-            cage.on('pointerout', onOut_objMap);
-            cage.on('mousemove', onMove_objMap);
-            cage.on('pointerup', onPointerup_objMap);
+            cage.on('pointerover', pointer_overIN);
+            cage.on('pointerout', pointer_overOUT);
+            cage.on('pointerup', pointer_UP);
+            cage.buttonType = "tileMap";
+            //cage.on('mousemove', onMove_objMap);
+            //cage.on('pointerup', onPointerup_objMap);
         });
     }).bind(this)();
 
@@ -1267,10 +1282,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage);
             cage.interactive = true;
-            cage.on('pointerover', onOver_tileSheet);
-            cage.on('pointerout', onOut_tileSheet);
-            cage.on('mousemove', onMove_tileSheet);
-            cage.on('pointerup', onPointerup_tileSheet);
+            cage.on('pointerover', pointer_overIN);
+            cage.on('pointerout', pointer_overOUT);
+            cage.on('pointerup', pointer_UP);
+            cage.on('pointermove', function(e){checkAnchor(this)});
+            cage.on('zoomTileLibs', wheelInLibs);
+
+            cage.buttonType = "tileLibs";
+            //cage.on('mousemove', onMove_tileSheet);
+           // cage.on('pointerdown', onPointerdown_tileSheet);
+            //cage.on('pointerup', onPointerup_tileSheet);
         });
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
@@ -1307,10 +1328,21 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return hide;
     };
 
+    function setStatusInteractiveObj(status){
+        for (let i=0, l= $Objs.list_master.length; i<l; i++) {
+            const _cage =  $Objs.list_master[i];
+            _cage.interactive = status;
+        };
+    };
+
     function add_toMouse(InTiles) {
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         CAGE_MAP.addChild(cage);
         CAGE_MOUSE.list = cage;
+        cage.interactive = true;
+        cage.on('pointerup', pointer_UP);
+        cage.buttonType = "tileMouse";
+        // disable other interactive obj map
         return cage;
     };
 
@@ -1330,11 +1362,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         $Objs.list_master.push(cage);
         cage.getBounds();
         
-        cage.interactive = true;
-        cage.on('pointerover', onOver_objMap);
-        cage.on('pointerout', onOut_objMap);
-        cage.on('mousemove', onMove_objMap);
-        cage.on('pointerup', onPointerup_objMap);
+        cage.interactive = false;
+        cage.on('pointerover', pointer_overIN);
+        cage.on('pointerout', pointer_overOUT);
+        cage.on('pointerup', pointer_UP);
+        cage.buttonType = 'tileMap';
+        //cage.on('mousemove', onMove_objMap);
+        //cage.on('pointerup', onPointerup_objMap);
         
 
     };
@@ -1394,43 +1428,72 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function activeFilters(cage){
-        if(cage.bone){ // is a buttons
-            const sprite =  cage.currentSprite;
-            sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
-            sprite.scale.set(1.2,-1.2);
-            cage.color.a = 1;
-        }else if(cage.parent.name === "CAGE_MAP"){ // it a objs on map
-            cage.Debug.bg.renderable = true;
-            cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
-        }else{
-            const sprite =  cage.Sprites.d;
-            sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
-            cage._filters = [ FILTERS.OutlineFilterx16 ];
-            cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
-            cage.alpha = 1;
-        };
- 
+    // active filter1, for thumbs
+    function activeFiltersFX1(cage,type){
+        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+        cage._filters = [ FILTERS.OutlineFilterx16 ];
+        cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
+        cage.alpha = 1;
     };
 
-    function clearFilters(list,index){
-        let _list = Number.isFinite(index) && list.slice() || false;
-        _list && _list.splice(index,1) || (_list = list); // index allow jump the active cage
-        for (let i = 0, l = _list.length; i < l; i++) {
-            const cage = _list[i];
-            if(cage.bone){ // is a buttons
-                const sprite =  cage.currentSprite;
-                sprite._filters = null; // thickness, color, quality
-                sprite.scale.set(1,-1);
-                cage.color.a = 0.7;
-            }else if(cage.parent.name === "CAGE_MAP"){ // it a objs on map
-                cage.Debug.bg.renderable = false;
-                cage.Debug.bg._filters = null;
-            }else{ // it libs obj
-                const sprite =  cage.Sprites.t ||  cage.Sprites.d ||  cage.Sprites.s;
-                sprite._filters = null; // thickness, color, quality
-                cage.Debug.bg._filters = null;
-                cage.alpha = 0.85;
+    function clearFiltersFX1(cage,type){
+        cage.Sprites.d._filters = null; // thickness, color, quality
+        cage._filters = null;
+        cage.Debug.bg._filters = null;
+        cage.alpha = 0.75;
+    };
+
+    // active filter2 for button
+    function activeFiltersFX2(sprite,slot){
+        sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+        sprite.scale.set(1.25,-1.25);
+        slot.color.a = 1;
+    };
+
+    function clearFiltersFX2(sprite,slot){
+        sprite._filters = null; // thickness, color, quality
+        sprite.scale.set(1,-1);
+        slot.color.a = 0.35;
+    };
+
+    // active filter1, for thumbs
+    function activeFiltersFX3(cage,checkHit){
+        //cage._filters = [ FILTERS.OutlineFilterx16 ];
+        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx6Green ]; // thickness, color, quality ,
+        cage.Debug.bg.alpha = 0.2;
+        if(checkHit){
+            cage.Debug.bg.renderable = true;
+            cage.checkHit = true;
+            for (let i=0, l= $Objs.list_master.length; i<l; i++) {
+                const _cage =  $Objs.list_master[i];
+                if(cage===_cage){continue};
+                if(_cage.zIndex>cage.zIndex){
+                    const hit = hitCheck(cage,_cage);
+                    _cage.Sprites.d.alpha =  hit ? 0.2:0.8;
+                    _cage.Sprites.d.tint =  hit ? 0x000000:0xffffff;
+                    _cage.Sprites.d._filters = hit ? [FILTERS.OutlineFilterx8Red ]: null;
+                    if(_cage.Sprites.n){
+                        _cage.Sprites.n.renderable =  hit ? false:true;
+                    }
+                };
+            };
+        };
+    };
+
+    function clearFiltersFX3(cage){
+        cage.Sprites.d._filters = null; // thickness, color, quality ,
+        cage.Debug.bg.alpha = 1;
+        cage.Debug.bg.renderable = false;
+        if(cage.checkHit){
+            cage.checkHit = false;
+            for (let i=0, l= $Objs.list_master.length; i<l; i++) {
+                const _cage =  $Objs.list_master[i];
+                _cage.Sprites.d.alpha = 1;
+                _cage.Sprites.d.tint = 0xffffff;
+                _cage.Sprites.d._filters = null;
+                if(_cage.Sprites.n){
+                    _cage.Sprites.n.renderable = true;
+                }
             };
         };
     };
@@ -1503,13 +1566,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function startMouseHold(active){
+    function startMouseHold(activeTarget){
         clearTimeout(MouseTimeOut);
         MouseHold=false;
-        if(active){ // active mouse MouseHold after 160 ms
+        if(activeTarget){ // active mouse MouseHold after 160 ms
             MouseTimeOut = setTimeout(() => {
                 HoldX = +mX, HoldY = +mY;
-                MouseHold=true;
+                MouseHold=activeTarget;
             }, 160);
         };
     };
@@ -1525,6 +1588,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     $mouse.on('mousemove', function(event) {
         //if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
+        if(MouseHold){
+            if( MouseHold.buttonType = "CAGE_TILESHEETS" ){
+                CAGE_TILESHEETS.list.forEach(cage => {
+                    cage.x+= event.data.originalEvent.movementX*0.7;//performe scroll libs mouse
+                    cage.y+= event.data.originalEvent.movementY*0.6;//performe scroll libs mouse
+                    cage.getBounds();
+                    
+                });
+            };
+        }
         /*InMask = check_InMask(mX,mY);
         if(MouseHold && InMask === "CAGE_TILESHEETS"){ // drag library
             CAGE_TILESHEETS.list.forEach(cage => {
@@ -1551,8 +1624,96 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         show_previews(InLibs);*/
     }, STAGE);
-
     
+    // mouse [=>IN <=OUT] FX
+    function pointer_overIN(event){
+        switch (event.currentTarget.buttonType) {
+            case "thumbs":
+                show_previews(this,true);
+                activeFiltersFX1(event.currentTarget);
+            break;
+            case "button":
+                activeFiltersFX2(event.currentTarget,this);
+            break;
+            case "tileLibs":
+                activeFiltersFX1(event.currentTarget);
+            break;
+            case "tileMap":
+                activeFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
+            break;
+        };
+    };
+
+    function pointer_overOUT(event){
+        switch (event.currentTarget.buttonType ) {
+            case "thumbs":
+                InLibs = null;
+                show_previews(this,false);
+                clearFiltersFX1(event.currentTarget);
+            break;
+            case "button":
+                clearFiltersFX2(event.currentTarget,this);
+            break;
+            case "tileLibs":
+                clearFiltersFX1(event.currentTarget);
+            break;
+            case "tileMap":
+                clearFiltersFX3(event.currentTarget);
+            break;
+        };
+    };
+
+    function pointer_DW(event){
+        startMouseHold(event.currentTarget); // timeOut check MouseHold
+    };
+
+    function pointer_UP(event){
+        if(MouseHold){ return startMouseHold(false) };
+        startMouseHold(false);
+        const _clickRight = event.data.button === 0;
+        const clickLeft_ = event.data.button === 2;
+        const click_Middle = event.data.button === 1;
+        if(_clickRight){// <=
+            if(event.currentTarget.buttonType === "thumbs"){ // in bottom library
+                return show_tileSheet(event.currentTarget) // || hide_tileSheet();
+            }
+            if(event.currentTarget.buttonType === "tileLibs"){ // in bottom library
+                setStatusInteractiveObj(false);
+                return add_toMouse(event.currentTarget);
+            }
+            if(event.currentTarget.buttonType === "tileMouse"){ // in bottom library
+                return add_toScene(event.currentTarget); // copy the current mouse and add to map new obj
+            }
+            if(event.currentTarget.buttonType === "tileMap" &&  event.data.originalEvent.ctrlKey){ // in bottom library
+                return open_tileSetupEditor(event.currentTarget);
+            }
+        }
+        if(clickLeft_){// =>
+            if(event.currentTarget.buttonType === "tileMouse"){ // in bottom library
+                CAGE_MAP.removeChild(CAGE_MOUSE.list);
+                setStatusInteractiveObj(true);
+                return CAGE_MOUSE.list = null;
+            }
+        }
+
+    };
+
+    // zoom tileLibs with wheel, emit by listener wheel_Editor()
+    function wheelInLibs(event) {
+        if(event.wheelDeltaY>0){
+            CAGE_TILESHEETS.scale.x+=0.1;
+            CAGE_TILESHEETS.scale.y+=0.1;
+        }else{
+            if(CAGE_TILESHEETS.scale._x>0.4){
+                CAGE_TILESHEETS.scale.x-=0.1; 
+                CAGE_TILESHEETS.scale.y-=0.1;
+            }; 
+        };
+    };
+
+
+    FIXME:
+    /*
     function onPointerup_thumbs(event){
         show_tileSheet(this);
     };
@@ -1587,8 +1748,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function onMove_tileSheet(event){
-        checkAnchor(this);
-        
+        if(MouseHold){ // drag library
+            console.log('event: ', event.data);
+            CAGE_TILESHEETS.list.forEach(cage => {
+                cage.x+= event.data.originalEvent.movementX*0.3;//performe scroll libs mouse
+                cage.y+= event.data.originalEvent.movementY*0.3;//performe scroll libs mouse
+                //cage.getBounds();
+            });
+        }else{
+            checkAnchor(this);
+        };
     };
 
     function onOver_tileSheet(event){
@@ -1601,12 +1770,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         this._filters = null;
     };
 
+    function onPointerdown_tileSheet(event){
+        startMouseHold(true);
+    };
+
     function onPointerup_tileSheet(event){
+        startMouseHold(false);
         const cageInMouse = add_toMouse(this);
         cageInMouse.interactive = true;
         cageInMouse.on('pointerup', onPointerup_cageMouseWithSprite);
     };
 
+    // when sprite hold by mouse.
     function onPointerup_cageMouseWithSprite(event){
         const _clickRight = event.data.button === 0;
         const clickLeft_ = event.data.button === 2;
@@ -1653,7 +1828,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             open_tileSetupEditor(this);
         };
     };
-
+*/
 
 
     /*function mousedown_Editor(event) {
@@ -1718,32 +1893,29 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function wheel_Editor(event) {
         if(iziToast.opened){return}; // dont use mouse when toast editor
         // zoom in Libs
-        if(InMask && InMask === "CAGE_TILESHEETS" && CAGE_TILESHEETS.opened){
-            if(event.wheelDeltaY>0){
-                CAGE_TILESHEETS.scale.x+=0.1;
-                CAGE_TILESHEETS.scale.y+=0.1;
-            }else{
-                if(CAGE_TILESHEETS.scale._x>0.4){
-                    CAGE_TILESHEETS.scale.x-=0.1; 
-                    CAGE_TILESHEETS.scale.y-=0.1;
-                }; 
-            };
-            CAGE_TILESHEETS.getBounds();
-            CAGE_TILESHEETS.list.forEach(cage => { cage.getBounds() });
+        const mousePosition = new PIXI.Point();// cache a global mouse position to keep from creating a point every mousewheel event
+        $mouse.interaction.mapPositionToPoint(mousePosition, event.x, event.y); // get global position in world coordinates
+          // returns element directly under mouse
+        const found = $mouse.interaction.hitTest(mousePosition);
+        // Dispatch scroll event
+        if (found && (found.buttonType === "tileLibs" || found.buttonType === "CAGE_TILESHEETS") ) { 
+            return found.emit('zoomTileLibs', event); 
+        };
+        
+        // zoom map
+        const pos = new PIXI.Point(mX,mY);
+        STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
+        if(event.wheelDeltaY>0){
+            Zoom.x+=0.1,Zoom.y+=0.1
         }else{
-            const pos = new PIXI.Point(mX,mY);
-            STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
-            if(event.wheelDeltaY>0){
-                Zoom.x+=0.1,Zoom.y+=0.1
-            }else{
-                if(Zoom._x>0.4){ Zoom.x-=0.1, Zoom.y-=0.1 }; 
-            };
-            STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
-            STAGE.CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
-            STAGE.CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
-            ScrollX -= (MemCoorZoom2.x - MemCoorZoom1.x);
-            ScrollY -= (MemCoorZoom2.y - MemCoorZoom1.y);
-        }
+            if(Zoom._x>0.4){ Zoom.x-=0.1, Zoom.y-=0.1 }; 
+        };
+        STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
+        STAGE.CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
+        STAGE.CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
+        ScrollX -= (MemCoorZoom2.x - MemCoorZoom1.x);
+        ScrollY -= (MemCoorZoom2.y - MemCoorZoom1.y);
+    
 
     };
 
@@ -1779,7 +1951,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         cage.alpha = 1;
                         cage.Sprites.d._filters = null;
                         cage.Sprites.n && (cage.Sprites.n.renderable = true);
-                        console.log('cage: ', cage);
                         cage.Debug.an.renderable = true;
                         
                     };
@@ -1791,7 +1962,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
-    //document.addEventListener('mouseup',mouseup_Editor.bind(this));
+    document.addEventListener('mouseup',function(){ startMouseHold(false); }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);
     document.addEventListener('keydown', keydown_Editor); // change layers
 //#endregion

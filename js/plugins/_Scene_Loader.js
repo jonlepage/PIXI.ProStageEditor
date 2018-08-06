@@ -42,7 +42,13 @@ Graphics._updateAllElements = function() {
 
 Graphics._clearUpperCanvas = function() {};
 
-
+Graphics._createErrorPrinter = function() {
+    this._errorPrinter = document.createElement('p');
+    this._errorPrinter.id = 'ErrorPrinter';
+    this._updateErrorPrinter();
+    this._errorPrinter.style.pointerEvents = 'none'
+    document.body.appendChild(this._errorPrinter);
+};
 
 Graphics._createModeBox = function() {
     console.log('this: ', this);
