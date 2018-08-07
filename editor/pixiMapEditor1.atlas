@@ -11,18 +11,18 @@ repeat: none
   orig: 28, 28
   offset: 0, 0
   index: -1
-Rectangle 1
-  rotate: false
-  xy: 134, 1039
-  size: 654, 1007
-  orig: 654, 1007
-  offset: 0, 0
-  index: -1
 Rectangle 1 copie
   rotate: true
   xy: 2, 150
   size: 1896, 130
   orig: 1896, 130
+  offset: 0, 0
+  index: -1
+Rectangle-1
+  rotate: false
+  xy: 134, 1039
+  size: 654, 1007
+  orig: 654, 1007
   offset: 0, 0
   index: -1
 TileBarLeft

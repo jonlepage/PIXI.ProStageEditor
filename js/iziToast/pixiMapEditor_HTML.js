@@ -770,212 +770,194 @@ function html_saveEditor() {
 
   //#region [rgba(0,140, 10,0.2)]
 //#endregion
-function html_mapSetupEditor(listBG) {
-    let _listBG = `<option value=false>false</option>`; // 
-    for (let i=0, l=listBG.length; i<l; i++) {
-        _listBG+=`<option value=${listBG[i]}>${listBG[i]}</option>`;
-    };
-    return message = /*html*/ `
-    <div class="container" id="dataIntepretor">
-    <h6>
-        <font color="#d2bc97">BASIC SETUP SCENE</font>
-        <small class="text-muted"><kbd>Json</kbd></small>
+function html_izit_sceneGlobalLight() {
+    const message = /*html*/ `
+        <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">SETUP GLOBAL SCENE LIGHT SHADER</font>
+            <small class="text-muted"><kbd>[json]</kbd></small>
     </h6>
-    
-      <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">def</th>
-                <th scope="col">custom</th>
-            </tr>
-        </thead>
-            <tbody>
-                <tr><!--BG LIST AVAIBLE-->
+        <table class="table table-hover table-dark table-sm">
+            <thead style="background-color: #393939" >
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">def</th>
+                    <th scope="col">custom</th>
+                </tr>
+            </thead>
+            <tbody id="dataIntepretor_globalLight">
+                <td colspan="3"><font color="#d2bc97">Global light</font></td>
+                <tr><!--brightness-->
                     <td>
                         <div class="funkyradio funkyradio-success">
-                            <input id="_BackGround" type="checkbox" name="checkbox"/>
-                            <label for="_BackGround" style="text-indent:0px;margin-right:0px;">.</label>
+                            <input type="checkbox" name="checkbox" id="_brightness"/>
+                            <label for="_brightness" style="text-indent:0px;margin-right:0px;">.</label>
                         </div>
                     </td>
-                    <td>"false"</td>
+                    <td id="brightness_def"></td>
                     <td>
                         <div class="input-group input-group-xs">
                             <div class="input-group-prepend">
                                 <div class="input-group-text">
-                                <small class="text-muted">Background:</small>
+                                <small class="text-muted">brightness:</small>
                                 </div>
                             </div>
-                            <select class="selectRadius" id="BackGround">${_listBG}</select>
+                            <input type="number" step=0.01 value=1 min=0.01 class="form-control" id="brightness">
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--drawMode-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_drawMode"/>
+                            <label for="_drawMode" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td id="drawMode_def"></td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <small class="text-muted">drawMode:</small>
+                                </div>
+                            </div>
+                            <select class="selectRadius" id="drawMode">
+                                <option value=1>LINES</option>
+                                <option value=2>LINE_LOOP</option>
+                                <option value=3>LINE_STRIP</option>
+                                <option value=0>POINTS</option>
+                                <option value=4 selected>TRIANGLES</option>
+                                <option value=6>TRIANGLE_FAN</option>
+                                <option value=5>TRIANGLE_STRIP</option>
+                            </select>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--color-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_color"/>
+                            <label for="_color" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td id="color_def"></td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">color:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
+                                </div>
+                            </div>
+                            <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="color">
                         </div>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table>    
+            <button id="apply" type="button" class="btn btn-outline-success col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger col-md-4">Cancel</button><br>
+            <td colspan="3"><font color="#c17d2e">**Setup from: => "Scene_Base.prototype.asignDisplayGroup"</font></td>
+        </div>
+    `;
+////////////////////////////////////////END
+    return message;
+};
+
+
+  //#region [rgba(220,20, 210,0.2)]
+//#endregion
+function html_izit_sceneSetup() {
+    const message = /*html*/ `
+        <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">SETUP SCENE OPTIONS</font>
+            <small class="text-muted"><kbd>[json]</kbd></small>
+    </h6>
         <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">def</th>
-                <th scope="col">custom</th>
-            </tr>
-        </thead>
-        <tbody>
-            <td colspan="3"><font color="#d2bc97">Custom Scene Global Light</font></td>
-            <tr><!--blendMode-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_blendMode"/>
-                        <label for="_blendMode" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>1</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">blendMode:</small>
-                            </div>
+            <thead style="background-color: #393939" >
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">def</th>
+                    <th scope="col">custom</th>
+                </tr>
+            </thead>
+            <tbody>
+                <td colspan="3"><font color="#d2bc97">Global light</font></td>
+                <tr><!--brightness-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_brightness"/>
+                            <label for="_brightness" style="text-indent:0px;margin-right:0px;">.</label>
                         </div>
-                        <input type="number" step=1 value=1 min=0 max=3 class="form-control" id="blendMode">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--lightHeight-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_lightHeight"/>
-                        <label for="_lightHeight" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>0.075</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">lightHeight:</small>
+                    </td>
+                    <td id="brightness_def"></td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">brightness:</small>
+                                </div>
                             </div>
+                            <input type="number" step=0.01 value=1 min=0.01 class="form-control" id="brightness">
                         </div>
-                        <input type="number" step=0.001 value=0.075 min=0.001 max=1 class="form-control" id="lightHeight">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--brightness-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_brightness"/>
-                        <label for="_brightness" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>1</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">brightness:</small>
+                    </td>
+                </tr>
+                <tr><!--drawMode-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_drawMode"/>
+                            <label for="_drawMode" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td id="drawMode_def"></td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <small class="text-muted">drawMode:</small>
+                                </div>
                             </div>
+                            <select class="selectRadius" id="drawMode">
+                                <option value=1>LINES</option>
+                                <option value=2>LINE_LOOP</option>
+                                <option value=3>LINE_STRIP</option>
+                                <option value=0>POINTS</option>
+                                <option value=4 selected>TRIANGLES</option>
+                                <option value=6>TRIANGLE_FAN</option>
+                                <option value=5>TRIANGLE_STRIP</option>
+                            </select>
                         </div>
-                        <input type="number" step=0.1 value=1 min=0.1 class="form-control" id="brightness">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--radius-->
-                <td>
-                    <div class="funkyradio funkyradio-danger">
-                        <input type="checkbox" name="checkbox" id="_radius"/>
-                        <label for="_radius" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>Infinity</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">radius:</small>
+                    </td>
+                </tr>
+                <tr><!--color-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_color"/>
+                            <label for="_color" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td id="color_def"></td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">color:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
+                                </div>
                             </div>
+                            <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="color">
                         </div>
-                        <input type="number" step=0.01 value=0 min=0 class="form-control" id="radius">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--drawMode-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_drawMode"/>
-                        <label for="_drawMode" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>TRIANGLES</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                                <small class="text-muted">drawMode:</small>
-                            </div>
-                        </div>
-                        <select class="selectRadius" id="drawMode">
-                            <option value=1>LINES</option>
-                            <option value=2>LINE_LOOP</option>
-                            <option value=3>LINE_STRIP</option>
-                            <option value=0>POINTS</option>
-                            <option value=4 selected>TRIANGLES</option>
-                            <option value=6>TRIANGLE_FAN</option>
-                            <option value=5>TRIANGLE_STRIP</option>
-                        </select>
-                    </div>
-                </td>
-            </tr>
-            <tr><!--color-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_color"/>
-                        <label for="_color" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>0xffffff</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">color:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
-                            </div>
-                        </div>
-                        <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="color">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--falloff -->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_falloff"/>
-                        <label for="_falloff" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>[0.75,3,20]</td>
-                <td id="_setDark-BoxDisplay" style="display: block;">
-                    <font color="#d2bc97">falloff attenuation coefficients controler</font><br><br>
-                    <div class="form-control">
-                        <b>kc</b> <input value=0.75 data-slider-min=0.01 data-slider-max=2 data-slider-step=0.01 data-slider-value=0.75 
-                        data-slider-id="RC" id="kc" data-slider-handle="triangle" type="text" class="span2"  /><br>
-
-                        <b>kl</b> <input value=3 data-slider-min=0.01 data-slider-max=20 data-slider-step=0.01 data-slider-value=3
-                        data-slider-id="GC" id="kl" data-slider-handle="triangle" type="text" class="span2"/><br>
-
-                        <b>kq</b> <input value=20 data-slider-min=0.01 data-slider-max=50 data-slider-step=0.01 data-slider-value=20
-                        data-slider-id="BC" id="kq" data-slider-handle="triangle" type="text" class="span2"/>
-
-                    </div> 
-                </td>
-            </tr>
-        </tbody>
-    </table>
-        
-        <button id="apply" type="button" class="btn btn-outline-success col-md-6">Apply</button>
-        <button id="cancel" type="button" class="btn btn-outline-danger col-md-4">Cancel</button><br>
-        <td colspan="3"><font color="#c17d2e">**This will change the "currentScene".json**</font></td>
-    </div>`//end
-   };
-
+                    </td>
+                </tr>
+            </tbody>
+        </table>    
+            <button id="apply" type="button" class="btn btn-outline-success col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger col-md-4">Cancel</button><br>
+            <td colspan="3"><font color="#c17d2e">**Setup from: => "Scene_Base.prototype.asignDisplayGroup"</font></td>
+        </div>
+    `;
+////////////////////////////////////////END
+    return message;
+};
 
 
 

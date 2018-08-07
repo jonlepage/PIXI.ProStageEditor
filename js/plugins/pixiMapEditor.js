@@ -469,8 +469,8 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     //CAGE_TILESHEETS.addChild(CAGE_TILESHEETS.mask);
     // setup && hack
     CAGE_TILESHEETS.position.set(1280,50);
-    CAGE_TILESHEETS.mask.position.set(1280-8, 50-8);
-    CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 1000;
+    CAGE_TILESHEETS.mask.position.set(1280, 50);
+    CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 850;
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = false; // store list of tile
@@ -725,8 +725,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function getDataJson(OBJ){
         console.log('OBJ: ', OBJ);
         // data for the scene setup
-        let data;
-        if(OBJ.isStage){
+        let data = {};
+        if(OBJ.Type === "AmbientLight"){
+            data =  { ...data,
+                brightness:{def:1, value:OBJ.brightness},
+                drawMode:{def:4, value:OBJ.drawMode},
+                color:{def:"0xffffff", value:OBJ.color},
+            };
+        };
+        /*if(OBJ.isStage){
             data = { // id html
                 BackGround:{def:false, value:OBJ.Background && OBJ.Background.name}, // props:{def:, value:, checked:}
                 blendMode:{def:1, value:OBJ.light_Ambient.blendMode},
@@ -737,9 +744,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 color:{def:"0xffffff", value:OBJ.light_Ambient.color},
                 falloff:{def:[0.75, 3, 20], value:OBJ.light_Ambient.falloff},
             };
-        };
+        };*/
          // data base for sprites, spine animations..
-        if(!OBJ.isStage){
+        /*if(!OBJ.isStage){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             data = { // id html
                 groupID:{def:"default", value:OBJ.groupID || "default"},
@@ -757,13 +764,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 //setDark:{def:[0,0,0], value:[0,0,0]},
                 //setLight:{def:[1,1,1], value:[1,1,1]},
             };
-        };
-        if(OBJ.Type === "animationSheet"){
+        };*/
+        /*if(OBJ.Type === "animationSheet"){
             data = {...data,
                 animationSpeed:{def:1, value:OBJ.animationSpeed},
             }
     
-        };
+        };*/
         return data;
     };
 
@@ -771,9 +778,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function getDataCheckBoxWith(OBJ, Data_Values){
         if(OBJ.Data_CheckBox){return OBJ.Data_CheckBox};
         const Data_CheckBox = {};
-        Object.keys(Data_Values).forEach(key => {
-            Data_CheckBox[key] = true;
-        });
+        Object.keys(Data_Values).forEach(key => { Data_CheckBox[key] = true });
         return Data_CheckBox;
     };
 
@@ -805,31 +810,43 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
         ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
 
-        start_tileSetupEditor(_jscolor, InMapObj);
+        start_tileSetupEditor(InMapObj, _jscolor, _Falloff);
     };
 
-    // open from buttons custom STAGE SETUP
-    function open_mapSetupEditor() {
+    // setup the global scene light :light_Ambient and directionLight
+    function open_sceneSetup() {
         clear_tileSheet(true,CAGE_TILESHEETS);
+        close_editor();
+        setStatusInteractiveObj(false);
         iziToast.opened = true;
-        document.exitPointerLock();
-        iziToast.info( $PME.mapSetupEditor() );
+        iziToast.info( $PME.izit_sceneGlobalLight() );
         // show tint colors pickers
         const _jscolor = new jscolor(document.getElementById("color")); // for case:id="_color" slider:id="color"
         _jscolor.zIndex = 9999999;
-        const _Falloff = create_sliderFalloff(); // create slider html for light
-        start_mapSetupEditor(_jscolor,_Falloff, STAGE);
+        //const _Falloff = create_sliderFalloff(); // create slider html for light
+        start_iziToastDataEditor(STAGE.light_Ambient, _jscolor, null);
+    };
+
+    // setup the global scene light :light_Ambient and directionLight
+    function open_sceneGlobalLight() {
+        clear_tileSheet(true,CAGE_TILESHEETS);
+        close_editor();
+        setStatusInteractiveObj(false);
+        iziToast.opened = true;
+        iziToast.info( $PME.izit_sceneGlobalLight() );
+        // show tint colors pickers
+        const _jscolor = new jscolor(document.getElementById("color")); // for case:id="_color" slider:id="color"
+        _jscolor.zIndex = 9999999;
+        //const _Falloff = create_sliderFalloff(); // create slider html for light
+        start_iziToastDataEditor(STAGE.light_Ambient, _jscolor, null);
     };
 
     // for tiles on map
-    function start_tileSetupEditor(_jscolor,OBJ){
+    function start_iziToastDataEditor(OBJ, _jscolor, _Falloff){
         const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
-        //STEP2: refresh html with json
-        //STEP3: edit html data
         let Data_Values = getDataJson(OBJ);//STEP1:  get json from obj
-        Data_CheckBox = getDataCheckBoxWith(OBJ,Data_Values); // stock checkBox id in objet _check
-        Data_Options = {}; // no props, special options case
-        setHTMLWithData(Data_Values, Data_CheckBox, _jscolor); 
+        let Data_CheckBox = getDataCheckBoxWith(OBJ, Data_Values); // stock checkBox id in objet _check
+        setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff); 
 
         // ========= DATA LISTENER  ===========
         // when checkBox changes
@@ -838,18 +855,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         dataIntepretor.oninput = function(event){ 
             const e = event.target;
-            if(e.type.contains("checkbox")){ // is checkBox
-                const e = event.target;
-                Data_CheckBox[e.id.substring(1)] = e.checked; // substring: remove "_"id
-            };
-            if(!e.type.contains("checkbox")){
-                if(!!e.attributes.id2){// is2D isArray props
-                    Data_Values[e.id].value[+e.attributes.id2.value] = +e.value;
-                }else{
-                    Data_Values[e.id].value = !isFinite(e.value) && e.value || +e.value;
-                }
-            };
-            setObjWithData(Data_Values, Data_CheckBox, OBJ);
+            const type = e.type;
+            if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id
+            if(type === "number"){ Data_Values[e.id].value = +e.value };
+            if(type === "select-one"){ Data_Values[e.id].value = e.value };
+            setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+            //if(!!e.attributes.id2){// is2D isArray props Data_Values[e.id].value[+e.attributes.id2.value] = +e.value; }
         };
 
         // ========= control global scene light ===========
@@ -857,7 +868,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         _jscolor.onFineChange = function(){
             Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
             Data_Values.tint && (Data_Values.tint.value = "0x"+_jscolor.targetElement.value);
-            setObjWithData(Data_Values, Data_CheckBox, OBJ);
+            setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
         };
         // Bootstrape sliders, when change value
         //_Falloff.kc.on("slide", function(value) { Data_Values.falloff.value[0] = value });
@@ -941,35 +952,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };*/
 
-    // asign props value to objet, if checked, type: of objs updated ? light, tiles
-    function setObjWithData(Data_Values, Data_CheckBox, obj) {
+    // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
+    function setObjWithData(Data_Values, Data_CheckBox) {
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
-            const value = !checked && Data_Values[key].def || Data_Values[key].value;
-            const _obj = obj.Sprites && obj.Sprites.d || obj.Sprites.s;
-            const _obj_n = _obj && obj.Sprites.n
-            switch (key) {
-                case "BackGround":
-                    STAGE.createBackground(DATA[value]);
-                break;
-                case "scale":case "skew":case "pivot":
-                    obj[key].set(...value);
-                break;
-                case "lightHeight":case "brightness":case "radius":case "drawMode":case "color":case "falloff":
-                case "alpha":case "rotation":case "groupID":
-                    obj[key] = !isFinite(value) && value || +value;
-                    
-                break;
-                case "blendMode":
-                    if (_obj_n) {
-                        _obj_n[key] = +value;
-                    }else{
-                        obj[key] = +value;
-                    }
-                break;
-                case "tint":
-                    _obj[key] = +value;
-                break;
+            const value = checked ? Data_Values[key].value : Data_Values[key].def;
+            // value, string,number,int,....
+            if(isFinite(value)){
+                this[key] = +value;
+            }else{
+                this[key].set(...value); // "scale""skew""pivot"..
             };
         }
     };
@@ -977,47 +969,31 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // asign props value to HTML izit
     function setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) {
         for (const key in Data_Values) {
-            const value = Data_Values[key].value;
-            const _value = true; // checked value
-            let e,c;
+            const value = Data_Values[key].value; // curent value
+            const def = Data_Values[key].def; // default value
+            
+            let d = document.getElementById(key+"_def"); // default value 
+                d.innerHTML = Data_Values[key].def;
+            let c = document.getElementById("_"+key); // checkBox
+                c.checked = !!Data_CheckBox[key];
+
+            let e = document.querySelectorAll('#'+key); // value
+                e = e.length>1 ? e[0] : e;
+
             switch (key) {
-                case "BackGround":
-                    e = document.getElementById(key);
-                    e.value = Data_Values[key].value;
-                break;
-                case "scale":case "skew":case "pivot":
-                    document.querySelectorAll(`#${key}`).forEach(e => {
-                        var arrId = e.attributes.id2.value;
-                        e.value = Data_Values[key].value[arrId];
-                    });
-                break;
-                case "blendMode":case "lightHeight":case "brightness":case "radius":case "drawMode":
-                case "rotation":case "alpha":case "groupID":
-                    //STAGE.light_Ambient[key] = +value || value;
-                    e = document.getElementById(key);
-                    e.value = Data_Values[key].value;
-                break;
                 case "falloff":
-                _Falloff.kc.setValue(Data_Values[key].value[0]);
-                _Falloff.kl.setValue(Data_Values[key].value[1]);
-                _Falloff.kq.setValue(Data_Values[key].value[2]);
+                    _Falloff.kc.setValue(Data_Values[key].value[0]);
+                    _Falloff.kl.setValue(Data_Values[key].value[1]);
+                    _Falloff.kq.setValue(Data_Values[key].value[2]);
                 break;
                 case "tint":case "color":
-                    e = document.getElementById(key);
                     e.value = PIXI.utils.hex2string(+Data_Values[key].value).substring(1);
-                    
                 break;
-               
+                default:
+                    Array.isArray(e)? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.id2.value] }) : e.value = Data_Values[key].value;
+                break;
             };
-
-            // checkbox
-            for (const key in Data_CheckBox) {
-                c = document.getElementById("_"+key);
-                if(c){
-                    c.checked = Data_CheckBox[key];
-                };
-            }
-        }
+        };
     };
 
     // close the dataEditor
@@ -1027,6 +1003,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") );
         iziToast.opened = false;
 
+        setStatusInteractiveObj(true);
+        clear_tileSheet(true,CAGE_TILESHEETS);
+        open_editor();
     };
 
 //#endregion
@@ -1328,6 +1307,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return hide;
     };
 
+    function open_editor() {
+        EDITOR.state.setAnimation(1, 'start0', false);
+        CAGE_LIBRARY.renderable = true;
+    };
+
+    function close_editor() {
+        EDITOR.state.setAnimation(1, 'hideFullEditor', false);
+        CAGE_LIBRARY.renderable = false;
+    };
+
     function setStatusInteractiveObj(status){
         for (let i=0, l= $Objs.list_master.length; i<l; i++) {
             const _cage =  $Objs.list_master[i];
@@ -1349,14 +1338,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // add to map new obj + Obj.Asign a copy unique of html Editor json asigned addtomap
     function add_toScene(obj) {
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-        if(CAGE_MOUSE.list.pined){ // if pined in a line. get position of old prite obj
-            // mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
-            cage.x = ((obj.getGlobalPosition().x/Zoom.x)+STAGE.CAGE_MAP.pivot.x);
-            cage.y = ((obj.getGlobalPosition().y/Zoom.y)+STAGE.CAGE_MAP.pivot.y);
-        }else{
-            cage.x = mMX;
-            cage.y = mMY;
-        }
+        //TODO: if pined in a line. get position of old prite obj
+        cage.x = mMX;
+        cage.y = mMY;
+
         cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
         $Objs.list_master.push(cage);
@@ -1373,19 +1358,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     };
 
-    function execute_buttons(InButtons) {
+    function execute_buttons(buttonSprite) {
         console.log('InButtons: ', InButtons);
-        if(InButtons.currentSpriteName.contains("icon_setup")){
+        const name = buttonSprite.region.name;
+        if(name.contains("icon_setup")){
             EDITOR.state.setAnimation(2, 'filterSetting', false);
         }
-        if(InButtons.currentSpriteName.contains("icon_grid")){
+        if(name.contains("icon_grid")){
             drawGrids();
         };
-        if(InButtons.currentSpriteName.contains("icon_masterLight")){
+        if(name.contains("icon_masterLight")){
             //open_dataEditor();
-            open_mapSetupEditor(); // edit ligth brigth , and custom BG
+            open_sceneGlobalLight(); // edit ligth brigth , and custom BG
         };
-        if(InButtons.currentSpriteName.contains("icon_drawLine")){
+        if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
         }
     };
@@ -1498,72 +1484,28 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function check_InMask(mX,mY) {
-        let inValue = false;
-        if(CAGE_LIBRARY.mask._boundsRect.contains(mX,mY)){ inValue= "CAGE_LIBRARY" };
-        if(CAGE_TILESHEETS.opened && CAGE_TILESHEETS.mask._boundsRect.contains(mX,mY)){ inValue= "CAGE_TILESHEETS" };
-        if(!inValue && !!(InLibs || InTiles)){
-           clearFilters(InLibs && CAGE_LIBRARY.list || InTiles && CAGE_TILESHEETS.list);
-        };
-        return inValue;
-    };
 
-    // scan and test bound for check mouse in
-    function check_In(list) { // InLibs
-        let inValue = false;
-        let i = 0;
-        for (l = list.length; i < l; i++) {
-            const cage = list[i];
-            if(cage._boundsRect.contains(mX,mY)){
-                activeFilters(cage);
-                inValue = cage;
-                break;
-            };
-        };
-        // clear
-        if(inValue && inValue!==(InLibs||InTiles||InMapObj)){clearFilters(list,i)};
-        if(!inValue && (InLibs||InTiles||InMapObj)){ clearFilters(list) };
-        return inValue;
-    };
 
-    // refresh all variable mouse
-    const __mXY = new PIXI.Point();
     function refreshMouse() {
-        __mXY.x = +mX; // store befor x, need if line lock
-        __mXY.y = +mY; // store befor x, need if line lock
         mX = $mouse.x, mY = $mouse.y;
         mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
         mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
         update_Light();
-        // update_MouseList();
+
+        // if mouse hold sprite =>update
         if(CAGE_MOUSE.list){ // update cages list hold by mouse
-            CAGE_MOUSE.list.x = mMX;
-            CAGE_MOUSE.list.y = mMY;
+            CAGE_MOUSE.list.position.set(mMX,mMY);
             CAGE_MOUSE.list.zIndex = mMY;
         };
+
+        // preview thumbs showed
         if(CAGE_MOUSE.previewsShowed){
             CAGE_MOUSE.previews.pivot.x = mX>1920/2 && CAGE_MOUSE.previews.width/2 || 0;
-            CAGE_MOUSE.previews.x =  mX/3;
-            CAGE_MOUSE.previews.y = 900;
-        }
-        if(LineDraw){
-            LineDraw.position.set(mX,mY);
+            CAGE_MOUSE.previews.position.set(mX/3, 900);
         };
-        // lock position to line if in line
-        if(CAGE_MOUSE.list){
-            let pined = false;
-            LineList.forEach(line => {
-                if(line.pinable && line._boundsRect.contains(mMX,mMY)){
-                    pined = true;
-                    if(line.horizon){ // true === Horz
-                        CAGE_MOUSE.list.y = line._boundsRect.y+(line._boundsRect.height/2);
-                    }else{
-                        CAGE_MOUSE.list.x = line._boundsRect.x+(line._boundsRect.width/2);
-                    };
-                };
-            });
-            CAGE_MOUSE.list.pined = pined;
-        };
+
+        // if mouse hold line and draw mode ? 
+        if(LineDraw){ LineDraw.position.set(mX,mY) };
     };
 
     function startMouseHold(activeTarget){
@@ -1597,32 +1539,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     
                 });
             };
-        }
-        /*InMask = check_InMask(mX,mY);
-        if(MouseHold && InMask === "CAGE_TILESHEETS"){ // drag library
-            CAGE_TILESHEETS.list.forEach(cage => {
-                cage.x+= event.movementX*0.7;//performe scroll libs mouse
-                cage.y+= event.movementY*0.7;//performe scroll libs mouse
-                cage.getBounds();
-                
-            });
         };
-        if(InMask){
-            InLibs = check_In(CAGE_LIBRARY.list) || false;
-            InTiles = !InLibs && CAGE_TILESHEETS.opened && check_In(CAGE_TILESHEETS.list) || false;
-        }else{
-            InLibs = false, InTiles = false;
-            InButtons = !InLibs && !InTiles &&  check_In(ButtonsSlots) || false;
-            if(event.ctrlKey && !InButtons){ // check if on a map objs elements
-                // TODO: USE + ALT FOR REVERSE CHECK
-                InMapObj = check_In($Objs.list_master) || false;
-            };
-        };
-
-        if(InTiles){
-            checkAnchor(InTiles);
-        };
-        show_previews(InLibs);*/
     }, STAGE);
     
     // mouse [=>IN <=OUT] FX
@@ -1678,7 +1595,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
             if(event.currentTarget.buttonType === "tileLibs"){ // in bottom library
-                setStatusInteractiveObj(false);
+                setStatusInteractiveObj(false); // disable interactivity
                 return add_toMouse(event.currentTarget);
             }
             if(event.currentTarget.buttonType === "tileMouse"){ // in bottom library
@@ -1686,6 +1603,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
             if(event.currentTarget.buttonType === "tileMap" &&  event.data.originalEvent.ctrlKey){ // in bottom library
                 return open_tileSetupEditor(event.currentTarget);
+            }
+            if(event.currentTarget.buttonType === "button"){ // in bottom library
+                return execute_buttons(event.currentTarget);
             }
         }
         if(clickLeft_){// =>

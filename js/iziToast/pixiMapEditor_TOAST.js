@@ -22,27 +22,44 @@ _PME.prototype.izit_loading1 = function() { // load all sprites dependency for e
     };
 };
     
-    // open the scene stage editor
-_PME.prototype.mapSetupEditor = function() {
-    // get BG list "only on a Scene editor" , all maps use rmmv editor 
-    let listBG = [];
-    for (const key in this.Data2) {
-        const data = this.Data2[key];
-        data.dirArray.contains("BG") && listBG.push(key);
-    };
-    let message = html_mapSetupEditor(listBG);
+    // open editor for setup the global scene light :light_Ambient and directionLight
+_PME.prototype.izit_sceneGlobalLight = function() {
+    let message = html_izit_sceneGlobalLight();
     return{
-        title: '',
+        title: 'Customize the generale ambiance for the current scene or map id \n',
         message: message,
         id:'dataEditor',
         layout: 2,
         transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
         transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
-        messageSize: 14,
-        maxWidth: false,
+        messageSize: 12,
+        maxWidth: 500,
         theme: 'dark',
-        position: 'topRight', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
-        backgroundColor: 'rgba(38, 38, 38, 0.8)',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.9)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
+// open editor for setup the global scene , BG, id, filename
+_PME.prototype.izit_sceneSetup = function() {
+    let message = html_izit_sceneSetup();
+    return{
+        title: 'Customize the generale ambiance for the current scene or map id \n',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 12,
+        maxWidth: 500,
+        theme: 'dark',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.9)',
         close: false,
         progressBar: false,
         timeout:false,

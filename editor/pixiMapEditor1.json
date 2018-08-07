@@ -1,12 +1,12 @@
 {
-"skeleton": { "hash": "CLK4tiPHZeMgvDhpzxiaVndNEgI", "spine": "3.7.19-beta", "width": 1950.39, "height": 1079 },
+"skeleton": { "hash": "x2q7dxyNh4DCbyFpN9RMP3Xsxek", "spine": "3.7.19-beta", "width": 1950.39, "height": 1079 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Rectangle 1 copie", "parent": "root", "length": 150.7, "x": 272.96, "y": -1073.32 },
 	{ "name": "TileBarLeft copie 3", "parent": "root", "length": 80.29, "rotation": -0.59, "x": 2.24, "y": -1070.71 },
 	{ "name": "bar_G", "parent": "root", "length": 93.13, "rotation": -89.54, "x": 96.1, "y": -32.65 },
 	{ "name": "tileSheetsBox", "parent": "root", "length": 115.91, "rotation": 179.57, "x": 2076.39, "y": -603.03 },
-	{ "name": "bottomTilesheet", "parent": "tileSheetsBox", "length": 30.22, "rotation": -89.57, "x": 474.01, "y": 483.23 },
+	{ "name": "bottomTilesheet", "parent": "tileSheetsBox", "length": 30.22, "rotation": -89.57, "x": 475.09, "y": 338.33 },
 	{ "name": "filterBG", "parent": "root", "length": 45.35, "rotation": -0.53, "x": 50.74, "y": -997.08 },
 	{ "name": "icon_bar_Filters", "parent": "root", "length": 86.12, "rotation": -0.55, "x": 1.41, "y": -931.35 },
 	{ "name": "icon_darkMode", "parent": "Rectangle 1 copie", "length": 25.46, "rotation": -3.37, "x": 1617.9, "y": 76.39 },
@@ -20,7 +20,7 @@
 	{ "name": "boxx", "bone": "root", "attachment": "boxx" },
 	{ "name": "TileBarLeft", "bone": "tileSheetsBox", "attachment": "TileBarLeft" },
 	{ "name": "TileBarLeft copie 2", "bone": "bottomTilesheet", "attachment": "TileBarLeft copie 2" },
-	{ "name": "Rectangle 1", "bone": "white Box", "attachment": "Rectangle 1" },
+	{ "name": "Rectangle 1", "bone": "white Box", "attachment": "Rectangle-1" },
 	{ "name": "bar_G", "bone": "bar_G", "attachment": "bar_G" },
 	{ "name": "displayRectangleGroup", "bone": "pixidsplayLogo", "attachment": "displayRectangleGroup" },
 	{ "name": "gb0", "bone": "pixidsplayLogo", "attachment": "gb0" },
@@ -64,7 +64,7 @@
 			"1f513": { "x": 14.35, "y": -43.03, "rotation": 90, "width": 28, "height": 28 }
 		},
 		"Rectangle 1": {
-			"Rectangle 1": { "x": 499.28, "y": 12.17, "rotation": 90, "width": 654, "height": 1007 }
+			"Rectangle-1": { "x": 502.79, "y": 12.17, "rotation": 90, "width": 654, "height": 1007 }
 		},
 		"Rectangle 1 copie": {
 			"Rectangle 1 copie": { "x": 674.04, "y": 72.32, "width": 1896, "height": 130 }
@@ -215,7 +215,195 @@
 	}
 },
 "animations": {
-	"filterSetting": {
+	"fullLibsView": {
+		"bones": {
+			"Rectangle 1 copie": {
+				"scale": [
+					{ "time": 0, "x": 1, "y": 1 }
+				]
+			}
+		}
+	},
+	"hideFullEditor": {
+		"bones": {
+			"pixidsplayLogo": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.67, -0.14, 0.75, 1 ]
+					},
+					{ "time": 0.3333, "x": 0, "y": 47.62 }
+				]
+			},
+			"icon_set_option": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 },
+					{ "time": 0.4, "x": -51.19, "y": 0 }
+				]
+			},
+			"icon_set_G": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.756, -0.22, 1, 0.54 ]
+					},
+					{ "time": 0.2333, "x": -100.28, "y": 0 }
+				]
+			},
+			"filterBG": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 },
+					{ "time": 0.1667, "x": -1314.54, "y": 0 }
+				]
+			},
+			"bar_G": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 1, -0.37, 0.259, 0.93 ]
+					},
+					{ "time": 0.6667, "x": -126.59, "y": 0 }
+				]
+			},
+			"TileBarLeft copie 3": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.089, 0.56, 0.75, 1 ]
+					},
+					{ "time": 0.3333, "x": -244.35, "y": 0 }
+				]
+			},
+			"tileSheetsBox": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"icon_bar_Filters": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 1, -0.17, 0, 1 ]
+					},
+					{ "time": 0.6667, "x": -312.16, "y": 0 }
+				]
+			},
+			"Rectangle 1 copie": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.991, -0.24, 0, 0.95 ]
+					},
+					{ "time": 0.6667, "x": -1933.83, "y": 0 }
+				]
+			}
+		}
+	},
+	"hideTileSheets": {
+		"bones": {
+			"tileSheetsBox": {
+				"translate": [
+					{
+						"time": 0.1667,
+						"x": 6.7,
+						"y": 0,
+						"curve": [ 1, 0.01, 1, 0.74 ]
+					},
+					{ "time": 0.3333, "x": 667.4, "y": 0 }
+				]
+			},
+			"bottomTilesheet": {
+				"translate": [
+					{
+						"time": 0.0667,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0, 0.72, 0.75, 1 ]
+					},
+					{ "time": 0.3, "x": 6.35, "y": -850.49 }
+				]
+			},
+			"icon_darkMode": {
+				"rotate": [
+					{ "time": 0, "angle": 3.37 }
+				]
+			},
+			"white Box": {
+				"scale": [
+					{
+						"time": 0,
+						"x": 1,
+						"y": 1,
+						"curve": [ 0, 0.32, 0.75, 1 ]
+					},
+					{ "time": 0.2333, "x": 0.01, "y": 1 }
+				]
+			}
+		}
+	},
+	"idle": {
+		"bones": {
+			"pixidsplayLogo": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"icon_set_option": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"icon_set_G": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"filterBG": {
+				"translate": [
+					{ "time": 0, "x": -1222.87, "y": 0 },
+					{ "time": 0.6667, "x": 0, "y": 0 }
+				]
+			},
+			"bar_G": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"TileBarLeft copie 3": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"tileSheetsBox": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"icon_bar_Filters": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			},
+			"Rectangle 1 copie": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			}
+		}
+	},
+	"showOption": {
 		"bones": {
 			"pixidsplayLogo": {
 				"translate": [
@@ -304,112 +492,6 @@
 			}
 		}
 	},
-	"fullLibsView": {
-		"bones": {
-			"Rectangle 1 copie": {
-				"scale": [
-					{ "time": 0, "x": 1, "y": 1 }
-				]
-			}
-		}
-	},
-	"hideTileSheets": {
-		"bones": {
-			"tileSheetsBox": {
-				"translate": [
-					{
-						"time": 0,
-						"x": 6.7,
-						"y": 0,
-						"curve": [ 1, 0.01, 1, 0.74 ]
-					},
-					{ "time": 0.3333, "x": 667.4, "y": 0 }
-				]
-			},
-			"bottomTilesheet": {
-				"translate": [
-					{
-						"time": 0.0667,
-						"x": 0,
-						"y": 0,
-						"curve": [ 0, 0.72, 0.75, 1 ]
-					},
-					{ "time": 0.3, "x": 7.39, "y": -989.93 }
-				]
-			},
-			"Rectangle 1 copie": {
-				"translate": [
-					{ "time": 0, "x": -647.2, "y": 0 }
-				]
-			},
-			"icon_darkMode": {
-				"rotate": [
-					{ "time": 0, "angle": 3.37 }
-				]
-			},
-			"white Box": {
-				"scale": [
-					{
-						"time": 0,
-						"x": 1,
-						"y": 1,
-						"curve": [ 0, 0.32, 0.75, 1 ]
-					},
-					{ "time": 0.2333, "x": 0.01, "y": 1 }
-				]
-			}
-		}
-	},
-	"idle": {
-		"bones": {
-			"pixidsplayLogo": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"icon_set_option": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"icon_set_G": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"filterBG": {
-				"translate": [
-					{ "time": 0, "x": -1222.87, "y": 0 },
-					{ "time": 0.6667, "x": 0, "y": 0 }
-				]
-			},
-			"bar_G": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"TileBarLeft copie 3": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"tileSheetsBox": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"icon_bar_Filters": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"Rectangle 1 copie": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			}
-		}
-	},
 	"showTileSheets": {
 		"bones": {
 			"tileSheetsBox": {
@@ -421,17 +503,6 @@
 						"curve": [ 0.216, 0.66, 0, 1.04 ]
 					},
 					{ "time": 0.5, "x": 6.7, "y": 0 }
-				]
-			},
-			"Rectangle 1 copie": {
-				"translate": [
-					{
-						"time": 0,
-						"x": 0,
-						"y": 0,
-						"curve": [ 0.117, 0.87, 0, 1.25 ]
-					},
-					{ "time": 0.6667, "x": -647.2, "y": 0 }
 				]
 			},
 			"icon_darkMode": {
@@ -463,12 +534,12 @@
 			},
 			"bottomTilesheet": {
 				"translate": [
-					{ "time": 0, "x": 7.4, "y": -992.07, "curve": "stepped" },
+					{ "time": 0, "x": 6.33, "y": -848.58, "curve": "stepped" },
 					{
 						"time": 0.2,
-						"x": 7.4,
-						"y": -992.07,
-						"curve": [ 0, 0.35, 0.646, 1 ]
+						"x": 6.33,
+						"y": -848.58,
+						"curve": [ 0, 0.42, 0.546, 0.99 ]
 					},
 					{ "time": 0.6, "x": 0, "y": 0 }
 				]
@@ -550,7 +621,13 @@
 						"y": 0.693,
 						"curve": [ 0.25, 0, 0.574, 0.99 ]
 					},
-					{ "time": 1.3333, "x": 0.058, "y": 0.664 }
+					{
+						"time": 0.8667,
+						"x": 0.058,
+						"y": 0.664,
+						"curve": [ 0.844, -0.07, 0.47, 1 ]
+					},
+					{ "time": 1.3333, "x": 1, "y": 1 }
 				]
 			},
 			"icon_set_G": {

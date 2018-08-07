@@ -162,7 +162,11 @@ Scene_Base.prototype.asignDisplayGroup = function() {
     //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
     const dataScene = this.loaderSet && this.loaderSet.SCENE || {color:0xffffff, brightness:1};
     this.light_Ambient = new PIXI.lights.AmbientLight(dataScene.color, dataScene.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
+    this.light_Ambient.Type = "AmbientLight";
+
     this.light_sunScreen =  new PIXI.lights.PointLight(0xffffff,3); // the sceen FX sun TODO: in Editor
+    this.light_sunScreen.Type = "PointLight";
+    
     this.light_sunScreen.position.set(0, 0);
     this.addChild(this.light_Ambient,this.light_sunScreen);
 };
