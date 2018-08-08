@@ -188,3 +188,42 @@
   border: 2px solid #FF8282;
   border-radius: 50%;
 }
+
+
+.boxlock {
+  visibility: hidden;
+  border: 2px solid rgb(0, 0, 0);
+}
+
+input.boxlock::after {
+  visibility: visible;
+  content: "\1F513";
+  background: green;
+  padding: 1px;
+  margin: 2px;
+  display: -webkit-inline-box;
+  border-radius: 16px;
+  transition: all 800ms; /* transition when the mouse over */
+  border: 2px solid rgb(0, 0, 0);
+}
+
+input.boxlock:checked::after {
+  visibility: visible;
+  content: "\1F512";
+  background: rgb(255, 0, 0);
+  padding: 1px;
+  margin: 2px;
+  display: -webkit-inline-box;
+  border-radius: 16px;
+  transition: all 800ms; /* transition when the mouse over */
+  border: 2px solid rgb(0, 0, 0);
+
+}
+
+input.boxlock:hover::after {
+  border: 2px solid rgb(255, 0, 221);
+  margin: 0px;
+  border-radius: 1px;
+  transition: all 400ms; /* transition when the mouse over */
+
+}

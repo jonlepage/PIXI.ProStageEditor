@@ -985,7 +985,7 @@ return message = /*html*/ `
                         <label for="_groupID" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>"undefined"</td>
+                <td id="groupID_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
@@ -997,6 +997,27 @@ return message = /*html*/ `
                     </div>
                 </td>
             </tr>
+            <tr><!--position-->
+                <td>
+                    <div class="funkyradio funkyradio-success">
+                        <input type="checkbox" name="checkbox" id="_position"/>
+                        <label for="_position" style="text-indent:0px;margin-right:0px;">.</label>
+                    </div>
+                </td>
+                <td id="position_def"></td>
+                <td>
+                    <div class="input-group input-group-xs">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                            <small class="text-muted">position:&nbsp</small>
+                            </div>
+                        </div>
+                        <input type="number" step=0.1 class="form-control" id="position" id2=0>
+                        <input type="number" step=0.1 class="form-control" id="position" id2=1>
+                        <input class="boxlock" type="checkbox" id="position_lock">
+                    </div>
+                </td>
+            </tr>
             <tr><!--scale-->
                 <td>
                     <div class="funkyradio funkyradio-success">
@@ -1004,16 +1025,17 @@ return message = /*html*/ `
                         <label for="_scale" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>[1,1]</td>
+                <td id="scale_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                            <small class="text-muted">Scale:&nbsp</small><input type="checkbox" id="scale_lock"><small class="text-muted">&#x1f512;</small>
+                            <small class="text-muted">Scale:</small>
                             </div>
                         </div>
                         <input type="number" step=0.01 value=50 class="form-control" id="scale" id2=0>
                         <input type="number" step=0.01 value=0 class="form-control" id="scale" id2=1>
+                        <input class="boxlock" type="checkbox" id="scale_lock">
                     </div>
                 </td>
             </tr>
@@ -1024,16 +1046,17 @@ return message = /*html*/ `
                         <label for="_skew" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>[0,0]</td>
+                <td id="skew_def">[0,0]</td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                            <small class="text-muted">skew:&nbsp</small><input type="checkbox" id="skew_lock"><small class="text-muted">&#x1f512;</small>
+                            <small class="text-muted">skew:</small>
                             </div>
                         </div>
                         <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=0>
                         <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=1>
+                        <input class="boxlock" type="checkbox" id="skew_lock">
                     </div>
                 </td>
             </tr>
@@ -1044,16 +1067,17 @@ return message = /*html*/ `
                         <label for="_pivot" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>[0,0]</td>
+                <td id="pivot_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                            <small class="text-muted">pivot:&nbsp</small><input type="checkbox" id="pivot_lock"><small class="text-muted">&#x1f512;</small>
+                            <small class="text-muted">pivot:</small>
                             </div>
                         </div>
                         <input type="number" step=1 value=0 class="form-control" id="pivot" id2=0>
                         <input type="number" step=1 value=0 class="form-control" id="pivot" id2=1>
+                        <input class="boxlock" type="checkbox" id="pivot_lock">
                     </div>
                 </td>
             </tr>
@@ -1064,16 +1088,17 @@ return message = /*html*/ `
                         <label for="_anchor" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>[0,0]</td>
+                <td id="anchor_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                            <small class="text-muted">anchor:&nbsp</small><input type="checkbox" id="anchor_lock"><small class="text-muted">&#x1f512;</small>
+                            <small class="text-muted">anchor:</small>
                             </div>
                         </div>
                         <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=0>
                         <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=1>
+                        <input class="boxlock" type="checkbox" id="anchor_lock">
                     </div>
                 </td>
             </tr>
@@ -1084,7 +1109,7 @@ return message = /*html*/ `
                         <label for="_rotation" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>0</td>
+                <td id="rotation_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
@@ -1103,7 +1128,7 @@ return message = /*html*/ `
                         <label for="_alpha" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>1</td>
+                <td id="alpha_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
@@ -1122,7 +1147,7 @@ return message = /*html*/ `
                         <label for="_blendMode" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>0</td>
+                <td id="blendMode_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
@@ -1141,7 +1166,7 @@ return message = /*html*/ `
                         <label for="_tint" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
-                <td>0xffffff</td>
+                <td id="tint_def"></td>
                 <td>
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
@@ -1153,26 +1178,26 @@ return message = /*html*/ `
                     </div>
                 </td>
             </tr>
-            <tr><!--Layers Options autoDisplayGroup-->
+            <tr><!--Layers Options autoGroups-->
                 <td><div class="custom-control custom-checkbox form-inline">
-                    <input type="checkbox" class="custom-control-input input-xs" id="_autoDisplayGroup">
-                    <label class="custom-control-label" for="_autoDisplayGroup"></label>
+                    <input type="checkbox" class="custom-control-input input-xs" id="_autoGroups">
+                    <label class="custom-control-label" for="_autoGroups"></label>
                 </div></td>
-                <td colspan="2">autoDisplayGroup: <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="AD0">
-                    <label class="form-check-label" for="AD0" style="padding-right: 10px;">:0</label>
-                    <input class="form-check-input" type="checkbox" id="AD1">
-                    <label class="form-check-label" for="AD1" style="padding-right: 10px;">:1</label>
-                    <input class="form-check-input" type="checkbox" id="AD2">
-                    <label class="form-check-label" for="AD2" style="padding-right: 10px;">:2</label>
-                    <input class="form-check-input" type="checkbox" id="AD3">
-                    <label class="form-check-label" for="AD3" style="padding-right: 10px;">:3</label>
-                    <input class="form-check-input" type="checkbox" id="AD4">
-                    <label class="form-check-label" for="AD4" style="padding-right: 10px;">:4</label>
-                    <input class="form-check-input" type="checkbox" id="AD5">
-                    <label class="form-check-label" for="AD5" style="padding-right: 10px;">:5</label>
-                    <input class="form-check-input" type="checkbox" id="AD6">
-                    <label class="form-check-label" for="AD6" style="padding-right: 10px;">:6</label>
+                <td colspan="2">autoGroups: <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="autoGroups0">
+                        <label class="form-check-label" for="autoGroups0" style="padding-right: 10px;">:0</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups1">
+                        <label class="form-check-label" for="autoGroups1" style="padding-right: 10px;">:1</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups2">
+                        <label class="form-check-label" for="autoGroups2" style="padding-right: 10px;">:2</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups3">
+                        <label class="form-check-label" for="autoGroups3" style="padding-right: 10px;">:3</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups4">
+                        <label class="form-check-label" for="autoGroups4" style="padding-right: 10px;">:4</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups5">
+                        <label class="form-check-label" for="autoGroups5" style="padding-right: 10px;">:5</label>
+                    <input class="form-check-input" type="checkbox" id="autoGroups6">
+                        <label class="form-check-label" for="autoGroups6" style="padding-right: 10px;">:6</label>
                 </div></td>
             </tr>
         </tbody>

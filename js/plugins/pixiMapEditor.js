@@ -520,8 +520,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         refreshLibs();
     })();
 
-    // createButtons from spine Editor
-    (function(){ // make and store buttons Data'slots
+    // createButtons interaction from spine Editor icons
+    (function(){
         const list = this.editorGui.spineData.slots;
         for (let i = 0, l = list.length; i < l; i++) {
             const slot = list[i];
@@ -537,11 +537,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _slot.currentSprite.on('pointerover', pointer_overIN,_slot);
                 _slot.currentSprite.on('pointerout', pointer_overOUT,_slot);
                 _slot.currentSprite.on('pointerup', pointer_UP);
-
             };
-    };
-    //force select layer button 
-    //update_DisplayGroup(1);
+        };
     }).bind(this)();
 
     // convert current objs to editor format
@@ -731,35 +728,40 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let data = {};
         if(OBJ.Type === "AmbientLight"){
             data =  { ...data,
-                brightness:{def:1, value:OBJ.brightness},
+                brightness:{def:1, value:OBJ.brightness },
                 drawMode:{def:4, value:OBJ.drawMode},
                 color:{def:"0xffffff", value:OBJ.color},
             };
         };
         if(OBJ.isStage){
             data =  { ...data,
-                Background:{def:false, value:OBJ.Background ? OBJ.Background.name:false},
+                Background:{def:false, value:OBJ.Background ? OBJ.Background.name:false, hideHtml:true},
             };
         };
         if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
             data =  { ...data,
                 groupID:{def:void 0, value:OBJ.groupID || void 0 },
-                position:{def:[0,0], value:[OBJ.position.x, OBJ.position.y]}, // hidding
-                anchor: OBJ.anchor ? {def:[0,0], value:[OBJ.anchor.x, OBJ.anchor.y]} : void 0, // spine no have anchor
+                position:{def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]},
                 scale:{def:[0,0], value:[OBJ.scale.x, OBJ.scale.y]},
                 skew:{def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]},
                 pivot:{def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]},
                 rotation:{def:0, value:OBJ.rotation},
                 alpha:{def:1, value:OBJ.alpha},
-                blendMode:{def:0, value:OBJ.blendMode},
-                tint:{def:"0xffffff", value:OBJ.tint},
+                blendMode:{def:0, value:OBJ.Sprites.d.blendMode},
+                tint:{def:"0xffffff", value:OBJ.Sprites.d.tint},
                 autoGroups:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
-                zIndex:{def:0, value:OBJ.zIndex},
+                zIndex:{def:-1, value:OBJ.zIndex, hideHtml:true}, // hide
                 //setDark:{def:[0,0,0], value:[0,0,0]},
                 //setLight:{def:[1,1,1], value:[1,1,1]},
             };
         };
-
+        
+        if(OBJ.Type === "tileSheet"){
+            console.log('OBJ: ', OBJ);
+            data =  { ...data,
+               anchor: {def:[0,0], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] },
+            };
+        };
          // data base for sprites, spine animations..
         /*if(!OBJ.isStage){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
@@ -921,21 +923,28 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to HTML izit
     function setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) {
+        console.log('Data_CheckBox: ', Data_CheckBox);
+        console.log('Data_Values: ', Data_Values);
         for (const key in Data_Values) {
+            console.log('key: ', key);
+            if(Data_Values[key].hideHtml){continue};
+
             const value = Data_Values[key].value; // curent value
             const def = Data_Values[key].def; // default value
-            
             let d = document.getElementById(key+"_def"); // default value 
-                d.innerHTML = Data_Values[key].def;
+                (Data_Values[key] && d) ? d.innerHTML = Data_Values[key].def : void 0;
             let c = document.getElementById("_"+key); // checkBox
                 c.checked = !!Data_CheckBox[key];
-
             let e = document.querySelectorAll('#'+key); // value
-                e = e.length>1 ? e[0] : e;
-                
-
+                e = e.length-1 ? e : e[0];
+   
             switch (key) {
-                case "Background":break;
+                //case "Background":break; TODO:
+                case "autoGroups":
+                    for (let i=0, l=value.length; i<l; i++) {
+                        document.getElementById("autoGroups"+i).checked = !!Data_CheckBox[key] ? value[i] : def[i];
+                    };
+                break;
                 case "falloff":
                     _Falloff.kc.setValue(Data_Values[key].value[0]);
                     _Falloff.kl.setValue(Data_Values[key].value[1]);
@@ -945,7 +954,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     e.value = PIXI.utils.hex2string(+Data_Values[key].value).substring(1);
                 break;
                 default:
-                    Array.isArray(e)? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.id2.value] }) : e.value = Data_Values[key].value;
+                    e.length? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.id2.value] }) : e.value = Data_Values[key].value;
                 break;
             };
         };
