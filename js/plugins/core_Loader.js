@@ -158,9 +158,11 @@ _coreLoader.prototype.load = function(set) {
     console.log6('load_________________________________set: ', set);
     this._scene = SceneManager._scene;
     for (const key in this.Data2) { delete this.Data2[key] }; // clear all cache when load new scene
-    if(!this.loaderSet[set]){return this._scene.isLoading = false};
-    let empty = !!this.loaderSet[set].SHEETS;
-    this._tmpData = this.loaderSet[set].SHEETS;
+    if(!this.loaderSet[set]){return this._scene.isLoading = false}; // return if not exist
+    if(!Object.keys(this.loaderSet[set]._SHEETS).length){return this._scene.isLoading = false}; // return if not exist
+    
+    let empty = !!this.loaderSet[set]._SHEETS;
+    this._tmpData = this.loaderSet[set]._SHEETS;
 
     this._tmpRes = {};
     this._tmpRes_normal = {};

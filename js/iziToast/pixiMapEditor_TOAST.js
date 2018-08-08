@@ -47,9 +47,13 @@ _PME.prototype.izit_sceneGlobalLight = function() {
 
 // open editor for setup the global scene , BG, id, filename
 _PME.prototype.izit_sceneSetup = function() {
-    let message = html_izit_sceneSetup();
+    const list = Object.keys(this.Data2);
+    let result = list.filter(s =>  {
+        if (this.Data2[s].BG) {return this.Data2[s]};
+    });  
+    let message = html_izit_sceneSetup(result, this.stage);
     return{
-        title: 'Customize the generale ambiance for the current scene or map id \n',
+        title: 'Setup basic information for current scene \n',
         message: message,
         id:'dataEditor',
         layout: 2,
@@ -67,6 +71,30 @@ _PME.prototype.izit_sceneSetup = function() {
         drag: false,
     };
 };
+
+// open save interactions
+_PME.prototype.izit_saveSetup = function() {
+    let message = html_izit_saveSetup.call(this);
+    return{
+        title: 'Save and compute progress in json format \n',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'fadeIn', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 12,
+        maxWidth: 700,
+        theme: 'dark',
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(50, 0, 0, 0.95)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
 
 // open the tileEditor
 _PME.prototype.tileSetupEditor = function(InMapObj){

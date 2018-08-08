@@ -51,18 +51,14 @@ Graphics._createErrorPrinter = function() {
 };
 
 Graphics._createModeBox = function() {
-    console.log('this: ', this);
     this._modeBox.style.pointerEvents = 'none'
-    
 };
 
 Graphics._updateVideo = function() {
-    console.log('_updateVideo: ', _updateVideo);
     this._video.style.pointerEvents = 'none'
 };
 
 Graphics._createUpperCanvas = function() {
-    console.log('_createUpperCanvas: ', _createUpperCanvas);
     this._upperCanvas.style.pointerEvents = 'none'
 };
 

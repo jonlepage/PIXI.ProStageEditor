@@ -866,13 +866,60 @@ function html_izit_sceneGlobalLight() {
 
   //#region [rgba(220,20, 210,0.2)]
 //#endregion
-function html_izit_sceneSetup() {
+function html_izit_sceneSetup(bgList, stage) {
+    console.log('stage: ', stage);
+    console.log('bgList: ', bgList);
+
+    let _bgList = `<option value=false selected>false</option>`; // 
+    for (let i=0, l=bgList.length; i<l; i++) {
+        if(stage.Background && stage.Background.name === bgList[i]){
+            _bgList+=`<option value=${bgList[i]} selected>${bgList[i]}</option>`;
+        }else{
+            _bgList+=`<option value=${bgList[i]}>${bgList[i]}</option>`;
+        }
+        
+    };
+
+
     const message = /*html*/ `
         <div class="container" id="dataIntepretor">
         <h6>
             <font color="#d2bc97">SETUP SCENE OPTIONS</font>
             <small class="text-muted"><kbd>[json]</kbd></small>
-    </h6>
+        </h6>
+
+
+        <table class="table table-hover table-dark table-sm">
+        <thead style="background-color: #393939" >
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">def</th>
+                <th scope="col">custom</th>
+            </tr>
+        </thead>
+            <tbody>
+                <tr><!--BG LIST AVAIBLE-->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input id="_Background" type="checkbox" name="checkbox"/>
+                            <label for="_Background" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td id="Background_def">"false"</td>
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">Background:</small>
+                                </div>
+                            </div>
+                            <select class="selectRadius" id="Background">${_bgList}</select>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
         <table class="table table-hover table-dark table-sm">
             <thead style="background-color: #393939" >
                 <tr>
@@ -882,72 +929,10 @@ function html_izit_sceneSetup() {
                 </tr>
             </thead>
             <tbody>
-                <td colspan="3"><font color="#d2bc97">Global light</font></td>
-                <tr><!--brightness-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_brightness"/>
-                            <label for="_brightness" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td id="brightness_def"></td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">brightness:</small>
-                                </div>
-                            </div>
-                            <input type="number" step=0.01 value=1 min=0.01 class="form-control" id="brightness">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--drawMode-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_drawMode"/>
-                            <label for="_drawMode" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td id="drawMode_def"></td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                    <small class="text-muted">drawMode:</small>
-                                </div>
-                            </div>
-                            <select class="selectRadius" id="drawMode">
-                                <option value=1>LINES</option>
-                                <option value=2>LINE_LOOP</option>
-                                <option value=3>LINE_STRIP</option>
-                                <option value=0>POINTS</option>
-                                <option value=4 selected>TRIANGLES</option>
-                                <option value=6>TRIANGLE_FAN</option>
-                                <option value=5>TRIANGLE_STRIP</option>
-                            </select>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--color-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_color"/>
-                            <label for="_color" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td id="color_def"></td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">color:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
-                                </div>
-                            </div>
-                            <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="color">
-                        </div>
-                    </td>
-                </tr>
+                <td colspan="3"><font color="#d2bc97">MAP SETTING GALAXIE TODO:</font></td>
+                <td colspan="3"><font color="#d2bc97">MAP SETTING PLANET TODO:</font></td>
+                <td colspan="3"><font color="#d2bc97">AUDIO API TODO:</font></td>
+                
             </tbody>
         </table>    
             <button id="apply" type="button" class="btn btn-outline-success col-md-6">Apply</button>
@@ -1198,4 +1183,233 @@ return message = /*html*/ `
     <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
     <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
 </div>`//end
+};
+
+
+  //#region [rgba(255,100, 0,0.8)]
+//#endregion
+function html_izit_saveSetup() {
+    // help converting byte memory to readable size
+    function bytesToSize(bytes) {
+        if (bytes == 0) return 'n/a';
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+        if (i == 0) return bytes + ' ' + sizes[i];
+        return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+    };
+    function getMemorySize(){
+        const memory = process.memoryUsage();
+        for (const entry in memory) {
+            const r = memory[entry];
+            memory[entry] = bytesToSize( memory[entry] );
+        }
+        return `
+        <font color="#bb5179">heaps: </font> <font color="#fff"> Used:</font> (${memory.heapUsed}) /  <font color="#fff">Total:</font> ${memory.heapTotal}<br>
+        <font color="#bb5179">external:</font> ${memory.external}<br>
+        <font color="#bb5179">rss:</font>  ${memory.rss}
+        `;
+    };
+
+
+    console.log('this: ', this);
+    return message = /*html*/ `
+    <div class="container" id="dataIntepretor">
+    <h6>
+        <font color="#d2bc97">SAVE PROGRESS TO JSON</font>
+        <small class="text-muted"><kbd>Json</kbd></small>
+    </h6>
+        <table class="table table-hover table-dark table-sm">
+            <thead style="background-color: #393939" >
+                <tr>
+                    <th scope="col">options</th>
+                    <th scope="col">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                <td colspan="3"><font color="#d2bc97">Rendering options for rmmv editor parralaxe</font></td>
+                <tr><!--Rendering parralaxe for RMMV?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderParaForRMMV': Rendering parralaxe for RMMV?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderParaForRMMV" checked>
+                            <label for="_renderParaForRMMV" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering Layers For PhotoShops?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderLayersPSD': Rendering Layers For PhotoShops?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderLayersPSD"/>
+                            <label for="_renderLayersPSD" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering Events and Players Sprites?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderEventsPlayers': Rendering Events and Players Sprites?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderEventsPlayers"/>
+                            <label for="_renderEventsPlayers" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering grafics debugging?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderDebugsElements': Rendering grafics debugging?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderDebugsElements"/>
+                            <label for="_renderDebugsElements" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering Light shadders?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderingLight': Rendering Light shadders?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderingLight"/>
+                            <label for="_renderingLight" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering layers Normals?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">'_renderLayers_n': Rendering layers Normals?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderLayers_n"/>
+                            <label for="_renderLayers_n" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr><!--Rendering with current Animations times?-->
+                    <td>
+                        <div class="input-group input-group-xs">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                <small class="text-muted">"_renderAnimationsTime0": Reset Animations time to 0 befor render?:</small>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="_renderAnimationsTime0"/>
+                            <label for="_renderAnimationsTime0" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <table class="table table-hover table-dark table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Information</th>
+                    <th scope="col">Value Current</th>
+                    <th scope="col">Value Old</th>
+                </tr>
+            </thead>
+            <tbody id="information">
+                <tr>
+                    <td>MEMORY USAGES:</td>
+                    <td class="text-success">${getMemorySize()}</td>
+                    <td class="text-danger">${getMemorySize()}</td>
+                <tr>
+                <tr>
+                    <td>VERSION EDITOR:</td>
+                    <td class="text-success">${this.version}</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>SavePath:</td>
+                    <td class="text-success"> data/${this.stage.constructor.name}_data.json </td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total Spines:</td>
+                    <td class="text-success"> ${ $Objs.getsByType("spineSheet").length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total Animations:</td>
+                    <td class="text-success"> ${ $Objs.getsByType("animationSheet").length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total TileSprites:</td>
+                    <td class="text-success"> ${ $Objs.getsByType("tileSheet").length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total Light:</td>
+                    <td class="text-success"> ${ $Objs.getsByType("light").length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total Events:</td>
+                    <td class="text-success"> ${ $Objs.getsByType("event").length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+                <tr>
+                    <td>Total Sheets:</td>
+                    <td class="text-success">  ${ $Objs.getsSheetLists().length }</td>
+                    <td class="text-danger">not avaible ...</td>
+                <tr>
+            </tbody>
+        </table>
+        <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
+        <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+        <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
+    </div>`//end
+////////////////////////////////////////END
+    return message;
 };

@@ -19,6 +19,7 @@ function initializeEditor(event){
         console.log1('__________________initializeEditor:__________________ ');
         (function() {
             $PME.started = true;
+            $PME.stage = SceneManager._scene;
             $gameSystem && ($gameSystem._menuEnabled = false); // disable rmmv menu
             const javascript = [
                 "js/iziToast/iziToast.js",
@@ -77,12 +78,14 @@ function initializeEditor(event){
 //└------------------------------------------------------------------------------┘
 class _PME{
     constructor() {
+        this.version = "v1.1.5A";
         this._tmpRes_normal = {};
         this._tmpRes_multiPack = {};
         this._tmpRes = {};
         this._tmpData = {}; // store tmp data for loader , wait to compute
         this.Data2 = {};
         this.editor = {}; // store editor
+        this.stage = null;
     };
   };
   const $PME = new _PME(); // global ↑↑↑
@@ -733,36 +736,35 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 color:{def:"0xffffff", value:OBJ.color},
             };
         };
-        /*if(OBJ.isStage){
-            data = { // id html
-                BackGround:{def:false, value:OBJ.Background && OBJ.Background.name}, // props:{def:, value:, checked:}
-                blendMode:{def:1, value:OBJ.light_Ambient.blendMode},
-                lightHeight:{def:0.075, value:OBJ.light_Ambient.lightHeight},
-                brightness:{def:1, value:OBJ.light_Ambient.brightness},
-                radius:{def:Infinity, value:OBJ.light_Ambient.radius},
-                drawMode:{def:6, value:OBJ.light_Ambient.drawMode},
-                color:{def:"0xffffff", value:OBJ.light_Ambient.color},
-                falloff:{def:[0.75, 3, 20], value:OBJ.light_Ambient.falloff},
+        if(OBJ.isStage){
+            data =  { ...data,
+                Background:{def:false, value:OBJ.Background ? OBJ.Background.name:false},
             };
-        };*/
+        };
+        if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
+            data =  { ...data,
+                groupID:{def:void 0, value:OBJ.groupID || void 0 },
+                position:{def:[0,0], value:[OBJ.position.x, OBJ.position.y]}, // hidding
+                anchor: OBJ.anchor ? {def:[0,0], value:[OBJ.anchor.x, OBJ.anchor.y]} : void 0, // spine no have anchor
+                scale:{def:[0,0], value:[OBJ.scale.x, OBJ.scale.y]},
+                skew:{def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]},
+                pivot:{def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]},
+                rotation:{def:0, value:OBJ.rotation},
+                alpha:{def:1, value:OBJ.alpha},
+                blendMode:{def:0, value:OBJ.blendMode},
+                tint:{def:"0xffffff", value:OBJ.tint},
+                autoGroups:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
+                zIndex:{def:0, value:OBJ.zIndex},
+                //setDark:{def:[0,0,0], value:[0,0,0]},
+                //setLight:{def:[1,1,1], value:[1,1,1]},
+            };
+        };
+
          // data base for sprites, spine animations..
         /*if(!OBJ.isStage){
             _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
             data = { // id html
-                groupID:{def:"default", value:OBJ.groupID || "default"},
-                position:{def:[0,0], value:[OBJ.position.x,OBJ.position.y]}, // hidding
-                anchor:{def:[0,0], value:[_OBJ.anchor&&_OBJ.anchor.x, _OBJ.anchor&&_OBJ.anchor.y]}, // spine no have anchor
-                scale:{def:[0,0], value:[OBJ.scale.x,OBJ.scale.y]},
-                skew:{def:[0,0], value:[OBJ.skew.x,OBJ.skew.y]},
-                pivot:{def:[0,0], value:[OBJ.pivot.x,OBJ.pivot.y]},
-                rotation:{def:0, value:OBJ.rotation},
-                alpha:{def:1, value:OBJ.alpha},
-                blendMode:{def:0, value:_OBJ.blendMode},
-                tint:{def:"0xffffff", value:_OBJ.tint},
-                autoDisplayGroup:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
-                zIndex:{def:0, value:OBJ.zIndex},
-                //setDark:{def:[0,0,0], value:[0,0,0]},
-                //setLight:{def:[1,1,1], value:[1,1,1]},
+
             };
         };*/
         /*if(OBJ.Type === "animationSheet"){
@@ -795,12 +797,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return {kc:kc,kl:kl,kq:kq};
     };
 
-    // TODO: double click obj sur map pour editer ces props, et click sur icons eventMode pour editer ces composant interactif
-    // when right click on a tiles
-    function open_tileSetupEditor(InMapObj) {
+    function iniSetupIzit(){
         clear_tileSheet(true,CAGE_TILESHEETS);
+        close_editor();
+        setStatusInteractiveObj(false);
         iziToast.opened = true;
-        document.exitPointerLock();
+    }
+
+    // setup for tile in map
+    function open_tileSetupEditor(InMapObj) {
+        iniSetupIzit();
         iziToast.info( $PME.tileSetupEditor(InMapObj) );
         // show tint colors pickers
         const _jscolor = new jscolor(document.getElementById("tint")); // for case:id="_color" slider:id="color"
@@ -810,43 +816,38 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
         ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
 
-        start_tileSetupEditor(InMapObj, _jscolor, _Falloff);
+        start_iziToastDataEditor(InMapObj, _jscolor, null);
     };
 
     // setup the global scene light :light_Ambient and directionLight
     function open_sceneSetup() {
-        clear_tileSheet(true,CAGE_TILESHEETS);
-        close_editor();
-        setStatusInteractiveObj(false);
-        iziToast.opened = true;
-        iziToast.info( $PME.izit_sceneGlobalLight() );
-        // show tint colors pickers
-        const _jscolor = new jscolor(document.getElementById("color")); // for case:id="_color" slider:id="color"
-        _jscolor.zIndex = 9999999;
-        //const _Falloff = create_sliderFalloff(); // create slider html for light
-        start_iziToastDataEditor(STAGE.light_Ambient, _jscolor, null);
+        iniSetupIzit();
+        iziToast.info( $PME.izit_sceneSetup() );
+        start_iziToastDataEditor(STAGE, null, null);
     };
 
     // setup the global scene light :light_Ambient and directionLight
     function open_sceneGlobalLight() {
-        clear_tileSheet(true,CAGE_TILESHEETS);
-        close_editor();
-        setStatusInteractiveObj(false);
-        iziToast.opened = true;
+        iniSetupIzit();
         iziToast.info( $PME.izit_sceneGlobalLight() );
-        // show tint colors pickers
         const _jscolor = new jscolor(document.getElementById("color")); // for case:id="_color" slider:id="color"
         _jscolor.zIndex = 9999999;
-        //const _Falloff = create_sliderFalloff(); // create slider html for light
         start_iziToastDataEditor(STAGE.light_Ambient, _jscolor, null);
+    };
+
+    // setup the global scene light :light_Ambient and directionLight
+    function open_SaveSetup() {
+        iniSetupIzit();
+        iziToast.info( $PME.izit_saveSetup() );
+        start_iziToastDataEditor(null, null, null);
     };
 
     // for tiles on map
     function start_iziToastDataEditor(OBJ, _jscolor, _Falloff){
-        const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
-        let Data_Values = getDataJson(OBJ);//STEP1:  get json from obj
-        let Data_CheckBox = getDataCheckBoxWith(OBJ, Data_Values); // stock checkBox id in objet _check
-        setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff); 
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        let Data_Values = OBJ ? getDataJson(OBJ) : void 0;
+        let Data_CheckBox = OBJ ? getDataCheckBoxWith(OBJ, Data_Values) : void 0; //checkBox boolean value
+        OBJ ? setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) : void 0;
 
         // ========= DATA LISTENER  ===========
         // when checkBox changes
@@ -856,29 +857,36 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         dataIntepretor.oninput = function(event){ 
             const e = event.target;
             const type = e.type;
-            if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id
-            if(type === "number"){ Data_Values[e.id].value = +e.value };
-            if(type === "select-one"){ Data_Values[e.id].value = e.value };
-            setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+            if(OBJ){
+                if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id
+                if(type === "number"){ Data_Values[e.id].value = +e.value };
+                if(type === "select-one"){ Data_Values[e.id].value = e.value };
+                setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+            };
             //if(!!e.attributes.id2){// is2D isArray props Data_Values[e.id].value[+e.attributes.id2.value] = +e.value; }
         };
 
         // ========= control global scene light ===========
         // JSCOLOR, when change color from color Box
-        _jscolor.onFineChange = function(){
+        _jscolor ? _jscolor.onFineChange = function(){
             Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
             Data_Values.tint && (Data_Values.tint.value = "0x"+_jscolor.targetElement.value);
             setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
-        };
+        }:void 0;
+
         // Bootstrape sliders, when change value
-        //_Falloff.kc.on("slide", function(value) { Data_Values.falloff.value[0] = value });
-        //_Falloff.kl.on("slide", function(value) { Data_Values.falloff.value[1] = value });
-        //_Falloff.kq.on("slide", function(value) { Data_Values.falloff.value[2] = value });
+        _Falloff ? (function(){
+            _Falloff.kc.on("slide", function(value) { Data_Values.falloff.value[0] = value });
+            _Falloff.kl.on("slide", function(value) { Data_Values.falloff.value[1] = value });
+            _Falloff.kq.on("slide", function(value) { Data_Values.falloff.value[2] = value });
+        })():void 0;
+     
 
         // BUTTONS
         dataIntepretor.onclick =function(event){ //check if html checkbox change?
             const e = event.target; // buttons
             if(e.type === "button"){
+                if(e.id==="save"){ start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox); };// apply and close
                 if(e.id==="applyAll"){ };// apply to all and close
                 if(e.id==="cancel"){ };// cancel and close
@@ -893,70 +901,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    // for scene setup ONLY a fusionner avec start_tileSetupEditor
-    /*function start_mapSetupEditor(_jscolor,_Falloff,OBJ){
-        console.log('OBJ: ', OBJ);
-        const dataIntepretor = document.getElementById("dataIntepretor"); // current Data html box
-        //STEP2: refresh html with json
-        //STEP3: edit html data
-        let Data_Values = getDataJson(OBJ);//STEP1:  get json from obj
-        Data_CheckBox = getDataCheckBoxWith(OBJ,Data_Values); // stock checkBox id in objet _check
-        Data_Options = {}; // no props, special options case
-        setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff); 
-
-        // ========= DATA LISTENER  ===========
-        // when checkBox changes
-        dataIntepretor.onchange = function(event){
-            
-        };
-        dataIntepretor.oninput = function(event){ 
-            const e = event.target;
-            if(e.type.contains("checkbox")){ // is checkBox
-                const e = event.target;
-                Data_CheckBox[e.id.substring(1)] = e.checked; // substring: remove "_"id
-            };
-            if(!e.type.contains("checkbox")){
-                Data_Values[e.id].value = e.value;
-            };
- 
-            setObjWithData(Data_Values, Data_CheckBox, STAGE.light_Ambient);
-        };
-
-        // ========= control global scene light ===========
-        // JSCOLOR, when change color from color Box
-        _jscolor.onFineChange = function(){
-            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
-            Data_Values.tint && (Data_Values.tint = "0x"+_jscolor.targetElement.value);
-            setObjWithData(Data_Values, Data_CheckBox, STAGE.light_Ambient);
-        };
-        // Bootstrape sliders, when change value
-        _Falloff.kc.on("slide", function(value) { Data_Values.falloff.value[0] = value });
-        _Falloff.kl.on("slide", function(value) { Data_Values.falloff.value[1] = value });
-        _Falloff.kq.on("slide", function(value) { Data_Values.falloff.value[2] = value });
-
-        // BUTTONS
-        dataIntepretor.onclick =function(event){ //check if html checkbox change?
-            const e = event.target; // buttons
-            if(e.type === "button"){
-                if(e.id==="apply"){ close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox); };// apply and close
-                if(e.id==="applyAll"){ };// apply to all and close
-                if(e.id==="cancel"){ };// cancel and close
-                if(e.id==="reset"){ // reset session cache and data
-                    $PME.storage.removeItem(name);
-                    session = getSession(objLight); // session (final data)
-                    // refresh
-                    refreshHtmlWith_session(session);// asign session value to html input
-                    refreshSpriteWith_session(objLight,session);// asign session value to sprite obj
-                };
-            };
-        };
-    };*/
-
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
             const value = checked ? Data_Values[key].value : Data_Values[key].def;
+            console.log('value: ', value);
+            if(key === "Background"){
+                STAGE.createBackground(value?DATA[value]:false);
+            }else
             // value, string,number,int,....
             if(isFinite(value)){
                 this[key] = +value;
@@ -979,8 +932,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
             let e = document.querySelectorAll('#'+key); // value
                 e = e.length>1 ? e[0] : e;
+                
 
             switch (key) {
+                case "Background":break;
                 case "falloff":
                     _Falloff.kc.setValue(Data_Values[key].value[0]);
                     _Falloff.kl.setValue(Data_Values[key].value[1]);
@@ -1359,10 +1314,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function execute_buttons(buttonSprite) {
+        console.log('buttonSprite: ', buttonSprite);
         console.log('InButtons: ', InButtons);
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
-            EDITOR.state.setAnimation(2, 'filterSetting', false);
+            open_sceneSetup(); // edit ligth brigth , and custom BG            
         }
         if(name.contains("icon_grid")){
             drawGrids();
@@ -1374,6 +1330,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
         }
+        if(name.contains("icon_Save")){
+            open_SaveSetup();
+        }
+        
     };
 
 //#endregion
@@ -1590,30 +1550,34 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const _clickRight = event.data.button === 0;
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
-        if(_clickRight){// <=
-            if(event.currentTarget.buttonType === "thumbs"){ // in bottom library
+        if(_clickRight){// <= clickUp
+            if(event.currentTarget.buttonType === "thumbs"){ 
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
-            if(event.currentTarget.buttonType === "tileLibs"){ // in bottom library
+            if(event.currentTarget.buttonType === "tileLibs"){ 
                 setStatusInteractiveObj(false); // disable interactivity
                 return add_toMouse(event.currentTarget);
             }
-            if(event.currentTarget.buttonType === "tileMouse"){ // in bottom library
-                return add_toScene(event.currentTarget); // copy the current mouse and add to map new obj
+            if(event.currentTarget.buttonType === "tileMouse"){ 
+                return add_toScene(event.currentTarget); 
             }
-            if(event.currentTarget.buttonType === "tileMap" &&  event.data.originalEvent.ctrlKey){ // in bottom library
+            if(event.currentTarget.buttonType === "tileMap" &&  event.data.originalEvent.ctrlKey){ // in mapObj
                 return open_tileSetupEditor(event.currentTarget);
             }
-            if(event.currentTarget.buttonType === "button"){ // in bottom library
+            if(event.currentTarget.buttonType === "button"){ 
                 return execute_buttons(event.currentTarget);
             }
         }
-        if(clickLeft_){// =>
-            if(event.currentTarget.buttonType === "tileMouse"){ // in bottom library
+        if(clickLeft_){// => clickUp
+            if(event.currentTarget.buttonType === "tileMouse"){ 
                 CAGE_MAP.removeChild(CAGE_MOUSE.list);
                 setStatusInteractiveObj(true);
                 return CAGE_MOUSE.list = null;
             }
+            if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
+                const index = $Objs.destroy(event.currentTarget);
+                iziToast.info( $PME.removeSprite(event.currentTarget, index) );
+            };
         }
 
     };
@@ -1839,7 +1803,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     };
 
-    function keydown_Editor(event) {
+    /*function keydown_Editor(event) {
         if (event.ctrlKey && (event.key === "s" || event.key === "S")) {
             // start save Data
             return start_DataSavesFromKey_CTRL_S();
@@ -1877,14 +1841,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             }
         };
-    };
+    };*/
 
 
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
     document.addEventListener('mouseup',function(){ startMouseHold(false); }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);
-    document.addEventListener('keydown', keydown_Editor); // change layers
+    //document.addEventListener('keydown', keydown_Editor); // change layers
 //#endregion
 
 
@@ -1913,53 +1877,65 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
     //call fast save with ctrl+s
-    function start_DataSavesFromKey_CTRL_S(options) {
-        create_JsonPerma();
+    function start_DataSavesFromKey_CTRL_S(useOption) {
+        if(useOption){
+            useOption = {
+                _renderParaForRMMV : document.getElementById("_renderParaForRMMV").value,
+                _renderLayersPSD : document.getElementById("_renderLayersPSD").value,
+                _renderEventsPlayers : document.getElementById("_renderEventsPlayers").value,
+                _renderDebugsElements : document.getElementById("_renderDebugsElements").value,
+                _renderingLight : document.getElementById("_renderingLight").value,
+                _renderLayers_n : document.getElementById("_renderLayers_n").value,
+                _renderAnimationsTime0 : document.getElementById("_renderAnimationsTime0").value,
+            }
+        }
         create_SceneJSON();
+        //useOption ? create_RenderingOptions(useOption):void 0; TODO:
         iziToast.warning( $PME.savedComplette() );
     };
 
-    function create_JsonPerma(options) {
-        // garde le perma.json a jours, a configurer dans =>  file:///C:\Users\jonle\Documents\Games\anft_1.6.1\js\plugins\core_Loader.js#L45
-        const data = {SHEETS:{}};
-        for (const key in DATA) {
-            const e = DATA[key];
-            if(e.perma){ data.SHEETS[e.name] = e };
-        };
-        const fs = require('fs');
-        const content = JSON.stringify(data, null, '\t'); //human read format
-        fs.writeFile(`data/perma.json`, content, 'utf8', function (err) { 
-            if(err){return console.log(err) }return console.log9("create_JsonPerma FINISH",data);
-        });
-    };
-
-    // creer la list des data nessesaire
     function create_SceneJSON(options) {
-        const currentScene = STAGE.constructor.name;
+        const fs = require('fs');
+        const sceneName = STAGE.constructor.name;
+        let PERMASHEETS = computeSave_PERMASHEETS(DATA); // scene configuration
         let SCENE = computeSave_SCENE(STAGE); // scene configuration
         let OBJS = computeSave_OBJ($Objs.list_master);
         let SHEETS = computeSave_SHEETS(SCENE,OBJS);
-        const data = {SCENE:SCENE,OBJS:OBJS,SHEETS:SHEETS};
-        const path = `data/${currentScene}_data.json`; // Map001_data.json
-        const fs = require('fs');
-        const content = JSON.stringify(data, null, '\t'); //human read format
-        fs.writeFile(path, content, 'utf8', function (err) { 
-            if(err){return console.log(err)} return console.log9("create_SceneJSON FINISH",data);
-        });
+
+        const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS};
+        const data_perma = {_SHEETS:PERMASHEETS};
+        
+        function writeFile(path,content,data){
+            fs.writeFile(path, content, 'utf8', function (err) { 
+                if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
+            });
+        };
+        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
+        writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
     };
     
-    function computeSave_SCENE(STAGE) {
-        const Data_Values = getDataJson(STAGE);
-        const Data_CheckBox = getDataCheckBoxWith(STAGE, Data_Values);
+    function computeSave_PERMASHEETS(DATA) {
         const data = {};
-        for (const key in Data_Values) {
-            data[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
+        for (const key in DATA) {
+            DATA[key].perma ? data[DATA[key].name] =  DATA[key] : void 0;
         };
         return data;
     };
 
+    function computeSave_SCENE(STAGE) {
+        // get light setup
+        const Data_Values = getDataJson(STAGE.light_Ambient);
+        const Data_CheckBox = getDataCheckBoxWith(STAGE.light_Ambient, Data_Values);
+        const data = {};
+        for (const key in Data_Values) {
+            data[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
+        };
+        STAGE.Background ? data.Background = STAGE.Background.name: void 0;
+        return data;
+    };
+
     function computeSave_OBJ(list_master) {
-        console.log('list_master: ', list_master);
+
         const objs = [];
         list_master.forEach(e => {
             const Data_Values = getDataJson(e);
@@ -1976,8 +1952,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // check all elements and add base data need for loader
     function computeSave_SHEETS(SCENE,OBJS) {
         const data = {};
-        if(SCENE.BackGround){ // add the background sprite
-            data[SCENE.BackGround] = $PME.Data2[SCENE.BackGround];
+        if(SCENE.Background){ // add the background sprite
+            data[SCENE.Background] = $PME.Data2[SCENE.Background];
         };
         OBJS.forEach(e => {
             data[e.Data.name] = $PME.Data2[e.Data.name];

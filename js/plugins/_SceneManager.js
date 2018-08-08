@@ -144,7 +144,7 @@ Scene_Base.prototype.initialize = function(loaderSet) {
     this.asignDisplayGroup();
     this.create_Cages();
     if(this.loaderSet){ // TODO: probablement separer les scenes et sceneMap qui a tous les carte mais sur loaderSet diferent
-        this.createBackground(this.loaderSet.SCENE.BackGround || false);
+        this.createBackground(this.loaderSet._SCENE.Background || false);
         this.create_ObjFromJson();
     };
 };
@@ -160,11 +160,11 @@ Scene_Base.prototype.asignDisplayGroup = function() {
         this.addChild(layersGroup[i]);
     };
     //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
-    const dataScene = this.loaderSet && this.loaderSet.SCENE || {color:0xffffff, brightness:1};
+    const dataScene = this.loaderSet && this.loaderSet._SCENE || {color:0xffffff, brightness:1};
     this.light_Ambient = new PIXI.lights.AmbientLight(dataScene.color, dataScene.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
     this.light_Ambient.Type = "AmbientLight";
 
-    this.light_sunScreen =  new PIXI.lights.PointLight(0xffffff,3); // the sceen FX sun TODO: in Editor
+    this.light_sunScreen =  new PIXI.lights.PointLight(0xffffff,0.8); // the sceen FX sun TODO: in Editor
     this.light_sunScreen.Type = "PointLight";
     
     this.light_sunScreen.position.set(0, 0);
@@ -186,11 +186,12 @@ Scene_Base.prototype.create_Cages = function() {
 
 // scene only, voir si on peut le mettre pour map
 Scene_Base.prototype.createBackground = function(bg) {
+    console.log('bg: ', bg);
     if(this.Background){ this.CAGE_MAP.removeChild(this.Background) }; // for editor
-
-    const cage = new PIXI.Container();
     if(bg){
-        const data = (typeof bg === 'string') && $Loader.Data2[bg] || bg;
+        const data = (typeof bg === 'string') ? $Loader.Data2[bg] : bg;
+        const cage = new PIXI.Container();
+            cage.name = data.name;
         //const data = _data || $Loader.reg._misc._bg.backgroud; // bg
         const sprite_d = new PIXI.Sprite(data.textures);
         const sprite_n = new PIXI.Sprite(data.textures_n);
@@ -199,16 +200,16 @@ Scene_Base.prototype.createBackground = function(bg) {
         sprite_n.parentGroup = PIXI.lights.normalGroup;
         cage.parentGroup = $displayGroup.group[0];
         cage.addChild(sprite_d, sprite_n);
-    };
-    cage.name = typeof bg === 'string' &&  bg || bg && bg.name || false;
-
-    this.Background = cage;
-    this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
+        this.Background = cage;
+        this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
+    }else{
+       this.Background = false;
+    }
 };
 
 // create Objs from json
 Scene_Base.prototype.create_ObjFromJson = function() {
-    $Objs.createFromList(this.loaderSet.OBJS);
+    $Objs.createFromList(this.loaderSet._OBJS);
     $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
     $Objs.list_master.forEach(cage => { cage.getBounds() });
 };

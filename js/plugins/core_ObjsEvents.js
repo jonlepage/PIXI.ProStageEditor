@@ -175,3 +175,34 @@ _objs.prototype.getsByName = function(name) {
     };
     return null;
 };
+
+// get list from type : "spineSheet", "animationSheet", "tileSheet"
+_objs.prototype.getsByType = function(type) {
+    const list = [];
+    for (let i=0, l=this.list_master.length; i<l; i++) {
+        this.list_master[i].Type === type && list.push(this.list_master[i]);
+    };
+    return list;
+};
+
+// get list from type : "spineSheet", "animationSheet", "tileSheet"
+_objs.prototype.getsSheetLists = function() {
+    const list = [];
+    for (let i=0, l=this.list_master.length; i<l; i++) {
+        !list.contains( this.list_master[i].name ) && list.push(this.list_master[i].name);
+    };
+    return list;
+};
+
+// get list from type : "spineSheet", "animationSheet", "tileSheet"
+_objs.prototype.destroy = function(obj, destroy) { // can be obj or string
+    if(typeof obj === "object" ){
+        const index = this.list_master.indexOf(obj);
+        if(index>-1){
+            this.list_master.splice(index, 1);
+            obj.parent.removeChild(obj);
+            destroy ? obj.destroy() : void 0;
+        }
+        return index;
+    };
+};
