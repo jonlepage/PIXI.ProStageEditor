@@ -401,7 +401,7 @@ _PME.prototype.startEditor = function() {
     // └------------------------------------------------------------------------------┘
     const SCENEJSONSETUP = {bg:null}; // base configuration for the scene.ambiant, BG ....
     const CACHETILESSORT = {}; //CACHE FOR PATHFINDING ONCE
-    const FILTERS = {
+    const FILTERS = { // buffer filter
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
         OutlineFilterx6White: new PIXI.filters.OutlineFilter (6, 0xffffff, 1),
@@ -747,12 +747,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 pivot:{def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]},
                 rotation:{def:0, value:OBJ.rotation},
                 alpha:{def:1, value:OBJ.alpha},
-                blendMode:{def:0, value:OBJ.Sprites.d.blendMode},
-                tint:{def:"0xffffff", value:OBJ.Sprites.d.tint},
+
+                blendMode:{d:{def:0, value:OBJ.Sprites.d.blendMode}, n:{def:0, value:OBJ.Sprites.n.blendMode}},
+                tint:{d:{def:"0xffffff", value:OBJ.Sprites.d.tint}, n:{def:"0xffffff", value:OBJ.Sprites.n.tint}},
+   
                 autoGroups:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
                 zIndex:{def:-1, value:OBJ.zIndex, hideHtml:true}, // hide
-                //setDark:{def:[0,0,0], value:[0,0,0]},
-                //setLight:{def:[1,1,1], value:[1,1,1]},
             };
         };
         
@@ -784,7 +784,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const Data_CheckBox = {};
         Object.keys(Data_Values).forEach(key => { Data_CheckBox[key] = true });
         // add special case
-        Object.defineProperty(Data_CheckBox, 'position_lock', { value: false, writable: true });
+        //Object.defineProperty(Data_CheckBox, 'position_lock', { value: false, writable: true });
         return Data_CheckBox;
     };
 
@@ -801,6 +801,45 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return {kc:kc,kl:kl,kq:kq};
     };
 
+    // create multi sliders light
+    function create_sliderHaven(OBJ, Data_Values, Data_CheckBox){
+        // diffuse dark
+        function upd() { return setObjWithData.call(OBJ, Data_Values, Data_CheckBox) };
+        const ddr = new Slider("#ddr", { tooltip: 'always' }); // step: 0.1, value:0, min: 0, max: 1, 
+        const ddg = new Slider("#ddg", {tooltip: 'always'});
+        const ddb = new Slider("#ddb", { tooltip: 'always'});
+        ddr.tooltip.style.opacity = 0.5, ddg.tooltip.style.opacity = 0.5, ddb.tooltip.style.opacity = 0.5;
+        ddr.on("slide", function(value) { Data_Values.setDark.d.value[0] = value; upd() });
+        ddg.on("slide", function(value) { Data_Values.setDark.d.value[1] = value; upd() });
+        ddb.on("slide", function(value) { Data_Values.setDark.d.value[2] = value; upd() });
+
+        // diffuse light
+        const dlr = new Slider("#dlr", {tooltip: 'always' });
+        const dlg = new Slider("#dlg", {tooltip: 'always'});
+        const dlb = new Slider("#dlb", {tooltip: 'always'});
+        dlr.tooltip.style.opacity = 0.5, dlg.tooltip.style.opacity = 0.5, dlb.tooltip.style.opacity = 0.5;
+        dlr.on("slide", function(value) { Data_Values.setLight.d.value[0] = value; upd() });
+        dlg.on("slide", function(value) { Data_Values.setLight.d.value[1] = value; upd() });
+        dlb.on("slide", function(value) { Data_Values.setLight.d.value[2] = value; upd() });
+
+        // normal dark
+        const ndr = new Slider("#ndr", { tooltip: 'always' }); // step: 0.1, value:0, min: 0, max: 1, 
+        const ndg = new Slider("#ndg", {tooltip: 'always'});
+        const ndb = new Slider("#ndb", { tooltip: 'always'});
+        ndr.tooltip.style.opacity = 0.5, ndg.tooltip.style.opacity = 0.5, ndb.tooltip.style.opacity = 0.5;
+        ndr.on("slide", function(value) { Data_Values.setDark.n.value[0] = value; upd() });
+        ndg.on("slide", function(value) { Data_Values.setDark.n.value[1] = value; upd() });
+        ndb.on("slide", function(value) { Data_Values.setDark.n.value[2] = value; upd() });
+        // normal light
+        const nlr = new Slider("#nlr", {tooltip: 'always' });
+        const nlg = new Slider("#nlg", {tooltip: 'always'});
+        const nlb = new Slider("#nlb", {tooltip: 'always'});
+        nlr.tooltip.style.opacity = 0.5, nlg.tooltip.style.opacity = 0.5, nlb.tooltip.style.opacity = 0.5;
+        nlr.on("slide", function(value) { Data_Values.setLight.n.value[0] = value; upd() });
+        nlg.on("slide", function(value) { Data_Values.setLight.n.value[1] = value; upd() });
+        nlb.on("slide", function(value) { Data_Values.setLight.n.value[2] = value; upd() });
+    };
+
     function iniSetupIzit(){
         clear_tileSheet(true,CAGE_TILESHEETS);
         close_editor();
@@ -813,14 +852,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         iniSetupIzit();
         iziToast.info( $PME.tileSetupEditor(InMapObj) );
         // show tint colors pickers
-        const _jscolor = new jscolor(document.getElementById("tint")); // for case:id="_color" slider:id="color"
-        _jscolor.zIndex = 9999999;
+        const docuColorsID = document.querySelectorAll("#tint");
+        const _jscolor_d = new jscolor(docuColorsID[0]); // for case:id="_color" slider:id="color"
+        _jscolor_d.zIndex = 9999999;
+        const _jscolor_n = new jscolor(docuColorsID[1]); // for case:id="_color" slider:id="color"
+        _jscolor_n.zIndex = 9999999;
         //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
         // focuse on objet
         ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
         ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
 
-        start_iziToastDataEditor(InMapObj, _jscolor, null);
+        start_iziToastDataEditor(InMapObj, [_jscolor_d, _jscolor_n], null);
     };
 
     // setup the global scene light :light_Ambient and directionLight
@@ -846,14 +888,52 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         start_iziToastDataEditor(null, null, null);
     };
 
+    function convertHeaven(OBJ, Data_Values, Data_CheckBox, checked) {
+        if(!Data_Values.setDark){
+            Object.defineProperty(Data_Values, "setDark", {
+                enumerable: !!OBJ.Sprites.d.color, writable: true, configurable: true,
+                value: {d:{def:[0,0,0], value:[0,0,0]}, n:{def:[0,0,0], value:[0,0,0]}}
+            });
+            Object.defineProperty(Data_Values, "setLight", {
+                enumerable: !!OBJ.Sprites.d.color, writable: true, configurable: true,
+                value: {d:{def:[1,1,1], value:[1,1,1]}, n:{def:[1,1,1], value:[1,1,1]}}
+            });
+        }else{
+            // toggle heaven mode
+            OBJ.Sprites.d.convertToHeaven();
+            OBJ.Sprites.n.convertToHeaven();
+
+            Object.defineProperty(Data_Values, "setDark", { enumerable: checked });
+            Object.defineProperty(Data_Values, "setLight", { enumerable: checked });
+            console.log('Data_Values: ', Data_Values);
+            if(checked){
+                iziToast.info( $PME.izit_convertHeaven() );
+                const _Falloff = create_sliderHaven(OBJ, Data_Values, Data_CheckBox); // create slider html for pixiHaven
+                const dataIntepretor = document.getElementById("dataIntepretor_Heaven");
+                console.log('dataIntepretor: ', dataIntepretor);
+                dataIntepretor.oninput = function(e){
+                    console.log('e.id: ', e.id);
+                    Data_CheckBox[e.target.id] = !!e.target.checked;
+                    
+                    setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+                };
+
+            }else{
+                iziToast.hide( {transitionOut: 'flipOutX'}, document.getElementById("Heaven") );
+            }
+        }
+
+    };
+
     // for tiles on map
     function start_iziToastDataEditor(OBJ, _jscolor, _Falloff){
         const dataIntepretor = document.getElementById("dataIntepretor");
         let Data_Values = OBJ ? getDataJson(OBJ) : void 0;
         let Data_CheckBox = OBJ ? getDataCheckBoxWith(OBJ, Data_Values) : void 0; //checkBox boolean value
         console.log('Data_CheckBox: ', Data_CheckBox);
+        OBJ ? convertHeaven(OBJ, Data_Values, Data_CheckBox) : void 0;
         OBJ ? setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) : void 0;
-
+        
         // ========= DATA LISTENER  ===========
         // when checkBox changes
         dataIntepretor.onchange = function(event){
@@ -867,12 +947,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(e.id.contains("lock")){ // it a lock case check
                     return Data_CheckBox[e.id] = !!e.checked;
                 };
+                if(e.id.contains("check_haven")){ // it a lock case check
+                    return convertHeaven(OBJ, Data_Values, Data_CheckBox, e.checked);
+                };
                 if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id from html data
                 if(type === "select-one"){ Data_Values[e.id].value = e.value };
                 if(type === "number"){
-                    if(Data_Values[e.id].value.length === 2){
-                        // les input a 2 array peuvent etre locker, verifier
+                    if(Data_Values[e.id].d || Data_Values[e.id].value.length === 2){
+                        // les input a 2 array ou [d,n] peuvents etres locker, verifier
                         const ee = document.querySelectorAll('#'+e.id); // value
+                        const vDN = !!Data_Values[e.id].d; // is a Data_Values [d,n].value ?
                         const isLock = Data_CheckBox[`${e.id}_lock`];
                         if(isLock){
                             const syncEE = ee[0]===e ? ee[1] : ee[0];
@@ -880,11 +964,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                             if(event.inputType === "insertText"){
                                 syncEE.value = e.value;
                             }else{
-                                const stepDirection = (e.value - Data_Values[e.id].value[e.attributes.arrId.value]) > 0 ? true : false ;
+                                const oldValue = vDN? Data_Values[e.id][e.attributes.arrId.value].value : Data_Values[e.id].value[e.attributes.arrId.value];
+                                const stepDirection = (e.value - oldValue > 0 );
                                 stepDirection ? syncEE.stepUp() : syncEE.stepDown();
                             }
-                        }
-                        Data_Values[e.id].value = [+ee[0].value , +ee[1].value];
+                        };
+                        if(vDN){ // array type diffuse, normal or value
+                            Data_Values[e.id].d.value = +ee[0].value;
+                            Data_Values[e.id].n.value = +ee[1].value;
+                        }else{ Data_Values[e.id].value = [+ee[0].value , +ee[1].value] };
+                        
                     }else{
                         Data_Values[e.id].value = +e.value 
                     };
@@ -895,9 +984,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
         // ========= control global scene light ===========
         // JSCOLOR, when change color from color Box
-        _jscolor ? _jscolor.onFineChange = function(){
-            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor.targetElement.value);
-            Data_Values.tint && (Data_Values.tint.value = "0x"+_jscolor.targetElement.value);
+        _jscolor && _jscolor[0]? _jscolor[0].onFineChange = function(){
+            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor[0].targetElement.value); // light
+            Data_Values.tint && (Data_Values.tint.d.value = "0x"+_jscolor[0].targetElement.value); // sprite
+            setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+        }:void 0;
+        _jscolor && _jscolor[1]? _jscolor[1].onFineChange = function(){
+            Data_Values.color && (Data_Values.color.value = "0x"+_jscolor[1].targetElement.value); // light
+            Data_Values.tint && (Data_Values.tint.n.value = "0x"+_jscolor[1].targetElement.value); // sprite
             setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
         }:void 0;
 
@@ -932,9 +1026,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
+        console.log('Data_CheckBox: ', Data_CheckBox);
+        console.log('Data_Values: ', Data_Values);
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
-            const value = checked ? Data_Values[key].value : Data_Values[key].def;
+            const vDN = !!Data_Values[key].d;
+            let value;
+            // check if use def or current value with diffuse or normal
+            if(checked){ 
+                value = vDN ? [Data_Values[key].d.value, Data_Values[key].n.value] : Data_Values[key].value 
+            }else{ 
+                value = vDN ? [Data_Values[key].d.def, Data_Values[key].n.def] : Data_Values[key].def 
+            };
+            
             switch (key) {
                 //case "Background":break; TODO:
                 case "Background":
@@ -949,7 +1053,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     }
                 break;
                 case "tint":case "blendMode":
-                    this.Sprites.d[key] = value;
+                    this.Sprites.d[key] = value[0];
+                    this.Sprites.n[key] = value[1];
+                break;
+                case "setDark":case "setLight":
+                // get heaven value d,n
+                const hv_d = Data_CheckBox.heaven_d? Data_Values[key].d.value : Data_Values[key].d.def;
+                const hv_n = Data_CheckBox.heaven_n? Data_Values[key].n.value : Data_Values[key].n.def;
+                    this.Sprites.d.color[key](...hv_d);
+                    this.Sprites.n.color[key](...hv_n);
                 break;
                 default:
                     this[key] = value;
@@ -968,8 +1080,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
             const value = Data_Values[key].value; // curent value
             const def = Data_Values[key].def; // default value
-            let d = document.getElementById(key+"_def"); // default value 
-                (Data_Values[key] && d) ? d.innerHTML = Data_Values[key].def : void 0;
+            let d = document.getElementById(key+"_def"); // default value
+            // look if it a array for (diff,norm): ['d','n'] or (def,current): [0,1]
+            if(Data_Values[key] && d){
+                d.innerHTML = Data_Values[key].d? [Data_Values[key].d.def, Data_Values[key].n.def] :  Data_Values[key].def;
+ 
+            }
+       
             let c = document.getElementById("_"+key); // checkBox
                 c.checked = !!Data_CheckBox[key];
             let e = document.querySelectorAll('#'+key); // value
@@ -991,7 +1108,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     e.value = PIXI.utils.hex2string(+Data_Values[key].value).substring(1);
                 break;
                 default:
-                    e.length? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.arrId.value] }) : e.value = Data_Values[key].value;
+                    if(e.length){ // it array props
+                        e.forEach(ee => {
+                            // look if it a array for (diff,norm): ['d','n'] or (def,current): [0,1]
+                            const isDN = !isFinite(ee.attributes.arrId.value);
+                            if(isDN){
+                                ee.value = Data_Values[key][ee.attributes.arrId.value].value;
+                            }else{
+                                ee.value = Data_Values[key].value[ee.attributes.arrId.value];
+                            }
+                            
+                        })
+                    }else{
+                        e.value = Data_Values[key].value;
+                    }
                 break;
             };
         };
@@ -1294,6 +1424,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function clear_tileSheet(hide,CAGE_TILESHEETS,InLibs) {
         // remove all, but keep the mask as child[0]
         if(hide){
+            CAGE_TILESHEETS.renderable = false;
             CAGE_TILESHEETS.opened = false;
             CAGE_TILESHEETS.name = null;
             EDITOR.state.setAnimation(2, 'hideTileSheets', false);
@@ -1301,6 +1432,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             !CAGE_TILESHEETS.opened && EDITOR.state.setAnimation(2, 'showTileSheets', false);
             CAGE_TILESHEETS.name = InLibs.name;
             CAGE_TILESHEETS.opened = true;
+            CAGE_TILESHEETS.renderable = true;
         }
         // reset clear
         CAGE_TILESHEETS.removeChildren();

@@ -143,7 +143,7 @@
 #RC .slider-selection {
   background: #FF8282;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 1s; /* transition when the mouse over */
+  transition: all 500ms; /* transition when the mouse over */
 }
 #RC .slider-handle {
 	background: red;
@@ -151,7 +151,7 @@
 #GC .slider-selection {
   background: #428041;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 1s; /* transition when the mouse over */
+  transition: all 500ms; /* transition when the mouse over */
 }
 #GC .slider-handle {
 	background: green;
@@ -159,7 +159,7 @@
 #BC .slider-selection {
   background: #8283FF;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 1s; /* transition when the mouse over */
+  transition: all 500ms; /* transition when the mouse over */
 }
 #BC .slider-handle {
   border-bottom-color: blue;
@@ -168,13 +168,13 @@
 	width: 200px;
 }
 #BC {
-	transition: all 1s; /* transition when the mouse over */
+	transition: all 500ms; /* transition when the mouse over */
 }
 #GC {
-	transition: all 1s; /* transition when the mouse over */
+	transition: all 500ms; /* transition when the mouse over */
 }
 #RC {
-	transition: all 1s; /* transition when the mouse over */
+	transition: all 500ms; /* transition when the mouse over */
 }
 #BC:hover { 
   border: 2px solid #8283FF;
@@ -228,4 +228,10 @@ input.boxlock:hover::after {
   transition: all 200ms; /* transition when the mouse over */
   border: 1px solid rgb(255, 255, 255);
 
+}
+
+.form-control.dark {
+  background-color: #1a1a1a;
+  color: white;
+  
 }

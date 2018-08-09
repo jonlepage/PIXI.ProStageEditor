@@ -780,9 +780,9 @@
 				$DOM.toast.appendChild($DOM.buttonClose);
 			} else {
 				if(settings.rtl){
-					$DOM.toast.style.paddingLeft = '18px';
+					$DOM.toast.style.paddingLeft = '10px';
 				} else {
-					$DOM.toast.style.paddingRight = '18px';
+					$DOM.toast.style.paddingRight = '10px';
 				}
 			}
 		})();

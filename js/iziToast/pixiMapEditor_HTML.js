@@ -767,6 +767,76 @@ function html_saveEditor() {
 
    
 
+  //#region [rgba(70,70, 99,0.4)]
+//#endregion
+function html_izit_convertHeaven() {
+    const message = /*html*/ `
+        <div class="container" id="dataIntepretor_Heaven">
+        <h6>
+            <font color="#d2bc97">SETUP HEAVEN COLOR</font>
+        </h6>
+        <table class="table table-hover table-dark table-sm">
+            <thead style="background-color: #393939" >
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">def</th>
+                </tr>
+            </thead>
+            <tbody>
+                <td colspan="2"><font color="#d2bc97">DIFFUSE</font></td>
+                <tr><!--heaven Check for setLight_setDark -->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="heaven_d"/>
+                            <label for="heaven_d" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td>[0,0,0],[1,1,1]</td>
+                </tr>
+                <td colspan="2">
+                    <div class="form-control dark"> <!--diffuse rvb setDark -->
+                        <b>d.DR:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" id="ddr" data-slider-handle="triangle" type="text" class="span2"  /><br>
+                        <b>d.DG:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" id="ddg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                        <b>d.DB:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" id="ddb" data-slider-handle="triangle" type="text" class="span2"/>
+                    </div>
+                    <div class="form-control"> <!--diffuse rvb setLight -->
+                        <b>d.LR:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" id="dlr" data-slider-handle="triangle" type="text" class="span2"  /><br>
+                        <b>d.LG:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" id="dlg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                        <b>d.LB:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" id="dlb" data-slider-handle="triangle" type="text" class="span2"/>
+                    </div> 
+                </td>
+            </tbody>
+            <tbody>
+                <td colspan="2"><font color="#d2bc97">NORMAL</font></td>
+                <tr><!--heaven Check for setLight_setDark -->
+                    <td>
+                        <div class="funkyradio funkyradio-success">
+                            <input type="checkbox" name="checkbox" id="heaven_n"/>
+                            <label for="heaven_n" style="text-indent:0px;margin-right:0px;">.</label>
+                        </div>
+                    </td>
+                    <td>[0,0,0],[1,1,1]<</td>
+                </tr>
+                <td colspan="2">
+                    <div class="form-control dark"><!--normal rvb setDark -->
+                        <b>n.DR:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" id="ndr" data-slider-handle="triangle" type="text" class="span2"  /><br>
+                        <b>n.DG:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" id="ndg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                        <b>n.DB:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" id="ndb" data-slider-handle="triangle" type="text" class="span2"/>
+                    </div>
+                    <div class="form-control"><!--normal rvb setLight -->
+                        <b>n.LR:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" id="nlr" data-slider-handle="triangle" type="text" class="span2"  /><br>
+                        <b>n.LG:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" id="nlg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                        <b>n.LB:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" id="nlb" data-slider-handle="triangle" type="text" class="span2"/>
+                    </div>
+                </td>
+            </tbody>
+            <td colspan="2"><font color="#c17d2e">**Heaven affect performance!</font></td>
+        </table>
+        </div>
+    `;
+////////////////////////////////////////END
+    return message;
+};
 
   //#region [rgba(0,140, 10,0.2)]
 //#endregion
@@ -918,26 +988,7 @@ function html_izit_sceneSetup(bgList, stage) {
                     </td>
                 </tr>
             </tbody>
-        </table>
-
-        <table class="table table-hover table-dark table-sm">
-            <thead style="background-color: #393939" >
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">def</th>
-                    <th scope="col">custom</th>
-                </tr>
-            </thead>
-            <tbody>
-                <td colspan="3"><font color="#d2bc97">MAP SETTING GALAXIE TODO:</font></td>
-                <td colspan="3"><font color="#d2bc97">MAP SETTING PLANET TODO:</font></td>
-                <td colspan="3"><font color="#d2bc97">AUDIO API TODO:</font></td>
-                
-            </tbody>
-        </table>    
-            <button id="apply" type="button" class="btn btn-outline-success col-md-6">Apply</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger col-md-4">Cancel</button><br>
-            <td colspan="3"><font color="#c17d2e">**Setup from: => "Scene_Base.prototype.asignDisplayGroup"</font></td>
+        </table>  
         </div>
     `;
 ////////////////////////////////////////END
@@ -957,17 +1008,11 @@ return message = /*html*/ `
     <font color="#d2bc97">CUSTOM OBJ SESSION PROPRETY EDITOR</font>
     <small class="text-muted"><kbd>Json</kbd></small>
 </h6>
-
-    <div class="form-check-inline funkyradio">
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="check_mouseMode" checked/>
-            <label for="check_mouseMode">mouse mode</label>
-        </div>
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="check_haven"/>
-            <label for="check_haven">pixi haven</label>
-        </div>
-    </div>     
+    <div class="funkyradio-success">
+        <input type="checkbox" name="checkbox" id="check_haven"/>
+        <label for="check_haven">pixi haven</label>
+    </div>
+         
 
     <table class="table table-hover table-dark table-sm">
         <thead style="background-color: #393939" >
@@ -1155,7 +1200,9 @@ return message = /*html*/ `
                             <small class="text-muted">blendMode:</small>
                             </div>
                         </div>
-                        <input type="number" step=1 min=0 max=3 class="form-control" id="blendMode">
+                        .D:<input type="number" step=1 min=0 max=3 class="form-control" id="blendMode" arrId=d>
+                        .N:<input type="number" step=1 min=0 max=3 class="form-control" id="blendMode" arrId=n>
+                        <input class="boxlock" type="checkbox" id="blendMode_lock">
                     </div>
                 </td>
             </tr>
@@ -1171,10 +1218,11 @@ return message = /*html*/ `
                     <div class="input-group input-group-xs">
                         <div class="input-group-prepend">
                             <div class="input-group-text">
-                            <small class="text-muted">tint:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
+                            <small class="text-muted">tint:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
                             </div>
                         </div>
-                        <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint">
+                        .D:<input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint" arrId=d>
+                        .N:<input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint" arrId=n>
                     </div>
                 </td>
             </tr>

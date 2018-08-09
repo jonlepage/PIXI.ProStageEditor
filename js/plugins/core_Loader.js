@@ -400,4 +400,3 @@ _coreLoader.prototype.computeData = function() {
 // Destroy all tmp cache, an also all pixi object created in scene
 // pixi text, pixi grafics, 
 //└-----------------------------------------------------------------------------┘
-

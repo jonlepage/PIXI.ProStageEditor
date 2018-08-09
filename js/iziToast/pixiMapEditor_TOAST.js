@@ -45,6 +45,28 @@ _PME.prototype.izit_sceneGlobalLight = function() {
     };
 };
 
+// open editor for setup the global scene light :light_Ambient and directionLight
+_PME.prototype.izit_convertHeaven = function() {
+    let message = html_izit_convertHeaven();
+    return{
+        message: message,
+        id:'Heaven',
+        layout: 1,
+        transitionIn: 'bounceInRight', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOutRight', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 10,
+        maxWidth: 400,
+        theme: 'dark',
+        position: 'bottomRight', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.9)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
 // open editor for setup the global scene , BG, id, filename
 _PME.prototype.izit_sceneSetup = function() {
     const list = Object.keys(this.Data2);
