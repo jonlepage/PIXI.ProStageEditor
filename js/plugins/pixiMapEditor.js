@@ -757,7 +757,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         
         if(OBJ.Type === "tileSheet"){
-            console.log('OBJ: ', OBJ);
             data =  { ...data,
                anchor: {def:[0.5,1], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] },
             };
@@ -902,27 +901,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             // toggle heaven mode
             OBJ.Sprites.d.convertToHeaven();
             OBJ.Sprites.n.convertToHeaven();
-
             Object.defineProperty(Data_Values, "setDark", { enumerable: checked });
             Object.defineProperty(Data_Values, "setLight", { enumerable: checked });
-            console.log('Data_Values: ', Data_Values);
             if(checked){
                 iziToast.info( $PME.izit_convertHeaven() );
                 const _Falloff = create_sliderHaven(OBJ, Data_Values, Data_CheckBox); // create slider html for pixiHaven
                 const dataIntepretor = document.getElementById("dataIntepretor_Heaven");
-                console.log('dataIntepretor: ', dataIntepretor);
                 dataIntepretor.oninput = function(e){
-                    console.log('e.id: ', e.id);
                     Data_CheckBox[e.target.id] = !!e.target.checked;
-                    
                     setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
                 };
-
-            }else{
-                iziToast.hide( {transitionOut: 'flipOutX'}, document.getElementById("Heaven") );
-            }
-        }
-
+            }else{ iziToast.hide( {transitionOut: 'flipOutX'}, document.getElementById("Heaven") ) };
+        };
     };
 
     // for tiles on map
@@ -930,7 +920,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const dataIntepretor = document.getElementById("dataIntepretor");
         let Data_Values = OBJ ? getDataJson(OBJ) : void 0;
         let Data_CheckBox = OBJ ? getDataCheckBoxWith(OBJ, Data_Values) : void 0; //checkBox boolean value
-        console.log('Data_CheckBox: ', Data_CheckBox);
         OBJ ? convertHeaven(OBJ, Data_Values, Data_CheckBox) : void 0;
         OBJ ? setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) : void 0;
         
@@ -940,7 +929,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             
         };
         dataIntepretor.oninput = function(event){ 
-            console.log('event: ', event);
             const e = event.target;
             const type = e.type;
             if(OBJ){
@@ -1026,8 +1014,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
-        console.log('Data_CheckBox: ', Data_CheckBox);
-        console.log('Data_Values: ', Data_Values);
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
             const vDN = !!Data_Values[key].d;
@@ -1072,10 +1058,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to HTML izit
     function setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) {
-        console.log('Data_CheckBox: ', Data_CheckBox);
-        console.log('Data_Values: ', Data_Values);
         for (const key in Data_Values) {
-            console.log('key: ', key);
             if(Data_Values[key].hideHtml){continue};
 
             const value = Data_Values[key].value; // curent value
@@ -1116,12 +1099,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                                 ee.value = Data_Values[key][ee.attributes.arrId.value].value;
                             }else{
                                 ee.value = Data_Values[key].value[ee.attributes.arrId.value];
-                            }
-                            
+                            };
                         })
-                    }else{
-                        e.value = Data_Values[key].value;
-                    }
+                    }else{ e.value = Data_Values[key].value };
                 break;
             };
         };
@@ -1132,6 +1112,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         OBJ.Data_Values = Data_Values;
         OBJ.Data_CheckBox = Data_CheckBox;
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") );
+        document.getElementById("Heaven") && iziToast.hide( {transitionOut: 'flipOutX'}, document.getElementById("Heaven") );
         iziToast.opened = false;
 
         setStatusInteractiveObj(true);
@@ -1593,11 +1574,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(cage===_cage){continue};
                 if(_cage.zIndex>cage.zIndex){
                     const hit = hitCheck(cage,_cage);
-                    _cage.Sprites.d.alpha =  hit ? 0.2:0.8;
-                    _cage.Sprites.d.tint =  hit ? 0x000000:0xffffff;
                     _cage.Sprites.d._filters = hit ? [FILTERS.OutlineFilterx8Red ]: null;
                     if(_cage.Sprites.n){
-                        _cage.Sprites.n.renderable =  hit ? false:true;
+                        //_cage.Sprites.n.renderable =  hit ? false:true;
                     }
                 };
             };
@@ -1955,7 +1934,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function wheel_Editor(event) {
         if(iziToast.opened){return}; // dont use mouse when toast editor
         // zoom in Libs
-        const mousePosition = new PIXI.Point();// cache a global mouse position to keep from creating a point every mousewheel event
+        const mousePosition = new PIXI.Point();// cache a global mouse position to keep from creating a point every mousewheel event TODO:
         $mouse.interaction.mapPositionToPoint(mousePosition, event.x, event.y); // get global position in world coordinates
           // returns element directly under mouse
         const found = $mouse.interaction.hitTest(mousePosition);
