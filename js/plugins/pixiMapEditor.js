@@ -740,9 +740,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
             data =  { ...data,
-                groupID:{def:void 0, value:OBJ.groupID || void 0 },
+                groupID:{def:"default", value:OBJ.groupID || "default" },
                 position:{def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]},
-                scale:{def:[0,0], value:[OBJ.scale.x, OBJ.scale.y]},
+                scale:{def:[1,1], value:[OBJ.scale.x, OBJ.scale.y]},
                 skew:{def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]},
                 pivot:{def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]},
                 rotation:{def:0, value:OBJ.rotation},
@@ -759,7 +759,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(OBJ.Type === "tileSheet"){
             console.log('OBJ: ', OBJ);
             data =  { ...data,
-               anchor: {def:[0,0], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] },
+               anchor: {def:[0.5,1], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] },
             };
         };
          // data base for sprites, spine animations..
@@ -783,6 +783,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(OBJ.Data_CheckBox){return OBJ.Data_CheckBox};
         const Data_CheckBox = {};
         Object.keys(Data_Values).forEach(key => { Data_CheckBox[key] = true });
+        // add special case
+        Object.defineProperty(Data_CheckBox, 'position_lock', { value: false, writable: true });
         return Data_CheckBox;
     };
 
@@ -849,6 +851,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const dataIntepretor = document.getElementById("dataIntepretor");
         let Data_Values = OBJ ? getDataJson(OBJ) : void 0;
         let Data_CheckBox = OBJ ? getDataCheckBoxWith(OBJ, Data_Values) : void 0; //checkBox boolean value
+        console.log('Data_CheckBox: ', Data_CheckBox);
         OBJ ? setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) : void 0;
 
         // ========= DATA LISTENER  ===========
@@ -857,15 +860,37 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             
         };
         dataIntepretor.oninput = function(event){ 
+            console.log('event: ', event);
             const e = event.target;
             const type = e.type;
             if(OBJ){
-                if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id
-                if(type === "number"){ Data_Values[e.id].value = +e.value };
+                if(e.id.contains("lock")){ // it a lock case check
+                    return Data_CheckBox[e.id] = !!e.checked;
+                };
+                if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id from html data
                 if(type === "select-one"){ Data_Values[e.id].value = e.value };
+                if(type === "number"){
+                    if(Data_Values[e.id].value.length === 2){
+                        // les input a 2 array peuvent etre locker, verifier
+                        const ee = document.querySelectorAll('#'+e.id); // value
+                        const isLock = Data_CheckBox[`${e.id}_lock`];
+                        if(isLock){
+                            const syncEE = ee[0]===e ? ee[1] : ee[0];
+                            // check if we asign number with keyboard to input or if we increase step with mouse
+                            if(event.inputType === "insertText"){
+                                syncEE.value = e.value;
+                            }else{
+                                const stepDirection = (e.value - Data_Values[e.id].value[e.attributes.arrId.value]) > 0 ? true : false ;
+                                stepDirection ? syncEE.stepUp() : syncEE.stepDown();
+                            }
+                        }
+                        Data_Values[e.id].value = [+ee[0].value , +ee[1].value];
+                    }else{
+                        Data_Values[e.id].value = +e.value 
+                    };
+                };
                 setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
             };
-            //if(!!e.attributes.id2){// is2D isArray props Data_Values[e.id].value[+e.attributes.id2.value] = +e.value; }
         };
 
         // ========= control global scene light ===========
@@ -903,22 +928,34 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
+   
+
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
         for (const key in Data_Values) {
             const checked = !!Data_CheckBox[key];
             const value = checked ? Data_Values[key].value : Data_Values[key].def;
-            console.log('value: ', value);
-            if(key === "Background"){
-                STAGE.createBackground(value?DATA[value]:false);
-            }else
-            // value, string,number,int,....
-            if(isFinite(value)){
-                this[key] = +value;
-            }else{
-                this[key].set(...value); // "scale""skew""pivot"..
+            switch (key) {
+                //case "Background":break; TODO:
+                case "Background":
+                    STAGE.createBackground(value?DATA[value]:false);
+                break;
+                case "position":case "scale":case "skew":case "pivot":case "anchor":
+                    if(this[key]){ this[key].set(...value) }
+                    else{
+                        this.Sprites.d[key].set(...value);
+                        this.Sprites.n[key].set(...value);
+                        this.Debug.bg[key].set(...value);
+                    }
+                break;
+                case "tint":case "blendMode":
+                    this.Sprites.d[key] = value;
+                break;
+                default:
+                    this[key] = value;
+                break;
             };
-        }
+        };
     };
 
     // asign props value to HTML izit
@@ -954,7 +991,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     e.value = PIXI.utils.hex2string(+Data_Values[key].value).substring(1);
                 break;
                 default:
-                    e.length? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.id2.value] }) : e.value = Data_Values[key].value;
+                    e.length? e.forEach(ee => { ee.value = Data_Values[key].value[ee.attributes.arrId.value] }) : e.value = Data_Values[key].value;
                 break;
             };
         };

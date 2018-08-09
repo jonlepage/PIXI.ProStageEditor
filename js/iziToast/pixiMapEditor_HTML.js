@@ -72,8 +72,8 @@ return message = /*html*/ `
                             <small class="text-muted">Scale:&nbsp</small><input type="checkbox" id="scale_lock"><small class="text-muted">&#x1f512;</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=50 class="form-control" id="scale" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="scale" id2=1>
+                        <input type="number" step=0.01 value=50 class="form-control" id="scale" arrId=0>
+                        <input type="number" step=0.01 value=0 class="form-control" id="scale" arrId=1>
                     </div>
                 </td>
             </tr>
@@ -92,8 +92,8 @@ return message = /*html*/ `
                             <small class="text-muted">skew:&nbsp</small><input type="checkbox" id="skew_lock"><small class="text-muted">&#x1f512;</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=1>
+                        <input type="number" step=0.01 value=0 class="form-control" id="skew" arrId=0>
+                        <input type="number" step=0.01 value=0 class="form-control" id="skew" arrId=1>
                     </div>
                 </td>
             </tr>
@@ -112,8 +112,8 @@ return message = /*html*/ `
                             <small class="text-muted">pivot:&nbsp</small><input type="checkbox" id="pivot_lock"><small class="text-muted">&#x1f512;</small>
                             </div>
                         </div>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" id2=0>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" id2=1>
+                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=0>
+                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=1>
                     </div>
                 </td>
             </tr>
@@ -132,8 +132,8 @@ return message = /*html*/ `
                             <small class="text-muted">anchor:&nbsp</small><input type="checkbox" id="anchor_lock"><small class="text-muted">&#x1f512;</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=1>
+                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" arrId=0>
+                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" arrId=1>
                     </div>
                 </td>
             </tr>
@@ -1012,8 +1012,8 @@ return message = /*html*/ `
                             <small class="text-muted">position:&nbsp</small>
                             </div>
                         </div>
-                        <input type="number" step=0.1 class="form-control" id="position" id2=0>
-                        <input type="number" step=0.1 class="form-control" id="position" id2=1>
+                        <input type="number" step=0.1 class="form-control" id="position" arrId=0>
+                        <input type="number" step=0.1 class="form-control" id="position" arrId=1>
                         <input class="boxlock" type="checkbox" id="position_lock">
                     </div>
                 </td>
@@ -1033,8 +1033,8 @@ return message = /*html*/ `
                             <small class="text-muted">Scale:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=50 class="form-control" id="scale" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="scale" id2=1>
+                        <input type="number" step=0.01  class="form-control" id="scale" arrId=0>
+                        <input type="number" step=0.01  class="form-control" id="scale" arrId=1>
                         <input class="boxlock" type="checkbox" id="scale_lock">
                     </div>
                 </td>
@@ -1054,8 +1054,8 @@ return message = /*html*/ `
                             <small class="text-muted">skew:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" id2=1>
+                        <input type="number" step=0.01 class="form-control" id="skew" arrId=0>
+                        <input type="number" step=0.01 class="form-control" id="skew" arrId=1>
                         <input class="boxlock" type="checkbox" id="skew_lock">
                     </div>
                 </td>
@@ -1075,8 +1075,8 @@ return message = /*html*/ `
                             <small class="text-muted">pivot:</small>
                             </div>
                         </div>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" id2=0>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" id2=1>
+                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=0>
+                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=1>
                         <input class="boxlock" type="checkbox" id="pivot_lock">
                     </div>
                 </td>
@@ -1096,8 +1096,8 @@ return message = /*html*/ `
                             <small class="text-muted">anchor:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" id2=1>
+                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=0>
+                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=1>
                         <input class="boxlock" type="checkbox" id="anchor_lock">
                     </div>
                 </td>
@@ -1117,7 +1117,7 @@ return message = /*html*/ `
                             <small class="text-muted">rotation:deg°:</small><input type="checkbox" id="deg_mode"><small class="text-muted"></small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="rotation">
+                        <input type="number" step=0.0015 class="form-control" id="rotation">
                     </div>
                 </td>
             </tr>
@@ -1136,7 +1136,7 @@ return message = /*html*/ `
                             <small class="text-muted">alpha:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 value=0 min=0 max=1 class="form-control" id="alpha">
+                        <input type="number" step=0.01 min=0 max=1 class="form-control" id="alpha">
                     </div>
                 </td>
             </tr>
@@ -1155,7 +1155,7 @@ return message = /*html*/ `
                             <small class="text-muted">blendMode:</small>
                             </div>
                         </div>
-                        <input type="number" step=1 value=0 min=0 max=3 class="form-control" id="blendMode">
+                        <input type="number" step=1 min=0 max=3 class="form-control" id="blendMode">
                     </div>
                 </td>
             </tr>
@@ -1207,6 +1207,8 @@ return message = /*html*/ `
     <br><br>
     <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
     <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+    <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+
 </div>`//end
 };
 

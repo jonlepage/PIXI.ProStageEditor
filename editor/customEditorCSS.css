@@ -192,7 +192,7 @@
 
 .boxlock {
   visibility: hidden;
-  border: 2px solid rgb(0, 0, 0);
+  border: 1px solid rgb(0, 0, 0);
 }
 
 input.boxlock::after {
@@ -203,8 +203,8 @@ input.boxlock::after {
   margin: 2px;
   display: -webkit-inline-box;
   border-radius: 16px;
-  transition: all 800ms; /* transition when the mouse over */
-  border: 2px solid rgb(0, 0, 0);
+  transition: all 400ms; /* transition when the mouse over */
+  border: 1px solid rgb(0, 0, 0);
 }
 
 input.boxlock:checked::after {
@@ -215,15 +215,17 @@ input.boxlock:checked::after {
   margin: 2px;
   display: -webkit-inline-box;
   border-radius: 16px;
-  transition: all 800ms; /* transition when the mouse over */
-  border: 2px solid rgb(0, 0, 0);
+  transition: all 400ms; /* transition when the mouse over */
+  border: 1px solid rgb(0, 0, 0);
 
 }
 
 input.boxlock:hover::after {
-  border: 2px solid rgb(255, 0, 221);
-  margin: 0px;
-  border-radius: 1px;
-  transition: all 400ms; /* transition when the mouse over */
+  padding: 1px;
+  margin: 2px;
+  display: -webkit-inline-box;
+  border-radius: 2px;
+  transition: all 200ms; /* transition when the mouse over */
+  border: 1px solid rgb(255, 255, 255);
 
 }
