@@ -405,7 +405,8 @@ _PME.prototype.startEditor = function() {
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
         OutlineFilterx6White: new PIXI.filters.OutlineFilter (6, 0xffffff, 1),
-        OutlineFilterx6Green: new PIXI.filters.OutlineFilter (6, 0x16b50e, 1),
+        OutlineFilterx8Green: new PIXI.filters.OutlineFilter (8, 0x16b50e, 1),
+        OutlineFilterx8Green_n: new PIXI.filters.OutlineFilter (8, 0x16b50e, 1), // need x2 because use x2 blendMode for diffuse,normal
         OutlineFilterx8Red: new PIXI.filters.OutlineFilter (8, 0xdb120f, 1),
         ColorMatrixFilter: new PIXI.filters.ColorMatrixFilter(),
         PixelateFilter12: new PIXI.filters.PixelateFilter(12),
@@ -848,6 +849,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // setup for tile in map
     function open_tileSetupEditor(InMapObj) {
+        clearFiltersFX3(InMapObj); // clear filters
         iniSetupIzit();
         iziToast.info( $PME.tileSetupEditor(InMapObj) );
         // show tint colors pickers
@@ -858,6 +860,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         _jscolor_n.zIndex = 9999999;
         //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
         // focuse on objet
+        // imit 
         ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
         ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
 
@@ -1059,7 +1062,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // asign props value to HTML izit
     function setHTMLWithData(Data_Values, Data_CheckBox, _jscolor, _Falloff) {
         for (const key in Data_Values) {
-            if(Data_Values[key].hideHtml){continue};
+            if(Data_Values[key].hideHtml){continue}; // hiden from html
 
             const value = Data_Values[key].value; // curent value
             const def = Data_Values[key].def; // default value
@@ -1563,9 +1566,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // active filter1, for thumbs
     function activeFiltersFX3(cage,checkHit){
-        //cage._filters = [ FILTERS.OutlineFilterx16 ];
-        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx6Green ]; // thickness, color, quality ,
-        cage.Debug.bg.alpha = 0.2;
+        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ];
+        cage.Sprites.d._filters[0].blendMode = cage.Sprites.d.blendMode;
+        cage.Sprites.n._filters = [ FILTERS.OutlineFilterx8Green_n ];
+        cage.Sprites.n._filters[0].blendMode = cage.Sprites.n.blendMode;
+        cage.Debug.bg.renderable = true;
+        cage.Debug.bg.alpha = 0.3;
         if(checkHit){
             cage.Debug.bg.renderable = true;
             cage.checkHit = true;
@@ -1585,14 +1591,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function clearFiltersFX3(cage){
         cage.Sprites.d._filters = null; // thickness, color, quality ,
-        cage.Debug.bg.alpha = 1;
+        cage.Sprites.n._filters = null; // thickness, color, quality ,
         cage.Debug.bg.renderable = false;
         if(cage.checkHit){
             cage.checkHit = false;
             for (let i=0, l= $Objs.list_master.length; i<l; i++) {
                 const _cage =  $Objs.list_master[i];
-                _cage.Sprites.d.alpha = 1;
-                _cage.Sprites.d.tint = 0xffffff;
                 _cage.Sprites.d._filters = null;
                 if(_cage.Sprites.n){
                     _cage.Sprites.n.renderable = true;
@@ -1719,7 +1723,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return add_toScene(event.currentTarget); 
             }
             if(event.currentTarget.buttonType === "tileMap" &&  event.data.originalEvent.ctrlKey){ // in mapObj
-                return open_tileSetupEditor(event.currentTarget);
+                return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_tileSetupEditor(event.currentTarget);
+            
             }
             if(event.currentTarget.buttonType === "button"){ 
                 return execute_buttons(event.currentTarget);
