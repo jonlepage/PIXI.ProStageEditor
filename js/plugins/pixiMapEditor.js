@@ -799,6 +799,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(OBJ.Data_CheckBox){return OBJ.Data_CheckBox};
         const Data_CheckBox = {};
         Object.keys(Data_Values).forEach(key => { Data_CheckBox[key] = true });
+        Data_CheckBox.heaven_d = false;
+        Data_CheckBox.heaven_n = false;
         // add special case
         //Object.defineProperty(Data_CheckBox, 'position_lock', { value: false, writable: true });
         return Data_CheckBox;
@@ -826,7 +828,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const setLight_n = !!Data_CheckBox.heaven_n? Data_Values.setLight.n.value : Data_Values.setLight.n.def;
         // diffuse dark
         function upd() { return setObjWithData.call(OBJ, Data_Values, Data_CheckBox) };
-        const ddr = new Slider("#ddr", { tooltip: 'always' }); // step: 0.1, value:0, min: 0, max: 1, 
+        const ddr = new Slider("#ddr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
         const ddg = new Slider("#ddg", {tooltip: 'always'});
         const ddb = new Slider("#ddb", { tooltip: 'always'});
         ddr.tooltip.style.opacity = 0.5, ddg.tooltip.style.opacity = 0.5, ddb.tooltip.style.opacity = 0.5;
@@ -835,7 +837,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         ddb.on("slide", function(value) { Data_Values.setDark.d.value[2] = value; upd() }).setValue(setDark_d[2]);
 
         // diffuse light
-        const dlr = new Slider("#dlr", {tooltip: 'always' });
+        const dlr = new Slider("#dlr", {tooltip: 'always'});
         const dlg = new Slider("#dlg", {tooltip: 'always'});
         const dlb = new Slider("#dlb", {tooltip: 'always'});
         dlr.tooltip.style.opacity = 0.5, dlg.tooltip.style.opacity = 0.5, dlb.tooltip.style.opacity = 0.5;
@@ -844,7 +846,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         dlb.on("slide", function(value) { Data_Values.setLight.d.value[2] = value; upd() }).setValue(setLight_d[2]);
 
         // normal dark
-        const ndr = new Slider("#ndr", { tooltip: 'always' }); // step: 0.1, value:0, min: 0, max: 1, 
+        const ndr = new Slider("#ndr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
         const ndg = new Slider("#ndg", {tooltip: 'always'});
         const ndb = new Slider("#ndb", { tooltip: 'always'});
         ndr.tooltip.style.opacity = 0.5, ndg.tooltip.style.opacity = 0.5, ndb.tooltip.style.opacity = 0.5;
@@ -852,7 +854,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         ndg.on("slide", function(value) { Data_Values.setDark.n.value[1] = value; upd() }).setValue(setDark_n[1]);
         ndb.on("slide", function(value) { Data_Values.setDark.n.value[2] = value; upd() }).setValue(setDark_n[2]);
         // normal light
-        const nlr = new Slider("#nlr", {tooltip: 'always' });
+        const nlr = new Slider("#nlr", {tooltip: 'always'});
         const nlg = new Slider("#nlg", {tooltip: 'always'});
         const nlb = new Slider("#nlb", {tooltip: 'always'});
         nlr.tooltip.style.opacity = 0.5, nlg.tooltip.style.opacity = 0.5, nlb.tooltip.style.opacity = 0.5;
@@ -944,9 +946,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         
         // ========= DATA LISTENER  ===========
         // when checkBox changes
-        dataIntepretor.onchange = function(event){
-            
-        };
         dataIntepretor.oninput = function(event){ 
             const e = event.target;
             const type = e.type;
@@ -1094,7 +1093,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         for (const key in Data_Values) {
             if(Data_Values[key].hideHtml){continue}; // hiden props from html, z-index ..hideHtml 
             // look if it a array for (diff,norm): ['d','n'] or (def,current): [0,1]
-            console.log('key: ', key);
             switch (key) {
                 case "setDark":case "setLight":
                     if(Data_CheckBox.check_haven){
