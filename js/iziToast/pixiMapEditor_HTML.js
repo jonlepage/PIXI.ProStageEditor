@@ -1004,15 +1004,24 @@ function htlm_tileSetupEditor(InMapObj) {
 
 return message = /*html*/ `
 <div class="container" id="dataIntepretor">
-<h6>
-    <font color="#d2bc97">CUSTOM OBJ SESSION PROPRETY EDITOR</font>
-    <small class="text-muted"><kbd>Json</kbd></small>
-</h6>
-    <div class="funkyradio-success">
-        <input type="checkbox" name="checkbox" id="check_haven"/>
-        <label for="check_haven">pixi haven</label>
+    <h6>
+        <font color="#d2bc97">CUSTOM OBJ SESSION PROPRETY EDITOR</font>
+        <small class="text-muted"><kbd>Json</kbd></small>
+    </h6>
+    <div class="form-check-inline funkyradio">
+        <div class="funkyradio funkyradio-warning">
+            <input type="checkbox" name="checkbox" id="check_haven"/>
+            <label for="check_haven">:heaven</label>
+        </div>
+        <div class="funkyradio funkyradio-warning">
+            <input type="checkbox" name="checkbox" id="check_animate"/>
+            <label for="check_animate">:easing</label>
+        </div>
+        <div class="funkyradio funkyradio-warning">
+            <input type="checkbox" name="checkbox" id="check_projection"/>
+            <label for="check_projection">:projection</label>
+        </div>
     </div>
-         
 
     <table class="table table-hover table-dark table-sm">
         <thead style="background-color: #393939" >
@@ -1025,7 +1034,7 @@ return message = /*html*/ `
         <tbody>
             <tr><!--groupID-->
                 <td>
-                    <div class="funkyradio funkyradio-danger">
+                    <div class="funkyradio funkyradio-success">
                         <input type="checkbox" name="checkbox" id="_groupID"/>
                         <label for="_groupID" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
@@ -1128,7 +1137,7 @@ return message = /*html*/ `
             </tr>
             <tr><!--anchor-->
                 <td>
-                    <div class="funkyradio funkyradio-danger">
+                    <div class="funkyradio funkyradio-success">
                         <input type="checkbox" name="checkbox" id="_anchor"/>
                         <label for="_anchor" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>

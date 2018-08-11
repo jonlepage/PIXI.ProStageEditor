@@ -52,7 +52,7 @@ _PME.prototype.izit_convertHeaven = function() {
         message: message,
         id:'Heaven',
         layout: 1,
-        transitionIn: 'bounceInRight', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionIn: 'bounceInLeft', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
         transitionOut:	'fadeOutRight', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
         messageSize: 10,
         maxWidth: 400,
