@@ -477,7 +477,7 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 850;
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
-    CAGE_TILESHEETS.list = false; // store list of tile
+    CAGE_TILESHEETS.list = []; // store list of tile
     CAGE_TILESHEETS.interactive = true;
     CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
     CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
@@ -723,8 +723,30 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // IZITOAST DATA EDITOR 
     // └------------------------------------------------------------------------------┘
     // create data id for HTML JSON, if existe , return Data_Values
+    function computeDataForJson(OBJ){
+        const data = {};
+        
+        data.position=[OBJ.position.x, OBJ.position.y];
+        data.scale=[OBJ.scale.x, OBJ.scale.y];
+        data.skew=[OBJ.skew.x, OBJ.skew.y];
+        data.pivot=[OBJ.pivot.x, OBJ.pivot.y];
+        data.anchor=[OBJ.anchor.x, OBJ.anchor.y];
+
+        data.groupID=OBJ.groupID;
+        data.rotation=OBJ.rotation;
+        data.alpha=OBJ.alpha;
+        data.zIndex=OBJ.zIndex;
+        data.autoGroups=OBJ.autoGroups;
+
+        data.blendMode=[OBJ.Sprites.d.blendMode, OBJ.Sprites.n.blendMode];
+        data.tint=[OBJ.Sprites.d.tint, OBJ.Sprites.n.tint];
+
+        
+
+    };
+
     function getDataJson(OBJ){
-        console.log('OBJ: ', OBJ);
+        console.log('getDataJsonOBJ: ', OBJ);
         // data for the scene setup
         let data = {};
         if(OBJ.Type === "AmbientLight"){
@@ -779,7 +801,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
     
         };*/
-        //HEAVEN 
+        //HEAVEN TODO: utiliser .color ? 
         if( ["animationSheet", "tileSheet"].contains(OBJ.Type) ){
             data.setDark = {
                 d:{def:[0,0,0], value:OBJ.Sprites.d.color? PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse() : [0,0,0] }, 
@@ -864,8 +886,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function iniSetupIzit(){
-        clear_tileSheet(true,CAGE_TILESHEETS);
-        close_editor();
+        close_editor(true);
         setStatusInteractiveObj(false);
         iziToast.opened = true;
     }
@@ -1013,13 +1034,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             _Falloff.kl.on("slide", function(value) { Data_Values.falloff.value[1] = value });
             _Falloff.kq.on("slide", function(value) { Data_Values.falloff.value[2] = value });
         })():void 0;
-     
 
         // BUTTONS
         dataIntepretor.onclick =function(event){ //check if html checkbox change?
             const e = event.target; // buttons
             if(e.type === "button"){
-                if(e.id==="save"){ start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
+                if(e.id==="save"){ close_mapSetupEditor(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox); };// apply and close
                 if(e.id==="applyAll"){ };// apply to all and close
                 if(e.id==="cancel"){ };// cancel and close
@@ -1033,8 +1053,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
     };
-
-   
 
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
@@ -1055,8 +1073,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     STAGE.createBackground(value?DATA[value]:false);
                 break;
                 case "position":case "scale":case "skew":case "pivot":case "anchor":
-                    if(this[key]){ this[key].set(...value) }
-                    else{
+                    if(this[key]){ 
+                        this[key].set(...value);
+                    }else{
                         this.Sprites.d[key].set(...value);
                         this.Sprites.n[key].set(...value);
                         this.Debug.bg[key].set(...value);
@@ -1071,9 +1090,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     if(this.Sprites.d.color){
                         const check_haven = !!Data_CheckBox.check_haven; // global event buttons
                         const hv_d = (Data_CheckBox.heaven_d&&check_haven)? Data_Values[key].d.value : Data_Values[key].d.def;
-                        console.log('hv_d: ', hv_d);
                         const hv_n = (Data_CheckBox.heaven_n&&check_haven)? Data_Values[key].n.value : Data_Values[key].n.def;
-                        console.log('hv_n: ', hv_n);
                         this.Sprites.d.color[key](...hv_d), this.Sprites.n.color[key](...hv_n);
                     };
                 break;
@@ -1082,6 +1099,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 break;
             };
         };
+        // for the debug pivot zone
+        this.Debug.piv.height = Math.abs(this.pivot.y);
+        this.Debug.piv.y = this.pivot.y<0? this.pivot.y : 0;
+        this.Debug.piv.tint = this.pivot.y>0? 0xff0000 : 0x08ff00;
     };
 
     // asign props value to HTML izit
@@ -1143,16 +1164,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // close the dataEditor
     function close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox){
-        console.log('OBJ: ', OBJ);
-        OBJ.Data_Values = Data_Values;
-        OBJ.Data_CheckBox = Data_CheckBox;
+        OBJ? OBJ.Data_Values = Data_Values : void 0;
+        OBJ? OBJ.Data_CheckBox = Data_CheckBox : void 0;
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") );
         document.getElementById("Heaven") && iziToast.hide( {transitionOut: 'flipOutX'}, document.getElementById("Heaven") );
         iziToast.opened = false;
-
         setStatusInteractiveObj(true);
-        clear_tileSheet(true,CAGE_TILESHEETS);
-        open_editor();
+        open_editor(true);
     };
 
 //#endregion
@@ -1239,7 +1257,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
         };
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
@@ -1268,6 +1286,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const an = new PIXI.Sprite(PIXI.Texture.WHITE); // anchorPoint
+            const piv = new PIXI.Sprite(PIXI.Texture.WHITE);
             // setup
             let d = this.Sprites.d;
             bg.width = d.width;
@@ -1281,8 +1300,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             an.alpha = 0.7;
             an.anchor.set(0.5,0.5);
 
+            piv.width = d.width;
+            piv.height = 4;
+            piv.tint = 0xee5000;
+            piv.blendMode = 1;
+            piv.alpha = 0.5;
+            piv.anchor.x = 0.5;
+
             this.Debug.bg = bg;
             this.Debug.an = an;
+            this.Debug.piv = piv;
         };
         if(this.Type === "spineSheet"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -1396,7 +1423,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // └------------------------------------------------------------------------------┘
 
     function show_tileSheet(InLibs) {
-        console.log('InLibs: ', InLibs);
         // check if alrealy opened ???  open_tileSheet // return hide
         if(check_tileSheetStatus(CAGE_TILESHEETS,InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
@@ -1404,7 +1430,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const elements = InLibs.Data.textures || InLibs.Data.data.skins;
         Object.keys(elements).forEach(textureName => {
             const cage = build_tileLibs(InLibs, textureName);
-            cage.Sprites.n && (cage.Sprites.n.renderable = false);
+            cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
+            cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
+        
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage);
             cage.interactive = true;
@@ -1413,7 +1441,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.on('pointerup', pointer_UP);
             cage.on('pointermove', function(e){checkAnchor(this)});
             cage.on('zoomTileLibs', wheelInLibs);
-
             cage.buttonType = "tileLibs";
             //cage.on('mousemove', onMove_tileSheet);
            // cage.on('pointerdown', onPointerdown_tileSheet);
@@ -1441,14 +1468,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // remove all, but keep the mask as child[0]
         if(hide){
             CAGE_TILESHEETS.renderable = false;
+            CAGE_TILESHEETS.visible = false; // event manager
             CAGE_TILESHEETS.opened = false;
+            CAGE_TILESHEETS.previouName = CAGE_TILESHEETS.name || null;
             CAGE_TILESHEETS.name = null;
             EDITOR.state.setAnimation(2, 'hideTileSheets', false);
+            CAGE_TILESHEETS.list = [];
         }else{
             !CAGE_TILESHEETS.opened && EDITOR.state.setAnimation(2, 'showTileSheets', false);
             CAGE_TILESHEETS.name = InLibs.name;
             CAGE_TILESHEETS.opened = true;
             CAGE_TILESHEETS.renderable = true;
+            CAGE_TILESHEETS.visible = true; // event manager
+
         }
         // reset clear
         CAGE_TILESHEETS.removeChildren();
@@ -1456,14 +1488,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return hide;
     };
 
-    function open_editor() {
+    function open_editor(openCachedLib) {
         EDITOR.state.setAnimation(1, 'start0', false);
         CAGE_LIBRARY.renderable = true;
+        CAGE_LIBRARY.visible = true; // event manage
+        if(openCachedLib && CAGE_TILESHEETS.list.length){
+            CAGE_TILESHEETS.renderable = true
+            CAGE_TILESHEETS.visible = true
+            EDITOR.state.setAnimation(2, 'showTileSheets', false);
+        }
     };
 
-    function close_editor() {
+    function close_editor(cachedLibs) {
         EDITOR.state.setAnimation(1, 'hideFullEditor', false);
         CAGE_LIBRARY.renderable = false;
+        CAGE_LIBRARY.visible = false; // event manage
+        if(cachedLibs && CAGE_TILESHEETS.list.length){
+            CAGE_TILESHEETS.visible = false
+            CAGE_TILESHEETS.renderable = false
+            EDITOR.state.setAnimation(2, 'hideTileSheets', false);
+        };
     };
 
     function setStatusInteractiveObj(status){
@@ -1479,8 +1523,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         CAGE_MOUSE.list = cage;
         cage.interactive = true;
         cage.on('pointerup', pointer_UP);
+        cage.on('pointerdown', pointer_DW);
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
+        close_editor(true);
         return cage;
     };
 
@@ -1500,6 +1546,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerover', pointer_overIN);
         cage.on('pointerout', pointer_overOUT);
         cage.on('pointerup', pointer_UP);
+        cage.on('pointerdown', pointer_DW);
+
         cage.buttonType = 'tileMap';
         //cage.on('mousemove', onMove_objMap);
         //cage.on('pointerup', onPointerup_objMap);
@@ -1597,13 +1645,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // active filter1, for thumbs
-    function activeFiltersFX3(cage,checkHit){
+    function activeFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask et alpha, mettre dans un buffer []
         cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ];
-        cage.Sprites.d._filters[0].blendMode = cage.Sprites.d.blendMode;
-        cage.Sprites.n._filters = [ FILTERS.OutlineFilterx8Green_n ];
-        cage.Sprites.n._filters[0].blendMode = cage.Sprites.n.blendMode;
-        cage.Debug.bg.renderable = true;
-        cage.Debug.bg.alpha = 0.3;
+        cage.Sprites.d._filters[0].blendMode = cage.Sprites.d.blendMode || 0;
         if(checkHit){
             cage.Debug.bg.renderable = true;
             cage.checkHit = true;
@@ -1613,26 +1657,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(_cage.zIndex>cage.zIndex){
                     const hit = hitCheck(cage,_cage);
                     _cage.Sprites.d._filters = hit ? [FILTERS.OutlineFilterx8Red ]: null;
-                    if(_cage.Sprites.n){
-                        //_cage.Sprites.n.renderable =  hit ? false:true;
-                    }
+                    _cage.Sprites.d.alphaHit = +_cage.Sprites.d.alpha;
+                    _cage.Sprites.d.alpha = 0.3;
+                    _cage.Sprites.n? _cage.Sprites.n.renderable =  hit ? false:true : void 0;
                 };
             };
         };
     };
 
-    function clearFiltersFX3(cage){
+    function clearFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask alpha, mettre dans un buffer []
         cage.Sprites.d._filters = null; // thickness, color, quality ,
-        cage.Sprites.n._filters = null; // thickness, color, quality ,
+        cage.Sprites.n? cage.Sprites.n._filters = null : void 0; // thickness, color, quality ,
         cage.Debug.bg.renderable = false;
         if(cage.checkHit){
             cage.checkHit = false;
             for (let i=0, l= $Objs.list_master.length; i<l; i++) {
                 const _cage =  $Objs.list_master[i];
                 _cage.Sprites.d._filters = null;
-                if(_cage.Sprites.n){
-                    _cage.Sprites.n.renderable = true;
-                }
+                Number.isFinite(_cage.Sprites.d.alphaHit)?  _cage.Sprites.d.alpha = +_cage.Sprites.d.alphaHit : void 0;
+                _cage.Sprites.n? _cage.Sprites.n.renderable = true : void 0;
             };
         };
     };
@@ -1668,6 +1711,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             MouseTimeOut = setTimeout(() => {
                 HoldX = +mX, HoldY = +mY;
                 MouseHold=activeTarget;
+                 console.log2('activeTarget ', activeTarget.buttonType);
+
             }, 160);
         };
     };
@@ -1684,7 +1729,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         //if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
         if(MouseHold){
-            if( MouseHold.buttonType = "CAGE_TILESHEETS" ){
+            if( MouseHold.buttonType === "CAGE_TILESHEETS" ){
                 CAGE_TILESHEETS.list.forEach(cage => {
                     cage.x+= event.data.originalEvent.movementX*0.7;//performe scroll libs mouse
                     cage.y+= event.data.originalEvent.movementY*0.6;//performe scroll libs mouse
@@ -1728,13 +1773,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 clearFiltersFX1(event.currentTarget);
             break;
             case "tileMap":
-                clearFiltersFX3(event.currentTarget);
+                clearFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
             break;
         };
     };
 
     function pointer_DW(event){
         startMouseHold(event.currentTarget); // timeOut check MouseHold
+      
     };
 
     function pointer_UP(event){
@@ -1744,7 +1790,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
         if(_clickRight){// <= clickUp
-            if(event.currentTarget.buttonType === "thumbs"){ 
+            if(event.currentTarget.buttonType === "thumbs"){
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
             if(event.currentTarget.buttonType === "tileLibs"){ 
@@ -1766,6 +1812,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(event.currentTarget.buttonType === "tileMouse"){ 
                 CAGE_MAP.removeChild(CAGE_MOUSE.list);
                 setStatusInteractiveObj(true);
+                open_editor(true);
+                LineDraw? STAGE.removeChild(LineDraw) : void 0;
+                LineDraw = null;
                 return CAGE_MOUSE.list = null;
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
@@ -2104,8 +2153,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
             });
         };
-        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
-        writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        console.log('data/perma.json ', data_perma);
+        //writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
+        
+        //writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        console.log('data/${sceneName}_data.json`: ',sceneName, data);
     };
     
     function computeSave_PERMASHEETS(DATA) {
@@ -2133,9 +2185,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const objs = [];
         list_master.forEach(e => {
             const Data_Values = getDataJson(e);
+            console.log('Data_Values: ', Data_Values);
             const Data_CheckBox = getDataCheckBoxWith(e, Data_Values);
-            const _Data_Values = {};
-            for (const key in Data_Values) {
+            console.log('Data_CheckBox: ', Data_CheckBox);
+            const _Data_Values = {}; // version simple du Data_Values
+            for (const key in Data_Values) { // TODO: NORMALISER AVEC pixi.point ,.. ? ou checker setDark _n,_d
+                if(Data_Values[key].d){ // its a props for d.[def,val], n.[def,val]
+              
+                    const setDark_d = !!Data_CheckBox.heaven_d? Data_Values.setDark.d.value : Data_Values.setDark.d.def;
+                    const setLight_d = !!Data_CheckBox.heaven_d? Data_Values.setLight.d.value : Data_Values.setLight.d.def;
+                    const setDark_n = !!Data_CheckBox.heaven_n? Data_Values.setDark.n.value : Data_Values.setDark.n.def;
+                    const setLight_n = !!Data_CheckBox.heaven_n? Data_Values.setLight.n.value : Data_Values.setLight.n.def;
+                    /*const val_d = Data_CheckBox[key+"_d"] ? Data_Values[key].d.value : Data_Values[key].d.def;
+                    const val_n = Data_CheckBox[key+"_n"] ? Data_Values[key].d.value : Data_Values[key].d.def;
+                    _Data_Values[key] = {d:,n}*/
+                }else{
+
+                }
                 _Data_Values[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
             };
             objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.TexName });
