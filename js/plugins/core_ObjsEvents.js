@@ -31,6 +31,7 @@ _objs.prototype.createFromList = function(LIST) {
         const Data_Values = e.Data_Values;
         const Data = $Loader.Data2[e.Data.name];
         const textureName = e.textureName;
+        console.log('e: ', i,e);
         // from type
         switch (Data.type) {
             case "tileSheet":
@@ -105,7 +106,6 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
 };
 
  _objs.prototype.create_fromTileSheet = function(Data, Data_Values, textureName){
-     console.log('Data_Values: ', Data_Values);
     const cage = new PIXI.Container();
     const sprite_d = new PIXI.Sprite(Data.textures[textureName]);
     const sprite_n = new PIXI.Sprite(Data.textures_n[textureName+"_n"]);
@@ -114,46 +114,52 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
     sprite_n.parentGroup = PIXI.lights.normalGroup;
     //parenting
     cage.addChild(sprite_d, sprite_n);
-    cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
+    cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
     //cage.zIndex = mMY; //TODO: add to json addAttr_default
     // reference
-    sprite_d.name = textureName;
-    sprite_n.name = textureName+"_n";
+    sprite_d.name = textureName, sprite_n.name = textureName+"_n";
     cage.Sprites = {d:sprite_d, n:sprite_n};
     cage.Type = Data.type;
-    cage.name = Data.name;
+    cage.name = Data.name; //TODO:
     cage.TexName = textureName || false;
 
     // proprety attributs
     this.addAttr_default(cage, Data_Values);
+    console.log('cage: ', cage);
     return cage;
+    
 };
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values){
+    console.log('Data_Values: ', Data_Values);
     for (const key in Data_Values) {
+        console.log('key: ', key);
         const value = Data_Values[key];
         switch (key) {
-            case "scale":case "skew":case "pivot":case "position":
+            
+            case "position":case "scale":case "skew":case "pivot":
                 cage[key].set(...value);
             break;
-            case "alpha":case "rotation":case "groupID":
-                cage[key] = !isFinite(value) && value || +value;
-            break;
             case "anchor":
-                if(Number.isFinite(value[0])){
-                    cage.Sprites.d[key].set(...value);
-                    cage.Sprites.n[key].set(...value);
-                };
+                cage.Sprites.d.anchor.set(...value);
+                cage.Sprites.n.anchor.set(...value);
             break;
-            case "blendMode":
-                cage.Sprites.n[key] = +value;
+            case "blendMode":case "tint":
+                cage.Sprites.d[key] = +value[0];
+                cage.Sprites.n[key] = +value[1];
             break;
-            case "tint":
-                cage.Sprites.d[key] = +value;
+            case "color":
+                cage.Sprites.d.convertToHeaven();
+                cage.Sprites.d.color.setDark(...value.d[0]);
+                cage.Sprites.d.color.setLight(...value.d[1]);
+                cage.Sprites.n.convertToHeaven();
+                cage.Sprites.n.color.setDark(...value.n[0]);
+                cage.Sprites.n.color.setLight(...value.n[1]);
             break;
-            case "zIndex":
-                cage.zIndex = +value;
+            case "parentGroup":break;
+            default:
+                cage[key] = value;
             break;
         };
     };

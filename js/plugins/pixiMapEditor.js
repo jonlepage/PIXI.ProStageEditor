@@ -725,24 +725,44 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // create data id for HTML JSON, if existe , return Data_Values
     function computeDataForJson(OBJ){
         const data = {};
-        
-        data.position=[OBJ.position.x, OBJ.position.y];
-        data.scale=[OBJ.scale.x, OBJ.scale.y];
-        data.skew=[OBJ.skew.x, OBJ.skew.y];
-        data.pivot=[OBJ.pivot.x, OBJ.pivot.y];
-        data.anchor=[OBJ.anchor.x, OBJ.anchor.y];
+        // general
+        if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
+            data.position = [OBJ.position.x, OBJ.position.y];
+            data.scale = [OBJ.scale.x, OBJ.scale.y];
+            data.skew = [OBJ.skew.x, OBJ.skew.y];
+            data.pivot = [OBJ.pivot.x, OBJ.pivot.y];
+            data.anchor = [OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y]; //sub
 
-        data.groupID=OBJ.groupID;
-        data.rotation=OBJ.rotation;
-        data.alpha=OBJ.alpha;
-        data.zIndex=OBJ.zIndex;
-        data.autoGroups=OBJ.autoGroups;
+            data.groupID = OBJ.groupID;
+            data.rotation = OBJ.rotation;
+            data.alpha = OBJ.alpha;
+            data.zIndex = OBJ.zIndex;
+            data.parentGroup = OBJ.parentGroup.zIndex;
+            data.autoGroups = OBJ.autoGroups;
 
-        data.blendMode=[OBJ.Sprites.d.blendMode, OBJ.Sprites.n.blendMode];
-        data.tint=[OBJ.Sprites.d.tint, OBJ.Sprites.n.tint];
+            data.blendMode = [OBJ.Sprites.d.blendMode, OBJ.Sprites.n.blendMode]; // sub
+            data.tint = [OBJ.Sprites.d.tint, OBJ.Sprites.n.tint]; // sub
+            
+            if(OBJ.Sprites.d.color || OBJ.Sprites.n.color){
+                data.color = {}; // sub
+                OBJ.Sprites.d.color ? data.color.d = [
+                    PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse(), 
+                    PIXI.utils.hex2rgb(OBJ.Sprites.d.color.lightRgba).reverse()
+                ] : void 0;
+                OBJ.Sprites.n.color ? data.color.n =  [
+                    PIXI.utils.hex2rgb(OBJ.Sprites.n.color.darkRgba).reverse(), 
+                    PIXI.utils.hex2rgb(OBJ.Sprites.n.color.lightRgba).reverse()
+                ] : void 0;
+            };
+        }
+        if(OBJ.Type === "animationSheet"){
+            data.animationSpeed = OBJ.animationSpeed;
+            data.loop = OBJ.loop;
+        }
+        if(OBJ.Type === "spineSheet"){//TODO:
 
-        
-
+        }
+        return data;
     };
 
     function getDataJson(OBJ){
@@ -801,7 +821,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
     
         };*/
-        //HEAVEN TODO: utiliser .color ? 
+        //HEAVEN TODO: utiliser .color ? , enlever les boutons def .. posibility changer plugin name ?
         if( ["animationSheet", "tileSheet"].contains(OBJ.Type) ){
             data.setDark = {
                 d:{def:[0,0,0], value:OBJ.Sprites.d.color? PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse() : [0,0,0] }, 
@@ -1042,7 +1062,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(e.id==="save"){ close_mapSetupEditor(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox); };// apply and close
                 if(e.id==="applyAll"){ };// apply to all and close
-                if(e.id==="cancel"){ };// cancel and close
+                if(e.id==="cancel"){close_mapSetupEditor()};// cancel and close
                 if(e.id==="reset"){ // reset session cache and data
                     $PME.storage.removeItem(name);
                     session = getSession(objLight); // session (final data)
@@ -2131,8 +2151,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _renderLayers_n : document.getElementById("_renderLayers_n").value,
                 _renderAnimationsTime0 : document.getElementById("_renderAnimationsTime0").value,
             }
-        }
-        create_SceneJSON();
+            // system info data
+            useOption.systemInfo = {
+                //MEMORY USAGES
+                heaps : +document.getElementById("heaps").innerHTML.replace("MB",""),
+                heapTotal : +document.getElementById("heapTotal").innerHTML.replace("MB",""),
+                external : +document.getElementById("external").innerHTML.replace("MB",""),
+                rss : +document.getElementById("rss").innerHTML.replace("MB",""),
+                // generique
+                versionEditor : document.getElementById("versionEditor").innerHTML,
+                SavePath : document.getElementById("SavePath").innerHTML,
+                totalSpines : +document.getElementById("totalSpines").innerHTML,
+                totalAnimations : +document.getElementById("totalAnimations").innerHTML,
+                totalTileSprites : +document.getElementById("totalTileSprites").innerHTML,
+                totalLight : +document.getElementById("totalLight").innerHTML,
+                totalEvents : +document.getElementById("totalEvents").innerHTML,
+                totalSheets : +document.getElementById("totalSheets").innerHTML,
+            }
+        };
+        create_SceneJSON(useOption);
+        console.log('useOption: ', useOption.systemInfo);
         //useOption ? create_RenderingOptions(useOption):void 0; TODO:
         iziToast.warning( $PME.savedComplette() );
     };
@@ -2145,18 +2183,24 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let OBJS = computeSave_OBJ($Objs.list_master);
         let SHEETS = computeSave_SHEETS(SCENE,OBJS);
 
-        const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS};
+        const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS, system:options.systemInfo };
         const data_perma = {_SHEETS:PERMASHEETS};
         
         function writeFile(path,content,data){
-            fs.writeFile(path, content, 'utf8', function (err) { 
-                if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
+            // creer une version _old.json with replace() rename()
+            fs.rename(`${path}`, `${path.replace(".","_old.")}`, function(err) {
+                if ( err ) console.log('ERROR:rename ' + err);
+                // enrigistre
+                fs.writeFile(path, content, 'utf8', function (err) { 
+                    if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
+                });
             });
         };
+
+
         console.log('data/perma.json ', data_perma);
-        //writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
-        
-        //writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
+        writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
         console.log('data/${sceneName}_data.json`: ',sceneName, data);
     };
     
@@ -2181,29 +2225,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function computeSave_OBJ(list_master) {
-
         const objs = [];
         list_master.forEach(e => {
-            const Data_Values = getDataJson(e);
-            console.log('Data_Values: ', Data_Values);
-            const Data_CheckBox = getDataCheckBoxWith(e, Data_Values);
-            console.log('Data_CheckBox: ', Data_CheckBox);
-            const _Data_Values = {}; // version simple du Data_Values
-            for (const key in Data_Values) { // TODO: NORMALISER AVEC pixi.point ,.. ? ou checker setDark _n,_d
-                if(Data_Values[key].d){ // its a props for d.[def,val], n.[def,val]
-              
-                    const setDark_d = !!Data_CheckBox.heaven_d? Data_Values.setDark.d.value : Data_Values.setDark.d.def;
-                    const setLight_d = !!Data_CheckBox.heaven_d? Data_Values.setLight.d.value : Data_Values.setLight.d.def;
-                    const setDark_n = !!Data_CheckBox.heaven_n? Data_Values.setDark.n.value : Data_Values.setDark.n.def;
-                    const setLight_n = !!Data_CheckBox.heaven_n? Data_Values.setLight.n.value : Data_Values.setLight.n.def;
-                    /*const val_d = Data_CheckBox[key+"_d"] ? Data_Values[key].d.value : Data_Values[key].d.def;
-                    const val_n = Data_CheckBox[key+"_n"] ? Data_Values[key].d.value : Data_Values[key].d.def;
-                    _Data_Values[key] = {d:,n}*/
-                }else{
-
-                }
-                _Data_Values[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
-            };
+            const _Data_Values = computeDataForJson(e); // version simple du Data_Values baser sur les values reel de l'elements
             objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.TexName });
         });
         return objs;

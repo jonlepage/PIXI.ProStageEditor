@@ -1273,6 +1273,10 @@ return message = /*html*/ `
   //#region [rgba(255,100, 0,0.8)]
 //#endregion
 function html_izit_saveSetup() {
+    // get a copy of old file? if exist
+    const fs = require('fs');
+    const buffer = JSON.parse(fs.readFileSync(`data/${this.stage.constructor.name}_data.json`, 'utf8'));
+    const oldSystem = buffer.system || false;
     // help converting byte memory to readable size
     function bytesToSize(bytes) {
         if (bytes == 0) return 'n/a';
@@ -1281,21 +1285,23 @@ function html_izit_saveSetup() {
         if (i == 0) return bytes + ' ' + sizes[i];
         return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
     };
-    function getMemorySize(){
+    function getMemorySize(reel){
         const memory = process.memoryUsage();
         for (const entry in memory) {
             const r = memory[entry];
             memory[entry] = bytesToSize( memory[entry] );
         }
+        const heapUsed_old = oldSystem? oldSystem.heaps : "...notAvaible!";
+        const heapTotal_old = oldSystem? oldSystem.heapTotal : "...notAvaible!";
+        const external_old = oldSystem? oldSystem.external : "...notAvaible!";
+        const rss_old = oldSystem? oldSystem.rss : "...notAvaible!";
+
         return `
-        <font color="#bb5179">heaps: </font> <font color="#fff"> Used:</font> (${memory.heapUsed}) /  <font color="#fff">Total:</font> ${memory.heapTotal}<br>
-        <font color="#bb5179">external:</font> ${memory.external}<br>
-        <font color="#bb5179">rss:</font>  ${memory.rss}
+        <font color="#bb5179">heaps: </font> <font color="#fff"> Used:</font> (<span id="heaps">${reel?memory.heapUsed:heapUsed_old}</span>) / <font color="#fff">Total:</font> <span id="heapTotal">${reel?memory.heapTotal:heapTotal_old}</span><br>
+        <font color="#bb5179">external:</font> <span id="external">${reel?memory.external:external_old}</span><br>
+        <font color="#bb5179">rss:</font>  <span id="rss">${reel?memory.rss:rss_old}</span>
         `;
     };
-
-
-    console.log('this: ', this);
     return message = /*html*/ `
     <div class="container" id="dataIntepretor">
     <h6>
@@ -1445,48 +1451,48 @@ function html_izit_saveSetup() {
             <tbody id="information">
                 <tr>
                     <td>MEMORY USAGES:</td>
-                    <td class="text-success">${getMemorySize()}</td>
+                    <td class="text-success">${getMemorySize(true)}</td>
                     <td class="text-danger">${getMemorySize()}</td>
                 <tr>
                 <tr>
-                    <td>VERSION EDITOR:</td>
-                    <td class="text-success">${this.version}</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td>versionEditor:</td>
+                    <td class="text-success" id="versionEditor">${this.version}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.versionEditor:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>SavePath:</td>
-                    <td class="text-success"> data/${this.stage.constructor.name}_data.json </td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="SavePath">data/${this.stage.constructor.name}_data.json</td>
+                    <td class="text-danger">${oldSystem?oldSystem.SavePath:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total Spines:</td>
-                    <td class="text-success"> ${ $Objs.getsByType("spineSheet").length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalSpines">${$Objs.getsByType("spineSheet").length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalSpines:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total Animations:</td>
-                    <td class="text-success"> ${ $Objs.getsByType("animationSheet").length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalAnimations">${$Objs.getsByType("animationSheet").length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalAnimations:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total TileSprites:</td>
-                    <td class="text-success"> ${ $Objs.getsByType("tileSheet").length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalTileSprites">${$Objs.getsByType("tileSheet").length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalTileSprites:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total Light:</td>
-                    <td class="text-success"> ${ $Objs.getsByType("light").length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalLight">${$Objs.getsByType("light").length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalLight:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total Events:</td>
-                    <td class="text-success"> ${ $Objs.getsByType("event").length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalEvents">${$Objs.getsByType("event").length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalEvents:">not avaible ..."}</td>
                 <tr>
                 <tr>
                     <td>Total Sheets:</td>
-                    <td class="text-success">  ${ $Objs.getsSheetLists().length }</td>
-                    <td class="text-danger">not avaible ...</td>
+                    <td class="text-success" id="totalSheets">${$Objs.getsSheetLists().length}</td>
+                    <td class="text-danger">${oldSystem?oldSystem.totalSheets:">not avaible ..."}</td>
                 <tr>
             </tbody>
         </table>
