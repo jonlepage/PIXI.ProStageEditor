@@ -1000,8 +1000,8 @@ function html_izit_sceneSetup(bgList, stage) {
 
   //#region [rgba(200, 10, 10,0.5)]
 //#endregion
-function htlm_tileSetupEditor(InMapObj) {
-
+function htlm_tileSetupEditor(obj) {
+const isSpine = obj.Type === "spineSheet";
 return message = /*html*/ `
 <div class="container" id="dataIntepretor">
     <h6>
@@ -1138,7 +1138,7 @@ return message = /*html*/ `
             <tr><!--anchor-->
                 <td>
                     <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_anchor"/>
+                        <input type="checkbox" name="checkbox" id="_anchor" ${isSpine&&"disabled"}>
                         <label for="_anchor" style="text-indent:0px;margin-right:0px;">.</label>
                     </div>
                 </td>
@@ -1150,9 +1150,9 @@ return message = /*html*/ `
                             <small class="text-muted">anchor:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=0>
-                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=1>
-                        <input class="boxlock" type="checkbox" id="anchor_lock">
+                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=0 ${isSpine&&"disabled"}>
+                        <input type="number" step=0.5 min=0 max=1 class="form-control" id="anchor" arrId=1 ${isSpine&&"disabled"}>
+                        <input class="boxlock" type="checkbox" id="anchor_lock" ${isSpine&&"disabled"}>
                     </div>
                 </td>
             </tr>
@@ -1257,6 +1257,60 @@ return message = /*html*/ `
                         <label class="form-check-label" for="autoGroups6" style="padding-right: 10px;">:6</label>
                 </div></td>
             </tr>
+            <!--animationSheet-->
+            ${(function(){
+                if(obj.Type === "animationSheet"){
+                    return /*html*/ `
+                        <tr><!--animationSpeed-->
+                            <td>
+                                <div class="funkyradio funkyradio-success">
+                                    <input type="checkbox" name="checkbox" id="_animationSpeed"/>
+                                    <label for="_animationSpeed" style="text-indent:0px;margin-right:0px;">.</label>
+                                </div>
+                            </td>
+                            <td id="animationSpeed_def"></td>
+                            <td>
+                                <div class="input-group input-group-xs">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text">
+                                        <small class="text-muted">animationSpeed:</small>
+                                        </div>
+                                    </div>
+                                    <input type="number" step=0.01 min=0.01 class="form-control" id="animationSpeed">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr><!--loop-->
+                        <td>
+                            <div class="funkyradio funkyradio-success">
+                                <input type="checkbox" name="checkbox" id="_loop"/>
+                                <label for="_loop" style="text-indent:0px;margin-right:0px;">.</label>
+                            </div>
+                        </td>
+                        <td id="loop_def"></td>
+                        <td>
+                            <div class="input-group input-group-xs">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                    <small class="text-muted">loop:</small>
+                                    </div>
+                                </div>
+                                <select class="selectRadius" id="loop">
+                                    <option value=true>true</option>
+                                    <option value=false selected>false</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    `}else{return ""};
+            })()}
+            <!--spineSheet-->
+            ${(function(){
+                if(obj.Type === "spineSheet"){
+                    return /*html*/ `
+                       
+                    `}else{return ""};
+            })()}
         </tbody>
     </table>
     <button id="ApplyToAllGroup" type="button" class="btn btn-outline-warning btn-sm">Apply To All Group</button>

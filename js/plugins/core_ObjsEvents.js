@@ -49,58 +49,28 @@ _objs.prototype.createFromList = function(LIST) {
 
 _objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName){
     const cage = new PIXI.Container();
+    const sprite_d = new PIXI.spine.Spine(Data.spineData);
+        sprite_d.skeleton.setSkinByName(textureName);
+        sprite_d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
+        sprite_d.skeleton.setSlotsToSetupPose();
+    const sprite_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
+        sprite_n.width = sprite_d.width;
+        sprite_n.height = sprite_d.height;
+        sprite_n.anchor.set(0.5,1);
 
-    const spine = new PIXI.spine.Spine(Data.spineData);
-    spine.skeleton.setSkinByName(textureName)//();
-    spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-    spine.skeleton.setSlotsToSetupPose();
-    sprite_d = spine;
-
-   // asign group display
-   sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-   //sprite_n.parentGroup = PIXI.lights.normalGroup; TODO: ASK IVAN
-   //parenting
-   cage.addChild(sprite_d);
-   cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
-   //cage.zIndex = mMY; //TODO: add to json addAttr_default
-   // reference
-   sprite_d.name = textureName;
-    cage.Sprites = {d:sprite_d, n:null};
-   
-   cage.Type = Data.type;
-   cage.name = Data.name;
-   cage.TexName = textureName || false;
-
-   // proprety attributs
-   this.addAttr_default(cage, Data_Values);
+   this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
    cage.getBounds(cage); //TODO: BOUND MAP
+   
    return cage;
 };
 
 _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureName){
    const cage = new PIXI.ContainerAnimations();
-        cage.Sprites = {d:null, n:null}; // need befor because 'addNormal' useIt
    const sprite_d = new PIXI.extras.AnimatedSprite(Data.textures[textureName]);
-        cage.Sprites.d = sprite_d;
-   const sprite_n = cage.addNormal(Data.textures_n[textureName]);
-        cage.Sprites.n = sprite_n; // FIXME: voir constructeur
-   // asign group display
-   sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-   sprite_n.parentGroup = PIXI.lights.normalGroup;
-   //parenting
-   cage.addChild(sprite_d, sprite_n);
-   cage.parentGroup = $displayGroup.group[1]; //TODO: add to json addAttr_default
-   //cage.zIndex = mMY; //TODO: add to json addAttr_default
-   // reference
-   sprite_d.name = textureName;
-   sprite_n.name = textureName+"_n";
-   
-   cage.Type = Data.type;
-   cage.name = Data.name;
-   cage.TexName = textureName || false;
+   const sprite_n = cage.addNormal(sprite_d, Data.textures_n[textureName]);
 
    // proprety attributs
-   this.addAttr_default(cage, Data_Values);
+   this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
    cage.getBounds(cage); //TODO: BOUND MAP
    return cage;
 };
@@ -109,30 +79,32 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
     const cage = new PIXI.Container();
     const sprite_d = new PIXI.Sprite(Data.textures[textureName]);
     const sprite_n = new PIXI.Sprite(Data.textures_n[textureName+"_n"]);
-    // asign group display
-    sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-    sprite_n.parentGroup = PIXI.lights.normalGroup;
-    //parenting
-    cage.addChild(sprite_d, sprite_n);
-    cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
-    //cage.zIndex = mMY; //TODO: add to json addAttr_default
-    // reference
-    sprite_d.name = textureName, sprite_n.name = textureName+"_n";
-    cage.Sprites = {d:sprite_d, n:sprite_n};
-    cage.Type = Data.type;
-    cage.name = Data.name; //TODO:
-    cage.TexName = textureName || false;
-
     // proprety attributs
-    this.addAttr_default(cage, Data_Values);
+    this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
     console.log('cage: ', cage);
     return cage;
     
 };
 
 // add general attributs
-_objs.prototype.addAttr_default = function(cage, Data_Values){
+_objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
     console.log('Data_Values: ', Data_Values);
+   // asign group display
+   cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
+   cage.zIndex = Data_Values.zIndex; //TODO: add to json addAttr_default
+   d.parentGroup = PIXI.lights.diffuseGroup;
+   n.parentGroup = PIXI.lights.normalGroup;
+   // reference
+   cage.Sprites = {d:d,n:n};
+   cage.name = Data.name;
+   cage.Type = Data.type;
+   cage.TexName = textureName || false;
+   d.name = textureName;
+   n.name = textureName+"_n";
+
+   cage.addChild(d,n);
+
+
     for (const key in Data_Values) {
         console.log('key: ', key);
         const value = Data_Values[key];

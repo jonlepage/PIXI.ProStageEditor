@@ -554,7 +554,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             setup_Propretys.call(cage,cage);
             // if animations, in editorMode we play loop
             if(cage.play){
-                cage.loop = true;
                 cage.play();
             };
 
@@ -731,7 +730,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             data.scale = [OBJ.scale.x, OBJ.scale.y];
             data.skew = [OBJ.skew.x, OBJ.skew.y];
             data.pivot = [OBJ.pivot.x, OBJ.pivot.y];
-            data.anchor = [OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y]; //sub
+            OBJ.Sprites.d.anchor? data.anchor = [OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] : void 0; //sub (disable on spineSheet)
 
             data.groupID = OBJ.groupID;
             data.rotation = OBJ.rotation;
@@ -782,45 +781,34 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
         if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
-            data =  { ...data,
-                groupID:{def:"default", value:OBJ.groupID || "default" },
-                position:{def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]},
-                scale:{def:[1,1], value:[OBJ.scale.x, OBJ.scale.y]},
-                skew:{def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]},
-                pivot:{def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]},
-                anchor:{ def:[0.5,1], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] },
-                rotation:{def:0, value:OBJ.rotation},
-                alpha:{def:1, value:OBJ.alpha},
-                
-                
-                blendMode:{
-                    d:{def:0, value:OBJ.Sprites.d.blendMode}, 
-                    n:{def:0, value:OBJ.Sprites.n.blendMode}
-                },
-                tint:{
-                    d:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.d.tint).replace("#","0x")}, 
-                    n:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x")}
-                },
-  
-                autoGroups:{def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]},
-                zIndex:{def:-1, value:OBJ.zIndex, hideHtml:true}, // hide
+            data.groupID = {def:"default", value:OBJ.groupID || "default" };
+            data.position = {def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]};
+            data.scale = {def:[1,1], value:[OBJ.scale.x, OBJ.scale.y]};
+            data.skew = {def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]};
+            data.pivot = {def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]};
+            OBJ.Sprites.d.anchor? data.anchor = { def:[0.5,1], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] } : void 0;  // sub // not in spineSheet
+
+            data.rotation = {def:0, value:OBJ.rotation};
+            data.alpha = {def:1, value:OBJ.alpha};
+            
+            data.blendMode = {  // sub
+                d:{def:0, value:OBJ.Sprites.d.blendMode}, 
+                n:{def:0, value:OBJ.Sprites.n.blendMode}
             };
+            data.tint = {  // sub
+                d:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.d.tint).replace("#","0x")}, 
+                n:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x")}
+            };
+
+            data.autoGroups = {def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]};
+            data.zIndex = {def:-1, value:OBJ.zIndex, hideHtml:true}; // hide
+            
         };
-        
 
-         // data base for sprites, spine animations..
-        /*if(!OBJ.isStage){
-            _OBJ = OBJ.Sprites.d || OBJ.Sprites.s;
-            data = { // id html
-
-            };
-        };*/
-        /*if(OBJ.Type === "animationSheet"){
-            data = {...data,
-                animationSpeed:{def:1, value:OBJ.animationSpeed},
-            }
-    
-        };*/
+        if(OBJ.Type === "animationSheet"){
+            data.animationSpeed = {def:1, value:OBJ.animationSpeed};
+            data.loop = {def:1, value:OBJ.loop};
+        };
         //HEAVEN TODO: utiliser .color ? , enlever les boutons def .. posibility changer plugin name ?
         if( ["animationSheet", "tileSheet"].contains(OBJ.Type) ){
             data.setDark = {
@@ -989,6 +977,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // when checkBox changes
         dataIntepretor.oninput = function(event){ 
             const e = event.target;
+            console.log('e: ', [e]);
             const type = e.type;
             if(OBJ){
                 if(e.id.contains("lock")){ // it a lock case check
@@ -1003,8 +992,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         return convertHeaven(OBJ, Data_Values, Data_CheckBox);
                     };
                 };
-                if(type === "checkbox"){ Data_CheckBox[e.id.substring(1)] = !!e.checked };  // substring: remove "_"id from html data
-                if(type === "select-one"){ Data_Values[e.id].value = e.value };
+                if(type === "checkbox"){ 
+                    Data_CheckBox[e.id.substring(1)] = !!e.checked 
+                };  // substring: remove "_"id from html data
+                if(type === "select-one"){ 
+                    Data_Values[e.id].value = e.value==="false"? false : e.value==="true"? true : e.value;
+                };
                 if(type === "number"){
                     if(Data_Values[e.id].d || Data_Values[e.id].value.length === 2){
                         // les input a 2 array ou [d,n] peuvents etres locker, verifier
@@ -1032,6 +1025,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     };
                 };
                 setObjWithData.call(OBJ, Data_Values, Data_CheckBox);
+                e.id==="animationSpeed" && !OBJ.loop && OBJ.play(0);
+                e.id==="loop" &&  OBJ.play(0);
             };
         };
 
@@ -1120,9 +1115,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
         // for the debug pivot zone
-        this.Debug.piv.height = Math.abs(this.pivot.y);
-        this.Debug.piv.y = this.pivot.y<0? this.pivot.y : 0;
-        this.Debug.piv.tint = this.pivot.y>0? 0xff0000 : 0x08ff00;
+        if(this.Debug.piv){
+            this.Debug.piv.height = Math.abs(this.pivot.y);
+            this.Debug.piv.y = this.pivot.y<0? this.pivot.y : 0;
+            this.Debug.piv.tint = this.pivot.y>0? 0xff0000 : 0x08ff00;
+        };
     };
 
     // asign props value to HTML izit
@@ -1264,6 +1261,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(this.Type === "spineSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
+            this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
             this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
@@ -1282,7 +1280,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
         };
         if(this.Type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
@@ -1382,8 +1380,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             spine.skeleton.setSkinByName(this.TexName)//();
             spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
             spine.skeleton.setSlotsToSetupPose();
+            const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
+            spineBg_n.width = spine.width, spineBg_n.height = spine.height;
+            spineBg_n.anchor.set(0.5,1);
             this.Sprites.d = spine;
-            //this.Sprites.n // TODO: experimenter un sprite calque fix , ou grafics gardient.
+            this.Sprites.n = spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
     };
 
