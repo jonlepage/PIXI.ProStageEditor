@@ -377,6 +377,7 @@ _PME.prototype.computeData = function() {
     spine.autoUpdate = true;
     spine.state.setAnimation(0, 'idle', true);
     spine.state.setAnimation(1, 'start0', false);
+    //EDITOR.state.setAnimation(2, 'hideTileSheets', false);
     spine.state.tracks[1].listener = {
         complete: function(trackEntry, count) {
             iziToast.hide({transitionOut: 'fadeOutUp'}, document.getElementById("izit_loading1") );
@@ -442,6 +443,7 @@ _PME.prototype.startEditor = function() {
     let MouseHold = null; // click mouse is held ?
     let LineDraw = null;
     const LineList = []; // store all lines , allow to lock on line
+    let GRID = null; // store grid in global , for remove if need.
 
  
 // TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
@@ -479,6 +481,7 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = []; // store list of tile
+    CAGE_TILESHEETS.visible = false; 
     CAGE_TILESHEETS.interactive = true;
     CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
     CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
@@ -558,13 +561,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 cage.play();
             };
 
-            cage.interactive = true;
+            
             cage.on('pointerover', pointer_overIN);
             cage.on('pointerout', pointer_overOUT);
             cage.on('pointerup', pointer_UP);
+            cage.interactive = true;
             cage.buttonType = "tileMap";
-            //cage.on('mousemove', onMove_objMap);
-            //cage.on('pointerup', onPointerup_objMap);
         });
     }).bind(this)();
 
@@ -602,6 +604,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function drawGrids(){
+        if(GRID){
+            STAGE.CAGE_MAP.removeChild(GRID);
+            GRID.destroy();
+        }
         const eX = 1920; // map width + zoom
         const eY = 1080; // map width + zoom
         const maxLineH = eX/48, maxLineV = eY/48;
@@ -625,6 +631,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const sprite = PIXI.Sprite.from(rt);
         sprite.alpha = 0.5;
         STAGE.CAGE_MAP.addChild(sprite);
+        GRID = sprite;
     };
 
     function addDebugLineToMouse() { // LineList LineDraw
@@ -1119,7 +1126,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
         };
         // for the debug pivot zone
-        if(this.Debug.piv){
+        if(this.Debug && this.Debug.piv){
             this.Debug.piv.height = Math.abs(this.pivot.y);
             this.Debug.piv.y = this.pivot.y<0? this.pivot.y : 0;
             this.Debug.piv.tint = this.pivot.y>0? 0xff0000 : 0x08ff00;
@@ -1526,6 +1533,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function close_editor(cachedLibs) {
         EDITOR.state.setAnimation(1, 'hideFullEditor', false);
+        console.log('EDITOR: ', EDITOR);
         CAGE_LIBRARY.renderable = false;
         CAGE_LIBRARY.visible = false; // event manage
         if(cachedLibs && CAGE_TILESHEETS.list.length){
@@ -2204,29 +2212,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const fs = require('fs');
         const sceneName = STAGE.constructor.name;
         let PERMASHEETS = computeSave_PERMASHEETS(DATA); // scene configuration
-        let SCENE = computeSave_SCENE(STAGE); // scene configuration
-        let OBJS = computeSave_OBJ($Objs.list_master);
-        let SHEETS = computeSave_SHEETS(SCENE,OBJS);
+        let SCENE = computeSave_SCENE(STAGE); // scene configuration, bg ..
+        let OBJS = computeSave_OBJ($Objs.list_master); // scene objs
+        let SHEETS = computeSave_SHEETS(SCENE,OBJS); // sheet need for scene
 
         const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS, system:options.systemInfo };
         const data_perma = {_SHEETS:PERMASHEETS};
         
         function writeFile(path,content,data){
-            // creer une version _old.json with replace() rename()
+            // backup current to _old.json with replace() rename()
             fs.rename(`${path}`, `${path.replace(".","_old.")}`, function(err) {
                 if ( err ) console.log('ERROR:rename ' + err);
-                // enrigistre
+                // enrigistre write json
                 fs.writeFile(path, content, 'utf8', function (err) { 
                     if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
                 });
             });
         };
-
-
-        console.log('data/perma.json ', data_perma);
         writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
         writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
-        console.log('data/${sceneName}_data.json`: ',sceneName, data);
     };
     
     function computeSave_PERMASHEETS(DATA) {

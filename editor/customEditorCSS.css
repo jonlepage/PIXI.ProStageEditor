@@ -235,3 +235,8 @@ input.boxlock:hover::after {
   color: white;
   
 }
+
+
+input#save {    			
+  margin: 4px;
+}

@@ -964,7 +964,7 @@ function html_izit_sceneSetup(bgList, stage) {
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">def</th>
-                <th scope="col">custom</th>
+                <th scope="col"><font color="#c17d2e">Add more backgrounds: </font>&nbsp;&nbsp;  ../data2/BG/ </th>
             </tr>
         </thead>
             <tbody>
@@ -988,7 +988,10 @@ function html_izit_sceneSetup(bgList, stage) {
                     </td>
                 </tr>
             </tbody>
-        </table>  
+        </table> 
+        <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+        <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+        <br><td colspan="3"><font color="#c17d2e">**Warning: Background for sceneMap are define in RMMV!"</font></td>
         </div>
     `;
 ////////////////////////////////////////END
@@ -1029,6 +1032,7 @@ return message = /*html*/ `
                 <th scope="col">#</th>
                 <th scope="col">def</th>
                 <th scope="col">custom</th>
+                <th scope="col">copy</th>
             </tr>
         </thead>
         <tbody>
@@ -1049,6 +1053,9 @@ return message = /*html*/ `
                         </div>
                         <input type="text" autocomplete="on" value:"default" class="form-control" id="groupID">
                     </div>
+                </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="groupID">
                 </td>
             </tr>
             <tr><!--position-->
@@ -1071,6 +1078,9 @@ return message = /*html*/ `
                         <input class="boxlock" type="checkbox" id="position_lock">
                     </div>
                 </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="position">
+                </td>
             </tr>
             <tr><!--scale-->
                 <td>
@@ -1091,6 +1101,9 @@ return message = /*html*/ `
                         <input type="number" step=0.01  class="form-control" id="scale" arrId=1>
                         <input class="boxlock" type="checkbox" id="scale_lock">
                     </div>
+                </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="scale">
                 </td>
             </tr>
             <tr><!--skew-->
@@ -1113,6 +1126,9 @@ return message = /*html*/ `
                         <input class="boxlock" type="checkbox" id="skew_lock">
                     </div>
                 </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="skew">
+                </td>
             </tr>
             <tr><!--pivot-->
                 <td>
@@ -1133,6 +1149,9 @@ return message = /*html*/ `
                         <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=1>
                         <input class="boxlock" type="checkbox" id="pivot_lock">
                     </div>
+                </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="pivot">
                 </td>
             </tr>
             <tr><!--anchor-->
@@ -1155,6 +1174,9 @@ return message = /*html*/ `
                         <input class="boxlock" type="checkbox" id="anchor_lock" ${isSpine&&"disabled"}>
                     </div>
                 </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="anchor">
+                </td>
             </tr>
             <tr><!--rotation-->
                 <td>
@@ -1174,6 +1196,9 @@ return message = /*html*/ `
                         <input type="number" step=0.0015 class="form-control" id="rotation">
                     </div>
                 </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="rotation">
+                </td>
             </tr>
             <tr><!--alpha-->
                 <td>
@@ -1192,6 +1217,9 @@ return message = /*html*/ `
                         </div>
                         <input type="number" step=0.01 min=0 max=1 class="form-control" id="alpha">
                     </div>
+                </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="alpha">
                 </td>
             </tr>
             <tr><!--blendMode-->
@@ -1214,6 +1242,9 @@ return message = /*html*/ `
                         <input class="boxlock" type="checkbox" id="blendMode_lock">
                     </div>
                 </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="blendMode">
+                </td>
             </tr>
             <tr><!--tint-->
                 <td>
@@ -1233,6 +1264,9 @@ return message = /*html*/ `
                         .D:<input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint" arrId=d>
                         .N:<input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint" arrId=n>
                     </div>
+                </td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="tint">
                 </td>
             </tr>
             <tr><!--Layers Options autoGroups-->
@@ -1256,6 +1290,9 @@ return message = /*html*/ `
                     <input class="form-check-input" type="checkbox" id="autoGroups6">
                         <label class="form-check-label" for="autoGroups6" style="padding-right: 10px;">:6</label>
                 </div></td>
+                <td>
+                    <input class="saveCheck" type="checkbox" id="save" id2="autoGroups">
+                </td>
             </tr>
             <!--animationSheet-->
             ${(function(){
@@ -1279,6 +1316,9 @@ return message = /*html*/ `
                                     <input type="number" step=0.01 min=0.01 class="form-control" id="animationSpeed">
                                 </div>
                             </td>
+                            <td>
+                                <input class="saveCheck" type="checkbox" id="save" id2="animationSpeed">
+                            </td>
                         </tr>
                         <tr><!--loop-->
                         <td>
@@ -1301,6 +1341,9 @@ return message = /*html*/ `
                                 </select>
                             </div>
                         </td>
+                        <td>
+                            <input class="saveCheck" type="checkbox" id="save" id2="loop">
+                        </td>
                     </tr>
                     `}else{return ""};
             })()}
@@ -1314,7 +1357,7 @@ return message = /*html*/ `
         </tbody>
     </table>
     <button id="ApplyToAllGroup" type="button" class="btn btn-outline-warning btn-sm">Apply To All Group</button>
-    <button id="reset" type="button" class="btn btn-outline-light btn-sm">Reset Default</button>
+    <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
     <br><br>
     <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
     <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
