@@ -427,7 +427,8 @@ _PME.prototype.startEditor = function() {
     let InMapObj = null;
     let mX = 100, mY = 100; // mosue screen
     let mMX = 0, mMY = 0; // mouse map 
-    let HoldX = 0, HoldY = 0; // mouse map 
+    let HoldX = 0, HoldY = 0; // mouse map
+    let FreezeMY = null;
     // scoller 
     let scrollAllowed = true;
     let ScrollX = 0;
@@ -637,7 +638,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
            return LineDraw.rotation+=rad;
         }
         const renderer = Graphics._renderer
-        const texture = renderer.generateTexture( drawLine([0,0],[1920*2,0],10,"0x000000") );
+        const texture = renderer.generateTexture( drawLine([0,0],[1920*2,0],8,"0xff0000") );
         LineDraw = new PIXI.Sprite(texture);
         LineDraw.position.set(mX,mY);
         LineDraw.anchor.set(0.5,0.5);
@@ -645,6 +646,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         LineDraw.pinable = true;
         LineDraw.horizon = true; // is lock on x or y
         STAGE.addChild(LineDraw);
+        LineDraw.interactive = true;
+        LineDraw.name = "DEBUGLINE";
+        LineDraw.on('pointerup', pointer_UP);
        
     };
     //#endregion
@@ -1370,8 +1374,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(this.Type === "animationSheet"){
             const sprite_d = new PIXI.extras.AnimatedSprite(this.Data.textures[this.TexName]);
+            const sprite_n = this.addNormal(sprite_d, this.Data.textures_n[this.TexName]);
             this.Sprites.d = sprite_d;
-            const sprite_n = this.addNormal(this.Data.textures_n[this.TexName]);
             this.Sprites.n = sprite_n;
             this.play(0);
         };
@@ -1548,6 +1552,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
         close_editor(true);
+        cage.hitArea = new PIXI.Rectangle(-20,-20,cage.width*2,cage.height*2);
+
         return cage;
     };
 
@@ -1556,7 +1562,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         //TODO: if pined in a line. get position of old prite obj
         cage.x = mMX;
-        cage.y = mMY;
+        cage.y = FreezeMY?FreezeMY.y : mMY;
 
         cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
@@ -1709,9 +1715,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
         update_Light();
 
-        // if mouse hold sprite =>update
+        // if mouse have sprite =>update
         if(CAGE_MOUSE.list){ // update cages list hold by mouse
-            CAGE_MOUSE.list.position.set(mMX,mMY);
+            CAGE_MOUSE.list.position.set(mMX,FreezeMY?FreezeMY.y : mMY);
             CAGE_MOUSE.list.zIndex = mMY;
         };
 
@@ -1759,6 +1765,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             };
         };
+        if(FreezeMY){
+            // unlock mouse from line
+            if( Math.abs( FreezeMY.y-mMY)>40 ){
+                FreezeMY._filters = null;
+                FreezeMY.interactive = true;
+                FreezeMY = null;
+            }else{ $mouse.y = (FreezeMY.y-ScrollY)*Zoom.y };
+            
+        }
     }, STAGE);
     
     // mouse [=>IN <=OUT] FX
@@ -1811,6 +1826,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
         if(_clickRight){// <= clickUp
+            if(LineDraw){
+                LineDraw.off("pointerup",pointer_UP)
+                STAGE.CAGE_MAP.addChild(LineDraw);
+                LineDraw.position.set(mMX,mMY);
+                LineDraw.on('pointerover', function(e){ 
+                    FreezeMY = e.currentTarget;
+                    FreezeMY._filters = [ FILTERS.OutlineFilterx8Green ];
+                    e.currentTarget.interactive = false;
+                });
+                return LineDraw = null;
+            }
             if(event.currentTarget.buttonType === "thumbs"){
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
@@ -1834,8 +1860,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 CAGE_MAP.removeChild(CAGE_MOUSE.list);
                 setStatusInteractiveObj(true);
                 open_editor(true);
-                LineDraw? STAGE.removeChild(LineDraw) : void 0;
-                LineDraw = null;
                 return CAGE_MOUSE.list = null;
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
