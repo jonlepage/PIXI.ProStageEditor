@@ -1055,7 +1055,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="groupID">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="groupID">
                 </td>
             </tr>
             <tr><!--position-->
@@ -1079,7 +1079,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="position">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="position">
                 </td>
             </tr>
             <tr><!--scale-->
@@ -1103,7 +1103,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="scale">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="scale">
                 </td>
             </tr>
             <tr><!--skew-->
@@ -1127,7 +1127,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="skew">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="skew">
                 </td>
             </tr>
             <tr><!--pivot-->
@@ -1151,7 +1151,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="pivot">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="pivot">
                 </td>
             </tr>
             <tr><!--anchor-->
@@ -1175,7 +1175,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="anchor">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="anchor">
                 </td>
             </tr>
             <tr><!--rotation-->
@@ -1197,7 +1197,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="rotation">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="rotation">
                 </td>
             </tr>
             <tr><!--alpha-->
@@ -1219,7 +1219,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="alpha">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="alpha">
                 </td>
             </tr>
             <tr><!--blendMode-->
@@ -1243,7 +1243,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="blendMode">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="blendMode">
                 </td>
             </tr>
             <tr><!--tint-->
@@ -1266,7 +1266,7 @@ return message = /*html*/ `
                     </div>
                 </td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="tint">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="tint">
                 </td>
             </tr>
             <tr><!--Layers Options autoGroups-->
@@ -1291,7 +1291,7 @@ return message = /*html*/ `
                         <label class="form-check-label" for="autoGroups6" style="padding-right: 10px;">:6</label>
                 </div></td>
                 <td>
-                    <input class="saveCheck" type="checkbox" id="save" id2="autoGroups">
+                    <input class="saveCheck" type="checkbox" id="copyCheck" id2="autoGroups">
                 </td>
             </tr>
             <!--animationSheet-->
@@ -1317,7 +1317,7 @@ return message = /*html*/ `
                                 </div>
                             </td>
                             <td>
-                                <input class="saveCheck" type="checkbox" id="save" id2="animationSpeed">
+                                <input class="saveCheck" type="checkbox" id="copyCheck" id2="animationSpeed">
                             </td>
                         </tr>
                         <tr><!--loop-->
@@ -1342,7 +1342,7 @@ return message = /*html*/ `
                             </div>
                         </td>
                         <td>
-                            <input class="saveCheck" type="checkbox" id="save" id2="loop">
+                            <input class="saveCheck" type="checkbox" id="copyCheck" id2="loop">
                         </td>
                     </tr>
                     `}else{return ""};
@@ -1593,7 +1593,7 @@ function html_izit_saveSetup() {
                 <tr>
             </tbody>
         </table>
-        <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
+        <button id="copyCheck" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
         <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
         <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
     </div>`//end

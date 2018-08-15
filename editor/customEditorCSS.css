@@ -237,6 +237,6 @@ input.boxlock:hover::after {
 }
 
 
-input#save {    			
+input#copyCheck {    			
   margin: 4px;
 }

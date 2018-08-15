@@ -117,6 +117,43 @@ _PME.prototype.izit_saveSetup = function() {
     };
 };
 
+_PME.prototype.izit_copyData = function(ClipboarData){
+    console.log('ClipboarData: ', ClipboarData);
+    return{
+        transitionOut: 'fadeOutUp',
+        id:'copyData',
+        timeout:2600,
+        layout: 2,
+        zindex:999999,
+        maxWidth: 250,
+        theme: 'dark',
+        icon: 'icon-person',
+        title: 'COPY::',
+        message: `${JSON.stringify(ClipboarData)}`,
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        progressBarColor: 'rgb(0, 255, 184)',
+        backgroundColor: '#3f3f3f',
+        progressBarColor:'#f44242',
+    };
+};
+
+_PME.prototype.izit_pasteCopyDataIn = function(OBJ,ClipboarData){
+    return{
+        transitionOut: 'fadeOutUp',
+        id:'izit_pasteCopyDataIn',
+        timeout:2200,
+        layout: 2,
+        zindex:999999,
+        maxWidth: 250,
+        theme: 'dark',
+        title: `PASTE DATA TO::${OBJ.name}:`,
+        message: `${JSON.stringify(ClipboarData)}`,
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        progressBar: false,
+        backgroundColor: '#0b5e11',
+    };
+};
+
 
 // open the tileEditor
 _PME.prototype.tileSetupEditor = function(InMapObj){

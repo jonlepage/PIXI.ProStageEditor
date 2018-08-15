@@ -444,6 +444,7 @@ _PME.prototype.startEditor = function() {
     let LineDraw = null;
     const LineList = []; // store all lines , allow to lock on line
     let GRID = null; // store grid in global , for remove if need.
+    let ClipboarData = {}; // add Data json to clipboard for ctrl+v on obj to asign data
 
  
 // TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
@@ -834,6 +835,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
         return data;
     };
+    function pasteCopyDataIn(OBJ){
+        setObjWithData.call(OBJ,ClipboarData, null)
+        iziToast.info( $PME.izit_pasteCopyDataIn(OBJ,ClipboarData) );
+    };
+
+    function copyData(OBJ, Data_Values) {
+        ClipboarData = {};
+        const copyCheckBox = document.querySelectorAll("#copyCheck");
+        copyCheckBox.forEach(e => {
+            if(e.checked){
+                const propName = e.attributes.id2.value;
+                ClipboarData[propName] = Object.assign({},Data_Values[propName]);
+            }
+        });
+        console.log9('ClipboarData:Copy ', ClipboarData);
+        iziToast.info( $PME.izit_copyData(ClipboarData) );
+    };
 
     // create data checkbox with Data_Values
     function getDataCheckBoxWith(OBJ, Data_Values){
@@ -988,7 +1006,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // when checkBox changes
         dataIntepretor.oninput = function(event){ 
             const e = event.target;
-            console.log('e: ', [e]);
             const type = e.type;
             if(OBJ){
                 if(e.id.contains("lock")){ // it a lock case check
@@ -1003,9 +1020,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         return convertHeaven(OBJ, Data_Values, Data_CheckBox);
                     };
                 };
+                if(type === "text"){ 
+                    Data_Values[e.id].value = String(e.value);
+                };  
                 if(type === "checkbox"){ 
-                    Data_CheckBox[e.id.substring(1)] = !!e.checked 
-                };  // substring: remove "_"id from html data
+                    Data_CheckBox[e.id.substring(1)] = !!e.checked; // substring: remove "_"id from html data
+                }; 
                 if(type === "select-one"){ 
                     Data_Values[e.id].value = e.value==="false"? false : e.value==="true"? true : e.value;
                 };
@@ -1067,7 +1087,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(e.type === "button"){
                 if(e.id==="save"){ close_mapSetupEditor(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_mapSetupEditor(OBJ, Data_Values, Data_CheckBox); };// apply and close
-                if(e.id==="applyAll"){ };// apply to all and close
+                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
                 if(e.id==="cancel"){close_mapSetupEditor()};// cancel and close
                 if(e.id==="reset"){ // reset session cache and data
                     $PME.storage.removeItem(name);
@@ -1083,7 +1103,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // asign props value to objet, if checked, type: of objs updated ? light, tiles, from .CALL(obj)
     function setObjWithData(Data_Values, Data_CheckBox) {
         for (const key in Data_Values) {
-            const checked = !!Data_CheckBox[key];
+            const checked = Data_CheckBox? !!Data_CheckBox[key] : true; // eval only if Data_CheckBox passed or alway true
             const vDN = !!Data_Values[key].d;
             let value;
             // check if use def or current value with diffuse or normal
@@ -1092,7 +1112,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }else{ 
                 value = vDN ? [Data_Values[key].d.def, Data_Values[key].n.def] : Data_Values[key].def 
             };
-            
             switch (key) {
                 //case "Background":break; TODO:
                 case "Background":
@@ -1581,6 +1600,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerover', pointer_overIN);
         cage.on('pointerout', pointer_overOUT);
         cage.on('pointerup', pointer_UP);
+        cage.on('pointerdown', pointer_DW);
         cage.on('pointerdown', pointer_DW);
 
         cage.buttonType = 'tileMap';
@@ -2071,6 +2091,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // zoom camera
     function wheel_Editor(event) {
+        console.log('event: ', event);
         if(iziToast.opened){return}; // dont use mouse when toast editor
         // zoom in Libs
         const mousePosition = new PIXI.Point();// cache a global mouse position to keep from creating a point every mousewheel event TODO:
@@ -2099,10 +2120,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     };
 
-    /*function keydown_Editor(event) {
+    function keydown_Editor(event) {
+    
         if (event.ctrlKey && (event.key === "s" || event.key === "S")) {
             // start save Data
-            return start_DataSavesFromKey_CTRL_S();
+           // return start_DataSavesFromKey_CTRL_S();
         };
         if (event.ctrlKey && (event.key === "n")) {
             // show all normals
@@ -2115,36 +2137,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             }
         };
-        if (event.ctrlKey) { // refresh position for inMap obj
-            $Objs.list_master.forEach(cage => {
-                cage.getBounds();
-            });
-            if(event.ctrlKey){ // if in Obj, make other transparent
-                $Objs.list_master.forEach(cage => {
-                    if(InMapObj && InMapObj !== cage && cage.zIndex>InMapObj.zIndex){
-                        const hit = hitCheck(InMapObj,cage);
-                        cage.alpha =  hit ? 0.3:1;
-                        cage.Sprites.d._filters = hit ? [ FILTERS.PixelateFilter12, FILTERS.OutlineFilterx6White]: null;
-                        if(cage.Sprites.n){ cage.Sprites.n.renderable = false };
-                        cage.Debug.an.renderable = false;
-                    }else{
-                        cage.alpha = 1;
-                        cage.Sprites.d._filters = null;
-                        cage.Sprites.n && (cage.Sprites.n.renderable = true);
-                        cage.Debug.an.renderable = true;
-                        
-                    };
-                });
-            }
+        if(event.ctrlKey && (event.key === "v" || event.key === "V")){ // if in Obj, make other transparent
+            const mousePosition = new PIXI.Point(mX,mY);
+            const found = $mouse.interaction.hitTest(mousePosition);
+            if (found && found.buttonType === "tileMap") { 
+                return pasteCopyDataIn(found);
+            };
         };
-    };*/
+        
+    };
 
 
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
     document.addEventListener('mouseup',function(){ startMouseHold(false); }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);
-    //document.addEventListener('keydown', keydown_Editor); // change layers
+    document.addEventListener('keydown', keydown_Editor); // change layers
 //#endregion
 
 
