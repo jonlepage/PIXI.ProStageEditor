@@ -186,7 +186,6 @@ Scene_Base.prototype.create_Cages = function() {
 
 // scene only, voir si on peut le mettre pour map
 Scene_Base.prototype.createBackground = function(bg) {
-    console.log('bg: ', bg);
     if(this.Background){ this.CAGE_MAP.removeChild(this.Background) }; // for editor
     if(bg){
         const data = (typeof bg === 'string') ? $Loader.Data2[bg] : bg;

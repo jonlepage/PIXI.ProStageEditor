@@ -1551,7 +1551,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function close_editor(cachedLibs) {
         EDITOR.state.setAnimation(1, 'hideFullEditor', false);
-        console.log('EDITOR: ', EDITOR);
         CAGE_LIBRARY.renderable = false;
         CAGE_LIBRARY.visible = false; // event manage
         if(cachedLibs && CAGE_TILESHEETS.list.length){
@@ -1765,8 +1764,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             MouseTimeOut = setTimeout(() => {
                 HoldX = +mX, HoldY = +mY;
                 MouseHold=activeTarget;
-                 console.log2('activeTarget ', activeTarget.buttonType);
-
             }, 160);
         };
     };
@@ -2090,7 +2087,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // zoom camera
     function wheel_Editor(event) {
-        console.log('event: ', event);
         if(iziToast.opened){return}; // dont use mouse when toast editor
         // zoom in Libs
         const mousePosition = new PIXI.Point();// cache a global mouse position to keep from creating a point every mousewheel event TODO:

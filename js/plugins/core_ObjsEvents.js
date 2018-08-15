@@ -31,7 +31,6 @@ _objs.prototype.createFromList = function(LIST) {
         const Data_Values = e.Data_Values;
         const Data = $Loader.Data2[e.Data.name];
         const textureName = e.textureName;
-        console.log('e: ', i,e);
         // from type
         switch (Data.type) {
             case "tileSheet":
@@ -81,14 +80,12 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
     const sprite_n = new PIXI.Sprite(Data.textures_n[textureName+"_n"]);
     // proprety attributs
     this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
-    console.log('cage: ', cage);
     return cage;
     
 };
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
-    console.log('Data_Values: ', Data_Values);
    // asign group display
    cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
    cage.zIndex = Data_Values.zIndex; //TODO: add to json addAttr_default
@@ -106,7 +103,6 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
 
 
     for (const key in Data_Values) {
-        console.log('key: ', key);
         const value = Data_Values[key];
         switch (key) {
             
