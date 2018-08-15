@@ -880,7 +880,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create multi sliders light
     function create_sliderHaven(OBJ, Data_Values, Data_CheckBox){
-        console.log(' create_sliderHaven ',  Data_Values, Data_CheckBox);
         const setDark_d = !!Data_CheckBox.heaven_d? Data_Values.setDark.d.value : Data_Values.setDark.d.def;
         const setLight_d = !!Data_CheckBox.heaven_d? Data_Values.setLight.d.value : Data_Values.setLight.d.def;
         const setDark_n = !!Data_CheckBox.heaven_n? Data_Values.setDark.n.value : Data_Values.setDark.n.def;
@@ -942,9 +941,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
         // focuse on objet
         // imit 
-        ScrollX = (InMapObj._boundsRect.x - (1920-(1920/2)))+ScrollX;
-        ScrollY = (InMapObj._boundsRect.y - (1080-(1080/2)))+ScrollY;
-
+        const camPosFromObj = InMapObj.getGlobalPosition();
+        ScrollX = camPosFromObj.x-(1920*0.7)+ScrollX;
+        ScrollY = camPosFromObj.y-(1080*0.4)+ScrollY;
         start_iziToastDataEditor(InMapObj, [_jscolor_d, _jscolor_n], null);
     };
 
