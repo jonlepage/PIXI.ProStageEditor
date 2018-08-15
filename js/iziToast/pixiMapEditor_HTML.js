@@ -1593,7 +1593,7 @@ function html_izit_saveSetup() {
                 <tr>
             </tbody>
         </table>
-        <button id="copyCheck" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
+        <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
         <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
         <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
     </div>`//end

@@ -71,6 +71,7 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
    // proprety attributs
    this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
    cage.getBounds(cage); //TODO: BOUND MAP
+   cage.play(0);
    return cage;
 };
 
@@ -100,8 +101,6 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
    n.name = textureName+"_n";
 
    cage.addChild(d,n);
-
-
     for (const key in Data_Values) {
         const value = Data_Values[key];
         switch (key) {

@@ -25,12 +25,13 @@ Scene_Title.prototype.constructor = Scene_Title;
 
 Scene_Title.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this,"Scene_Title_data"); // pass loaderset for setup Scene ambiant
-    this.waitReady = 65; // stabiliser
+    this.alpha = 0; // active the fadeIn
+    this.waitReady = 30; // stabiliser
 };
 
 // create element for scene and setup.
 Scene_Title.prototype.create = function() {
-     // this.createBackgroundVideo();
+     this.setupCommands();
 };
 
 Scene_Title.prototype.isReady = function() {
@@ -53,7 +54,8 @@ Scene_Title.prototype.update = function() {
 
 //#endregion
 
-Scene_Title.prototype.createBackgroundVideo = function() {
+// TODO: voir si bonne idea de mettre une video en BG our 100% sprites
+/*Scene_Title.prototype.createBackgroundVideo = function() {
     const data = $Loader.reg._videos._title.bgVidTitle; // bg
     const cage = new PIXI.Container();
     const video_texture = PIXI.Texture.fromVideo(data.data);
@@ -78,40 +80,23 @@ Scene_Title.prototype.createBackgroundVideo = function() {
     this.CAGE_MAP.addChild(cage);
     // reference
     this.bgVideoControler = video_controler;
+};*/
+
+
+Scene_Title.prototype.setupCommands = function() {
+    const commands = $Objs.getsByID("command");
+    for (let i=0, l=commands.length; i<l; i++) {
+        const command = commands[i];
+        
+        console.log('command: ', command);
+    };
+        
+    
+    
+    
 };
 
 
-// scene mouse update
-Scene_Title.prototype.update_Command = function() {
-    let valueIn;
-    for (const key in this.command) {
-        const command = this.command[key];
-        if(command._boundsRect.contains(this.mX, this.mY)){
-            valueIn = command;
-            break;
-        };
-    };
-    if(valueIn){
-        if(valueIn === this.currentHoverCommand){return}
-        else {
-            if(this.currentHoverCommand){
-                this.currentHoverCommand._filters = null;
-                this.currentHoverCommand.scale.set(1,1);
-            };
-            this.currentHoverCommand = valueIn;
-            this.BGFX._filters = [ new PIXI.filters.OutlineFilter (20, 0xffffff, 1) ];
-            valueIn._filters = [ new PIXI.filters.OutlineFilter (12, 0x000000, 1) ]; // thickness, color, quality
-            valueIn.scale.set(1.5,1.5);
-        }
-    }else{
-        if(this.currentHoverCommand){
-            this.BGFX._filters = null;
-            this.currentHoverCommand._filters = null;
-            this.currentHoverCommand.scale.set(1,1);
-            this.currentHoverCommand = null;
-        };
-    };
-};
 //#region [rgba(0, 5, 5,0.5)]
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE

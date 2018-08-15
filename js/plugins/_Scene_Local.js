@@ -24,7 +24,9 @@ Scene_Local.prototype.constructor = Scene_Local;
 
 Scene_Local.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this,"Scene_Local_data"); // pass loaderset for setup Scene ambiant
-    this.waitReady = 30; // stabiliser
+    console.log('this: ', this);
+    this.alpha = 0; // active the fadeIn
+    this.waitReady = 40; // stabiliser
     this.currentHoverFlag = null; // when mouse are hover a flag
 
 
@@ -39,7 +41,7 @@ Scene_Local.prototype.create = function() {
 
 Scene_Local.prototype.isReady = function() {
     // check scene stabilisator // TODO:
-    Graphics.render(this); // force spike lag
+    //Graphics.render(this); // force spike lag
     this.waitReady--;
    return !this.waitReady;
 };
@@ -195,6 +197,6 @@ Scene_Local.prototype.event1 = function(flag) {
     console.log9('flag: ', flag);
     if(!this.busy){
         this.busy = true;
-        //SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
+        SceneManager.goto(Scene_Loader,"Scene_Title_data",Scene_Title);
     };
 };

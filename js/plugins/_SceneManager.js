@@ -93,6 +93,7 @@ SceneManager.requestUpdate = function() {
 SceneManager.changeScene = function() {
     if (this.isSceneChanging() && !this.isCurrentSceneBusy()) {
         if (this._scene) {
+            this._scene.fadeInOut? clearInterval(this.fadeInOut) : void 0;
             this._scene.terminate();
             this._scene.detachReservation();
             this._previousClass = this._scene.constructor;
@@ -126,6 +127,13 @@ SceneManager.updateScene = function() {
 };
 
 
+SceneManager.onSceneStart = function() {
+    if(this._scene.alpha === 0){
+        this._scene.fadeInOut = setInterval(function(){
+            if((this.alpha+=0.05) >=1){ clearInterval(this.fadeInOut) };
+         }.bind(this._scene), 10);
+    };
+};
 
 // ┌-----------------------------------------------------------------------------┐
 // SCENE BASE 
