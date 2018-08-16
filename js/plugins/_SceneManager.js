@@ -138,6 +138,8 @@ SceneManager.onSceneStart = function() {
 // ┌-----------------------------------------------------------------------------┐
 // SCENE BASE 
 //└------------------------------------------------------------------------------┘
+
+console.log1('$Filters: ', $Filters.noiseGame);
 Scene_Base.prototype.initialize = function(loaderSet) {
     Stage.prototype.initialize.call(this);
     this._active = false;

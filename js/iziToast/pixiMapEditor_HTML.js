@@ -1371,8 +1371,10 @@ return message = /*html*/ `
 //#endregion
 function html_izit_saveSetup() {
     // get a copy of old file? if exist
+    console.log0('this: ', this);
     const fs = require('fs');
-    const buffer = JSON.parse(fs.readFileSync(`data/${this.stage.constructor.name}_data.json`, 'utf8'));
+    const path = `data/${this.stage.constructor.name}_data.json`;
+    const buffer = fs.existsSync(path)? JSON.parse(fs.readFileSync(path, 'utf8')) : false;
     const oldSystem = buffer.system || false;
     // help converting byte memory to readable size
     function bytesToSize(bytes) {

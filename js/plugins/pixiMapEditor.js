@@ -1599,7 +1599,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerout', pointer_overOUT);
         cage.on('pointerup', pointer_UP);
         cage.on('pointerdown', pointer_DW);
-        cage.on('pointerdown', pointer_DW);
 
         cage.buttonType = 'tileMap';
         //cage.on('mousemove', onMove_objMap);
@@ -2214,13 +2213,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function create_SceneJSON(options) {
         const fs = require('fs');
         const sceneName = STAGE.constructor.name;
-        let PERMASHEETS = computeSave_PERMASHEETS(DATA); // scene configuration
+        let PERMASHEETS = computeSave_PERMASHEETS(DATA); // permanent objs
         let SCENE = computeSave_SCENE(STAGE); // scene configuration, bg ..
         let OBJS = computeSave_OBJ($Objs.list_master); // scene objs
         let SHEETS = computeSave_SHEETS(SCENE,OBJS); // sheet need for scene
+        let PLANETSHEETS = computeSave_PLANETS(SCENE,OBJS,SHEETS); // CREATE PlanetID?.json with ._SHEETS
+        console.log('PLANETSHEETS: ', PLANETSHEETS);
 
         const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS, system:options.systemInfo };
         const data_perma = {_SHEETS:PERMASHEETS};
+        const data_planets = {_SHEETS:PLANETSHEETS}
         
         function writeFile(path,content,data){
             // backup current to _old.json with replace() rename()
@@ -2232,10 +2234,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             });
         };
-        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data);   // perma
+        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data_perma);   // perma
         writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        writeFile(`data/PlanetID${STAGE.planetID}.json` , JSON.stringify(data_planets, null, '\t'), data_planets); // planets
     };
-    
+
     function computeSave_PERMASHEETS(DATA) {
         const data = {};
         for (const key in DATA) {
@@ -2277,31 +2280,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
     };
 
-    // creer la list des data nessesaire
-    function create_JsonMapData(options) {
-        const currentScene = STAGE.constructor.name;
-        const currentMap = $player.currentMap;
-        const data = {
-            galaxi: $player.currentGalaxi, // or map data comment
-            planet: $player.currentPlanet, // or map data comment 
-            mapID: $player.currentMap, // or map data comment
-            sheets:{},
-            _obj:[],
-        };
-        REGISTER.forEach(e => {
-            data._obj.push( spriteToJson(e) );
-            if(!data.sheets[e.data.name]){
-                data.sheets[e.data.name] = {name:e.data.name, path:e.data.dir, register:e.data.dirArray};
-            };
-        });
-        const path = `data/${currentMap}_data.json`; // Map001_data.json
-        const fs = require('fs');
-        const content = JSON.stringify(data, null, '\t'); //human read format
-        fs.writeFile(path, content, 'utf8', function (err) { 
-            if(err){return console.log(err) }
-            console.log('complette: ', err);
-        });
+    // check all elements and add base data need for loader
+    function computeSave_PLANETS(SCENE,OBJS,SHEETS) {
+        let data = Object.assign({}, SHEETS);
+        const list = Object.keys($Loader.loaderSet); // get list of all Scene_MapID?_data
+        let i = 1;
+        while (list.contains(`Scene_MapID${i}_data`)) {
+            const sheets = $Loader.loaderSet[`Scene_MapID${i}_data`]._SHEETS;
+            data = Object.assign(data, sheets);
+            i++;
+        }
+        return data;
     };
+
+
 
     function snapScreenMap(options) {
         // create a snap to import in rmmv sofware

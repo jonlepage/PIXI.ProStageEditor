@@ -24,6 +24,8 @@ loaderSet_GalaxiScene:[dataMapJson,mapSprites(diff,norm)]
 
 class _coreLoader {
     constructor () {
+        this._currentPlanetID = null; // currentPlanet ID loaded set ?
+
         this._tmpRes_normal = {};
         this._tmpRes_multiPack = {};
         this._tmpData = null; // store temp data befor normalise structure 
@@ -37,10 +39,13 @@ class _coreLoader {
             "_JsonPath": {
                 value: {
                     MapInfos:"data/MapInfos.json", // also load all maps Map###_data.json and create galaxi register
+                    System:"data/System.json", // also load all maps Map###_data.json and create galaxi register
+
                     Perma:"data/perma.json", // perma , Enemies,cursor,loader,Avatar...
                     Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
                     Scene_Local_data:"data/Scene_Local_data.json",
                     Scene_Title_data:"data/Scene_Title_data.json",
+                    PlanetID1:"data/PlanetID1.json",
                     
                     //Scene_Boot:"data/Scene_Boot.json",
                     //Scene_IntroVideo:"data/Scene_IntroVideo.json",
@@ -50,8 +55,8 @@ class _coreLoader {
             }
           });
           Object.defineProperties(this, {
-            "_permaName": { // PERMA LIST IN GAME 
-                value: ["gloves",],
+            "_permaName": { // PERMA LIST IN GAME , also allow editor to create or update perma.json based on this
+                value: ["gloves","Hero1_Big"],
             }
           });
     };
@@ -94,37 +99,68 @@ _coreLoader.prototype.preLoad_Json = function() {
     const L1 = function(){
         // Scene_Map
         const loader1 = new PIXI.loaders.Loader();
-        this.loaderSet.Scene_Map = {};
         this.loaderSet.MapInfos.forEach(map => {
             if(map){
                 const id = map.id.padZero(3);
                 const path = `data/Map${id}.json`;
-                loader1.add(id, path);
+                loader1.add(String(map.id), path);
             };
         });
         loader1.load();
         loader1.onProgress.add((loader, res) => {
-            this.loaderSet.Scene_Map[res.name] = res.data;
-            res.data.data = null; // clear the rmmv data
+            const _res = this.loaderSet.MapInfos[res.name];
+            _res.displayName = res.data.displayName;
+            _res.encounterList = res.data.encounterList;
+            _res.height = res.data.height;
+            _res.width = res.data.width;
+            _res.events = res.data.events;
+            _res.note = res.data.note? JSON.parse(res.data.note) : {};  
         });
         loader1.onComplete.add((loader, res) => {
+            // determine and add reference of galaxiID and planetID
+            // it will allow editor to compile a loaderset for planet and map navigation
+            function getGalaxiID(original, MapInfos){
+                let current = original;
+                while (!current.note.galaxiID) { current = MapInfos[current.parentId] };
+                return current.note.galaxiID;
+            };
+            function getPlanetID(original, MapInfos){
+                let current = original;
+                if(current.note.galaxiID){return false}; // galaxi no have planet id
+                while (!current.note.planetID) { current = MapInfos[current.parentId] };
+                return current.note.planetID;
+            }
+
+            this.loaderSet.MapInfos.forEach(map => {
+                if(map){
+                    map.galaxiID = getGalaxiID(map, this.loaderSet.MapInfos);
+                    map.planetID = getPlanetID(map, this.loaderSet.MapInfos);
+                };
+            });
+
+
             L2.call(this);
         });
     };
 
     const L2 = function(){
-        // Scene_Map .DATA
+        // Scene_Map .DATA// TODO:
         const loader2 = new PIXI.loaders.Loader();
         this.loaderSet.MapInfos.forEach(map => {
             if(map){
                 const id = map.id.padZero(3);
-                const path = `data/Map${id}_data.json`;
-                loader2.add(id, path);
+                const path = `data/Scene_MapID${map.id}_data.json`;
+                loader2.add(String(map.id), path);
             };
         });
         loader2.load();
+        loader2.onError.add((err, loader, res) => { console.error(`Error on load MapID${res.name} Use Editor To create Scene_MapID${res.name}_data.json`) });
+
         loader2.onProgress.add((loader, res) => {
-            this.loaderSet.Scene_Map[res.name].data = res.data;
+            if(res.data){
+                this.loaderSet[`Scene_MapID${res.name}_data`] = res.data;
+            }
+          
         });
         loader2.onComplete.add((loader, res) => {
             L3.call(this);
@@ -132,8 +168,11 @@ _coreLoader.prototype.preLoad_Json = function() {
     };
 
     const L3 = function(){
+        // normalize and asign planet galaxi id to all map id.
+ 
+
         // build planet information
-        this.loaderSet.PlanetsInfos = {};
+       /* this.loaderSet.PlanetsInfos = {};
         for (const key in this.loaderSet.Scene_Map) {
             const data = this.loaderSet.Scene_Map[key].data;
             const planetID = data.planet;
@@ -145,7 +184,7 @@ _coreLoader.prototype.preLoad_Json = function() {
             for (const sheetKey in data.sheets) {
                 this.loaderSet.PlanetsInfos[planetID][sheetKey] = data.sheets[sheetKey];
             };
-        };
+        };*/
        this._scene.isLoading = false; // allow continue scene laoder
     };
 };
@@ -153,10 +192,10 @@ _coreLoader.prototype.preLoad_Json = function() {
 // ┌-----------------------------------------------------------------------------┐
 // LOADER DATA
 //└------------------------------------------------------------------------------┘
-// $Loader.load(['loaderSet',loaderSet]);
+//#1 $Loader.load(['loaderSet',loaderSet]);
 _coreLoader.prototype.load = function(set) {
     console.log6('load_________________________________set: ', set);
-    this._scene = SceneManager._scene;
+    this._scene = SceneManager._scene; // current Scene_Loader
     for (const key in this.Data2) { delete this.Data2[key] }; // clear all cache when load new scene
     // check integrety, exist and if we have data in the set
     if(!set){return this._scene.isLoading = false };
@@ -194,6 +233,12 @@ _coreLoader.prototype.load = function(set) {
     });
     if(empty){loader.onComplete._tail._fn()}; // force onComplete if empty;
 };
+
+//#1.1 load planet
+_coreLoader.prototype.load_planet = function(set) {
+
+
+}
 
 //#2 load all multiPack reference
 _coreLoader.prototype.loadMultiPack = function() {

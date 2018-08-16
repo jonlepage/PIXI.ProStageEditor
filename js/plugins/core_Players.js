@@ -28,18 +28,24 @@ console.log1('$player.', $player);
 
 // $player.initialize(); // setupNewGame
 _player.prototype.initialize = function() {
-    const player = this.spine = new PIXI.spine.Spine($SLL.resource.Hero1_Big.spineData);
-    player.convertToNormal("_n",true);
+    const player = this.spine = new PIXI.spine.Spine($Loader.Data2.Hero1_Big.spineData);
+
     player.parentGroup = $displayGroup.group[1];
     player.x = 945, player.y = 610;
-    player.zIndex = player.y;
+    player.zIndex = player.position._y;
     player.name = "player";
     player.scale.set(0.5,0.5);
     // prop class
-    $player._width = player.width;
-    $player._height = player.height;
     // add render
     player.state.setAnimation(0, 'idle', true);
+    player.state.setAnimation(2, 'hair_idle1', true);
+    setInterval(function(){ //TODO:
+        const allowWink = Math.random() >= 0.5;
+        allowWink && player.state.setAnimation(3, 'wink1', false); 
+    }, 1000);
+    
+    player.stateData.defaultMix = 0.3;
+    this.player1 = player;
 };
 
  // TODO: system transfer
@@ -73,13 +79,14 @@ _player.prototype.height = function() {
 
 
 // $player.transferMap(1,1,1); // setupNewGame
-_player.prototype.transferMap = function(id,galaxi,planet) {
-    this.currentMap = `Map${String(id).padZero(3)}`; // "Map001"
-    if(!galaxi || !planet){
-        SceneManager.goto(Scene_Map); 
+_player.prototype.transferMap = function(mapID) {
+    // check if need load all stuff for planet ?
+    const targetPlanetID = $Loader.loaderSet.MapInfos[mapID].planetID; // target planet id need for this mapID
+    if($Loader._currentPlanetID !== targetPlanetID){ // the planet not loaded ? 
+        SceneManager.goto(Scene_Loader, `PlanetID${mapID}`, window[`Scene_MapID${mapID}`]); // load befor planetID and go map
+        
     }else{
-        this.currentGalaxi = "g"+galaxi; // "g1"
-        this.currentPlanet = "p"+galaxi; // "p1"
-        SceneManager.goto(Scene_Loader,[this.currentGalaxi,this.currentPlanet],Scene_Map); // full load + build planet library textures
-    };
+        SceneManager.goto(window[`Scene_MapID${mapID}`]); // planet loaded , just go mapScene id
+    }
+    
 };

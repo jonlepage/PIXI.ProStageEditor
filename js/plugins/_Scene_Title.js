@@ -87,13 +87,16 @@ Scene_Title.prototype.setupCommands = function() {
     const commands = $Objs.getsByID("command");
     for (let i=0, l=commands.length; i<l; i++) {
         const command = commands[i];
-        
-        console.log('command: ', command);
+        // enlarge filter area , preven crope
+        const rectangle = command.Sprites.d.getBounds();
+        rectangle.pad(40,40);
+        command.Sprites.d.filterArea =  rectangle;
+
+        command.interactive = true;
+        command.on('pointerover', this.commandOver);
+        command.on('pointerout', this.commandOut);
+        command.on('pointerup', this.commandClick, this);
     };
-        
-    
-    
-    
 };
 
 
@@ -101,20 +104,34 @@ Scene_Title.prototype.setupCommands = function() {
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
-// onMouseDown for this scene
-Scene_Title.prototype.onMouseDown = function(event) {
 
+Scene_Title.prototype.commandOver = function(e) {
+    switch (e.currentTarget.Sprites.d.name) {
+        case "CnewGame": e.currentTarget.Sprites.d._filters = [$Filters.OutlineFilterx8Green]; break;
+        case "Cloadgame": e.currentTarget.Sprites.d._filters = [$Filters.OutlineFilterx8Red]; break;
+        case "Coptions": e.currentTarget.Sprites.d._filters = [$Filters.OutlineFilterx8Yellow]; break;
+        case "Ccredit": e.currentTarget.Sprites.d._filters = [$Filters.OutlineFilterx8Pink]; break;
+
+    }
 };
 
-// onMouseup for this scene
-Scene_Title.prototype.onMouseup = function(event) {
-    if(this.__inFlag){
-        this.event1(this.__inFlag);
-    };
+Scene_Title.prototype.commandOut = function(e) {
+    e.currentTarget.Sprites.d._filters = null;
+};
+
+Scene_Title.prototype.commandClick = function(e) {
+    console.log('this: ', this);
+    switch (e.currentTarget.Sprites.d.name) {
+        case "CnewGame": this.startNewGame(); break;
+        case "Cloadgame": void 0; break;
+        case "Coptions": void 0; break;
+        case "Ccredit": void 0; break;
+    }
 };
 //#endregion
 
 // playCommand_startNewGame
-Scene_Title.prototype.playCommand_startNewGame = function(selected) {
-    $player.transferMap(1,1,1); // transfer + loader 
+Scene_Title.prototype.startNewGame = function(option) {
+    const startMapID = $Loader.loaderSet.System.startMapId;
+    $player.transferMap(startMapID); // transfer player to mapID
 };

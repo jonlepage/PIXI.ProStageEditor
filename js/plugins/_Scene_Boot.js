@@ -22,6 +22,7 @@ Scene_Boot.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this);
     this._startDate = Date.now();
     $mouse.initialize(); // initialise mouse core
+    $player.initialize();
     //$gui.initialize(); 
     //$avatar.initialize();
     //$monster.initialize();
@@ -79,7 +80,7 @@ Scene_Boot.prototype.start = function() {
     this.checkPlayerLocation();
     DataManager.setupNewGame();
     //$player.transferMap(1,1,1); // transfer + loader  //SceneManager.goto(Scene_Loader,"loaderSet_sceneIntroVideo",Scene_IntroVideo);
-    SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
+    $player.transferMap(1); // HACKED FOR DEBUG// FIXME: SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
     Window_TitleCommand.initCommandPosition();
     //this.updateDocumentTitle();
 };

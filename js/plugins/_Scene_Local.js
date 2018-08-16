@@ -97,16 +97,15 @@ Scene_Local.prototype.setupFlags = function() {
         flag.loop = false;
         flag.text_language = text_language;
         flag.pixiText = txt;
+        flag.animationSpeed = ~flag.animationSpeed; // reverse play
+        flag.play(0);
         // interactive test TODO: MAKE A MANAGER SELON TYPE 
         flag.interactive = true;
         flag.on('pointerup', this.onMouseup, this );
         flag.on('pointerover', this.onButtonOver, this)
         flag.on('pointerout', this.onButtonOut, this);
-        
-        
     });
     this.Flags = flags;
-    console.log('this: ', this);
 };
 
 Scene_Local.prototype.createTitleTexte = function() {

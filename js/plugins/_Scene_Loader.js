@@ -73,6 +73,7 @@ Scene_Loader.prototype = Object.create(Scene_Base.prototype);
 Scene_Loader.prototype.constructor = Scene_Loader;
 
 Scene_Loader.prototype.initialize = function(loaderSets,callBackScene,firstTime) {
+    console.log('Scene_Loader loaderSets,callBackScene,firstTime: ', loaderSets,callBackScene,firstTime);
     Scene_Base.prototype.initialize.call(this);
     $Loader._scene = this; // attache the current scene to core loader
     this.firstTime = !!firstTime; // first time allow show basic text, because loading animation was not loaded
