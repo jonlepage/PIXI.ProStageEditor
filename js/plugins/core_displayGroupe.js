@@ -2,7 +2,7 @@
 // OldFilmFilter
 //TODO: MAKE A FILTERS MANAGERS FOR THE GAME 
 $Filters = {
-    noiseGame: new PIXI.filters.NoiseFilter (0.09, 1),
+    noiseGame: new PIXI.filters.NoiseFilter (0.04, 1),
     OutlineFilterx8Green: new PIXI.filters.OutlineFilter (20, 0x16b50e, 1),
     OutlineFilterx8Red: new PIXI.filters.OutlineFilter (20, 0xdb3d2b, 1),
     OutlineFilterx8Yellow: new PIXI.filters.OutlineFilter (20, 0xd6d022, 1),
@@ -42,6 +42,8 @@ _DisplayGoup = function(){
         this._layer_diffuseGroup.updateTransform = function updateTransform() {
             // update filters noise
             this._filters[0].seed = Math.random();
+ 
+           
 
             this._boundsID++;
             this.transform.updateTransform(this.parent.transform);

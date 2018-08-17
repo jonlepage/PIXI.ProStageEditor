@@ -38,7 +38,7 @@ Scene_MapID1.prototype.initialize = function() {
 
 // create element for scene and setup.
 Scene_MapID1.prototype.create = function() {
-    this.CAGE_MAP.addChild($player.player1); //TODO:
+    this.CAGE_MAP.addChild($player); //TODO:
 };
 
 Scene_MapID1.prototype.isReady = function() {

@@ -12,40 +12,45 @@ dans les class, . pour les objects, function deep (non Json), _ pour les props a
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
 //└------------------------------------------------------------------------------┘
-function _player() {
-    this.currentMap = null;
-    this.currentGalaxi = null;
-    this.currentPlanet = null;
-    this.spine = null;
-    this._zoneLimit = 200; // player limit zone for search
-    this._width = null;
-    this._height = null;
-    this.inCase = null;
-} 
+class _player extends PIXI.Container {
+    constructor() {
+        super();
+        this.Sprites = {d:null, n:null};
+    };
+  
+};
 
 $player = new _player(); // create game player
 console.log1('$player.', $player);
 
 // $player.initialize(); // setupNewGame
 _player.prototype.initialize = function() {
-    const player = this.spine = new PIXI.spine.Spine($Loader.Data2.Hero1_Big.spineData);
+    const spine = new PIXI.spine.Spine($Loader.Data2.Hero1_Big.spineData);
+        //spine.skeleton.setSkinByName()//
+        spine.stateData.defaultMix = 0.3;
+        spine.state.setAnimation(0, "idle", true);
+        spine.state.setAnimation(2, "hair_idle1", true);
+        setInterval(function(){ //TODO:
+            const allowWink = Math.random() >= 0.5;
+            allowWink && spine.state.setAnimation(3, 'wink1', false); 
+        }, 1000);
+        spine.skeleton.setSlotsToSetupPose();
 
-    player.parentGroup = $displayGroup.group[1];
-    player.x = 945, player.y = 610;
-    player.zIndex = player.position._y;
-    player.name = "player";
-    player.scale.set(0.5,0.5);
-    // prop class
-    // add render
-    player.state.setAnimation(0, 'idle', true);
-    player.state.setAnimation(2, 'hair_idle1', true);
-    setInterval(function(){ //TODO:
-        const allowWink = Math.random() >= 0.5;
-        allowWink && player.state.setAnimation(3, 'wink1', false); 
-    }, 1000);
+    const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
+        spineBg_n.width = spine.width, spineBg_n.height = spine.height;
+        spineBg_n.anchor.set(0.5,1);
     
-    player.stateData.defaultMix = 0.3;
-    this.player1 = player;
+    this.scale.set(0.5,0.5);
+    this.position.set(945,610);
+
+    spine.parentGroup = PIXI.lights.diffuseGroup;
+    spineBg_n.parentGroup = PIXI.lights.normalGroup;
+    this.parentGroup = $displayGroup.group[1];
+    this.zIndex = this.position._y;
+    this.addChild(spine,spineBg_n);
+    // player 2 TODO:
+    
+   
 };
 
  // TODO: system transfer
@@ -64,18 +69,6 @@ _player.prototype.moveToCase = function(objCase) {
     this.inCase = objCase;
 };
 
-//$player.position();
-_player.prototype.position = function() {
-    return this.spine.position;
-};
-
-_player.prototype.width = function() {
-    return this.spine.width;
-};
-
-_player.prototype.height = function() {
-    return this.spine.height;
-};
 
 
 // $player.transferMap(1,1,1); // setupNewGame

@@ -1073,8 +1073,8 @@ return message = /*html*/ `
                             <small class="text-muted">position:&nbsp</small>
                             </div>
                         </div>
-                        <input type="number" step=0.1 class="form-control" id="position" arrId=0>
-                        <input type="number" step=0.1 class="form-control" id="position" arrId=1>
+                        <input type="number" step=0.4 class="form-control" id="position" arrId=0>
+                        <input type="number" step=0.4 class="form-control" id="position" arrId=1>
                         <input class="boxlock" type="checkbox" id="position_lock">
                     </div>
                 </td>
@@ -1097,8 +1097,8 @@ return message = /*html*/ `
                             <small class="text-muted">Scale:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01  class="form-control" id="scale" arrId=0>
-                        <input type="number" step=0.01  class="form-control" id="scale" arrId=1>
+                        <input type="number" step=0.02  class="form-control" id="scale" arrId=0>
+                        <input type="number" step=0.02  class="form-control" id="scale" arrId=1>
                         <input class="boxlock" type="checkbox" id="scale_lock">
                     </div>
                 </td>
@@ -1121,8 +1121,8 @@ return message = /*html*/ `
                             <small class="text-muted">skew:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 class="form-control" id="skew" arrId=0>
-                        <input type="number" step=0.01 class="form-control" id="skew" arrId=1>
+                        <input type="number" step=0.02 class="form-control" id="skew" arrId=0>
+                        <input type="number" step=0.02 class="form-control" id="skew" arrId=1>
                         <input class="boxlock" type="checkbox" id="skew_lock">
                     </div>
                 </td>
@@ -1193,7 +1193,7 @@ return message = /*html*/ `
                             <small class="text-muted">rotation:deg°:</small><input type="checkbox" id="deg_mode"><small class="text-muted"></small>
                             </div>
                         </div>
-                        <input type="number" step=0.0015 class="form-control" id="rotation">
+                        <input type="number" step=0.01 class="form-control" id="rotation">
                     </div>
                 </td>
                 <td>
@@ -1215,7 +1215,7 @@ return message = /*html*/ `
                             <small class="text-muted">alpha:</small>
                             </div>
                         </div>
-                        <input type="number" step=0.01 min=0 max=1 class="form-control" id="alpha">
+                        <input type="number" step=0.02 min=0 max=1 class="form-control" id="alpha">
                     </div>
                 </td>
                 <td>
