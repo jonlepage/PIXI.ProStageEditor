@@ -448,6 +448,7 @@ _PME.prototype.startEditor = function() {
     let FastModesKey = null; // when mouse hold, push keyboard keys to active fastEdit mode
     let FastModesObj = null; // store Obj fast mode
     let CurrentDisplayGroup = 1;
+    FreezeMouse = null; // freeze mouse when place a obj from mouse, with fast mode
 
  
 // TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
@@ -502,6 +503,22 @@ const CAGE_MOUSE = STAGE.CAGE_MOUSE // Store all avaibles libary
     CAGE_MOUSE.currentSprite = null;
     CAGE_MOUSE.list = false; // store list array of current objs hold by the mouse
     CAGE_MOUSE.addChild(CAGE_MOUSE.previews);
+    // fast mode indicator 
+    const fastModes = new PIXI.Container();
+    var txt0 = new PIXI.Text("P: pivot from position",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    var txt1 = new PIXI.Text("Y: position from pivot",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    var txt2 = new PIXI.Text("W: skew mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    var txt3 = new PIXI.Text("S: Scale mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    var txt4 = new PIXI.Text("R: Rotation mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    var txt5 = new PIXI.Text("U: Rotate Textures Anchor",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+    let txtH = txt0.height;
+    txt1.y = txt0.y+txtH, txt2.y = txt1.y+txtH, txt3.y = txt2.y+txtH, txt4.y = txt3.y+txtH, txt5.y = txt4.y+txtH;
+    fastModes.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
+    fastModes.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
+    fastModes.renderable = false; // render only when mouse hold.
+    $mouse.addChild(fastModes);
+    fastModes.x = 80;
+
 // CAGE_MAP ________________
 const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
@@ -579,6 +596,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.interactive = true;
             cage.buttonType = "tileMap";
         });
+        // player identification
+        $player.addChild(new PIXI.Text("player1",{fontSize:24,fill:0xffffff}));
+
     }).bind(this)();
 
     //#region [rgba(10, 80, 10,0.08)]
@@ -1327,12 +1347,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
         };
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone, this.Debug.fastModes);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
         if(this.Type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone, this.Debug.fastModes);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
@@ -1359,7 +1379,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const an = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
             const piv = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );
-            const fastModes = new PIXI.Container();
 
 
             // BG
@@ -1386,20 +1405,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
             hitZone.endFill();
 
-            //fastModeIcons , when mouse hold , allow fast proprety editor with mouse
-            var txt0 = new PIXI.Text("P: pivot from position",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            var txt1 = new PIXI.Text("Y: position from pivot",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            var txt2 = new PIXI.Text("W: skew mode",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            var txt3 = new PIXI.Text("S: Scale mode",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            var txt4 = new PIXI.Text("R: Rotation mode",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            var txt5 = new PIXI.Text("U: Rotate Textures Anchor",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-            let txtH = txt0.height;
-            txt1.y = txt0.y+txtH, txt2.y = txt1.y+txtH, txt3.y = txt2.y+txtH, txt4.y = txt3.y+txtH, txt5.y = txt4.y+txtH;
-            fastModes.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
-            fastModes.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
-            fastModes.renderable = false; // render only when mouse hold.
-
-            this.Debug.fastModes = fastModes;
             this.Debug.bg = bg;
             this.Debug.an = an;
             this.Debug.piv = piv;
@@ -1633,6 +1638,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function add_toMouse(InTiles) {
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
+        cage.position.set(mX,mY);
         CAGE_MAP.addChild(cage);
         CAGE_MOUSE.list = cage;
         cage.interactive = true;
@@ -1645,7 +1651,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.Debug.hitZone.clear();
         const LB = cage.getLocalBounds();
         cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
-        cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+        cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+        FreezeMouse = false; // force disable the mosue freeze 
         return cage;
     };
 
@@ -1653,8 +1660,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function add_toScene(obj) {
         const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         //TODO: if pined in a line. get position of old prite obj
-        cage.x = mMX;
-        cage.y = FreezeMY?FreezeMY.y : mMY;
+        if(FreezeMouse){ // freeze mouse allow to keep the position of the clone obj x,y
+            FreezeMouse = false;
+            cage.x = obj.x;
+            cage.y = obj.y;
+        }else{
+            cage.x = mMX;
+            cage.y = FreezeMY?FreezeMY.y : mMY;
+        }
+        
 
         cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
@@ -1710,7 +1724,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             buttonSprite._slot.color.a = 1;
             buttonSprite._slot.color.g = 2;
             buttonSprite.scale.set(1.25,-1.25);
-            EDITOR.state.setAnimation(1, 'shakeDisplay', false);
+            EDITOR.state.setAnimation(3, 'shakeDisplay', false);
         };
     };
 
@@ -1780,7 +1794,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function clearFiltersFX2(sprite,slot){ // CurrentDisplayGroup
-        console.log('slot: ', slot);
         if( slot.name.contains("gb") && slot.name.contains(String(CurrentDisplayGroup)) ){
 
         }else{
@@ -1829,19 +1842,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function disableFastModes(OBJ){
-        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") && OBJ.Debug.fastModes){
-            MouseHold.Debug.fastModes.renderable = false;
+        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") ){
+            //MouseHold.Debug.fastModes.renderable = false;
+            fastModes.renderable = false;
             FastModesObj = null;
         }
     };
 
     function activeFastModes(OBJ, modeKey){
-        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") && OBJ.Debug.fastModes){
-            if(FastModesKey){ OBJ.Debug.fastModes.txtModes[FastModesKey]._filters = null };
+        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") ){
+            if(FastModesKey){ fastModes.txtModes[FastModesKey]._filters = null };
             FastModesKey = modeKey || FastModesKey || "p";
-            OBJ.Debug.fastModes.txtModes[FastModesKey]._filters = [FILTERS.OutlineFilterx8Red]
-            MouseHold.Debug.fastModes.renderable = true;
+            fastModes.txtModes[FastModesKey]._filters = [FILTERS.OutlineFilterx8Red]
             FastModesObj = OBJ;
+            fastModes.renderable = true;
+            OBJ.Debug.bg.renderable = false;
+            FreezeMouse = true;
         }
     };
 
@@ -1852,11 +1868,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         update_Light();
 
         // if mouse have sprite =>update
-        if(CAGE_MOUSE.list && !MouseHold){ // update cages list hold by mouse
+        if(CAGE_MOUSE.list && !MouseHold && !FreezeMouse){ // update cages list hold by mouse
             CAGE_MOUSE.list.position.set(mMX,FreezeMY?FreezeMY.y : mMY);
             CAGE_MOUSE.list.zIndex = mMY;
         };
-
+        
         // preview thumbs showed
         if(CAGE_MOUSE.previewsShowed){
             CAGE_MOUSE.previews.pivot.x = mX>1920/2 && CAGE_MOUSE.previews.width/2 || 0;
@@ -1895,7 +1911,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.pivot.y+=event.movementY;
                 Obj.x+=event.movementX*Obj.scale.x;
                 Obj.y+=event.movementY*Obj.scale.y;
-            
                 // update debug
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
@@ -1906,8 +1921,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
             case "w": // skew mode
-                Obj.skew.x-=event.movementX/100;
-                Obj.skew.y-=event.movementY/100;
+                //Obj.skew.x-=event.movementX/100;
+                var skew = Math.sin(event.movementY/100);
+                Obj.skew.y-=skew;
+
+               // Obj.Debug.piv.skew.x = Obj.skew.x*-1; // not work
+                //Obj.Debug.piv.skew.y = Obj.skew.y*-1;
             break;
             case "s": // Scale mode
                 Obj.scale.x-=event.movementX/100;
@@ -1915,7 +1934,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             break;
             case "r": // Rotation mode
                 Obj.rotation+=event.movementX/100;
-                Obj.Debug.piv.rotation = ~Obj.rotation+1;
+                Obj.Debug.piv.rotation = Obj.rotation*-1;
             break;
             case "u": // Rotation textures
                 Obj.Sprites.d.rotation+=event.movementX/100;
@@ -1925,10 +1944,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         Obj.zIndex = Obj.y;
         Obj.Debug.hitZone.clear();
         const LB = Obj.getLocalBounds();
-        Obj.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
-        Obj.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
-        // compensator 
-    }
+        const color = (Obj.buttonType === "tileMouse") && 0xff0000 || 0x0000FF; // color depending of type
+        Obj.hitArea = LB;
+        Obj.Debug.hitZone.lineStyle(2, color, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+    };
 
     $mouse.on('mousemove', function(event) {
         //if(iziToast.opened){return}; // dont use mouse when toast editor
@@ -1939,7 +1958,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     cage.x+= event.data.originalEvent.movementX*0.7;//performe scroll libs mouse
                     cage.y+= event.data.originalEvent.movementY*0.6;//performe scroll libs mouse
                     cage.getBounds();
-                    
                 });
             };
             if( MouseHold.buttonType === "tileMap" || MouseHold.buttonType === "tileMouse" ){
@@ -2004,6 +2022,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function pointer_UP(event){
+        console.log('event.currentTarget: ', event.currentTarget);
         if(MouseHold){ return startMouseHold(false) };
         startMouseHold(false);
         const _clickRight = event.data.button === 0;
@@ -2028,7 +2047,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 setStatusInteractiveObj(false); // disable interactivity
                 return add_toMouse(event.currentTarget);
             }
-            if(event.currentTarget.buttonType === "tileMouse"){ 
+            if(event.currentTarget.buttonType === "tileMouse"){
                 return add_toScene(event.currentTarget); 
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
@@ -2041,6 +2060,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 close_editor(true);
                 event.currentTarget.buttonType = "tileMouse";
                 CAGE_MOUSE.list = event.currentTarget;
+                FreezeMouse = false;
                 return; 
             }
             if(event.currentTarget.buttonType === "button"){ 

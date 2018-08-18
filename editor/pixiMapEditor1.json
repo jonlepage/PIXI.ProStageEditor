@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "8mggL0JPEWabhStSu49F8AYjGsE", "spine": "3.7.24-beta", "width": 1950.39, "height": 1079 },
+"skeleton": { "hash": "af2JDKth/G7lVzVkTIHkqXEsPtM", "spine": "3.7.24-beta", "width": 1950.39, "height": 1079 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Rectangle 1 copie", "parent": "root", "length": 150.7, "x": 272.96, "y": -1073.32 },
@@ -361,8 +361,18 @@
 				]
 			},
 			"icon_set_option": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
+				"rotate": [
+					{
+						"time": 0,
+						"angle": 0,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{
+						"time": 1.1667,
+						"angle": -6.31,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{ "time": 2.3333, "angle": 0 }
 				]
 			},
 			"icon_set_G": {
@@ -372,7 +382,7 @@
 			},
 			"filterBG": {
 				"translate": [
-					{ "time": 0, "x": -1222.87, "y": 0 },
+					{ "time": 0, "x": 0, "y": 0, "curve": "stepped" },
 					{ "time": 0.6667, "x": 0, "y": 0 }
 				]
 			},
