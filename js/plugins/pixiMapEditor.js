@@ -1279,13 +1279,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function setup_Propretys(fromCage){
         console.log('fromCage: ', fromCage);
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
-   
-
             this.Data_Values = getDataJson(fromCage);
             this.Data_CheckBox = getDataCheckBoxWith(fromCage, this.Data_Values);
-            setObjWithData.call(this, this.Data_Values, this.Data_CheckBox)
+            setObjWithData.call(this, this.Data_Values, this.Data_CheckBox);
+            //TODO: ADD rotation textures to datavalue
+            fromCage.Sprites.d? this.Sprites.d.rotation = fromCage.Sprites.d.rotation : void 0;
+            fromCage.Sprites.n? this.Sprites.n.rotation = fromCage.Sprites.n.rotation : void 0;
 
-            if(fromCage.buttonType==="tileLibs"){
+            if(fromCage.buttonType==="tileLibs"){ // if it from libs, ajust anchor because it compute by another ways
                 let anX = (fromCage.Debug.an.position.x/fromCage.Debug.bg.width) || fromCage.Sprites.d.anchor.x; // value pos/w
                 let anY = (fromCage.Debug.an.position.y/fromCage.Debug.bg.height) || fromCage.Sprites.d.anchor.y; // value pos/h
                 this.Sprites.d.anchor.set(anX, anY);
@@ -1320,12 +1321,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
         };
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.fastModes);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone, this.Debug.fastModes);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
         if(this.Type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.fastModes);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone, this.Debug.fastModes);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
@@ -1373,6 +1374,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             piv.addChild(txt);
             piv.position.copy(this.pivot);
 
+            // hitArea hitZone
+            const lb = this.getLocalBounds();
+            const hitZone = new PIXI.Graphics();
+            hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
+            hitZone.endFill();
+
             //fastModeIcons , when mouse hold , allow fast proprety editor with mouse
             var txt0 = new PIXI.Text("P: pivot from position",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
             var txt1 = new PIXI.Text("Y: position from pivot",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
@@ -1390,6 +1397,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg = bg;
             this.Debug.an = an;
             this.Debug.piv = piv;
+            this.Debug.hitZone = hitZone;
         };
         /*if(this.Type === "spineSheet"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -1627,7 +1635,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
         close_editor(true);
-        cage.hitArea = new PIXI.Rectangle(-20,-20,cage.width*2,cage.height*2);
+
+        cage.Debug.hitZone.clear();
+        const LB = cage.getLocalBounds();
+        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
         return cage;
     };
 
@@ -1641,7 +1653,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.Debug.bg.renderable = false;
         CAGE_MAP.addChild(cage);
         $Objs.list_master.push(cage);
-        cage.getBounds();
+
+        cage.Debug.hitZone.clear();
+        const LB = cage.getLocalBounds();
+        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
         
         cage.interactive = false;
         cage.on('pointerover', pointer_overIN);
@@ -1783,15 +1799,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function disableFastModes(OBJ){
-        if(OBJ.buttonType === "tileMap" && OBJ.Debug.fastModes){
+        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") && OBJ.Debug.fastModes){
             MouseHold.Debug.fastModes.renderable = false;
             FastModesObj = null;
         }
     };
 
     function activeFastModes(OBJ, modeKey){
-        
-        if(OBJ.buttonType === "tileMap" && OBJ.Debug.fastModes){
+        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") && OBJ.Debug.fastModes){
             if(FastModesKey){ OBJ.Debug.fastModes.txtModes[FastModesKey]._filters = null };
             FastModesKey = modeKey || FastModesKey || "p";
             OBJ.Debug.fastModes.txtModes[FastModesKey]._filters = [FILTERS.OutlineFilterx8Red]
@@ -1807,7 +1822,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         update_Light();
 
         // if mouse have sprite =>update
-        if(CAGE_MOUSE.list){ // update cages list hold by mouse
+        if(CAGE_MOUSE.list && !MouseHold){ // update cages list hold by mouse
             CAGE_MOUSE.list.position.set(mMX,FreezeMY?FreezeMY.y : mMY);
             CAGE_MOUSE.list.zIndex = mMY;
         };
@@ -1869,15 +1884,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.scale.y-=event.movementY/100;
             break;
             case "r": // Rotation mode
-                Obj.rotation-=event.movementX/100;
+                Obj.rotation+=event.movementX/100;
                 Obj.Debug.piv.rotation = ~Obj.rotation+1;
             break;
             case "u": // Rotation textures
-                Obj.Sprites.d.rotation-=event.movementX/100;
+                Obj.Sprites.d.rotation+=event.movementX/100;
                 Obj.Sprites.n.rotation = Obj.Sprites.d.rotation;
             break;
         }
         Obj.zIndex = Obj.y;
+        Obj.Debug.hitZone.clear();
+        const LB = Obj.getLocalBounds();
+        Obj.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        Obj.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+        // compensator 
     }
 
     $mouse.on('mousemove', function(event) {
@@ -1892,7 +1912,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     
                 });
             };
-            if( MouseHold.buttonType === "tileMap" ){
+            if( MouseHold.buttonType === "tileMap" || MouseHold.buttonType === "tileMouse" ){
                 // compute fast mode
                 FastModesObj && computeFastModes(FastModesObj, event.data.originalEvent);
       
@@ -1908,7 +1928,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             
         }
     }, STAGE);
-    
+
+
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
         switch (event.currentTarget.buttonType) {
@@ -2090,7 +2111,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
-    document.addEventListener('mouseup',function(){ startMouseHold(false); }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
+    document.addEventListener('mouseup',function(event){
+
+        startMouseHold(false); 
+    }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);
     document.addEventListener('keydown', keydown_Editor); // change layers
 //#endregion
