@@ -447,6 +447,7 @@ _PME.prototype.startEditor = function() {
     let ClipboarData = {}; // add Data json to clipboard for ctrl+v on obj to asign data
     let FastModesKey = null; // when mouse hold, push keyboard keys to active fastEdit mode
     let FastModesObj = null; // store Obj fast mode
+    let CurrentDisplayGroup = 1;
 
  
 // TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
@@ -545,6 +546,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _slot.currentSprite.on('pointerover', pointer_overIN,_slot);
                 _slot.currentSprite.on('pointerout', pointer_overOUT,_slot);
                 _slot.currentSprite.on('pointerup', pointer_UP);
+                _slot.currentSprite._slot = _slot;
+                if(slot.name.contains("gb") && slot.name.contains(String(CurrentDisplayGroup))){
+                    execute_buttons(_slot.currentSprite);
+                }
+               
             };
         };
     }).bind(this)();
@@ -1302,14 +1308,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
 
-            this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
+            this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
         };
         if(this.Type === "spineSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
             this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
-            this.parentGroup = $displayGroup.group[1]; //TODO: CURRENT
+            this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
         };
     };
@@ -1692,7 +1698,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(name.contains("icon_Save")){
             open_SaveSetup();
         }
-        
+        if( name.contains("gb") ){
+            // old gb
+            const oldGB = EDITOR.skeleton.findSlot("gb"+CurrentDisplayGroup);
+            oldGB.color.a = 0.35;
+            oldGB.color.g = 1;
+            oldGB.currentSprite.scale.set(1,-1);
+            // new gb
+            CurrentDisplayGroup = +name.substr(-1);
+            CAGE_MOUSE.list? CAGE_MOUSE.list.parentGroup = $displayGroup.group[CurrentDisplayGroup] : void 0;
+            buttonSprite._slot.color.a = 1;
+            buttonSprite._slot.color.g = 2;
+            buttonSprite.scale.set(1.25,-1.25);
+            EDITOR.state.setAnimation(1, 'shakeDisplay', false);
+        };
     };
 
 //#endregion
@@ -1750,15 +1769,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // active filter2 for button
     function activeFiltersFX2(sprite,slot){
-        sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
-        sprite.scale.set(1.25,-1.25);
-        slot.color.a = 1;
+        if( slot.name.contains("gb") && slot.name.contains(String(CurrentDisplayGroup)) ){
+
+        }else{
+            sprite._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+            sprite.scale.set(1.25,-1.25);
+            slot.color.a = 1;
+        }
+
     };
 
-    function clearFiltersFX2(sprite,slot){
-        sprite._filters = null; // thickness, color, quality
-        sprite.scale.set(1,-1);
-        slot.color.a = 0.35;
+    function clearFiltersFX2(sprite,slot){ // CurrentDisplayGroup
+        console.log('slot: ', slot);
+        if( slot.name.contains("gb") && slot.name.contains(String(CurrentDisplayGroup)) ){
+
+        }else{
+            sprite._filters = null; // thickness, color, quality
+            sprite.scale.set(1,-1);
+            slot.color.a = 0.35;
+        }
+
     };
 
     // active filter1, for thumbs
@@ -2076,6 +2106,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function keydown_Editor(event) {
+        if( isFinite(event.key) ){
+            const spriteSlot = EDITOR.skeleton.findSlot("gb"+event.key).currentSprite;
+            spriteSlot && execute_buttons(spriteSlot);
+        };
+
         if(FastModesObj){
             const modeKey = event.key.toLowerCase(); 
             if( ["p","y","w","s","r","u"].contains(modeKey) ){
