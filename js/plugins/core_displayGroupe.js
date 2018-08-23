@@ -2,7 +2,7 @@
 // OldFilmFilter
 //TODO: MAKE A FILTERS MANAGERS FOR THE GAME 
 $Filters = {
-    noiseGame: new PIXI.filters.NoiseFilter (0.04, 1),
+    noiseGame: new PIXI.filters.NoiseFilter (0.02, 1),
     OutlineFilterx8Green: new PIXI.filters.OutlineFilter (20, 0x16b50e, 1),
     OutlineFilterx8Red: new PIXI.filters.OutlineFilter (20, 0xdb3d2b, 1),
     OutlineFilterx8Yellow: new PIXI.filters.OutlineFilter (20, 0xd6d022, 1),

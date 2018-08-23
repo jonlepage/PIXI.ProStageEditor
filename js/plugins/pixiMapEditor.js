@@ -696,8 +696,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         LineDraw.interactive = true;
         LineDraw.name = "DEBUGLINE";
         LineDraw.on('pointerup', pointer_UP);
-       
     };
+
+    function hideShowDebugElements(){
+        const list = $Objs.list_master;
+        console.log('list: ', list);
+        list.forEach(element => {
+            element.Debug.hitZone.renderable = false;
+            element.Debug.bg.renderable = false;
+            element.Debug.an.renderable = false;
+            element.Debug.piv.renderable = false;
+        });
+
+    };
+
     //#endregion
 
     //#region [rgba(0, 140, 0,0.08)]
@@ -1312,13 +1324,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             fromCage.Sprites.d? this.Sprites.d.rotation = fromCage.Sprites.d.rotation : void 0;
             fromCage.Sprites.n? this.Sprites.n.rotation = fromCage.Sprites.n.rotation : void 0;
 
-            if(fromCage.buttonType==="tileLibs"){ // if it from libs, ajust anchor because it compute by another ways
+            if(fromCage.buttonType==="tileLibs" || fromCage.buttonType==="tileMouse"){ // if it from libs, ajust anchor because it compute by another ways
                 let anX = (fromCage.Debug.an.position.x/fromCage.Debug.bg.width) || fromCage.Sprites.d.anchor.x; // value pos/w
                 let anY = (fromCage.Debug.an.position.y/fromCage.Debug.bg.height) || fromCage.Sprites.d.anchor.y; // value pos/h
                 this.Sprites.d.anchor.set(anX, anY);
                 this.Sprites.n.anchor.set(anX, anY);
                 this.Debug.bg.anchor.set(anX, anY);
-            }
+                // update debug skew
+                this.Debug.piv.scale.x = fromCage.Debug.piv.scale.x;
+                this.Debug.piv.pivLine.skew.y = fromCage.Debug.piv.pivLine.skew.y;
+                this.Debug.piv.scale.y = fromCage.Debug.piv.scale.y;
+                this.Debug.piv.pivLine.skew.x = fromCage.Debug.piv.pivLine.skew.x;
+            };
         };
     };
 
@@ -1333,7 +1350,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(this.Type === "spineSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
-            this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
+            this.Sprites.n? this.Sprites.n.parentGroup = PIXI.lights.normalGroup : void 0;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
             this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
@@ -1352,7 +1369,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.Debug.bg.getBounds();
         };
         if(this.Type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
+            this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
@@ -1378,13 +1395,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             let h = this.Sprites.d.height;
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const an = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
-            const piv = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );
-
+            const piv = new PIXI.Container();//computeFastModes need a container
+            const pivLine = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
 
             // BG
             bg.width = w, bg.height = h;
             bg.tint = 0xffffff;
-            bg.anchor.copy(this.Sprites.d.anchor);
+            console.log('this.Sprites.d: ', this.Sprites.d);
+            bg.anchor.copy(this.Sprites.d.anchor|| new PIXI.Point(0.5,1));
+            
 
             //anchor point
             var txt = new PIXI.Text("A",{fontSize:12,fill:0xffffff});
@@ -1395,9 +1414,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             // pivot
             var txt = new PIXI.Text("↓■↓-P-↑□↑",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
                 txt.anchor.set(0.5,0.5);
-            piv.anchor.set(0.5,0.5);
-            piv.addChild(txt);
+            pivLine.anchor.set(0.5,0.5);
             piv.position.copy(this.pivot);
+            piv.pivLine = pivLine;
+            piv.addChild(pivLine);
+            pivLine.addChild(txt);
 
             // hitArea hitZone
             const lb = this.getLocalBounds();
@@ -1478,11 +1499,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             spine.skeleton.setSkinByName(this.TexName)//();
             spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
             spine.skeleton.setSlotsToSetupPose();
-            const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
+            /*const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
             spineBg_n.width = spine.width, spineBg_n.height = spine.height;
-            spineBg_n.anchor.set(0.5,1);
+            spineBg_n.anchor.set(0.5,1);*/
             this.Sprites.d = spine;
-            this.Sprites.n = spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
+            this.Sprites.n = null;//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
     };
 
@@ -1726,6 +1747,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             buttonSprite.scale.set(1.25,-1.25);
             EDITOR.state.setAnimation(3, 'shakeDisplay', false);
         };
+        if( name.contains("icon_showHideSprites") ){
+            hideShowDebugElements();
+        }
     };
 
 //#endregion
@@ -1921,12 +1945,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
             case "w": // skew mode
-                //Obj.skew.x-=event.movementX/100;
-                var skew = Math.sin(event.movementY/100);
-                Obj.skew.y-=skew;
-
-               // Obj.Debug.piv.skew.x = Obj.skew.x*-1; // not work
-                //Obj.Debug.piv.skew.y = Obj.skew.y*-1;
+                var skewX = Math.sin(event.movementX/100); // smoot mouse
+                var skewY = Math.sin(event.movementY/100); // smoot mouse
+                Obj.skew.y = Math.min(1, Math.max(Obj.skew.y+skewY, -1));
+                Obj.skew.x = Math.min(0.5, Math.max(Obj.skew.x+skewX, -0.5));
+                // update debug
+                Obj.Debug.piv.scale.x = 1/Math.cos(Obj.skew.y);
+                Obj.Debug.piv.pivLine.skew.y = -Obj.skew.y
+                Obj.Debug.piv.scale.y = 1/Math.cos(Obj.skew.x);
+                Obj.Debug.piv.pivLine.skew.x = -Obj.skew.x
             break;
             case "s": // Scale mode
                 Obj.scale.x-=event.movementX/100;
