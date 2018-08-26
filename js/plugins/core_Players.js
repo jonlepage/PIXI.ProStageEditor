@@ -25,29 +25,32 @@ console.log1('$player.', $player);
 
 // $player.initialize(); // setupNewGame
 _player.prototype.initialize = function() {
-    const spine = new PIXI.spine.Spine($Loader.Data2.Hero1_Big.spineData);
+    const spine = new PIXI.spine.Spine($Loader.Data2.heroe1_rendered.spineData);
         //spine.skeleton.setSkinByName()//
-        spine.stateData.defaultMix = 0.3;
+        spine.stateData.defaultMix = 0.1;
         spine.state.setAnimation(0, "idle", true);
-        spine.state.setAnimation(2, "hair_idle1", true);
+        spine.state.setAnimation(1, "hair_idle", true);
         setInterval(function(){ //TODO:
             const allowWink = Math.random() >= 0.5;
-            allowWink && spine.state.setAnimation(3, 'wink1', false); 
-        }, 1000);
+            allowWink && spine.state.setAnimation(2, 'wink1', false); 
+        }, 1200);
         spine.skeleton.setSlotsToSetupPose();
 
     const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
         spineBg_n.width = spine.width, spineBg_n.height = spine.height;
         spineBg_n.anchor.set(0.5,1);
     
-    this.scale.set(0.5,0.5);
+    this.scale.set(0.45,0.45);
     this.position.set(945,610);
 
     spine.parentGroup = PIXI.lights.diffuseGroup;
-    spineBg_n.parentGroup = PIXI.lights.normalGroup;
+    spine.convertToNormal();
+    
+    //spineBg_n.parentGroup = PIXI.lights.normalGroup;
+    
     this.parentGroup = $displayGroup.group[1];
     this.zIndex = this.position._y;
-    this.addChild(spine,spineBg_n);
+    this.addChild(spine);
     // player 2 TODO:
     
    

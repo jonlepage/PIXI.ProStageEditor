@@ -48,7 +48,7 @@ Scene_MapID1.prototype.isReady = function() {
    return !this.waitReady;
 };
 
-// start Loader
+// start after PIXI Loader
 Scene_MapID1.prototype.start = function() {
    
 };

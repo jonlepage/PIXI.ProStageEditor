@@ -856,11 +856,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             
             data.blendMode = {  // sub
                 d:{def:0, value:OBJ.Sprites.d.blendMode}, 
-                n:{def:0, value:OBJ.Sprites.n.blendMode}
+                n:{def:0, value:OBJ.Sprites.n?OBJ.Sprites.n.blendMode:0}
             };
             data.tint = {  // sub
                 d:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.d.tint).replace("#","0x")}, 
-                n:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x")}
+                n:{def:"0xffffff", value:OBJ.Sprites.n?PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x"):"0xffffff"}
             };
 
             data.autoGroups = {def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]};

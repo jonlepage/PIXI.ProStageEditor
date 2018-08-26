@@ -6943,7 +6943,20 @@ var pixi_spine;
                 }
             }
         };
-        ;
+        // temp solution for asign normal by slots
+        Spine.prototype.convertToNormal = function (normalSuffix) {
+            normalSuffix = normalSuffix || "_n";
+            let list = [];
+            for (let i = 0, len = this.skeleton.slots.length; i < len; i++) {
+                const slot = this.skeleton.slots[i];
+                if(slot.currentSpriteName && slot.currentSpriteName.contains(normalSuffix)){
+                    slot.currentSprite.parentGroup = PIXI.lights.normalGroup;
+                    list.push(slot.currentSprite);
+                };
+            };
+            return list;
+        };
+
         Spine.prototype.setSpriteRegion = function (attachment, sprite, region) {
             sprite.region = region;
             sprite.texture = region.texture;
