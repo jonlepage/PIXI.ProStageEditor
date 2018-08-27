@@ -157,6 +157,7 @@ Scene_Base.prototype.initialize = function(loaderSet) {
         this.createBackground(this.loaderSet._SCENE.Background || false);
         this.create_ObjFromJson();
     };
+    $camera.initialise(this.CAGE_MAP);
 };
 
 Scene_Base.prototype.asignDisplayGroup = function() {

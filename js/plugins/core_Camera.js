@@ -51,7 +51,7 @@ _camera.prototype.initialise = function(map,target) {
         x:1, y:1,
         ease:Power4.easeOut,
     });
-    this.setTarget(target);
+    target && this.setTarget(target);
     $camera.debug()
 };
 

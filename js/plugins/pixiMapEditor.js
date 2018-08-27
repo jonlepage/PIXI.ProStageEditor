@@ -1334,7 +1334,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
 
     function setup_Propretys(fromCage){
-        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
+        if(this.Type === "tileSheet" || this.Type === "animationSheet" || this.Type === "spineSheet"){
             this.Data_Values = getDataJson(fromCage);
             this.Data_CheckBox = getDataCheckBoxWith(fromCage, this.Data_Values);
             setObjWithData.call(this, this.Data_Values, this.Data_CheckBox);
@@ -1342,18 +1342,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             fromCage.Sprites.d? this.Sprites.d.rotation = fromCage.Sprites.d.rotation : void 0;
             fromCage.Sprites.n? this.Sprites.n.rotation = fromCage.Sprites.n.rotation : void 0;
 
-            if(fromCage.buttonType==="tileLibs" || fromCage.buttonType==="tileMouse"){ // if it from libs, ajust anchor because it compute by another ways
-                let anX = (fromCage.Debug.an.position.x/fromCage.Debug.bg.width) || fromCage.Sprites.d.anchor.x; // value pos/w
-                let anY = (fromCage.Debug.an.position.y/fromCage.Debug.bg.height) || fromCage.Sprites.d.anchor.y; // value pos/h
+            if(fromCage.buttonType==="tileLibs" && this.Type !== "spineSheet"){ // if it from libs, ajust anchor because it compute by another ways
+                let anX = fromCage.Debug.an.position.x/fromCage.Debug.bg.width;
+                let anY = fromCage.Debug.an.position.y/fromCage.Debug.bg.height;
                 this.Sprites.d.anchor.set(anX, anY);
-                this.Sprites.n.anchor.set(anX, anY);
+                this.Sprites.n && this.Sprites.n.anchor.set(anX, anY);
                 this.Debug.bg.anchor.set(anX, anY);
+            };
+            if(fromCage.buttonType==="tileMouse"){
                 // update debug skew
                 this.Debug.piv.scale.x = fromCage.Debug.piv.scale.x;
                 this.Debug.piv.pivLine.skew.y = fromCage.Debug.piv.pivLine.skew.y;
                 this.Debug.piv.scale.y = fromCage.Debug.piv.scale.y;
                 this.Debug.piv.pivLine.skew.x = fromCage.Debug.piv.pivLine.skew.x;
-            };
+            }
         };
     };
 
@@ -1513,14 +1515,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
         if(this.Type === "spineSheet"){
             const spine = new PIXI.spine.Spine(this.Data.spineData);
-            spine.skeleton.setSkinByName(this.TexName)//();
+            const spine_n = spine.convertToNormal();
+            spine.skeleton.setSkinByName(this.TexName);
             spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
             spine.skeleton.setSlotsToSetupPose();
-            /*const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
-            spineBg_n.width = spine.width, spineBg_n.height = spine.height;
-            spineBg_n.anchor.set(0.5,1);*/
+
             this.Sprites.d = spine;
-            this.Sprites.n = spine.convertToNormal();//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
+            this.Sprites.n = spine_n;//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
     };
 
