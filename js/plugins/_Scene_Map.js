@@ -39,6 +39,8 @@ Scene_MapID1.prototype.initialize = function() {
 // create element for scene and setup.
 Scene_MapID1.prototype.create = function() {
     this.CAGE_MAP.addChild($player); //TODO:
+    this.CAGE_MAP.addChild($player2); //TODO:
+     
 };
 
 Scene_MapID1.prototype.isReady = function() {
@@ -50,7 +52,18 @@ Scene_MapID1.prototype.isReady = function() {
 
 // start after PIXI Loader
 Scene_MapID1.prototype.start = function() {
-   
+       // TODO: DELETEME  and find where add player 2 mosue following
+       const p2Mouseticks = new PIXI.ticker.Ticker().add((delta) => {
+        const difX = $mouse.x-$player2.x;
+        const difY = $mouse.y-$player2.y;
+
+        $player2.position.x+=difX/100;
+        $player2.position.y+=difY/100;
+        $player2.zIndex = $player2.y;
+      
+    });
+    //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
+    p2Mouseticks.start();
 };
 
 Scene_MapID1.prototype.update = function() {

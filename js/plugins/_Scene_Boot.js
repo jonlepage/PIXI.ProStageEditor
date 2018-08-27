@@ -23,6 +23,7 @@ Scene_Boot.prototype.initialize = function() {
     this._startDate = Date.now();
     $mouse.initialize(); // initialise mouse core
     $player.initialize();
+    $player2.initialize();
     //$gui.initialize(); 
     //$avatar.initialize();
     //$monster.initialize();

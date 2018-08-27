@@ -86,3 +86,39 @@ _player.prototype.transferMap = function(mapID) {
     }
     
 };
+
+// ┌------------------------------------------------------------------------------┐
+// GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
+//└------------------------------------------------------------------------------┘
+class _player2 extends PIXI.Container {
+    constructor() {
+        super();
+        this.Sprites = {d:null, n:null};
+    };
+  
+};
+
+$player2 = new _player2(); // create game player
+console.log1('$player2.', $player2);
+
+// $player2.initialize(); // setupNewGame
+_player2.prototype.initialize = function() {
+    const spine = new PIXI.spine.Spine($Loader.Data2.heroe2.spineData);
+        //spine.skeleton.setSkinByName()//
+        spine.stateData.defaultMix = 0.1;
+        spine.state.setAnimation(0, "idle", true);
+        spine.skeleton.setSlotsToSetupPose();
+    
+    this.scale.set(0.45,0.45);
+    this.position.set(890,610);
+
+    spine.parentGroup = PIXI.lights.diffuseGroup;
+    spine.convertToNormal();
+
+    this.parentGroup = $displayGroup.group[1];
+    this.zIndex = this.position._y;
+    this.addChild(spine);
+
+
+   
+};

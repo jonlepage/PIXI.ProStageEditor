@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "af2JDKth/G7lVzVkTIHkqXEsPtM", "spine": "3.7.24-beta", "width": 1950.39, "height": 1079 },
+"skeleton": { "hash": "TkFGXwNls/DFvtOZnT9gNeX0uSU", "spine": "3.7.25-beta", "width": 1950.39, "height": 1079 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Rectangle 1 copie", "parent": "root", "length": 150.7, "x": 272.96, "y": -1073.32 },
@@ -8,7 +8,7 @@
 	{ "name": "bar_G", "parent": "root", "length": 93.13, "rotation": -89.54, "x": 96.1, "y": -32.65 },
 	{ "name": "tileSheetsBox", "parent": "root", "length": 115.91, "rotation": 179.57, "x": 2076.39, "y": -603.03 },
 	{ "name": "bottomTilesheet", "parent": "tileSheetsBox", "length": 30.22, "rotation": -89.57, "x": 475.09, "y": 338.33 },
-	{ "name": "filterBG", "parent": "root", "length": 45.35, "rotation": -0.53, "x": 50.74, "y": -997.08 },
+	{ "name": "filterBG", "parent": "root", "length": 45.35, "rotation": 0.13, "x": 50.74, "y": -997.08 },
 	{ "name": "pixidsplayLogo", "parent": "root", "length": 51.52, "rotation": -90, "x": 1183.03, "y": -2.65 },
 	{ "name": "icon_GB", "parent": "pixidsplayLogo", "length": 48.73, "rotation": 90.52, "x": 16.73, "y": -272.38 },
 	{ "name": "icon_darkMode", "parent": "Rectangle 1 copie", "length": 25.46, "rotation": -3.37, "x": 1617.9, "y": 76.39 },
@@ -97,7 +97,7 @@
 			"displayRectangleGroup": { "x": 15.35, "y": -223.53, "rotation": 90, "width": 409, "height": 34 }
 		},
 		"filterBG": {
-			"filterBG": { "x": 581.8, "y": -1.59, "rotation": 0.53, "width": 1267, "height": 122 }
+			"filterBG": { "x": 581.74, "y": -8.24, "rotation": -0.13, "width": 1267, "height": 122 }
 		},
 		"filter_animation": {
 			"filter_animation": { "x": 15.34, "y": 33.71, "rotation": 90, "width": 26, "height": 27 }
@@ -220,6 +220,117 @@
 	"blop": { "audio": "blop.mp3" }
 },
 "animations": {
+	"colapseThumbLibs": {
+		"bones": {
+			"filterBG": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 304.2,
+						"curve": [ 0, 0.62, 0.75, 1 ]
+					},
+					{ "time": 0.2333, "x": 0, "y": 0 }
+				],
+				"scale": [
+					{
+						"time": 0,
+						"x": 1.52,
+						"y": 6.668,
+						"curve": [ 0.116, 0.59, 0.156, 1 ]
+					},
+					{ "time": 0.2333, "x": 1.52, "y": 1 }
+				]
+			},
+			"icon_set_option": {
+				"rotate": [
+					{
+						"time": 0,
+						"angle": 0,
+						"curve": [ 0, 0.44, 0.462, 0.77 ]
+					},
+					{
+						"time": 0.1667,
+						"angle": -84.48,
+						"curve": [ 0.368, 0.66, 0.789, 1 ]
+					},
+					{ "time": 0.3333, "angle": 167.29 }
+				],
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				],
+				"scale": [
+					{
+						"time": 0,
+						"x": 1.418,
+						"y": 1.418,
+						"curve": [ 0, 0.67, 0.75, 1 ]
+					},
+					{
+						"time": 0.1667,
+						"x": 1.652,
+						"y": 1.652,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{ "time": 0.3333, "x": 1, "y": 1 }
+				]
+			}
+		}
+	},
+	"expendThumbsLibs": {
+		"bones": {
+			"filterBG": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0, 0.52, 0.75, 1 ]
+					},
+					{ "time": 0.1667, "x": 0, "y": 304.2 }
+				],
+				"scale": [
+					{ "time": 0, "x": 1.52, "y": 1, "curve": "stepped" },
+					{
+						"time": 0.1333,
+						"x": 1.52,
+						"y": 1,
+						"curve": [ 0.936, 0, 0.939, 0.73 ]
+					},
+					{ "time": 0.3, "x": 1.52, "y": 5.859 },
+					{ "time": 0.5, "x": 1.52, "y": 6.668 }
+				]
+			},
+			"icon_set_option": {
+				"rotate": [
+					{
+						"time": 0,
+						"angle": 0,
+						"curve": [ 0, 0.65, 0.75, 1 ]
+					},
+					{
+						"time": 0.2333,
+						"angle": 90.72,
+						"curve": [ 0, 0.64, 0.75, 1 ]
+					},
+					{ "time": 0.5, "angle": -0.71 }
+				],
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				],
+				"scale": [
+					{ "time": 0, "x": 1, "y": 1 },
+					{
+						"time": 0.1667,
+						"x": 1.652,
+						"y": 1.652,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{ "time": 0.3667, "x": 1.418, "y": 1.418 }
+				]
+			}
+		}
+	},
 	"fullLibsView": {
 		"bones": {
 			"Rectangle 1 copie": {
@@ -439,95 +550,6 @@
 			}
 		}
 	},
-	"showOption": {
-		"bones": {
-			"pixidsplayLogo": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"icon_set_option": {
-				"rotate": [
-					{
-						"time": 0,
-						"angle": 0,
-						"curve": [ 0, 0.69, 0.75, 1 ]
-					},
-					{
-						"time": 0.2667,
-						"angle": 180,
-						"curve": [ 0.759, 0.01, 0.75, 1 ]
-					},
-					{ "time": 0.5, "angle": 0 }
-				],
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				],
-				"scale": [
-					{
-						"time": 0,
-						"x": 1,
-						"y": 1,
-						"curve": [ 0, 0.86, 0.75, 1 ]
-					},
-					{ "time": 0.5, "x": 1.662, "y": 1.662 }
-				]
-			},
-			"icon_set_G": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"bar_G": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"TileBarLeft copie 3": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"tileSheetsBox": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"bar_Filters": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"Rectangle 1 copie": {
-				"translate": [
-					{ "time": 0, "x": 0, "y": 0 }
-				]
-			},
-			"filterBG": {
-				"translate": [
-					{ "time": 0, "x": -47.56, "y": 0, "curve": "stepped" },
-					{
-						"time": 0.3333,
-						"x": -47.56,
-						"y": 0,
-						"curve": [ 0, 0.53, 0.75, 1 ]
-					},
-					{ "time": 0.6667, "x": 0, "y": 142.15 }
-				],
-				"scale": [
-					{
-						"time": 0,
-						"x": 0.058,
-						"y": 0.664,
-						"curve": [ 0, 0.88, 0.75, 1 ]
-					},
-					{ "time": 0.3, "x": 0.63, "y": 0.664, "curve": "stepped" },
-					{ "time": 0.3333, "x": 0.63, "y": 0.664 },
-					{ "time": 0.5, "x": 1, "y": 4.286 }
-				]
-			}
-		}
-	},
 	"showTileSheets": {
 		"bones": {
 			"tileSheetsBox": {
@@ -658,12 +680,12 @@
 						"curve": [ 0.25, 0, 0.574, 0.99 ]
 					},
 					{
-						"time": 0.4333,
+						"time": 0.5,
 						"x": 0.058,
 						"y": 0.664,
-						"curve": [ 0.844, -0.07, 0.47, 1 ]
+						"curve": [ 0.256, 0.33, 0.032, 1.1 ]
 					},
-					{ "time": 0.6667, "x": 1, "y": 1 }
+					{ "time": 0.6667, "x": 1.52, "y": 1 }
 				]
 			},
 			"icon_set_G": {

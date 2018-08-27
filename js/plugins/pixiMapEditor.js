@@ -405,8 +405,8 @@ _PME.prototype.startEditor = function() {
     const FILTERS = { // buffer filter
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
-        OutlineFilterx6White: new PIXI.filters.OutlineFilter (6, 0xffffff, 1),
-        OutlineFilterx8Green: new PIXI.filters.OutlineFilter (8, 0x16b50e, 1),
+        OutlineFilterx6White: new PIXI.filters.OutlineFilter (4, 0xffffff, 1),
+        OutlineFilterx8Green: new PIXI.filters.OutlineFilter (4, 0x16b50e, 1),
         OutlineFilterx8Green_n: new PIXI.filters.OutlineFilter (8, 0x16b50e, 1), // need x2 because use x2 blendMode for diffuse,normal
         OutlineFilterx8Red: new PIXI.filters.OutlineFilter (8, 0xdb120f, 1),
         ColorMatrixFilter: new PIXI.filters.ColorMatrixFilter(),
@@ -470,10 +470,14 @@ const CAGE_LIBRARY = new PIXI.Container(); // Store all avaibles libary
     // setup && hack
     CAGE_LIBRARY.position.set(115,950);
     CAGE_LIBRARY.mask.position.set(-8,-8); // marge outline filters
-    CAGE_LIBRARY.mask.width = 1740, CAGE_LIBRARY.mask.height = 220;
+    CAGE_LIBRARY.mask.width = 1740, CAGE_LIBRARY.mask.height = 105;
     CAGE_LIBRARY.mask.getBounds();
     // reference
     CAGE_LIBRARY.name = "library";
+    CAGE_LIBRARY.interactive = true;
+    CAGE_LIBRARY.hitArea = new PIXI.Rectangle(0,0,1740,220);
+    CAGE_LIBRARY.buttonType = "CAGE_LIBRARY";
+    CAGE_LIBRARY.on('pointerdown', pointer_DW);
     STAGE.CAGE_EDITOR.addChild(CAGE_LIBRARY);
 // CAGE_TILESHEETS ________________
 const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
@@ -700,7 +704,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function hideShowDebugElements(){
         const list = $Objs.list_master;
-        console.log('list: ', list);
         list.forEach(element => {
             element.Debug.hitZone.renderable = false;
             element.Debug.bg.renderable = false;
@@ -720,7 +723,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function refreshLibs(){
         // refresh libs bound , positions and filters
         CAGE_LIBRARY.list.forEach(cage => {
-                CAGE_LIBRARY.removeChild(cage);
+                CAGE_LIBRARY.removeChild(cage); // clear all child but keep the child mask
         });
         // filters TODO:
         // sorts TODO:
@@ -729,7 +732,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         for (let i=x=y=line= 0, disX = 25, l = CAGE_LIBRARY.list.length; i < l; i++) {
             const cage = CAGE_LIBRARY.list[i];
             if(cage.renderable){
-                if(cage.x+cage.width>maxX){ x=0, y+=maskH};
+                if(cage.x+cage.width+x>maxX){ x=0, y+=maskH+8};
+                
                 cage.x = +x;
                 cage.y = +y;
                 x+=cage.width+disX;
@@ -828,7 +832,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function getDataJson(OBJ){
-        console.log('getDataJsonOBJ: ', OBJ);
         // data for the scene setup
         let data = {};
         if(OBJ.Type === "AmbientLight"){
@@ -1174,7 +1177,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 break;
                 case "tint":case "blendMode":
                     this.Sprites.d[key] = +value[0];
-                    this.Sprites.n[key] = +value[1];
+                    this.Sprites.n?this.Sprites.n[key] = +value[1] : void 0;
                 break;
                 case "setDark":case "setLight":
                     // get heaven value d,n
@@ -1315,7 +1318,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
 
     function setup_Propretys(fromCage){
-        console.log('fromCage: ', fromCage);
         if(this.Type === "tileSheet" || this.Type === "animationSheet"){
             this.Data_Values = getDataJson(fromCage);
             this.Data_CheckBox = getDataCheckBoxWith(fromCage, this.Data_Values);
@@ -1401,9 +1403,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             // BG
             bg.width = w, bg.height = h;
             bg.tint = 0xffffff;
-            console.log('this.Sprites.d: ', this.Sprites.d);
             bg.anchor.copy(this.Sprites.d.anchor|| new PIXI.Point(0.5,1));
-            
 
             //anchor point
             var txt = new PIXI.Text("A",{fontSize:12,fill:0xffffff});
@@ -1650,16 +1650,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function setStatusInteractiveObj(status){
+    function setStatusInteractiveObj(status, protect){
         for (let i=0, l= $Objs.list_master.length; i<l; i++) {
             const _cage =  $Objs.list_master[i];
+            if(_cage===protect){continue};
             _cage.interactive = status;
         };
     };
 
     function add_toMouse(InTiles) {
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-        cage.position.set(mX,mY);
+        cage.position.set( mMX, mMY);
         CAGE_MAP.addChild(cage);
         CAGE_MOUSE.list = cage;
         cage.interactive = true;
@@ -1714,8 +1715,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function execute_buttons(buttonSprite) {
-        console.log('buttonSprite: ', buttonSprite);
-        console.log('InButtons: ', InButtons);
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
             open_sceneSetup(); // edit ligth brigth , and custom BG            
@@ -1830,10 +1829,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // active filter1, for thumbs
     function activeFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask et alpha, mettre dans un buffer []
-        cage._filters = [ FILTERS.OutlineFilterx8Green ];
-        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ];
+        cage._filters = [ FILTERS.OutlineFilterx8Green];
+        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ,FILTERS.OutlineFilterx6White];
         //cage.Sprites.d._filters[0].blendMode = cage.Sprites.d.blendMode || 0;
-        if(checkHit){
+        /*if(checkHit){
             cage.Debug.bg.renderable = true;
             cage.checkHit = true;
             for (let i=0, l= $Objs.list_master.length; i<l; i++) {
@@ -1847,21 +1846,24 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     _cage.Sprites.n? _cage.Sprites.n.renderable =  hit ? false:true : void 0;
                 };
             };
-        };
+        };*/
     };
 
-    function clearFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask alpha, mettre dans un buffer []
+    function clearFiltersFX3(cage,hideInteractive){ //TODO: ALT fpour permuter entre les mask alpha, mettre dans un buffer []
         cage._filters = null;
         cage.Sprites.d._filters = null; // thickness, color, quality ,
+        cage.Sprites.n._filters = null; // thickness, color, quality ,
         cage.Debug.bg.renderable = false;
-        if(cage.checkHit){
-            cage.checkHit = false;
-            for (let i=0, l= $Objs.list_master.length; i<l; i++) {
-                const _cage =  $Objs.list_master[i];
-                _cage.Sprites.d._filters = null;
-                Number.isFinite(_cage.Sprites.d.alphaHit)?  _cage.Sprites.d.alpha = +_cage.Sprites.d.alphaHit : void 0;
-                _cage.Sprites.n? _cage.Sprites.n.renderable = true : void 0;
-            };
+        cage.Debug.hitZone.alpha = 1;
+        cage.Debug.piv.alpha = 1;
+        cage.interactive = true;
+        if(hideInteractive){
+            cage.interactive = false;
+            cage.Debug.hitZone.alpha = 0.3;
+            cage.Debug.piv.alpha = 0.5;
+            cage.Sprites.d._filters = [new PIXI.filters.AlphaFilter (0.2)];
+            cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter (0.2)];
+            InMapObj = null;
         };
     };
 
@@ -1908,6 +1910,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function startMouseHold(activeTarget){
+        console.log0('activeTarget: ', activeTarget);
         clearTimeout(MouseTimeOut);
         MouseHold? disableFastModes(MouseHold) : void 0;
         MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
@@ -1915,10 +1918,27 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(activeTarget){ // active mouse MouseHold after 160 ms
             MouseTimeOut = setTimeout(() => {
                 HoldX = +mX, HoldY = +mY;
-                MouseHold=activeTarget;
+                MouseHold = activeTarget;
                 activeFastModes(MouseHold);
+                setStatusInteractiveObj(false, MouseHold);
             }, 160);
-        };
+        }else{ // disabling mousehold and affected feature
+            // collapse the CAGE_LIBRARY mask
+            if(EDITOR.expendLibsMode){
+                EDITOR.state.setAnimation(3, 'colapseThumbLibs', false);
+                EDITOR.expendLibsMode = false;
+                CAGE_LIBRARY.mask.position.y = -8;
+                CAGE_LIBRARY.mask.height = 105;
+                CAGE_LIBRARY.hitArea = new PIXI.Rectangle(0,0,1740,220);
+                // hide tilesheet
+                if(CAGE_TILESHEETS.opened){
+                    CAGE_TILESHEETS.renderable = true;
+                    CAGE_TILESHEETS.visible = true; // event manager
+                    EDITOR.state.setAnimation(2, 'showTileSheets', false);
+                };
+
+            };
+        }
     };
     
 //#endregion
@@ -1945,8 +1965,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
             case "w": // skew mode
-                var skewX = Math.sin(event.movementX/100); // smoot mouse
-                var skewY = Math.sin(event.movementY/100); // smoot mouse
+                var skewX = Math.sin(event.movementX/1000)*-1; // smoot mouse
+                var skewY = Math.sin(event.movementY/1000); // smoot mouse
                 Obj.skew.y = Math.min(1, Math.max(Obj.skew.y+skewY, -1));
                 Obj.skew.x = Math.min(0.5, Math.max(Obj.skew.x+skewX, -0.5));
                 // update debug
@@ -1987,6 +2007,27 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     cage.getBounds();
                 });
             };
+            if( MouseHold.buttonType === "CAGE_LIBRARY" ){
+                // enlarge the CAGE_LIBRARY mask
+                if(!EDITOR.expendLibsMode){
+                    EDITOR.state.setAnimation(3, 'expendThumbsLibs', false);
+                    EDITOR.expendLibsMode = true;
+                    CAGE_LIBRARY.mask.position.y = -8-600;
+                    CAGE_LIBRARY.mask.height = 105+600;
+                    CAGE_LIBRARY.hitArea = new PIXI.Rectangle(0,0-600,1740,220+600);
+                    // hide tilesheet
+                    if(CAGE_TILESHEETS.opened){ // was opened
+                        CAGE_TILESHEETS.renderable = false;
+                        CAGE_TILESHEETS.visible = false; // event manager
+                        EDITOR.state.setAnimation(2, 'hideTileSheets', false);
+                    };
+                };
+                CAGE_LIBRARY.list.forEach(cage => {
+                    cage.y+= event.data.originalEvent.movementX*0.7;
+                    cage.getBounds();
+                });
+            };
+            
             if( MouseHold.buttonType === "tileMap" || MouseHold.buttonType === "tileMouse" ){
                 // compute fast mode
                 FastModesObj && computeFastModes(FastModesObj, event.data.originalEvent);
@@ -2019,6 +2060,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 activeFiltersFX1(event.currentTarget);
             break;
             case "tileMap":
+                InMapObj = event.currentTarget;
                 activeFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
             break;
         };
@@ -2038,18 +2080,21 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 clearFiltersFX1(event.currentTarget);
             break;
             case "tileMap":
+            
+            if(!MouseHold){
+                InMapObj = null;
                 clearFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
+            }
+
             break;
         };
     };
 
     function pointer_DW(event){
         startMouseHold(event.currentTarget); // timeOut check MouseHold
-      
     };
 
     function pointer_UP(event){
-        console.log('event.currentTarget: ', event.currentTarget);
         if(MouseHold){ return startMouseHold(false) };
         startMouseHold(false);
         const _clickRight = event.data.button === 0;
@@ -2071,10 +2116,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
             if(event.currentTarget.buttonType === "tileLibs"){ 
+                
                 setStatusInteractiveObj(false); // disable interactivity
                 return add_toMouse(event.currentTarget);
             }
             if(event.currentTarget.buttonType === "tileMouse"){
+                // if alrealy instance of map, duplicate new id in mouse
+                console.log('$Objs.list_master.contains(event.currentTarget): ', $Objs.list_master.contains(event.currentTarget));
+                if($Objs.list_master.contains(event.currentTarget)){
+                    event.currentTarget.buttonType = "tileMap";
+                    CAGE_MOUSE.list = null;
+                    return add_toMouse(event.currentTarget); 
+                }
                 return add_toScene(event.currentTarget); 
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
@@ -2084,6 +2137,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return add_toMouse(event.currentTarget); 
             }
             if(event.currentTarget.buttonType === "tileMap"){ // in mapObj Clone
+                setStatusInteractiveObj(false, event.currentTarget);
                 close_editor(true);
                 event.currentTarget.buttonType = "tileMouse";
                 CAGE_MOUSE.list = event.currentTarget;
@@ -2095,10 +2149,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
         }
         if(clickLeft_){// => clickUp
-            if(event.currentTarget.buttonType === "tileMouse"){ 
-                CAGE_MAP.removeChild(CAGE_MOUSE.list);
+            // clear filters on left click
+            $Objs.list_master.forEach(cage => {
+                clearFiltersFX3(cage);
+            });
+            if(event.currentTarget.buttonType === "tileMouse"){
+                // come back to data befor click
+                setObjWithData.call(CAGE_MOUSE.list, CAGE_MOUSE.list.Data_Values, CAGE_MOUSE.list.Data_CheckBox);
                 setStatusInteractiveObj(true);
                 open_editor(true);
+                event.currentTarget.buttonType = "tileMap";
+                // if is obj create from libs, dont goback data, but delete.
+                !$Objs.list_master.contains(event.currentTarget) && CAGE_MAP.removeChild(CAGE_MOUSE.list);
                 return CAGE_MOUSE.list = null;
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
@@ -2187,6 +2249,28 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return pasteCopyDataIn(found);
             };
         };
+        // if in a obj map and click 'H', disable the interactivity for get obj zIndex bewllow
+        if (!CAGE_MOUSE.list && (event.key === "h" || event.key === "H") && InMapObj) {
+            clearFiltersFX3(InMapObj,true); // hideInteractive:true
+        };
+        // if in a obj map and click 'F', hide elements hitted the InMapObj to focus on im
+        if (!CAGE_MOUSE.list && (event.key === "f" || event.key === "F") && InMapObj) {
+            setStatusInteractiveObj(false, InMapObj); // protect InMapObj
+            $Objs.list_master.forEach(cage => {
+                if(cage===InMapObj){//focus 
+                    InMapObj.Debug.bg.renderable = true;
+                }else{ // unFocus
+                    const hit = hitCheck(cage,InMapObj);
+                    if(hit && cage.zIndex>InMapObj.zIndex){
+                        cage.Sprites.d._filters = [new PIXI.filters.AlphaFilter(0.3),FILTERS.OutlineFilterx8Red];
+                        cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter(0.1)];
+                    };
+                }
+            });
+            
+        };
+
+        
         
     };
 
@@ -2194,8 +2278,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
     document.addEventListener('mouseup',function(event){
+        startMouseHold(false);
+        setStatusInteractiveObj(true);
 
-        startMouseHold(false); 
     }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);
     document.addEventListener('keydown', keydown_Editor); // change layers
