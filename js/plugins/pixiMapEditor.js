@@ -711,14 +711,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function hideShowDebugElements(){
-        const list = $Objs.list_master;
-        list.forEach(element => {
-            element.Debug.hitZone.renderable = false;
-            element.Debug.bg.renderable = false;
-            element.Debug.an.renderable = false;
-            element.Debug.piv.renderable = false;
-        });
-
+        if($Objs.list_master.length){
+            const showed = $Objs.list_master[0].Debug.bg.renderable; // check if we have a element debuged ? 
+            const list = $Objs.list_master;
+            list.forEach(element => {
+                element.Debug.hitZone.renderable = !showed;
+                element.Debug.bg.renderable = !showed;
+                element.Debug.an.renderable = !showed;
+                element.Debug.piv.renderable = !showed;
+            });
+        }
     };
 
     //#endregion
@@ -854,6 +856,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Background:{def:false, value:OBJ.Background ? OBJ.Background.name:false, hideHtml:true},
             };
         };
+        // TODO: Spine have normal with array slots, find a way for computes all slots, : maybe add new Array with getter and setter for transform
         if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
             data.groupID = {def:"default", value:OBJ.groupID || "default" };
             data.position = {def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]};
@@ -867,11 +870,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             
             data.blendMode = {  // sub
                 d:{def:0, value:OBJ.Sprites.d.blendMode}, 
-                n:{def:0, value:OBJ.Sprites.n?OBJ.Sprites.n.blendMode:0}
+                n:{def:0, value:(OBJ.Sprites.n && !Array.isArray(OBJ.Sprites.n))?OBJ.Sprites.n.blendMode:0}
             };
             data.tint = {  // sub
                 d:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.d.tint).replace("#","0x")}, 
-                n:{def:"0xffffff", value:OBJ.Sprites.n?PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x"):"0xffffff"}
+                n:{def:"0xffffff", value:(OBJ.Sprites.n && !Array.isArray(OBJ.Sprites.n))?PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x"):"0xffffff"}
             };
 
             data.autoGroups = {def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]};
@@ -1170,6 +1173,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 value = vDN ? [Data_Values[key].d.def, Data_Values[key].n.def] : Data_Values[key].def 
             };
             switch (key) {
+                
                 //case "Background":break; TODO:
                 case "Background":
                     STAGE.createBackground(value?DATA[value]:false);
@@ -1195,6 +1199,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                         const hv_n = (Data_CheckBox.heaven_n&&check_haven)? Data_Values[key].n.value : Data_Values[key].n.def;
                         this.Sprites.d.color[key](...hv_d), this.Sprites.n.color[key](...hv_n);
                     };
+                break;
+                case "groupID":
+                    this.groupID = value;
+                    this.Debug.piv.txtGroupeID.text = `↓■↓-${value}-↑□↑`
                 break;
                 default:
                     this[key] = value;
@@ -1425,6 +1433,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             pivLine.anchor.set(0.5,0.5);
             piv.position.copy(this.pivot);
             piv.pivLine = pivLine;
+            piv.txtGroupeID = txt;
             piv.addChild(pivLine);
             pivLine.addChild(txt);
 
@@ -1511,7 +1520,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             spineBg_n.width = spine.width, spineBg_n.height = spine.height;
             spineBg_n.anchor.set(0.5,1);*/
             this.Sprites.d = spine;
-            this.Sprites.n = null;//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
+            this.Sprites.n = spine.convertToNormal();//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
         };
     };
 
@@ -1845,28 +1854,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function activeFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask et alpha, mettre dans un buffer []
         cage._filters = [ FILTERS.OutlineFilterx8Green];
         cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ,FILTERS.OutlineFilterx6White];
-        //cage.Sprites.d._filters[0].blendMode = cage.Sprites.d.blendMode || 0;
-        /*if(checkHit){
-            cage.Debug.bg.renderable = true;
-            cage.checkHit = true;
-            for (let i=0, l= $Objs.list_master.length; i<l; i++) {
-                const _cage =  $Objs.list_master[i];
-                if(cage===_cage){continue};
-                if(_cage.zIndex>cage.zIndex){
-                    const hit = hitCheck(cage,_cage);
-                    _cage.Sprites.d._filters = hit ? [FILTERS.OutlineFilterx8Red ]: null;
-                    _cage.Sprites.d.alphaHit = +_cage.Sprites.d.alpha;
-                    _cage.Sprites.d.alpha = 0.3;
-                    _cage.Sprites.n? _cage.Sprites.n.renderable =  hit ? false:true : void 0;
-                };
-            };
-        };*/
     };
 
     function clearFiltersFX3(cage,hideInteractive){ //TODO: ALT fpour permuter entre les mask alpha, mettre dans un buffer []
         cage._filters = null;
         cage.Sprites.d._filters = null; // thickness, color, quality ,
-        cage.Sprites.n._filters = null; // thickness, color, quality ,
+        cage.Sprites.n? cage.Sprites.n._filters = null : void 0; // thickness, color, quality ,
         cage.Debug.bg.renderable = false;
         cage.Debug.hitZone.alpha = 1;
         cage.Debug.piv.alpha = 1;
@@ -1876,7 +1869,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.Debug.hitZone.alpha = 0.3;
             cage.Debug.piv.alpha = 0.5;
             cage.Sprites.d._filters = [new PIXI.filters.AlphaFilter (0.2)];
-            cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter (0.2)];
+            cage.Sprites.n? cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter (0.2)] : void 0;
             InMapObj = null;
         };
     };
@@ -1999,7 +1992,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             break;
             case "u": // Rotation textures
                 Obj.Sprites.d.rotation+=event.movementX/100;
-                Obj.Sprites.n.rotation = Obj.Sprites.d.rotation;
+                Obj.Sprites.n? Obj.Sprites.n.rotation = Obj.Sprites.d.rotation : void 0; //FIXME: SPINE normal are slots and not container
             break;
         }
         Obj.zIndex = Obj.y;
@@ -2016,8 +2009,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(MouseHold){
             if( MouseHold.buttonType === "CAGE_TILESHEETS" ){
                 CAGE_TILESHEETS.list.forEach(cage => {
-                    cage.x+= event.data.originalEvent.movementX*0.7;//performe scroll libs mouse
-                    cage.y+= event.data.originalEvent.movementY*0.6;//performe scroll libs mouse
+                    cage.x+= event.data.originalEvent.movementX*0.8;//performe scroll libs mouse
+                    cage.y+= event.data.originalEvent.movementY*0.8;//performe scroll libs mouse
                     cage.getBounds();
                 });
             };
@@ -2037,7 +2030,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     };
                 };
                 CAGE_LIBRARY.list.forEach(cage => {
-                    cage.y+= event.data.originalEvent.movementX*0.7;
+                    cage.y-= event.data.originalEvent.movementX*0.7;
                     cage.getBounds();
                 });
             };
@@ -2255,9 +2248,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     if(cage.Sprites.n && cage.Sprites.d){
                         cage.Sprites.n.renderable = !cage.Sprites.n.renderable;
                         cage.Sprites.d.renderable = !cage.Sprites.d.renderable;
-                    }
+                    };
                 });
-            }
+            };
         };
         if(event.ctrlKey && (event.key === "v" || event.key === "V")){ // if in Obj, make other transparent
             const mousePosition = new PIXI.Point(mX,mY);
