@@ -1657,15 +1657,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }
     };
 
-    function close_editor(cachedLibs) {
+    function close_editor(closeTileSheet) {
         EDITOR.state.setAnimation(1, 'hideFullEditor', false);
         CAGE_LIBRARY.renderable = false;
         CAGE_LIBRARY.visible = false; // event manage
-        if(cachedLibs && CAGE_TILESHEETS.list.length){
-            CAGE_TILESHEETS.visible = false
-            CAGE_TILESHEETS.renderable = false
-            EDITOR.state.setAnimation(2, 'hideTileSheets', false);
-        };
+        closeTileSheet && close_tileSheet();
     };
 
     function setStatusInteractiveObj(status, protect){
@@ -1686,7 +1682,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerdown', pointer_DW);
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
-        close_editor(true);
+        
 
         cage.Debug.hitZone.clear();
         const LB = cage.getLocalBounds();
@@ -2134,23 +2130,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 return show_tileSheet(event.currentTarget) // || hide_tileSheet();
             }
             if(event.currentTarget.buttonType === "tileLibs"){ 
-                
                 setStatusInteractiveObj(false); // disable interactivity
+                close_editor(true);
                 return add_toMouse(event.currentTarget);
             }
             if(event.currentTarget.buttonType === "tileMouse"){
                 // if alrealy instance of map, duplicate new id in mouse
-              
                 if($Objs.list_master.contains(event.currentTarget)){
                     event.currentTarget.buttonType = "tileMap";
+                    event.currentTarget.interactive = false;
+                    event.currentTarget.Data_Values = getDataJson(event.currentTarget);
                     CAGE_MOUSE.list = null;
-                    console.log('add_toMouse: ', add_toMouse);
                     return add_toMouse(event.currentTarget); 
-                    
-                }
-                console.log('add_toScene: ', add_toScene);
+                };
                 return add_toScene(event.currentTarget); 
-                
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
                 return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_tileSetupEditor(event.currentTarget);
@@ -2188,6 +2181,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
                 const index = $Objs.destroy(event.currentTarget);
                 iziToast.info( $PME.removeSprite(event.currentTarget, index) );
+                InMapObj = null;
             };
         }
 
@@ -2237,6 +2231,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function keydown_Editor(event) {
+
         if( isFinite(event.key) ){
             const spriteSlot = EDITOR.skeleton.findSlot("gb"+event.key).currentSprite;
             spriteSlot && execute_buttons(spriteSlot);
@@ -2289,11 +2284,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     };
                 }
             });
-            
         };
-
-        
-        
+        if(event.key === "Delete" && InMapObj){
+            const index = $Objs.destroy(InMapObj);
+            iziToast.info( $PME.removeSprite(InMapObj, index) );
+            InMapObj = null;
+        };
     };
 
 
@@ -2301,7 +2297,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     //document.addEventListener('mousedown', mousedown_Editor);
     document.addEventListener('mouseup',function(event){
         startMouseHold(false);
-        setStatusInteractiveObj(true);
+        //setStatusInteractiveObj(true);
 
     }); // FIXME: bug, car ce desactive seulement lors que un immit est call sur obj
     document.addEventListener('wheel', wheel_Editor);

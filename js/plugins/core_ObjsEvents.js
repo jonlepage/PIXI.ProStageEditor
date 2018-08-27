@@ -175,6 +175,7 @@ _objs.prototype.destroy = function(obj, destroy) { // can be obj or string
             this.list_master.splice(index, 1);
             obj.parent.removeChild(obj);
             destroy ? obj.destroy() : void 0;
+            console.log('obj.destroy: ', obj.destroy);
         }
         return index;
     };
