@@ -490,6 +490,7 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = []; // store list of tile
+    CAGE_TILESHEETS.renderable = false;
     CAGE_TILESHEETS.visible = false; 
     CAGE_TILESHEETS.interactive = true;
     CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
@@ -497,6 +498,7 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.on('pointerdown', pointer_DW);
     CAGE_TILESHEETS.on('pointerup', pointer_UP);
     CAGE_TILESHEETS.on('zoomTileLibs', wheelInLibs);
+    
 
     // reference
     STAGE.CAGE_EDITOR.addChild(CAGE_TILESHEETS);
@@ -570,10 +572,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _slot.currentSprite._slot = _slot;
                 if(slot.name.contains("gb") && slot.name.contains(String(CurrentDisplayGroup))){
                     execute_buttons(_slot.currentSprite);
-                }
-               
+                };
             };
         };
+        // add title text for open cage tileSheets
+        const titleBarTileSheets =  EDITOR.skeleton.findSlot("TileBarLeft");
+        const text = new PIXI.Text('Hello World', {fill: "white"});
+        text.anchor.set(0.6,0.5);
+        titleBarTileSheets.currentSprite.addChild(text);
+        titleBarTileSheets.title = text;
+
     }).bind(this)();
 
     // convert current objs to editor format
@@ -1564,10 +1572,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function show_tileSheet(InLibs) {
         // check if alrealy opened ???  open_tileSheet // return hide
-        if(check_tileSheetStatus(CAGE_TILESHEETS,InLibs)){return};
+        if(check_tileSheetStatus(InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
+        console.log('CAGE_TILESHEETS.name: ', CAGE_TILESHEETS.name);
+        CAGE_TILESHEETS.name = InLibs.name;
         const list = [];
         const elements = InLibs.Data.textures || InLibs.Data.data.skins;
+        EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(elements).length}): ${InLibs.name}.json`; // update title 
         Object.keys(elements).forEach(textureName => {
             const cage = build_tileLibs(InLibs, textureName);
             cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
@@ -1598,35 +1609,42 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function check_tileSheetStatus(CAGE_TILESHEETS,InLibs) {
+    function check_tileSheetStatus(InLibs) {
         // if open, and same name or diff name, hide or clear
-        if(CAGE_TILESHEETS.name === InLibs.name){ return clear_tileSheet(true,CAGE_TILESHEETS) };
-        if(CAGE_TILESHEETS.name !== InLibs.name){ return clear_tileSheet(false,CAGE_TILESHEETS,InLibs) };
+        const sameName = CAGE_TILESHEETS.name === InLibs.name;
+
+        if(CAGE_TILESHEETS.renderable && sameName){ close_tileSheet(); return true; };
+        if(CAGE_TILESHEETS.renderable && !sameName){ clear_tileSheet(); return false; }
+        else{ 
+            open_tileSheet(!sameName);
+            return sameName;}
+        
+        
     };
 
-    function clear_tileSheet(hide,CAGE_TILESHEETS,InLibs) {
+    function open_tileSheet(clear) {
         // remove all, but keep the mask as child[0]
-        if(hide){
-            CAGE_TILESHEETS.renderable = false;
-            CAGE_TILESHEETS.visible = false; // event manager
-            CAGE_TILESHEETS.opened = false;
-            CAGE_TILESHEETS.previouName = CAGE_TILESHEETS.name || null;
-            CAGE_TILESHEETS.name = null;
-            EDITOR.state.setAnimation(2, 'hideTileSheets', false);
-            CAGE_TILESHEETS.list = [];
-        }else{
-            !CAGE_TILESHEETS.opened && EDITOR.state.setAnimation(2, 'showTileSheets', false);
-            CAGE_TILESHEETS.name = InLibs.name;
-            CAGE_TILESHEETS.opened = true;
-            CAGE_TILESHEETS.renderable = true;
-            CAGE_TILESHEETS.visible = true; // event manager
-
-        }
-        // reset clear
-        CAGE_TILESHEETS.removeChildren();
-        PIXI.utils.clearTextureCache();
-        return hide;
+        EDITOR.state.setAnimation(2, 'showTileSheets', false);
+        CAGE_TILESHEETS.renderable = true;
+        CAGE_TILESHEETS.visible = true; // event manager
+        clear && clear_tileSheet();
     };
+
+
+    function close_tileSheet(clear) {
+        // CAGE_TILESHEETS.opened = false;
+        CAGE_TILESHEETS.renderable = false;
+        CAGE_TILESHEETS.visible = false; // event manager
+        EDITOR.state.setAnimation(2, 'hideTileSheets', false);
+        clear && clear_tileSheet();
+    };
+
+    function clear_tileSheet(){
+        CAGE_TILESHEETS.name = null;
+        CAGE_TILESHEETS.list = [];
+        CAGE_TILESHEETS.removeChildren();// TODO: KEEP MASK
+        PIXI.utils.clearTextureCache();
+    }
 
     function open_editor(openCachedLib) {
         EDITOR.state.setAnimation(1, 'start0', false);
@@ -2122,13 +2140,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
             if(event.currentTarget.buttonType === "tileMouse"){
                 // if alrealy instance of map, duplicate new id in mouse
-                console.log('$Objs.list_master.contains(event.currentTarget): ', $Objs.list_master.contains(event.currentTarget));
+              
                 if($Objs.list_master.contains(event.currentTarget)){
                     event.currentTarget.buttonType = "tileMap";
                     CAGE_MOUSE.list = null;
+                    console.log('add_toMouse: ', add_toMouse);
                     return add_toMouse(event.currentTarget); 
+                    
                 }
+                console.log('add_toScene: ', add_toScene);
                 return add_toScene(event.currentTarget); 
+                
             }
             if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
                 return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_tileSetupEditor(event.currentTarget);
