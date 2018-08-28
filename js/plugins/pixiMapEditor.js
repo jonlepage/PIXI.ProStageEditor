@@ -427,7 +427,9 @@ _PME.prototype.startEditor = function() {
     let InButtons = null;
     let InMapObj = null;
     let mX = 100, mY = 100; // mosue screen
-    let mMX = 0, mMY = 0; // mouse map 
+    let mMX = 0, mMY = 0; // mouse map
+    let MovementX = 0;
+    let MovementY = 0;
     let HoldX = 0, HoldY = 0; // mouse map
     let FreezeMY = null;
     // scoller 
@@ -1896,6 +1898,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function refreshMouse() {
+        MovementX = $mouse.x - mX;
+        MovementY = $mouse.y - mY;
         mX = $mouse.x, mY = $mouse.y;
         mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
         mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
@@ -1956,25 +1960,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
-    function computeFastModes(Obj,event) {
+    function computeFastModes(Obj) {
         switch (FastModesKey) { // ["p","y","w","s","r","u"]
             case "p": // pivot from position"
-                Obj.pivot.x+=event.movementX;
-                Obj.pivot.y+=event.movementY;
-                Obj.x+=event.movementX*Obj.scale.x;
-                Obj.y+=event.movementY*Obj.scale.y;
+                Obj.pivot.x+=MovementX;
+                Obj.pivot.y+=MovementY;
+                Obj.x+=MovementX*Obj.scale.x;
+                Obj.y+=MovementY*Obj.scale.y;
                 // update debug
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
             case "y": // position from pivot
-                Obj.pivot.x-=event.movementX;
-                Obj.pivot.y-=event.movementY;
+                Obj.pivot.x-=MovementX;
+                Obj.pivot.y-=MovementY;
                 // update debug
                 Obj.Debug.piv.position.copy(Obj.pivot);
             break;
             case "w": // skew mode
-                var skewX = Math.sin(event.movementX/1000)*-1; // smoot mouse
-                var skewY = Math.sin(event.movementY/1000); // smoot mouse
+                var skewX = Math.sin(MovementX/500)*-1; // smoot mouse
+                var skewY = Math.sin(MovementY/500); // smoot mouse
                 Obj.skew.y = Math.min(1, Math.max(Obj.skew.y+skewY, -1));
                 Obj.skew.x = Math.min(0.5, Math.max(Obj.skew.x+skewX, -0.5));
                 // update debug
@@ -1984,15 +1988,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.Debug.piv.pivLine.skew.x = -Obj.skew.x
             break;
             case "s": // Scale mode
-                Obj.scale.x-=event.movementX/100;
-                Obj.scale.y-=event.movementY/100;
+                Obj.scale.x-=MovementX/100;
+                Obj.scale.y-=MovementY/100;
             break;
             case "r": // Rotation mode
-                Obj.rotation+=event.movementX/100;
+                Obj.rotation+=MovementX/100;
                 Obj.Debug.piv.rotation = Obj.rotation*-1;
             break;
             case "u": // Rotation textures
-                Obj.Sprites.d.rotation+=event.movementX/100;
+                Obj.Sprites.d.rotation+=MovementX/100;
                 Obj.Sprites.n? Obj.Sprites.n.rotation = Obj.Sprites.d.rotation : void 0; //FIXME: SPINE normal are slots and not container
             break;
         }
@@ -2004,17 +2008,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         Obj.Debug.hitZone.lineStyle(2, color, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
     };
 
-    $mouse.interactive = true;
-    
-    $mouse.on('mousemove', function(event) {
+ 
+    // TODO: AJOUTER DANS UN TIKS OU UN NOUVEAU LISTENER
+    function updateFromTicks(event) {
         //if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
         if(MouseHold){
             if( MouseHold.buttonType === "CAGE_TILESHEETS" ){
                 CAGE_TILESHEETS.list.forEach(cage => {
-                    cage.x+= event.data.originalEvent.movementX*0.8;//performe scroll libs mouse
-                    cage.y+= event.data.originalEvent.movementY*0.8;//performe scroll libs mouse
-                    cage.getBounds();
+                    cage.x+= MovementX*1.5;//performe scroll libs mouse
+                    cage.y+= MovementY*1.5;//performe scroll libs mouse
+
                 });
             };
             if( MouseHold.buttonType === "CAGE_LIBRARY" ){
@@ -2033,14 +2037,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     };
                 };
                 CAGE_LIBRARY.list.forEach(cage => {
-                    cage.y-= event.data.originalEvent.movementX*0.7;
-                    cage.getBounds();
+                    cage.y-= MovementX*0.8;
+
                 });
             };
             
             if( MouseHold.buttonType === "tileMap" || MouseHold.buttonType === "tileMouse" ){
                 // compute fast mode
-                FastModesObj && computeFastModes(FastModesObj, event.data.originalEvent);
+                FastModesObj && computeFastModes(FastModesObj, event);
       
             };
         };
@@ -2053,7 +2057,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }else{ $mouse.y = (FreezeMY.y-ScrollY)*Zoom.y };
             
         }
-    }, STAGE);
+    };
 
 
     // mouse [=>IN <=OUT] FX
@@ -2303,17 +2307,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // Tikers for editor update (document Title, check scroll)
     const editorTiker = new PIXI.ticker.Ticker().add((delta) => {
+        updateFromTicks($mouse.interaction.mouse.originalEvent); // update move obj
         document.title = `
         mX: ${~~mX}  mY: ${~~mY} ||  mMX: ${~~mMX}  mMY: ${~~mMY} || ScrollX:${~~ScrollX} ScrollY:${~~ScrollY}
         `;
         if(scrollAllowed){
             let scrolled = false;
-            (mX<10 && (ScrollX-=ScrollF) || mX>1920-10 && (ScrollX+=ScrollF)) && (scrolled=true);
-            (mY<15 && (ScrollY-=ScrollF) || mY>1080-15 && (ScrollY+=ScrollF)) && (scrolled=true);
+            (mX<8 && (ScrollX-=ScrollF) || mX>1920-8 && (ScrollX+=ScrollF)) && (scrolled=true);
+            (mY<8 && (ScrollY-=ScrollF) || mY>1080-8 && (ScrollY+=ScrollF)) && (scrolled=true);
             scrolled && (ScrollF+=0.4) || (ScrollF=0.1) ;
         }
         STAGE.CAGE_MAP.pivot.x+=(ScrollX-STAGE.CAGE_MAP.pivot.x)/(scrollSpeed*delta);
         STAGE.CAGE_MAP.pivot.y+=(ScrollY-STAGE.CAGE_MAP.pivot.y)/(scrollSpeed*delta);
+        
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     editorTiker.start();
