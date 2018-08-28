@@ -44,6 +44,8 @@ Scene_MapID1.prototype.create = function() {
     const startCase = $Objs.getsByID("case_door1")[0];
     $player.position.set(startCase.x, startCase.y+1);
     $player.zIndex = $player.y;
+    $camera.setTarget($player,4);
+    this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
      
 };
 

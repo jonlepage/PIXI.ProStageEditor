@@ -366,8 +366,8 @@ _PME.prototype.computeData = function() {
     // scene hack
     const scene = SceneManager._scene;
     scene.CAGE_EDITOR = new PIXI.Container();
-    scene.CAGE_EDITOR.name = "CAGE_GUI";
-    scene.addChildAt(SceneManager._scene.CAGE_EDITOR, scene.children.length-1);
+    scene.CAGE_EDITOR.name = "CAGE_EDITOR";
+    scene.addChildAt(scene.CAGE_EDITOR, scene.children.length-1);
 
     const cage = new PIXI.Container();
     const spine = new PIXI.spine.Spine(this.editor.editorGui);
@@ -2004,6 +2004,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         Obj.Debug.hitZone.lineStyle(2, color, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
     };
 
+    $mouse.interactive = true;
+    
     $mouse.on('mousemove', function(event) {
         //if(iziToast.opened){return}; // dont use mouse when toast editor
         refreshMouse();
@@ -2491,6 +2493,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         var rope = new PIXI.mesh.Rope(trailTexture, points);
         rope.blendmode = PIXI.BLEND_MODES.ADD;
         STAGE.CAGE_MOUSE.addChild(rope);
+
         const trailTiker = PIXI.ticker.shared.add((delta) => {
             historyX.pop();historyX.unshift(mX);
             historyY.pop();historyY.unshift(mY);

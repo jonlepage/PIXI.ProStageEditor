@@ -192,7 +192,7 @@ Scene_Base.prototype.create_Cages = function() {
     this.CAGE_MOUSE.name = "CAGE_MOUSE";
 
     this.addChild( this.CAGE_MAP, this.CAGE_GUI, this.CAGE_MOUSE);
-    $mouse && this.addChild($mouse);//TODO: faire une method asignation
+    $mouse && this.CAGE_MOUSE.addChild($mouse);//TODO: faire une method asignation
 };
 
 // scene only, voir si on peut le mettre pour map

@@ -10,65 +10,68 @@
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $camera CLASS: _camera
 //└------------------------------------------------------------------------------┘
-function _camera() {
-    this.screenX = 1600;
-    this.screenY = 900;
-    this.width = null; // current  map width
-    this.height = null; // current  map height
+class _camera{
+    constructor() {
+        this.screenX = SceneManager._screenWidth; // 1920
+        this.screenY = SceneManager._screenHeight // 1080;
+        this._position = null;
+        this._pivot = null;
+        this._width = null;
+        this._height = null;
+        this._scale = null;
+        this.tweenPosition = null;
+        this.tweenScale = null;
+        this.currentTarget = new PIXI.Point(0,0);
+    };
+    get x() { return this._pivot._x - this.screenX/2 };
+    get y() { return this._pivot._y - (this.screenY/2) };
+    set x(x) { this._pivot.x = x-this.screenX/2 }; // call ease
+    set y(y) { this._pivot.y = y - (this.screenY/2) }; // call ease
 
-    this.position = null; // the map pivot
-    this.zoom  = null; // the map scale Zoom
-    this.target = null; // player or event or point XY
-    this.targetH = null; // target height
-    this.tweenP = null; // tween position
-    this.tweenZ = null; // tween Zoom
-    this.targetFocus = 0; // when pass the mouse hover target , re-focus the gamera to target
-    this._tmpZoom = 1; // store the targeted zoom 
-    this._userZoom = 0; // when user use wheell for custom zoom
-    this.x = function(){
-        return this.position._x
-    }
-    this.y = function(){
-        return this.position._y
-    }
+    get tX() { return this.currentTarget.x - (this.screenX/2) };
+    get tY() { return this.currentTarget.y - (this.screenY/2) };
+
 };
 
 $camera = new _camera();
 console.log1('$camera.', $camera);
 
-
-_camera.prototype.initialise = function(map,target) {
-    this.position = map.pivot;
-    this.zoom = map.scale;
-    this.width = map.width;
-    this.height = map.height;
-    
-    this.tweenP = new TweenLite(this.position, 0, {
-        x:0, y:0,
+_camera.prototype.initialise = function(map, target) {
+    this._position = map.position;
+    this._pivot = map.pivot;
+    this._scale = map.scale;
+    this._width = map.width;
+    this._height = map.height;
+    // initialise position without delay
+    this.tweenPosition = new TweenLite(this._pivot, 0, {
+        x:this.x,
+        y:this.y,
         ease:Power4.easeOut,
     });
-    this.tweenZ = new TweenLite(this.zoom, 1, {
-        x:1, y:1,
+    this.tweenScale = new TweenLite(this._scale, 0, {
+        x:this._scale.x,
+        y:this._scale.y,
         ease:Power4.easeOut,
     });
     target && this.setTarget(target);
-    $camera.debug()
+    //$camera.debug()
 };
 
-// set a target to camera
-_camera.prototype.setTarget = function(obj) {
-    this.target = obj.position(); // player or event or point XY
-    this.targetH = obj.height()/2 || 0; // need size of target because anchor are objsprite 0.5,1
-    this.moveToTarget(0);
+// add target to camera, pixi point or display obj
+_camera.prototype.setTarget = function(obj, speed) { // $camera.setTarget([x,y],speed);
+    Array.isArray(obj)? obj = new PIXI.Point(obj[0],obj[1]) : void 0;
+    this.currentTarget = obj; // player or event or point XY
+    this.moveToTarget(speed || 0);
 };
 
-// $camera.moveToTarget();
-_camera.prototype.moveToTarget = function(speed,ease) {
-    this.tweenP.vars.x = this.target.x-((this.screenX/2)/this._tmpZoom);
-    this.tweenP.vars.y = this.target.y-((this.screenY/2)/this._tmpZoom);
-    speed && (this.tweenP._duration = speed);
-    this.tweenP.invalidate();
-    this.tweenP.play(0);
+// performe move the camera
+_camera.prototype.moveToTarget = function(speed) {
+    this.tweenPosition.vars.x = this.tX;
+    this.tweenPosition.vars.y = this.tY;
+    speed? this.tweenPosition._duration = speed : void 0;
+
+    this.tweenPosition.invalidate(); // TODO: deep study source of this
+    this.tweenPosition.play(0);
 };
 
 // $camera.moveFromTarget(120,10,4); Move from target to new XY
