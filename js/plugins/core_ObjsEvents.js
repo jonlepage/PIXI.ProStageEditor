@@ -52,12 +52,9 @@ _objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName)
         sprite_d.skeleton.setSkinByName(textureName);
         sprite_d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
         sprite_d.skeleton.setSlotsToSetupPose();
-    const sprite_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
-        sprite_n.width = sprite_d.width;
-        sprite_n.height = sprite_d.height;
-        sprite_n.anchor.set(0.5,1);
+    const sprite_n = sprite_d.convertToNormal(); // allow swap texture hover tile
 
-   this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
+   this.addAttr_default(cage, Data_Values, sprite_d, null, Data, textureName); //TODO: sprite_n: LOOK A WAY TO WORK WIT HSPINE NORMAL AS SLOTS ARRAYS
    cage.getBounds(cage); //TODO: BOUND MAP
    
    return cage;
@@ -91,16 +88,17 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
    cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
    cage.zIndex = Data_Values.zIndex; //TODO: add to json addAttr_default
    d.parentGroup = PIXI.lights.diffuseGroup;
-   n.parentGroup = PIXI.lights.normalGroup;
+   n? n.parentGroup = PIXI.lights.normalGroup : void 0;
    // reference
    cage.Sprites = {d:d,n:n};
    cage.name = Data.name;
    cage.Type = Data.type;
    cage.TexName = textureName || false;
    d.name = textureName;
-   n.name = textureName+"_n";
+   n? n.name = textureName+"_n" : void 0;
 
-   cage.addChild(d,n);
+   cage.addChild(d);
+   n && cage.addChild(d);
     for (const key in Data_Values) {
         const value = Data_Values[key];
         switch (key) {
@@ -109,20 +107,20 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
                 cage[key].set(...value);
             break;
             case "anchor":
-                cage.Sprites.d.anchor.set(...value);
-                cage.Sprites.n.anchor.set(...value);
+                d.anchor.set(...value);
+                n && n.anchor.set(...value);
             break;
             case "blendMode":case "tint":
-                cage.Sprites.d[key] = +value[0];
-                cage.Sprites.n[key] = +value[1];
+                d[key] = +value[0];
+                n? n[key] = +value[1] : void 0;
             break;
             case "color":
-                cage.Sprites.d.convertToHeaven();
-                cage.Sprites.d.color.setDark(...value.d[0]);
-                cage.Sprites.d.color.setLight(...value.d[1]);
-                cage.Sprites.n.convertToHeaven();
-                cage.Sprites.n.color.setDark(...value.n[0]);
-                cage.Sprites.n.color.setLight(...value.n[1]);
+                d.convertToHeaven();
+                d.color.setDark(...value.d[0]);
+                d.color.setLight(...value.d[1]);
+                n && n.convertToHeaven();
+                n && n.color.setDark(...value.n[0]);
+                n && n.color.setLight(...value.n[1]);
             break;
             case "parentGroup":break;
             default:

@@ -69,6 +69,7 @@ function initializeEditor(event){
         // we dont whant the scene interaction
         $mouse.__proto__._mousedown = function(){};
         $mouse.__proto__._mouseup = function(){};
+        document.onwheel = null;
 
     };
 };
@@ -434,8 +435,8 @@ _PME.prototype.startEditor = function() {
     let FreezeMY = null;
     // scoller 
     let scrollAllowed = true;
-    let ScrollX = 0;
-    let ScrollY = 0;
+    let ScrollX = STAGE.CAGE_MAP.pivot.x;
+    let ScrollY = STAGE.CAGE_MAP.pivot.y;
     let ScrollF = 0.1; // _displayXY power for scroll map
     let scrollSpeed = 20;
     // zoom 

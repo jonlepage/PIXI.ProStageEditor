@@ -22,14 +22,16 @@ class _camera{
         this.tweenPosition = null;
         this.tweenScale = null;
         this.currentTarget = new PIXI.Point(0,0);
+        this.zoom = 1;
     };
     get x() { return this._pivot._x - this.screenX/2 };
     get y() { return this._pivot._y - (this.screenY/2) };
     set x(x) { this._pivot.x = x-this.screenX/2 }; // call ease
     set y(y) { this._pivot.y = y - (this.screenY/2) }; // call ease
 
-    get tX() { return this.currentTarget.x - (this.screenX/2) };
-    get tY() { return this.currentTarget.y - (this.screenY/2) };
+    get tX() { return this.currentTarget.x - (this.screenX/2)/this.zoom };
+    
+    get tY() { return this.currentTarget.y - (this.screenY/2)/this.zoom };
 
 };
 
@@ -87,15 +89,12 @@ _camera.prototype.moveFromTarget = function(x,y,speed,ease) {
 
 // $camera.setZoom(2,4); Zoom screen based on pivot camera
 
-_camera.prototype.setZoom = function(ratio,speed,ease) {
-    ratio = ratio || 1;
-    ratio+= this._userZoom;
-    this._tmpZoom = ratio;
-    this.tweenZ.vars.x = ratio;
-    this.tweenZ.vars.y = ratio;
-    speed && (this.tweenZ._duration = speed);
-    this.tweenZ.invalidate();
-    this.tweenZ.play(0);
+_camera.prototype.setZoom = function(value,speed,ease) {
+    this.tweenScale.vars.x=value;
+    this.tweenScale.vars.y=value;
+    this.tweenScale._duration = speed;
+    this.tweenScale.invalidate();
+    this.tweenScale.play(0);
 };
 
 
@@ -140,14 +139,19 @@ _camera.prototype.onMouseMove = function(x,y){
 
 // when mouse whell interaction
 // $camera.onMouseWeel();
-document.addEventListener('wheel', onMouseWheel);
+
 _camera.prototype.onMouseWheel = function(e){
-    const limit = this._userZoom+value;
-    if(limit>1 || limit<0){return}
-    this._userZoom+=value;
-    this.setZoom(null,3);  //ratio,speed,ease
+    console.log('this: ', this);
+    console.log('e: ', e);
+    //TODO: isoler le zoom dans un pixi points pour precalculer le resulta final
+    const value = e.deltaY>0 && -0.1 || 0.1;
+    if(this.zoom+value>2.5 || this.zoom+value<1 ){return};
+    
+    this.zoom+=value;
+    this.setZoom(this.zoom,3);  //ratio,speed,ease
     this.moveToTarget(3);
 };
+document.onwheel = $camera.onMouseWheel.bind($camera);
 
 
 // $camera.debug(); // show debug help for camera
