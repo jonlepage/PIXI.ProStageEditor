@@ -18,7 +18,7 @@ class _objs{
         this.list_master = []; // Full Objs Lists
         //this.list_noEvents = [];
         //this.list_events = [];
-        //this.list_cases = [];
+        this.list_cases = [];
     };
 };
 $Objs = new _objs();
@@ -156,6 +156,15 @@ _objs.prototype.getsByType = function(type) {
         this.list_master[i].Type === type && list.push(this.list_master[i]);
     };
     return list;
+};
+
+// get all cases 
+_objs.prototype.getCases = function() {
+    const list = [];
+    for (let i=0, l=this.list_master.length; i<l; i++) {
+        this.list_master[i].name === "cases" && list.push(this.list_master[i]);
+    };
+    return this.list_cases = list;
 };
 
 // get list from type : "spineSheet", "animationSheet", "tileSheet"

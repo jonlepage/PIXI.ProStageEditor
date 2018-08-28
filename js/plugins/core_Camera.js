@@ -140,7 +140,8 @@ _camera.prototype.onMouseMove = function(x,y){
 
 // when mouse whell interaction
 // $camera.onMouseWeel();
-_camera.prototype.onMouseWheel = function(value){
+document.addEventListener('wheel', onMouseWheel);
+_camera.prototype.onMouseWheel = function(e){
     const limit = this._userZoom+value;
     if(limit>1 || limit<0){return}
     this._userZoom+=value;

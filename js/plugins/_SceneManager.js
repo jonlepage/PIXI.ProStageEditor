@@ -222,7 +222,31 @@ Scene_Base.prototype.create_ObjFromJson = function() {
     $Objs.createFromList(this.loaderSet._OBJS);
     $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
     $Objs.list_master.forEach(cage => { cage.getBounds() });
+    // groupe all case and interactivity
+    $Objs.getCases();
+    this.initialiseCasesInteractivity();
+
 };
 
+// add cases listener
+Scene_Base.prototype.initialiseCasesInteractivity = function() {
+    $Objs.list_cases.forEach(_case => {
+        _case.interactive = true;
+        _case.on('pointerover', pointer_overIN);
+        _case.on('pointerout', pointer_overOUT);
+        //_case.on('pointerup', pointer_UP);
+    });
+    // TODO: ADD TO MOUSE OR OTHER MANAGER , MAYBE CASES CLASS
+    function pointer_overIN(e){
+  
+        console.log('e.currentTarget: ', e.currentTarget);
+        e.currentTarget.Sprites.d._filters = [new PIXI.filters.OutlineFilter (4, 0x16b50e, 1)];
+        $mouse.onCase = e.currentTarget;
+    };
+    function pointer_overOUT(e){
+        e.currentTarget.Sprites.d._filters = null;
+        $mouse.onCase = null;
+    };
 
+};
 

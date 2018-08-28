@@ -28,7 +28,10 @@ class _mouse extends PIXI.Container {
         this.light.falloff[0] = 1;
 
         this.mPos = new PIXI.Point(0,0); // mouse position value // this.interaction.mouse.global.x
+        this.follower = new PIXI.Point(0,0);
         this.ease = 0.35;
+
+        this.onCase = null;
     };
   };
 
@@ -78,8 +81,22 @@ _mouse.prototype.create_Sprites = function() {
     
     // Tikers for easing the mouse
     const mouseTick = new PIXI.ticker.Ticker().add((delta) => {
-        this.x += (this.mPos.x - this.x) * this.ease;
-        this.y += (this.mPos.y - this.y) * this.ease;
+        var target = {x: this.mPos.x , y: this.mPos.y };  
+        var ease = this.onCase && 0.2 || this.ease;
+        if(this.onCase){ // $mouse.onCase = true;
+            console.log('this.onCase: ', this.onCase);
+            var globalXY = this.onCase.getGlobalPosition()
+            var movementX = 0, movementY = 0;
+                movementX = (this.mPos.x - globalXY.x )/1.5; // 100 are the position of target
+                movementY = (this.mPos.y - globalXY.y )/1.5;
+            target.x = globalXY.x + movementX; // 100 will be center of your target
+            target.y = globalXY.y + movementY;
+        }
+
+        this.follower.x += (target.x - this.x) * ease;
+        this.follower.y += (target.y - this.y) * ease;
+
+        TweenLite.set(this, {x: this.follower.x, y: this.follower.y });
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     mouseTick.start();
