@@ -1587,7 +1587,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // check if alrealy opened ???  open_tileSheet // return hide
         if(check_tileSheetStatus(InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
-        console.log('CAGE_TILESHEETS.name: ', CAGE_TILESHEETS.name);
         CAGE_TILESHEETS.name = InLibs.name;
         const list = [];
         const elements = InLibs.Data.textures || InLibs.Data.data.skins;
@@ -1923,7 +1922,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function startMouseHold(activeTarget){
-        console.log0('activeTarget: ', activeTarget);
         clearTimeout(MouseTimeOut);
         MouseHold? disableFastModes(MouseHold) : void 0;
         MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
@@ -2293,7 +2291,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-
     //document.addEventListener('mousemove', mousemove_Editor.bind(this));
     //document.addEventListener('mousedown', mousedown_Editor);
     document.addEventListener('mouseup',function(event){
@@ -2324,9 +2321,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     editorTiker.start();
-
-
-
 
     //#region [rgba(100, 5, 0,0.2)]
 // ┌------------------------------------------------------------------------------┐
@@ -2512,7 +2506,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }
         });
         function clipInput(k, arr){
-            if (k < 0){k = 0;}
+            if (k < 0){ k = 0 };
             if (k > arr.length - 1){  k = arr.length - 1;}
             return arr[k];
         };

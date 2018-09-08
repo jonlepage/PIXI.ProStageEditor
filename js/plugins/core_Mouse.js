@@ -56,8 +56,9 @@ _mouse.prototype.initialize = function() {
 
 //create the sprite spine mouse and default animations
 _mouse.prototype.create_Sprites = function() {
-    const mouse = $Loader.Data2.gloves ? new PIXI.spine.Spine($Loader.Data2.gloves.spineData): void 0;
-    if (!mouse) { return this.spine = new PIXI.Sprite() };
+    const mouse = new PIXI.spine.Spine($Loader.Data2.gloves.spineData);
+    console.log('mouse: ', mouse);
+    if (!mouse) { return };
 
     mouse.skeleton.setSkinByName("point");
     mouse.state.setAnimation(0, 'idle', true);
@@ -84,7 +85,6 @@ _mouse.prototype.create_Sprites = function() {
         var target = {x: this.mPos.x , y: this.mPos.y };  
         var ease = this.onCase && 0.2 || this.ease;
         if(this.onCase){ // $mouse.onCase = true;
-            console.log('this.onCase: ', this.onCase);
             var globalXY = this.onCase.getGlobalPosition()
             var movementX = 0, movementY = 0;
                 movementX = (this.mPos.x - globalXY.x )/1.5; // 100 are the position of target

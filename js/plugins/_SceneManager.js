@@ -19,7 +19,7 @@ SceneManager.run = function() {
         // setup compatibility pointer lock
         const element = document.body; // document.body.requestPointerLock()
         this.initialize();
-        this.goto(Scene_Loader,"Perma",Scene_Boot,true);
+        this.goto(Scene_Loader,"Perma",Scene_Boot);
         this.requestUpdate();
     } catch (e) {
         this.catchException(e);
@@ -27,11 +27,11 @@ SceneManager.run = function() {
 };
 
 
-SceneManager.goto = function(sceneClass, loaderSets, callBackScene, firstTime) {
-    console.log0('SceneManager.goto: ', sceneClass.name,loaderSets,callBackScene&&callBackScene.name,firstTime);
+SceneManager.goto = function(sceneClass, loaderSets, callBackScene) {
+    console.log0('SceneManager.goto: ', sceneClass.name,loaderSets,callBackScene&&callBackScene.name);
     //if sceneClass is loaderScene, take loader Argument, wait , and isReady goTo callBackScene
     if (sceneClass) {
-        this._nextScene = new sceneClass(loaderSets,callBackScene,firstTime);
+        this._nextScene = new sceneClass(loaderSets,callBackScene);
     }
     if (this._scene) {
         this._scene.stop();
@@ -149,15 +149,18 @@ Scene_Base.prototype.initialize = function(loaderSet) {
     this._imageReservationId = Utils.generateRuntimeId();
 
     this.Background = null;
-    this.loaderSet = $Loader.loaderSet[loaderSet];
+   // this.loaderSet = $Loader.loaderSet[loaderSet];
 
     this.asignDisplayGroup();
     this.create_Cages();
-    if(this.loaderSet){ // TODO: probablement separer les scenes et sceneMap qui a tous les carte mais sur loaderSet diferent
+    /*if(this.loaderSet){ // TODO: probablement separer les scenes et sceneMap qui a tous les carte mais sur loaderSet diferent
+        // les loaderset sont pas dispo pour la premier scene loading ???
         this.createBackground(this.loaderSet._SCENE.Background || false);
         this.create_ObjFromJson();
-    };
+    };*/
+    // initialise modules will depend of specific stage scene.
     $camera.initialise(this.CAGE_MAP);
+    $Loader._scene = this; // attache the current scene to core loader for allow show progression and text register
 };
 
 Scene_Base.prototype.asignDisplayGroup = function() {
@@ -238,8 +241,6 @@ Scene_Base.prototype.initialiseCasesInteractivity = function() {
     });
     // TODO: ADD TO MOUSE OR OTHER MANAGER , MAYBE CASES CLASS
     function pointer_overIN(e){
-  
-        console.log('e.currentTarget: ', e.currentTarget);
         e.currentTarget.Sprites.d._filters = [new PIXI.filters.OutlineFilter (4, 0x16b50e, 1)];
         $mouse.onCase = e.currentTarget;
     };

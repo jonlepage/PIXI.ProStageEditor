@@ -42,6 +42,7 @@ Scene_MapID1.prototype.create = function() {
     this.CAGE_MAP.addChild($player2); //TODO:
     // add player to case_door1;
     const startCase = $Objs.getsByID("case_door1")[0];
+    console.log('startCase: ', startCase);
     $player.position.set(startCase.x, startCase.y+1);
     $player.zIndex = $player.y;
     $camera.setTarget($player,4);

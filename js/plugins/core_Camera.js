@@ -141,8 +141,6 @@ _camera.prototype.onMouseMove = function(x,y){
 // $camera.onMouseWeel();
 
 _camera.prototype.onMouseWheel = function(e){
-    console.log('this: ', this);
-    console.log('e: ', e);
     //TODO: isoler le zoom dans un pixi points pour precalculer le resulta final
     const value = e.deltaY>0 && -0.1 || 0.1;
     if(this.zoom+value>2.5 || this.zoom+value<1 ){return};

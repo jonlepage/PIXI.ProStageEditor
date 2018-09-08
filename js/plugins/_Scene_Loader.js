@@ -72,22 +72,19 @@ function Scene_Loader(loaderSets,callBackScene,firstTime) {
 Scene_Loader.prototype = Object.create(Scene_Base.prototype);
 Scene_Loader.prototype.constructor = Scene_Loader;
 
-Scene_Loader.prototype.initialize = function(loaderSets,callBackScene,firstTime) {
-    console.log('Scene_Loader loaderSets,callBackScene,firstTime: ', loaderSets,callBackScene,firstTime);
-    Scene_Base.prototype.initialize.call(this);
-    $Loader._scene = this; // attache the current scene to core loader
-    this.firstTime = !!firstTime; // first time allow show basic text, because loading animation was not loaded
+Scene_Loader.prototype.initialize = function(loaderSets, callBackScene) {
+    console.log(`Scene_Loader.initialize: %c("${arguments[0]}",  ${arguments[1].name})`,"color: green");
     this.loaderSets = loaderSets;
     this.callBackScene = callBackScene;
-    this.isLoading = !!firstTime;
-    this._progress = 0;
-    this._progressTxt = [];
-    document.title = document.title+" || "+"Scene_Loader:set=>"+String(loaderSets);
+    
+    Scene_Base.prototype.initialize.call(this);
 };
 
 Scene_Loader.prototype.create = function() {
-    // FIRST TIME BOOT, NEED ALL JSON LIST, and use pixi.text for progress
-    if(this.firstTime){
+    // if loader set not exist, it because it the first boot, so preload all json
+    if(!$Loader.loaderSet){
+        this._progress = 0;
+        this._progressTxt = [];
         const style = new PIXI.TextStyle({ fill: "white", fontFamily: "Times New Roman", fontSize: 20 });
         const text1 = new PIXI.Text('Please Wait Initialisation ...', style);
         const text2 = new PIXI.Text('data', style);
@@ -100,34 +97,30 @@ Scene_Loader.prototype.create = function() {
     };
 };
 
-
+// #1
 Scene_Loader.prototype.isReady = function() {
-    console.log("%cScene_Loader.isReady ? isLoading", "color: red", this.isLoading);
     // if firstime, wait load the MapInfos.json befor start boot load
     if(this.firstTime){ // FORCE RENDERING TEXT FIRST TIME 
         this.text2.text = $Loader._progressTxt;
         Graphics.render(this);
     }; 
-   
-    return !this.isLoading;
+    return !$Loader.isLoading;
 };
 
-// start Loader
+// #2 start Loader
 Scene_Loader.prototype.start = function() {
-    console.log("%cScene_Loader.start. Load => set:", "color: green",'$Loader', this.loaderSets);
-    this.isLoading = true;
-    $Objs.list_master = []; // purge objet scene
+    console.log(`start: %c$Loader.load("${this.loaderSets}")`, "color: green");
+    //$Objs.list_master = []; // purge objet scene
     $Loader.load(this.loaderSets);
 };
 
-
+aaa = 100
 Scene_Loader.prototype.update = function() {
-    if(!this.isLoading){
+    if(!$Loader.isLoading && aaa-- ===0){
+    console.log9(`load %ccomplette:`,"color: green");
         document.title = document.title+"=>"+this.callBackScene.name;
         SceneManager.goto(this.callBackScene);
-        
     };
-    //Scene_Base.prototype.update.call(this);
 };
 
 

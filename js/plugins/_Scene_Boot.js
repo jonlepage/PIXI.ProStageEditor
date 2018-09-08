@@ -21,6 +21,14 @@ Scene_Boot.prototype.constructor = Scene_Boot;
 Scene_Boot.prototype.initialize = function() {
     Scene_Base.prototype.initialize.call(this);
     this._startDate = Date.now();
+    // all loaded from SceneBoot are Perma ressource, make perma ressource once
+    for (const key in $Loader.Data2) {
+        Object.defineProperty($Loader.Data2, key, { enumerable: false });
+    }; 
+   
+
+
+
     $mouse.initialize(); // initialise mouse core
     $player.initialize();
     $player2.initialize();

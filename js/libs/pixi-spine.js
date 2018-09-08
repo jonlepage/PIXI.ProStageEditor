@@ -3310,7 +3310,10 @@ var pixi_spine;
                 return -1;
             };
             Skeleton.prototype.setSkinByName = function (skinName) {
+                console.log('skinName: ', skinName);
+                console.log('this: ', this);
                 var skin = this.data.findSkin(skinName);
+                
                 if (skin == null)
                     throw new Error("Skin not found: " + skinName);
                 this.setSkin(skin);
