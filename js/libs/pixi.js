@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.8.1
- * Compiled Wed, 06 Jun 2018 15:42:22 UTC
+ * pixi.js - v4.8.2
+ * Compiled Mon, 03 Sep 2018 16:07:33 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -7569,7 +7569,7 @@ var AccessibilityManager = function () {
 
         this.isActive = false;
 
-        window.document.removeEventListener('mousemove', this._onMouseMove);
+        window.document.removeEventListener('mousemove', this._onMouseMove, true);
         window.addEventListener('keydown', this._onKeyDown, false);
 
         this.renderer.off('postrender', this.update);
@@ -7872,7 +7872,7 @@ var AccessibilityManager = function () {
             this.children[i].div = null;
         }
 
-        window.document.removeEventListener('mousemove', this._onMouseMove);
+        window.document.removeEventListener('mousemove', this._onMouseMove, true);
         window.removeEventListener('keydown', this._onKeyDown);
 
         this.pool = null;
@@ -8353,7 +8353,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.8.1';
+var VERSION = exports.VERSION = '4.8.2';
 
 /**
  * Two Pi.
@@ -10207,7 +10207,7 @@ var DisplayObject = function (_EventEmitter) {
         }
 
         /**
-         * The pivot point of the displayObject that it rotates around
+         * The pivot point of the displayObject that it rotates around.
          * Assignment by value since pixi-v4.
          *
          * @member {PIXI.Point|PIXI.ObservablePoint}
@@ -10400,7 +10400,7 @@ var Transform = function (_TransformBase) {
     _this.skew = new _math.ObservablePoint(_this.updateSkew, _this, 0, 0);
 
     /**
-     * The pivot point of the displayObject that it rotates around
+     * The pivot point of the displayObject that it rotates around.
      *
      * @member {PIXI.Point}
      */
@@ -10660,7 +10660,7 @@ var TransformStatic = function (_TransformBase) {
         _this.scale = new _math.ObservablePoint(_this.onChange, _this, 1, 1);
 
         /**
-         * The pivot point of the displayObject that it rotates around
+         * The pivot point of the displayObject that it rotates around.
          *
          * @member {PIXI.ObservablePoint}
          */
@@ -11049,6 +11049,9 @@ var Graphics = function (_Container) {
         _this._spriteRect = null;
         _this._fastRect = false;
 
+        _this._prevRectTint = null;
+        _this._prevRectFillColor = null;
+
         /**
          * When cacheAsBitmap is set to true the graphics object will be rendered as if it was a sprite.
          * This is useful if your graphics element does not change often, as it will speed up the rendering
@@ -11216,7 +11219,7 @@ var Graphics = function (_Container) {
      * @param {number} [lineWidth=0] - width of the line to draw, will update the objects stored style
      * @param {number} [color=0] - color of the line to draw, will update the objects stored style
      * @param {number} [alpha=1] - alpha of the line to draw, will update the objects stored style
-     * @param {number} [alignment=1] - alignment of the line to draw, (0 = inner, 0.5 = middle, 1 = outter)
+     * @param {number} [alignment=0.5] - alignment of the line to draw, (0 = inner, 0.5 = middle, 1 = outter)
      * @return {PIXI.Graphics} This Graphics object. Good for chaining method calls
      */
 
@@ -11281,8 +11284,15 @@ var Graphics = function (_Container) {
 
 
     Graphics.prototype.lineTo = function lineTo(x, y) {
-        this.currentPath.shape.points.push(x, y);
-        this.dirty++;
+        var points = this.currentPath.shape.points;
+
+        var fromX = points[points.length - 2];
+        var fromY = points[points.length - 1];
+
+        if (fromX !== x || fromY !== y) {
+            points.push(x, y);
+            this.dirty++;
+        }
 
         return this;
     };
@@ -11476,7 +11486,14 @@ var Graphics = function (_Container) {
         var points = this.currentPath ? this.currentPath.shape.points : null;
 
         if (points) {
-            if (points[points.length - 2] !== startX || points[points.length - 1] !== startY) {
+            // We check how far our start is from the last existing point
+            var xDiff = Math.abs(points[points.length - 2] - startX);
+            var yDiff = Math.abs(points[points.length - 1] - startY);
+
+            if (xDiff < 0.001 && yDiff < 0.001) {
+                // If the point is very close, we don't add it, since this would lead to artifacts
+                // during tesselation due to floating point imprecision.
+            } else {
                 points.push(startX, startY);
             }
         } else {
@@ -11707,6 +11724,7 @@ var Graphics = function (_Container) {
             this.filling = false;
 
             this.boundsDirty = -1;
+            this.canvasTintDirty = -1;
             this.dirty++;
             this.clearDirty++;
             this.graphicsData.length = 0;
@@ -11770,14 +11788,15 @@ var Graphics = function (_Container) {
         }
 
         var sprite = this._spriteRect;
+        var fillColor = this.graphicsData[0].fillColor;
 
         if (this.tint === 0xffffff) {
-            sprite.tint = this.graphicsData[0].fillColor;
-        } else {
+            sprite.tint = fillColor;
+        } else if (this.tint !== this._prevRectTint || fillColor !== this._prevRectFillColor) {
             var t1 = tempColor1;
             var t2 = tempColor2;
 
-            (0, _utils.hex2rgb)(this.graphicsData[0].fillColor, t1);
+            (0, _utils.hex2rgb)(fillColor, t1);
             (0, _utils.hex2rgb)(this.tint, t2);
 
             t1[0] *= t2[0];
@@ -11785,7 +11804,11 @@ var Graphics = function (_Container) {
             t1[2] *= t2[2];
 
             sprite.tint = (0, _utils.rgb2hex)(t1);
+
+            this._prevRectTint = this.tint;
+            this._prevRectFillColor = fillColor;
         }
+
         sprite.alpha = this.graphicsData[0].fillAlpha;
         sprite.worldAlpha = this.worldAlpha * sprite.alpha;
         sprite.blendMode = this.blendMode;
@@ -12016,7 +12039,7 @@ var Graphics = function (_Container) {
         this.graphicsData.push(data);
 
         if (data.type === _const.SHAPES.POLY) {
-            data.shape.closed = data.shape.closed || this.filling;
+            data.shape.closed = data.shape.closed;
             this.currentPath = data;
         }
 
@@ -12373,16 +12396,11 @@ var CanvasGraphicsRenderer = function () {
         var transform = graphics.transform.worldTransform;
         var resolution = renderer.resolution;
 
-        // if the tint has changed, set the graphics object to dirty.
-        if (this._prevTint !== this.tint) {
-            this.dirty = true;
-        }
-
         context.setTransform(transform.a * resolution, transform.b * resolution, transform.c * resolution, transform.d * resolution, transform.tx * resolution, transform.ty * resolution);
 
-        if (graphics.dirty) {
+        // update tint if graphics was dirty
+        if (graphics.canvasTintDirty !== graphics.dirty || graphics._prevTint !== graphics.tint) {
             this.updateGraphicsTint(graphics);
-            graphics.dirty = false;
         }
 
         renderer.setBlendMode(graphics.blendMode);
@@ -12527,6 +12545,7 @@ var CanvasGraphicsRenderer = function () {
 
     CanvasGraphicsRenderer.prototype.updateGraphicsTint = function updateGraphicsTint(graphics) {
         graphics._prevTint = graphics.tint;
+        graphics.canvasTintDirty = graphics.dirty;
 
         var tintR = (graphics.tint >> 16 & 0xFF) / 255;
         var tintG = (graphics.tint >> 8 & 0xFF) / 255;
@@ -13170,9 +13189,11 @@ function buildCircle(graphicsData, webGLData, webGLDataNativeLines) {
 
         graphicsData.points = [];
 
-        for (var _i = 0; _i < totalSegs + 1; _i++) {
+        for (var _i = 0; _i < totalSegs; _i++) {
             graphicsData.points.push(x + Math.sin(seg * -_i) * width, y + Math.cos(seg * -_i) * height);
         }
+
+        graphicsData.points.push(graphicsData.points[0], graphicsData.points[1]);
 
         (0, _buildLine2.default)(graphicsData, webGLData, webGLDataNativeLines);
 
@@ -14911,6 +14932,28 @@ var ObservablePoint = function () {
     }
 
     /**
+     * Creates a clone of this point.
+     * The callback and scope params can be overidden otherwise they will default
+     * to the clone object's values.
+     *
+     * @override
+     * @param {Function} [cb=null] - callback when changed
+     * @param {object} [scope=null] - owner of callback
+     * @return {PIXI.ObservablePoint} a copy of the point
+     */
+
+
+    ObservablePoint.prototype.clone = function clone() {
+        var cb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+        var scope = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+        var _cb = cb || this.cb;
+        var _scope = scope || this.scope;
+
+        return new ObservablePoint(_cb, _scope, this._x, this._y);
+    };
+
+    /**
      * Sets the point to a new x and y position.
      * If y is omitted, both x and y will be set to x.
      *
@@ -14943,6 +14986,18 @@ var ObservablePoint = function () {
             this._y = point.y;
             this.cb.call(this.scope);
         }
+    };
+
+    /**
+     * Returns true if the given point is equal to this point
+     *
+     * @param {PIXI.Point|PIXI.ObservablePoint} p - The point to check
+     * @returns {boolean} Whether the given point equal to this point
+     */
+
+
+    ObservablePoint.prototype.equals = function equals(p) {
+        return p.x === this._x && p.y === this._y;
     };
 
     /**
@@ -16207,7 +16262,7 @@ var SystemRenderer = function (_EventEmitter) {
     tempMatrix.tx = -region.x;
     tempMatrix.ty = -region.y;
 
-    this.render(displayObject, renderTexture, false, tempMatrix, true);
+    this.render(displayObject, renderTexture, false, tempMatrix, !!displayObject.parent);
 
     return renderTexture;
   };
@@ -16450,7 +16505,7 @@ var CanvasRenderer = function (_SystemRenderer) {
      * @param {PIXI.RenderTexture} [renderTexture] - A render texture to be rendered to.
      *  If unset, it will render to the root context.
      * @param {boolean} [clear=false] - Whether to clear the canvas before drawing
-     * @param {PIXI.Transform} [transform] - A transformation to be applied
+     * @param {PIXI.Matrix} [transform] - A transformation to be applied
      * @param {boolean} [skipUpdateTransform=false] - Whether to skip the update transform
      */
 
@@ -17574,7 +17629,7 @@ var WebGLRenderer = function (_SystemRenderer) {
      * @param {number} [options.backgroundColor=0x000000] - The background color of the rendered area
      *  (shown if not transparent).
      * @param {boolean} [options.legacy=false] - If true PixiJS will aim to ensure compatibility
-     *  with older / less advanced devices. If you experiance unexplained flickering try setting this to true.
+     *  with older / less advanced devices. If you experience unexplained flickering try setting this to true.
      * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
      *  for devices with dual graphics card
      */
@@ -17803,7 +17858,7 @@ var WebGLRenderer = function (_SystemRenderer) {
      * @param {PIXI.DisplayObject} displayObject - the object to be rendered
      * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
      * @param {boolean} [clear] - Should the canvas be cleared before the new render
-     * @param {PIXI.Transform} [transform] - A transform to apply to the render texture before rendering.
+     * @param {PIXI.Matrix} [transform] - A transform to apply to the render texture before rendering.
      * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
      */
 
@@ -17964,7 +18019,7 @@ var WebGLRenderer = function (_SystemRenderer) {
      * Binds a render texture for rendering
      *
      * @param {PIXI.RenderTexture} renderTexture - The render texture to render
-     * @param {PIXI.Transform} transform - The transform to be applied to the render texture
+     * @param {PIXI.Matrix} transform - The transform to be applied to the render texture
      * @return {PIXI.WebGLRenderer} Returns itself.
      */
 
@@ -18640,7 +18695,7 @@ var Filter = function () {
     // TODO we could cache this!
     this.glShaders = {};
 
-    // used for cacheing.. sure there is a better way!
+    // used for caching.. sure there is a better way!
     if (!SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc]) {
       SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc] = (0, _utils.uid)();
     }
@@ -19238,7 +19293,7 @@ var FilterManager = function (_WebGLManager) {
 
         var shader = filter.glShaders[renderer.CONTEXT_UID];
 
-        // cacheing..
+        // caching..
         if (!shader) {
             if (filter.glShaderKey) {
                 shader = this.shaderCache[filter.glShaderKey];
@@ -19343,7 +19398,7 @@ var FilterManager = function (_WebGLManager) {
             shader.uniforms.filterClamp = filterClamp;
         }
 
-        // TODO Cacheing layer..
+        // TODO Caching layer..
         for (var i in uniformData) {
             var type = uniformData[i].type;
 
@@ -19504,7 +19559,7 @@ var FilterManager = function (_WebGLManager) {
     /**
      * Gets a Power-of-Two render texture.
      *
-     * TODO move to a seperate class could be on renderer?
+     * TODO move to a separate class could be on renderer?
      * also - could cause issue with multiple contexts?
      *
      * @private
@@ -19904,7 +19959,7 @@ var StencilManager = function (_WebGLManager) {
 
         this.stencilMaskStack.push(graphics);
 
-        // Increment the refference stencil value where the new mask overlaps with the old ones.
+        // Increment the reference stencil value where the new mask overlaps with the old ones.
         gl.colorMask(false, false, false, false);
         gl.stencilFunc(gl.EQUAL, prevMaskCount, this._getBitwiseMask());
         gl.stencilOp(gl.KEEP, gl.KEEP, gl.INCR);
@@ -19930,7 +19985,7 @@ var StencilManager = function (_WebGLManager) {
             gl.clear(gl.STENCIL_BUFFER_BIT);
             gl.clearStencil(0);
         } else {
-            // Decrement the refference stencil value where the popped mask overlaps with the other ones
+            // Decrement the reference stencil value where the popped mask overlaps with the other ones
             gl.colorMask(false, false, false, false);
             gl.stencilOp(gl.KEEP, gl.KEEP, gl.DECR);
             this.renderer.plugins.graphics.render(graphics);
@@ -20526,7 +20581,7 @@ var RenderTarget = function () {
 
 
   RenderTarget.prototype.activate = function activate() {
-    // TOOD refactor usage of frame..
+    // TODO refactor usage of frame..
     var gl = this.gl;
 
     // make sure the texture is unbound!
@@ -21083,6 +21138,18 @@ var tempPoint = new _math.Point();
  * let sprite = new PIXI.Sprite.fromImage('assets/image.png');
  * ```
  *
+ * The more efficient way to create sprites is using a {@link PIXI.Spritesheet}:
+ *
+ * ```js
+ * PIXI.loader.add("assets/spritesheet.json").load(setup);
+ *
+ * function setup() {
+ *   let sheet = PIXI.loader.resources["assets/spritesheet.json"].spritesheet;
+ *   let sprite = new PIXI.Sprite(sheet.textures["image.png"]);
+ *   ...
+ * }
+ * ```
+ *
  * @class
  * @extends PIXI.Container
  * @memberof PIXI
@@ -21099,16 +21166,19 @@ var Sprite = function (_Container) {
 
         /**
          * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         * The default is 0,0 or taken from the {@link PIXI.Texture#defaultAnchor|Texture}
+         * passed to the constructor. A value of 0,0 means the texture's origin is the top left.
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered.
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner.
+         * Note: Updating the {@link PIXI.Texture#defaultAnchor} after a Texture is
+         * created does _not_ update the Sprite's anchor values.
          *
          * @member {PIXI.ObservablePoint}
          * @private
          */
         var _this = _possibleConstructorReturn(this, _Container.call(this));
 
-        _this._anchor = new _math.ObservablePoint(_this._onAnchorUpdate, _this);
+        _this._anchor = new _math.ObservablePoint(_this._onAnchorUpdate, _this, texture ? texture.defaultAnchor.x : 0, texture ? texture.defaultAnchor.y : 0);
 
         /**
          * The texture that the sprite is using
@@ -21593,9 +21663,10 @@ var Sprite = function (_Container) {
 
         /**
          * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         * The default is 0,0 or taken from the {@link PIXI.Texture|Texture} passed to the constructor.
+         * Setting the texture at a later point of time does not change the anchor.
+         *
+         * 0,0 means the texture's origin is the top left, 0.5,0.5 is the center, 1,1 the bottom right corner.
          *
          * @member {PIXI.ObservablePoint}
          */
@@ -21646,7 +21717,7 @@ var Sprite = function (_Container) {
                 return;
             }
 
-            this._texture = value;
+            this._texture = value || _Texture2.default.EMPTY;
             this.cachedTint = 0xFFFFFF;
 
             this._textureID = -1;
@@ -22797,7 +22868,8 @@ var defaultDestroyOptions = {
  * A Text Object will create a line or multiple lines of text. To split a line you can use '\n' in your text string,
  * or add a wordWrap property set to true and and wordWrapWidth property with a value in the style object.
  *
- * A Text can be created directly from a string and a style object
+ * A Text can be created directly from a string and a style object,
+ * which can be generated [here](https://pixijs.io/pixi-text-style).
  *
  * ```js
  * let text = new PIXI.Text('This is a PixiJS text',{fontFamily : 'Arial', fontSize: 24, fill : 0xff1010, align : 'center'});
@@ -23064,9 +23136,11 @@ var Text = function (_Sprite) {
         if (this._style.trim) {
             var trimmed = (0, _trimCanvas2.default)(canvas);
 
-            canvas.width = trimmed.width;
-            canvas.height = trimmed.height;
-            this.context.putImageData(trimmed.data, 0, 0);
+            if (trimmed.data) {
+                canvas.width = trimmed.width;
+                canvas.height = trimmed.height;
+                this.context.putImageData(trimmed.data, 0, 0);
+            }
         }
 
         var texture = this._texture;
@@ -23454,7 +23528,7 @@ var TextMetrics = function () {
     TextMetrics.measureText = function measureText(text, style, wordWrap) {
         var canvas = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : TextMetrics._canvas;
 
-        wordWrap = wordWrap || style.wordWrap;
+        wordWrap = wordWrap === undefined || wordWrap === null ? style.wordWrap : wordWrap;
         var font = style.toFontString();
         var fontProperties = TextMetrics.measureFont(font);
         var context = canvas.getContext('2d');
@@ -24142,9 +24216,12 @@ var defaultStyle = {
     leading: 0
 };
 
+var genericFontFamilies = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui'];
+
 /**
  * A TextStyle Object decorates a Text Object. It can be shared between
  * multiple Text objects. Changing the style will update all text objects using it.
+ * It can be generated [here](https://pixijs.io/pixi-text-style).
  *
  * @class
  * @memberof PIXI
@@ -24262,8 +24339,8 @@ var TextStyle = function () {
             // Trim any extra white-space
             var fontFamily = fontFamilies[i].trim();
 
-            // Check if font already contains strings
-            if (!/([\"\'])[^\'\"]+\1/.test(fontFamily)) {
+            // Check if font is already escaped in quotes except for CSS generic fonts
+            if (!/([\"\'])[^\'\"]+\1/.test(fontFamily) && genericFontFamilies.indexOf(fontFamily) < 0) {
                 fontFamily = '"' + fontFamily + '"';
             }
             fontFamilies[i] = fontFamily;
@@ -26104,6 +26181,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Utility class for maintaining reference to a collection
  * of Textures on a single Spritesheet.
  *
+ * To access a sprite sheet from your code pass its JSON data file to Pixi's loader:
+ *
+ * ```js
+ * PIXI.loader.add("images/spritesheet.json").load(setup);
+ *
+ * function setup() {
+ *   let sheet = PIXI.loader.resources["images/spritesheet.json"].spritesheet;
+ *   ...
+ * }
+ * ```
+ * With the `sheet.textures` you can create Sprite objects,`sheet.animations` can be used to create an AnimatedSprite.
+ *
+ * Sprite sheets can be packed using tools like {@link https://codeandweb.com/texturepacker|TexturePacker},
+ * {@link https://renderhjs.net/shoebox/|Shoebox} or {@link https://github.com/krzysztof-o/spritesheet.js|Spritesheet.js}.
+ * Default anchor points (see {@link PIXI.Texture#defaultAnchor}) and grouping of animation sprites are currently only
+ * supported by TexturePacker.
+ *
  * @class
  * @memberof PIXI
  */
@@ -26143,10 +26237,24 @@ var Spritesheet = function () {
         this.baseTexture = baseTexture;
 
         /**
-         * Map of spritesheet textures.
-         * @type {Object}
+         * A map containing all textures of the sprite sheet.
+         * Can be used to create a {@link PIXI.Sprite|Sprite}:
+         * ```js
+         * new PIXI.Sprite(sheet.textures["image.png"]);
+         * ```
+         * @member {Object}
          */
         this.textures = {};
+
+        /**
+         * A map containing the textures for each animation.
+         * Can be used to create an {@link PIXI.extras.AnimatedSprite|AnimatedSprite}:
+         * ```js
+         * new PIXI.extras.AnimatedSprite(sheet.animations["anim_name"])
+         * ```
+         * @member {Object}
+         */
+        this.animations = {};
 
         /**
          * Reference to the original JSON data.
@@ -26236,6 +26344,7 @@ var Spritesheet = function () {
 
         if (this._frameKeys.length <= Spritesheet.BATCH_SIZE) {
             this._processFrames(0);
+            this._processAnimations();
             this._parseComplete();
         } else {
             this._nextBatch();
@@ -26278,13 +26387,44 @@ var Spritesheet = function () {
                     trim = new _.Rectangle(Math.floor(data.spriteSourceSize.x * sourceScale) / this.resolution, Math.floor(data.spriteSourceSize.y * sourceScale) / this.resolution, Math.floor(rect.w * sourceScale) / this.resolution, Math.floor(rect.h * sourceScale) / this.resolution);
                 }
 
-                this.textures[i] = new _.Texture(this.baseTexture, frame, orig, trim, data.rotated ? 2 : 0);
+                this.textures[i] = new _.Texture(this.baseTexture, frame, orig, trim, data.rotated ? 2 : 0, data.anchor);
 
                 // lets also add the frame to pixi's global cache for fromFrame and fromImage functions
                 _.Texture.addToCache(this.textures[i], i);
             }
 
             frameIndex++;
+        }
+    };
+
+    /**
+     * Parse animations config
+     *
+     * @private
+     */
+
+
+    Spritesheet.prototype._processAnimations = function _processAnimations() {
+        var animations = this.data.animations || {};
+
+        for (var animName in animations) {
+            this.animations[animName] = [];
+            for (var _iterator = animations[animName], _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                var _ref;
+
+                if (_isArray) {
+                    if (_i >= _iterator.length) break;
+                    _ref = _iterator[_i++];
+                } else {
+                    _i = _iterator.next();
+                    if (_i.done) break;
+                    _ref = _i.value;
+                }
+
+                var frameName = _ref;
+
+                this.animations[animName].push(this.textures[frameName]);
+            }
         }
     };
 
@@ -26319,6 +26459,7 @@ var Spritesheet = function () {
             if (_this._batchIndex * Spritesheet.BATCH_SIZE < _this._frameKeys.length) {
                 _this._nextBatch();
             } else {
+                _this._processAnimations();
                 _this._parseComplete();
             }
         }, 0);
@@ -26426,8 +26567,9 @@ var Texture = function (_EventEmitter) {
      * @param {PIXI.Rectangle} [orig] - The area of original texture
      * @param {PIXI.Rectangle} [trim] - Trimmed rectangle of original texture
      * @param {number} [rotate] - indicates how the texture was rotated by texture packer. See {@link PIXI.GroupD8}
+     * @param {PIXI.Point} [anchor] - Default anchor point used for sprite placement / rotation
      */
-    function Texture(baseTexture, frame, orig, trim, rotate) {
+    function Texture(baseTexture, frame, orig, trim, rotate, anchor) {
         _classCallCheck(this, Texture);
 
         /**
@@ -26522,6 +26664,14 @@ var Texture = function (_EventEmitter) {
         }
 
         /**
+         * Anchor point that is used as default if sprite is created with this texture.
+         * Changing the `defaultAnchor` at a later point of time will not update Sprite's anchor point.
+         * @member {PIXI.Point}
+         * @default {0,0}
+         */
+        _this.defaultAnchor = anchor ? new _math.Point(anchor.x, anchor.y) : new _math.Point(0, 0);
+
+        /**
          * Fired when the texture is updated. This happens if the frame or the baseTexture is updated.
          *
          * @event PIXI.Texture#update
@@ -26534,7 +26684,7 @@ var Texture = function (_EventEmitter) {
         /**
          * Contains data for uvs. May contain clamp settings and some matrices.
          * Its a bit heavy, so by default that object is not created.
-         * @type {PIXI.TextureMatrix}
+         * @member {PIXI.TextureMatrix}
          * @default null
          */
         _this.transform = null;
@@ -27402,7 +27552,7 @@ var VideoBaseTexture = function (_BaseTexture) {
          * @member {boolean}
          * @default true
          */
-        _this.autoPlay = false;
+        _this.autoPlay = source.autoplay;
 
         _this.update = _this.update.bind(_this);
         _this._onCanPlay = _this._onCanPlay.bind(_this);
@@ -27642,6 +27792,7 @@ VideoBaseTexture.fromUrls = VideoBaseTexture.fromUrl;
 
 function createSource(path, type) {
     if (!type) {
+        path = path.split('?').shift().toLowerCase();
         type = 'video/' + path.substr(path.lastIndexOf('.') + 1);
     }
 
@@ -27690,6 +27841,7 @@ var Ticker = function () {
      */
     function Ticker() {
         var _this = this;
+
         _classCallCheck(this, Ticker);
 
         /**
@@ -27794,9 +27946,9 @@ var Ticker = function () {
          * @private
          * @param {number} time - Time since last tick.
          */
-        
         this._tick = function (time) {
             _this._requestId = null;
+
             if (_this.started) {
                 // Invoke listeners now
                 _this.update(time);
@@ -27819,7 +27971,6 @@ var Ticker = function () {
 
     Ticker.prototype._requestIfNeeded = function _requestIfNeeded() {
         if (this._requestId === null && this._head.next) {
-            
             // ensure callbacks get correct delta
             this.lastTime = performance.now();
             this._requestId = requestAnimationFrame(this._tick);
@@ -27854,7 +28005,6 @@ var Ticker = function () {
 
     Ticker.prototype._startIfPossible = function _startIfPossible() {
         if (this.started) {
-            
             this._requestIfNeeded();
         } else if (this.autoStart) {
             this.start();
@@ -29192,6 +29342,7 @@ function trimCanvas(canvas) {
         right: null,
         bottom: null
     };
+    var data = null;
     var i = void 0;
     var x = void 0;
     var y = void 0;
@@ -29225,10 +29376,11 @@ function trimCanvas(canvas) {
         }
     }
 
-    width = bound.right - bound.left;
-    height = bound.bottom - bound.top + 1;
-
-    var data = context.getImageData(bound.left, bound.top, width, height);
+    if (bound.top !== null) {
+        width = bound.right - bound.left;
+        height = bound.bottom - bound.top + 1;
+        data = context.getImageData(bound.left, bound.top, width, height);
+    }
 
     return {
         height: height,
@@ -30505,7 +30657,7 @@ var CanvasExtract = function () {
         var width = frame.width * resolution;
         var height = frame.height * resolution;
 
-        var canvasBuffer = new core.CanvasRenderTarget(width, height);
+        var canvasBuffer = new core.CanvasRenderTarget(width, height, 1);
         var canvasData = context.getImageData(frame.x * resolution, frame.y * resolution, width, height);
 
         canvasBuffer.context.putImageData(canvasData, 0, 0);
@@ -30717,7 +30869,7 @@ var WebGLExtract = function () {
         var width = frame.width * resolution;
         var height = frame.height * resolution;
 
-        var canvasBuffer = new core.CanvasRenderTarget(width, height);
+        var canvasBuffer = new core.CanvasRenderTarget(width, height, 1);
 
         if (textureBuffer) {
             // bind the buffer
@@ -30872,7 +31024,20 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
  *      textureArray.push(texture);
  * };
  *
- * let mc = new PIXI.AnimatedSprite(textureArray);
+ * let animatedSprite = new PIXI.extras.AnimatedSprite(textureArray);
+ * ```
+ *
+ * The more efficient and simpler way to create an animated sprite is using a {@link PIXI.Spritesheet}
+ * containing the animation definitions:
+ *
+ * ```js
+ * PIXI.loader.add("assets/spritesheet.json").load(setup);
+ *
+ * function setup() {
+ *   let sheet = PIXI.loader.resources["assets/spritesheet.json"].spritesheet;
+ *   animatedSprite = new PIXI.extras.AnimatedSprite(sheet.animations["image_sequence"]);
+ *   ...
+ * }
  * ```
  *
  * @class
@@ -30894,6 +31059,7 @@ var AnimatedSprite = function (_core$Sprite) {
          * @private
          */
         var _this = _possibleConstructorReturn(this, _core$Sprite.call(this, textures[0] instanceof core.Texture ? textures[0] : textures[0].texture));
+
         _this._textures = null;
 
         /**
@@ -35294,6 +35460,9 @@ var InteractionManager = function (_EventEmitter) {
 
         /**
          * Fired when a pointer device button is released over the display object.
+         * Not always fired when some buttons are held down while others are released. In those cases,
+         * use [mousedown]{@link PIXI.interaction.InteractionManager#event:mousedown} and
+         * [mouseup]{@link PIXI.interaction.InteractionManager#event:mouseup} instead.
          *
          * @event PIXI.interaction.InteractionManager#pointerup
          * @param {PIXI.interaction.InteractionEvent} event - Interaction event
@@ -37101,9 +37270,15 @@ exports.default = function () {
             // incase the image is loaded outside
             // using the same loader, resource will be available
             for (var name in this.resources) {
-                if (this.resources[name].url === url) {
-                    this.resources[name].metadata.pageFile = pageFile;
-                    completed(this.resources[name]);
+                var bitmapResource = this.resources[name];
+
+                if (bitmapResource.url === url) {
+                    bitmapResource.metadata.pageFile = pageFile;
+                    if (bitmapResource.texture) {
+                        completed(bitmapResource);
+                    } else {
+                        bitmapResource.onAfterMiddleware.add(completed);
+                    }
                     exists = true;
                     break;
                 }
@@ -38395,8 +38570,8 @@ var Plane = function (_Mesh) {
 
     /**
      * @param {PIXI.Texture} texture - The texture to use on the Plane.
-     * @param {number} verticesX - The number of vertices in the x-axis
-     * @param {number} verticesY - The number of vertices in the y-axis
+     * @param {number} [verticesX=10] - The number of vertices in the x-axis
+     * @param {number} [verticesY=10] - The number of vertices in the y-axis
      */
     function Plane(texture, verticesX, verticesY) {
         _classCallCheck(this, Plane);
@@ -41592,4 +41767,4 @@ global.PIXI = exports; // eslint-disable-line
 });
 
 
-
+//# sourceMappingURL=pixi.js.map
