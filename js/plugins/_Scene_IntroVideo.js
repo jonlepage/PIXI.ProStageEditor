@@ -19,9 +19,9 @@ Scene_IntroVideo.prototype = Object.create(Scene_Base.prototype);
 Scene_IntroVideo.prototype.constructor = Scene_IntroVideo;
 
 Scene_IntroVideo.prototype.initialize = function() {
-    Scene_Base.prototype.initialize.call(this,"Scene_IntroVideo_data");
     this.wait = 60;
     this.vidControlers = [];
+    Scene_Base.prototype.initialize.call(this);
 };
 
 Scene_IntroVideo.prototype.create = function() {
@@ -62,6 +62,5 @@ Scene_IntroVideo.prototype.update = function() {
 
 //TODO:
 Scene_IntroVideo.prototype.nextVideo = function() {
-    PIXI.utils.clearTextureCache();
-    SceneManager.goto(Scene_Loader,"Scene_Local_data",Scene_Local);
+   SceneManager.goto(Scene_Loader,"Scene_Local_data",Scene_Local);
 };

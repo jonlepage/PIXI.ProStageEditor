@@ -29,6 +29,7 @@ class _coreLoader {
         this.loaderSet = null; // sloaderSet from JSONlIST =>.json ***
         this.isLoading = false; // loading status
         this._currentSet = null; // store the current set loading
+        this._progressTxt = `BOOT:cores:  `;
         // JSON BOOT LIST
         Object.defineProperties(this, { "_JsonPath": { value: {
             MapInfos:"data/MapInfos.json", // also load all maps Map###_data.json and create galaxi register
@@ -83,8 +84,10 @@ _coreLoader.prototype.preLoad_Json = function() {
         loader0.load();
         loader0.onProgress.add((loader, res) => {
             this.loaderSet[res.name] = res.data;
+            this._progressTxt = this._progressTxt+` ${res.url }\n`; //FIXME: loader Text
         });
         loader0.onComplete.add((loader, res) => {
+            this._progressTxt = this._progressTxt+`___________________________\n`; //FIXME: loader Text
             L1.call(this);
         });
     };
@@ -97,6 +100,7 @@ _coreLoader.prototype.preLoad_Json = function() {
                 const id = map.id.padZero(3);
                 const path = `data/Map${id}.json`;
                 loader1.add(String(map.id), path);
+                this._progressTxt = this._progressTxt+` ${id} : ${path}\n`; //FIXME: loader Text
             };
         });
         loader1.load();
@@ -107,7 +111,8 @@ _coreLoader.prototype.preLoad_Json = function() {
             _res.height = res.data.height;
             _res.width = res.data.width;
             _res.events = res.data.events;
-            _res.note = res.data.note? JSON.parse(res.data.note) : {};  
+            _res.note = res.data.note? JSON.parse(res.data.note) : {};
+            this._progressTxt = this._progressTxt+`=>> : ${res.data.note}\n`; //FIXME: loader Text
         });
         loader1.onComplete.add((loader, res) => {
             // determine and add reference of galaxiID and planetID
@@ -122,16 +127,13 @@ _coreLoader.prototype.preLoad_Json = function() {
                 if(current.note.galaxiID){return false}; // galaxi no have planet id
                 while (!current.note.planetID) { current = MapInfos[current.parentId] };
                 return current.note.planetID;
-            }
-
+            };
             this.loaderSet.MapInfos.forEach(map => {
                 if(map){
                     map.galaxiID = getGalaxiID(map, this.loaderSet.MapInfos);
                     map.planetID = getPlanetID(map, this.loaderSet.MapInfos);
                 };
             });
-
-
             L2.call(this);
         });
     };
@@ -150,10 +152,7 @@ _coreLoader.prototype.preLoad_Json = function() {
         loader2.onError.add((err, loader, res) => { console.error(`Error on load MapID${res.name} Use Editor To create Scene_MapID${res.name}_data.json`) });
 
         loader2.onProgress.add((loader, res) => {
-            if(res.data){
-                this.loaderSet[`Scene_MapID${res.name}_data`] = res.data;
-            }
-          
+            if(res.data){ this.loaderSet[`Scene_MapID${res.name}_data`] = res.data };
         });
         loader2.onComplete.add((loader, res) => {
             L3.call(this);
@@ -162,7 +161,6 @@ _coreLoader.prototype.preLoad_Json = function() {
 
     const L3 = function(){
         // normalize and asign planet galaxi id to all map id.
- 
 
         // build planet information
        /* this.loaderSet.PlanetsInfos = {};
@@ -187,7 +185,7 @@ _coreLoader.prototype.preLoad_Json = function() {
 //└------------------------------------------------------------------------------┘
 //#1 $Loader.load(['loaderSet',loaderSet]);
 _coreLoader.prototype.load = function(set) {
-    console.log6('load_________________________________set: ', set);
+    console.log6('coreLoader_________________________________set: ', set);
     this.isLoading = true;
     this._currentSet = set;
     this._scene = SceneManager._scene; // current Scene_Loader
@@ -204,8 +202,10 @@ _coreLoader.prototype.load = function(set) {
     
     let loader = new PIXI.loaders.Loader();
     for (const name in sheetsBuffer) {
-        const sheetData = sheetsBuffer[name];
-        loader.add(name, `${sheetData.dir}/${sheetData.base}`);
+        if(!data2Buffer[name]){ // jump perma clone
+            const sheetData = sheetsBuffer[name];
+            loader.add(name, `${sheetData.dir}/${sheetData.base}`);
+        };
     };
     loader.load();
 
@@ -246,7 +246,7 @@ _coreLoader.prototype.load = function(set) {
 
     function loadNormal() {
         const loader = new PIXI.loaders.Loader();
-        for (const name in sheetsBuffer) {
+        for (const name in data2Buffer) {
             const meta = ressBuffer[name].data.meta;
             if(meta && meta.normal_map){
                 const originPath = sheetsBuffer[name].dir;
@@ -317,7 +317,7 @@ _coreLoader.prototype.load = function(set) {
                 const trim = tex.trim && tex.trim.clone();
                 const rot = tex._rotate;
                 const texture = new PIXI.Texture(baseTexture, frame, orig, trim, rot); // (this.baseTexture, this.frame, this.orig, this.trim, this.rotate
-                texture.textureCacheIds = [texName];
+                texture.textureCacheIds = [texName+"_n"];
                 textures_n[`${texName}_n`] = texture;
             };
             original.textures_n = textures_n; // add to originals textures normals
@@ -354,19 +354,19 @@ _coreLoader.prototype.load = function(set) {
                 origin.spineData = ressBuffer[name].spineData;
             }
             else if(origin.type === "tileSheet"){
-                /*Object.assign(origin.data, ressBuffer[name].data);
+                Object.assign(origin.data, ressBuffer[name].data);
                  // BG are special, asign single first texture only without the name reference.
-                if( sheetsBuffer.dirArray.contains("BG") ){
+                if( origin.BG ){
                     const texName = Object.keys(ressBuffer[name].textures)[0];
                     const texture = ressBuffer[name].textures[texName];
-                    const texture_n = ressBuffer[name].textures[texName];
+                    const texture_n = ressBuffer[name].textures_n[texName+"_n"];
                     Object.assign(origin.textures, texture);
                     Object.assign(origin.textures_n, texture_n);
-                    origin.BG = true; // say its a BG for the Editor 
+                    
                 }else{
                     Object.assign(origin.textures, ressBuffer[name].textures);
                     Object.assign(origin.textures_n, ressBuffer[name].textures_n);
-                };*/
+                };
             }
             else if(origin.type === "animationSheet"){
                 // build animations data
@@ -395,7 +395,6 @@ _coreLoader.prototype.load = function(set) {
         // check if perma
         PIXI.utils.clearTextureCache();
         $Loader.isLoading = false;
-        console.log('END CORE LOADING ');
     };
 };
 
@@ -414,9 +413,27 @@ _coreLoader.prototype.cantLoad = function(set) {
 
 // destroy custom cache but keep perma not enumerable
 _coreLoader.prototype.destroys = function() {
+    PIXI.utils.clearTextureCache();
     for (const key in this.Data2) { 
         delete this.Data2[key];
     }; 
 };
 
+// make perma current data2, do it once when sceneBooting the game
+_coreLoader.prototype.setPermaCurrentData = function() {
+    for (const key in this.Data2) {
+        Object.defineProperty(this.Data2, key, { enumerable: false });
+    }; 
+};
+
+// return data of current loaderSet
+_coreLoader.prototype.getCurrentLoaderSet = function(set) {
+    // force get new set
+    if(set){
+        this._currentSet = set;
+    }
+    if(this._currentSet){
+        return this.loaderSet[this._currentSet];
+    };
+};
 

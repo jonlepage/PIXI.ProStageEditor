@@ -19,13 +19,12 @@ Initialise avantr le loader , seulement pendant la sceneBOOT
 class _mouse extends PIXI.Container {
     constructor() {
         super();
+        this.name = "mouseContainer";
         this.spine = null;
         this.screenX = 1920;
         this.screenY = 1080;
-        this.interaction = null;//Graphics._renderer.plugins.interaction;
-        this.light =  this.light_mouse =  new PIXI.lights.PointLight(0xffffff,0.8); 
-        this.light.lightHeight = 0.03;
-        this.light.falloff[0] = 1;
+        this.interaction = null; //Graphics._renderer.plugins.interaction;
+        this.light = new PIXI.lights.PointLight(0xffffff,1);
 
         this.mPos = new PIXI.Point(0,0); // mouse position value // this.interaction.mouse.global.x
         this.follower = new PIXI.Point(0,0);
@@ -49,15 +48,15 @@ _mouse.prototype.initialize = function() {
     document.getElementById("GameCanvas").style.cursor = "none"; // hide win cursor
     this.interaction.cursorStyles.default = "none";
     this.interaction.cursorStyles.pointer = "none"
-    this.addChild(this.light); // add light
+    this.addChild(this.light);
     this.create_Sprites();
+
 };
 
 
 //create the sprite spine mouse and default animations
 _mouse.prototype.create_Sprites = function() {
     const mouse = new PIXI.spine.Spine($Loader.Data2.gloves.spineData);
-    console.log('mouse: ', mouse);
     if (!mouse) { return };
 
     mouse.skeleton.setSkinByName("point");
@@ -102,6 +101,8 @@ _mouse.prototype.create_Sprites = function() {
     mouseTick.start();
     this.startTrail();
  };
+
+
  _mouse.prototype.mouseMove = function(e) {
 
      this.mPos.x = this.interaction.mouse.global.x;

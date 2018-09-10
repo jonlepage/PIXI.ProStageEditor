@@ -23,13 +23,13 @@ Scene_Local.prototype = Object.create(Scene_Base.prototype);
 Scene_Local.prototype.constructor = Scene_Local;
 
 Scene_Local.prototype.initialize = function() {
-    Scene_Base.prototype.initialize.call(this,"Scene_Local_data"); // pass loaderset for setup Scene ambiant
-    console.log('this: ', this);
+    // pass loaderset for setup Scene ambiant
+    console.log('Scene_Local: ', this);
     this.alpha = 0; // active the fadeIn
     this.waitReady = 40; // stabiliser
     this.currentHoverFlag = null; // when mouse are hover a flag
 
-
+    Scene_Base.prototype.initialize.call(this);
 };
 
 // create element for scene and setup.
@@ -54,7 +54,7 @@ Scene_Local.prototype.start = function() {
 Scene_Local.prototype.update = function() {
     if(!this.busy){
         const mX = $mouse.x, mY = $mouse.y;
-        this.update_Light(mX,mY);
+        //this.update_Light(mX,mY);
     };
 };
 //#endregion

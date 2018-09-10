@@ -65,7 +65,7 @@ Graphics._createUpperCanvas = function() {
 // ┌-----------------------------------------------------------------------------┐
 // SCENE LOADER THATS SHOW
 //└------------------------------------------------------------------------------┘
-function Scene_Loader(loaderSets,callBackScene,firstTime) {
+function Scene_Loader(loaderSets,callBackScene) {
     this.initialize.apply(this, arguments);
 }
 
@@ -76,13 +76,14 @@ Scene_Loader.prototype.initialize = function(loaderSets, callBackScene) {
     console.log(`Scene_Loader.initialize: %c("${arguments[0]}",  ${arguments[1].name})`,"color: green");
     this.loaderSets = loaderSets;
     this.callBackScene = callBackScene;
-    
+    this.firstBoot = false;
     Scene_Base.prototype.initialize.call(this);
 };
 
 Scene_Loader.prototype.create = function() {
     // if loader set not exist, it because it the first boot, so preload all json
     if(!$Loader.loaderSet){
+        this.firstBoot = true;
         this._progress = 0;
         this._progressTxt = [];
         const style = new PIXI.TextStyle({ fill: "white", fontFamily: "Times New Roman", fontSize: 20 });
@@ -94,33 +95,31 @@ Scene_Loader.prototype.create = function() {
         this.text1 = text1;
         this.text2 = text2;
         $Loader.preLoad_Json();
-    };
+    }
 };
 
-// #1
+// firstBoot, need wait loader load all json data
 Scene_Loader.prototype.isReady = function() {
-    // if firstime, wait load the MapInfos.json befor start boot load
-    if(this.firstTime){ // FORCE RENDERING TEXT FIRST TIME 
+    if(this.firstBoot){ // FORCE RENDERING TEXT LOG firstBoot mode
         this.text2.text = $Loader._progressTxt;
         Graphics.render(this);
-    }; 
+    };
     return !$Loader.isLoading;
 };
 
 // #2 start Loader
 Scene_Loader.prototype.start = function() {
-    console.log(`start: %c$Loader.load("${this.loaderSets}")`, "color: green");
+
     //$Objs.list_master = []; // purge objet scene
     $Loader.load(this.loaderSets);
 };
 
-aaa = 100
+
 Scene_Loader.prototype.update = function() {
-    if(!$Loader.isLoading && aaa-- ===0){
-    console.log9(`load %ccomplette:`,"color: green");
-        document.title = document.title+"=>"+this.callBackScene.name;
+    if(!$Loader.isLoading){
+        console.log('!$Loader.isLoading: ', !$Loader.isLoading);
+        document.title = document.title +"+" +this.callBackScene.name;
         SceneManager.goto(this.callBackScene);
+        
     };
 };
-
-

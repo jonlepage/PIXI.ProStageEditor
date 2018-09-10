@@ -16,6 +16,7 @@ class _player extends PIXI.Container {
     constructor() {
         super();
         this.Sprites = {d:null, n:null};
+        this._planetID = null; // player current planet id
     };
   
 };
@@ -77,13 +78,13 @@ _player.prototype.moveToCase = function(objCase) {
 // $player.transferMap(1,1,1); // setupNewGame
 _player.prototype.transferMap = function(mapID) {
     // check if need load all stuff for planet ?
-    const targetPlanetID = $Loader.loaderSet.MapInfos[mapID].planetID; // target planet id need for this mapID
-    if($Loader._currentPlanetID !== targetPlanetID){ // the planet not loaded ? 
-        SceneManager.goto(Scene_Loader, `PlanetID${mapID}`, window[`Scene_MapID${mapID}`]); // load befor planetID and go map
-        
+    const planetID = $Loader.loaderSet.MapInfos[mapID].planetID; // target planet id need for this mapID
+    if(planetID !== this._planetID){
+        this._planetID = planetID;
+        SceneManager.goto(Scene_Loader,"PlanetID1",Scene_MapID1);
     }else{
         SceneManager.goto(window[`Scene_MapID${mapID}`]); // planet loaded , just go mapScene id
-    }
+    };
     
 };
 

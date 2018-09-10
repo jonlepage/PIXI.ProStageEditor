@@ -24,10 +24,16 @@ class _objs{
 $Objs = new _objs();
 console.log1('$Objs: ', $Objs);
 
-//$Objs.createFromList();  
-_objs.prototype.createFromList = function(LIST) {
-    for (let i=0, l=LIST.length; i<l; i++) {
-        const e = LIST[i];
+//$Objs.initialize();
+_objs.prototype.initialize = function(_OBJS) {
+    this.list_master = [];
+    this.list_cases = [];
+    _OBJS && this.createFromList(_OBJS);
+};
+
+_objs.prototype.createFromList = function(_OBJS) {
+    for (let i=0, l=_OBJS.length; i<l; i++) {
+        const e = _OBJS[i];
         const Data_Values = e.Data_Values;
         const Data = $Loader.Data2[e.Data.name];
         const textureName = e.textureName;

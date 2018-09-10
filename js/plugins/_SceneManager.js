@@ -28,7 +28,7 @@ SceneManager.run = function() {
 
 
 SceneManager.goto = function(sceneClass, loaderSets, callBackScene) {
-    console.log0('SceneManager.goto: ', sceneClass.name,loaderSets,callBackScene&&callBackScene.name);
+    console.log0('SceneManager.goto: ', sceneClass.name, loaderSets, callBackScene&&callBackScene.name);
     //if sceneClass is loaderScene, take loader Argument, wait , and isReady goTo callBackScene
     if (sceneClass) {
         this._nextScene = new sceneClass(loaderSets,callBackScene);
@@ -139,73 +139,71 @@ SceneManager.onSceneStart = function() {
 // SCENE BASE 
 //└------------------------------------------------------------------------------┘
 
-console.log1('$Filters: ', $Filters.noiseGame);
-Scene_Base.prototype.initialize = function(loaderSet) {
+
+Scene_Base.prototype.initialize = function(set) {
     Stage.prototype.initialize.call(this);
     this._active = false;
     this._fadeSign = 0;
     this._fadeDuration = 0;
     this._fadeSprite = null;
     this._imageReservationId = Utils.generateRuntimeId();
-
-    this.Background = null;
-   // this.loaderSet = $Loader.loaderSet[loaderSet];
-
+    // customCode base
+    this.loaderSet = $Loader.getCurrentLoaderSet(set);
     this.asignDisplayGroup();
-    this.create_Cages();
-    /*if(this.loaderSet){ // TODO: probablement separer les scenes et sceneMap qui a tous les carte mais sur loaderSet diferent
-        // les loaderset sont pas dispo pour la premier scene loading ???
-        this.createBackground(this.loaderSet._SCENE.Background || false);
+    if(this.loaderSet){
+        this.createLights();
+        this.create_Cages();
+        this.createBackground();
         this.create_ObjFromJson();
-    };*/
-    // initialise modules will depend of specific stage scene.
-    $camera.initialise(this.CAGE_MAP);
-    $Loader._scene = this; // attache the current scene to core loader for allow show progression and text register
+
+        $camera.initialise(this.CAGE_MAP, [1920/2,1080/2]); // initialise the cam with current scene
+        this.CAGE_MOUSE.addChild($mouse);//add the mouse to current scene
+        console.log9('this: ', this);
+    };
 };
 
+// add to STAGE, pixiDisplay layers
 Scene_Base.prototype.asignDisplayGroup = function() {
-    this.addChild($displayGroup._spriteBlack_d);
-    this.addChild($displayGroup._layer_diffuseGroup);
-    this.addChild($displayGroup._layer_normalGroup);
-    this.addChild($displayGroup._layer_lightGroup);
-    // addChild group
-    const layersGroup = $displayGroup.layersGroup;
-    for (let i = 0, l = layersGroup.length; i < l; i++) {
-        this.addChild(layersGroup[i]);
-    };
-    //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
-    const dataScene = this.loaderSet && this.loaderSet._SCENE || {color:0xffffff, brightness:1};
-    this.light_Ambient = new PIXI.lights.AmbientLight(dataScene.color, dataScene.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
-    this.light_Ambient.Type = "AmbientLight";
+    this.addChild( // lights groups
+        $displayGroup._spriteBlack_d,
+        $displayGroup._layer_diffuseGroup,
+        $displayGroup._layer_normalGroup,
+        $displayGroup._layer_lightGroup,
+        ...$displayGroup.layersGroup // displayGroups
+    );
+};
 
-    this.light_sunScreen =  new PIXI.lights.PointLight(0xffffff,0.8); // the sceen FX sun TODO: in Editor
-    this.light_sunScreen.Type = "PointLight";
-    
-    this.light_sunScreen.position.set(0, 0);
-    this.addChild(this.light_Ambient,this.light_sunScreen);
+// add to STAGE, lights and ambiants
+//http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
+Scene_Base.prototype.createLights = function() {
+    const _SCENE = this.loaderSet._SCENE || {color:0xffffff, brightness:0.6}; // ref loaderSet for light or asign default value
+
+    this.light_Ambient = new PIXI.lights.AmbientLight(_SCENE.color, _SCENE.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
+    this.light_Ambient.Type = "AmbientLight";
+    this.addChild(this.light_Ambient);
+    // ajust the mouse light scene if custom data exist?
+    if(this.loaderSet._SCENE){
+        $mouse.light
+    };
 };
 
 Scene_Base.prototype.create_Cages = function() {
     this.CAGE_MAP = new PIXI.Container();
     this.CAGE_GUI = new PIXI.Container();
     this.CAGE_MOUSE = new PIXI.Container();
-
-    this.CAGE_MAP.name = "CAGE_MAP";
-    this.CAGE_GUI.name = "CAGE_GUI";
-    this.CAGE_MOUSE.name = "CAGE_MOUSE";
-
+    this.CAGE_MAP.name = "CAGE_MAP", this.CAGE_GUI.name = "CAGE_GUI", this.CAGE_MOUSE.name = "CAGE_MOUSE";
     this.addChild( this.CAGE_MAP, this.CAGE_GUI, this.CAGE_MOUSE);
-    $mouse && this.CAGE_MOUSE.addChild($mouse);//TODO: faire une method asignation
 };
 
-// scene only, voir si on peut le mettre pour map
+// pass background arg or use from loaderSet ?
 Scene_Base.prototype.createBackground = function(bg) {
-    if(this.Background){ this.CAGE_MAP.removeChild(this.Background) }; // for editor
+    console.log1('bg: ', bg);
+    bg = bg || this.loaderSet._SCENE && this.loaderSet._SCENE.Background || null;
+    this.clearBackground();
     if(bg){
-        const data = (typeof bg === 'string') ? $Loader.Data2[bg] : bg;
+        const data = typeof bg === "string" && $Loader.Data2[bg] || bg;
         const cage = new PIXI.Container();
-            cage.name = data.name;
-        //const data = _data || $Loader.reg._misc._bg.backgroud; // bg
+        cage.name = data.name;
         const sprite_d = new PIXI.Sprite(data.textures);
         const sprite_n = new PIXI.Sprite(data.textures_n);
         // asign group display
@@ -213,22 +211,27 @@ Scene_Base.prototype.createBackground = function(bg) {
         sprite_n.parentGroup = PIXI.lights.normalGroup;
         cage.parentGroup = $displayGroup.group[0];
         cage.addChild(sprite_d, sprite_n);
-        this.Background = cage;
         this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
-    }else{
-       this.Background = false;
-    }
+        this.Background = cage;
+    };
 };
 
-// create Objs from json
-Scene_Base.prototype.create_ObjFromJson = function() {
-    $Objs.createFromList(this.loaderSet._OBJS);
-    $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
-    $Objs.list_master.forEach(cage => { cage.getBounds() });
-    // groupe all case and interactivity
-    $Objs.getCases();
-    this.initialiseCasesInteractivity();
+// clear remove Background
+Scene_Base.prototype.clearBackground = function() {
+    this.CAGE_MAP.removeChild(this.Background);
+    this.Background = null;
+};
 
+// create Objs from this.loaderSet
+Scene_Base.prototype.create_ObjFromJson = function() {
+    if(this.loaderSet._OBJS){
+        $Objs.initialize(this.loaderSet._OBJS); // initialise
+        this.CAGE_MAP.addChild(...$Objs.list_master);
+        //$Objs.list_master.forEach(cage => { cage.getBounds() });
+        // groupe all case and interactivity
+       // $Objs.getCases();
+       // this.initialiseCasesInteractivity();
+    };
 };
 
 // add cases listener

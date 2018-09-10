@@ -24,9 +24,9 @@ Scene_Title.prototype = Object.create(Scene_Base.prototype);
 Scene_Title.prototype.constructor = Scene_Title;
 
 Scene_Title.prototype.initialize = function() {
-    Scene_Base.prototype.initialize.call(this,"Scene_Title_data"); // pass loaderset for setup Scene ambiant
     this.alpha = 0; // active the fadeIn
     this.waitReady = 30; // stabiliser
+    Scene_Base.prototype.initialize.call(this);
 };
 
 // create element for scene and setup.
@@ -132,6 +132,7 @@ Scene_Title.prototype.commandClick = function(e) {
 
 // playCommand_startNewGame
 Scene_Title.prototype.startNewGame = function(option) {
+    //TODO: SETUP NEW GAME() METHOD
     const startMapID = $Loader.loaderSet.System.startMapId;
-    $player.transferMap(startMapID); // transfer player to mapID
+    $player.transferMap(startMapID);
 };

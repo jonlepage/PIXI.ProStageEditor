@@ -30,10 +30,9 @@ Scene_MapID1.prototype = Object.create(Scene_Base.prototype);
 Scene_MapID1.prototype.constructor = Scene_MapID1;
 
 Scene_MapID1.prototype.initialize = function() {
-    Scene_Base.prototype.initialize.call(this,"Scene_MapID1_data"); // pass loaderset for setup Scene ambiant
-    this.planetID = 1; //TODO: METTRE DYNAMICS
     this.alpha = 0; // active the fadeIn
     this.waitReady = 30; // stabiliser
+    Scene_Base.prototype.initialize.call(this,"Scene_MapID1_data");
 };
 
 // create element for scene and setup.
