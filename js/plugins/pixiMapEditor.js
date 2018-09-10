@@ -641,11 +641,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return rec;
     };
 
-    // scene mouse update
-    function update_Light() {
-        STAGE.light_sunScreen.x =  mX, STAGE.light_sunScreen.y = mY;
-    };
-
     // Get a ratio for resize in a bounds
     function getRatio(obj, w, h) {
         let r = Math.min(w / obj.width, h / obj.height);
@@ -1903,7 +1898,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         mX = $mouse.x, mY = $mouse.y;
         mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
         mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
-        update_Light();
 
         // if mouse have sprite =>update
         if(CAGE_MOUSE.list && !MouseHold && !FreezeMouse){ // update cages list hold by mouse
