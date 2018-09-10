@@ -104,7 +104,7 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
    n? n.name = textureName+"_n" : void 0;
 
    cage.addChild(d);
-   n && cage.addChild(d);
+   n && cage.addChild(n);
     for (const key in Data_Values) {
         const value = Data_Values[key];
         switch (key) {
