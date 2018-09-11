@@ -3,6 +3,7 @@
 var $plugins =
 [
 {"name":"Community_Basic","status":true,"description":"Plugin used to set basic parameters.","parameters":{"cacheLimit":"20","screenWidth":"1920","screenHeight":"1080","changeWindowWidthTo":"800","changeWindowHeightTo":"","renderingMode":"auto","alwaysDash":"off"}},
+{"name":"core_ContainerData","status":true,"description":"manager pixi container datas\r\nV.0.1\r\nLicense:© M.I.T\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────┘\r\nRemplacer la class Container par container Data , qui aura pour effet de pourvoir gerer des method specials\r\nComme obtenir de facon general les propreties pour les json\r\nLa class containerData est atribuer a tous les obj sprites du jeux pour difuse et normal","parameters":{}},
 {"name":"core_ObjsEvents","status":true,"description":"Manage ,create game objs and events for Scene stage\r\nV.1.0\r\nLicense:© M.I.T\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────┘\r\nPermet de constuire des objets specifiques selon leur type.\r\nVoir le Stages","parameters":{}},
 {"name":"core_displayGroupe","status":true,"description":"","parameters":{}},
 {"name":"core_Loader","status":true,"description":"loader class\r\nV.1.0\r\nLicense:© M.I.T\r\nVERY IMPORTANT NOTE: Export from texturePacker with trimmed Name (remove extention.png for use tile normal)\r\n└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘","parameters":{}},
