@@ -799,44 +799,45 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // create data id for HTML JSON, if existe , return Data_Values
     function computeDataForJson(OBJ){
         const data = {};
-        // general
-        if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
-            data.position = [OBJ.position.x, OBJ.position.y];
-            data.scale = [OBJ.scale.x, OBJ.scale.y];
-            data.skew = [OBJ.skew.x, OBJ.skew.y];
-            data.pivot = [OBJ.pivot.x, OBJ.pivot.y];
-            OBJ.Sprites.d.anchor? data.anchor = [OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] : void 0; //sub (disable on spineSheet)
-
-            data.groupID = OBJ.groupID;
-            data.rotation = OBJ.rotation;
-            data.alpha = OBJ.alpha;
-            data.zIndex = OBJ.zIndex;
-            data.parentGroup = OBJ.parentGroup.zIndex;
-            data.autoGroups = OBJ.autoGroups;
-
-            data.blendMode = [OBJ.Sprites.d.blendMode, OBJ.Sprites.n.blendMode]; // sub
-            data.tint = [OBJ.Sprites.d.tint, OBJ.Sprites.n.tint]; // sub
-            
-            if(OBJ.Sprites.d.color || OBJ.Sprites.n.color){
-                data.color = {}; // sub
-                OBJ.Sprites.d.color ? data.color.d = [
-                    PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse(), 
-                    PIXI.utils.hex2rgb(OBJ.Sprites.d.color.lightRgba).reverse()
-                ] : void 0;
-                OBJ.Sprites.n.color ? data.color.n =  [
-                    PIXI.utils.hex2rgb(OBJ.Sprites.n.color.darkRgba).reverse(), 
-                    PIXI.utils.hex2rgb(OBJ.Sprites.n.color.lightRgba).reverse()
-                ] : void 0;
+        //TODO: spineSheet
+        const list1 = [ 'position','scale','skew','pivot']; // general props list for 2D value
+        const list2 = [ 'name','groupID','rotation','alpha','zIndex','autoGroups', 'animationSpeed','loop']; // single value list from container
+        const list3 = [ 'blendMode','tint',]; // value from difuse and normal [d,n]
+        list1.forEach(key => {
+            data[key] = [OBJ[key].x, OBJ[key].y];
+        });
+        list2.forEach(key => {
+            if(OBJ.hasOwnProperty(key)){
+                data[key] = OBJ[key].valueOf();
             };
-        }
-        if(OBJ.Type === "animationSheet"){
-            data.animationSpeed = OBJ.animationSpeed;
-            data.loop = OBJ.loop;
-        }
-        if(OBJ.Type === "spineSheet"){//TODO:
-
-        }
+        });
+        list3.forEach(key => {
+            if(isFinite(OBJ.Sprites.d[key])){
+                data[key] = data[key] || {};
+                data[key].d = OBJ.Sprites.d[key].valueOf();
+            };
+            if(OBJ.Sprites.n && isFinite(OBJ.Sprites.n[key])){
+                data[key] = data[key] || {};
+                data[key].n = OBJ.Sprites.n[key].valueOf();
+            };
+        });
+        // SPECIAL PROPS
+        data.parentGroup = OBJ.parentGroup.zIndex;
+        OBJ.Sprites.d.hasOwnProperty('anchor')? data.anchor = [OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] : void 0;
+        if( OBJ.Sprites.d.hasOwnProperty('color') ){
+            data.color = {};
+            data.color.d = [
+                PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse(), 
+                PIXI.utils.hex2rgb(OBJ.Sprites.d.color.lightRgba).reverse()
+            ];
+            data.color.n = [
+                PIXI.utils.hex2rgb(OBJ.Sprites.n.color.darkRgba).reverse(), 
+                PIXI.utils.hex2rgb(OBJ.Sprites.n.color.lightRgba).reverse()
+            ];
+        };
+        console.log('data: ', data);
         return data;
+        
     };
 
     function getDataJson(OBJ){
@@ -2406,6 +2407,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function computeSave_OBJ(list_master) {
+        console.log('list_master: ', list_master);
         const objs = [];
         list_master.forEach(e => {
             const _Data_Values = computeDataForJson(e); // version simple du Data_Values baser sur les values reel de l'elements

@@ -226,7 +226,7 @@ Scene_Base.prototype.clearBackground = function() {
 Scene_Base.prototype.create_ObjFromJson = function() {
     if(this.loaderSet._OBJS){
         $Objs.initialize(this.loaderSet._OBJS); // initialise
-        this.CAGE_MAP.addChild(...$Objs.list_master);
+        $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
         //$Objs.list_master.forEach(cage => { cage.getBounds() });
         // groupe all case and interactivity
        // $Objs.getCases();

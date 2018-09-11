@@ -38,6 +38,7 @@ _objs.prototype.createFromList = function(_OBJS) {
         const Data = $Loader.Data2[e.Data.name];
         const textureName = e.textureName;
         // from type
+
         switch (Data.type) {
             case "tileSheet":
                 this.list_master[i] = this.create_fromTileSheet(Data,Data_Values,textureName);
@@ -46,7 +47,7 @@ _objs.prototype.createFromList = function(_OBJS) {
                 this.list_master[i] = this.create_fromAnimationSheet(Data,Data_Values,textureName);
             break;
             case "spineSheet":
-                this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
+                //this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
             break;
         };
     };
@@ -90,11 +91,43 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
+
+    for (const key in Data_Values) {
+        const value = Data_Values[key];
+        console.log('key: ', key,value);
+        switch (key) {
+            case "position":case "scale":case "skew":case "pivot":
+                cage[key].set(...value);
+                break;
+            case "anchor":
+                d.anchor.set(...value);
+                n.anchor.set(...value);
+            break;
+            case "blendMode":case "tint":
+                d[key] = value.d;
+                n[key] = value.n;
+            case "color":
+              /*  d.convertToHeaven();
+                d.color.setDark(...value.d[0]);
+                d.color.setLight(...value.d[1]);
+                n && n.convertToHeaven();
+                n && n.color.setDark(...value.n[0]);
+                n && n.color.setLight(...value.n[1]);*/
+            break;
+            case "parentGroup":break;
+            default:
+               // cage[key] = value;
+            break;
+        };
+    };
+
+    
    // asign group display
-   cage.parentGroup = $displayGroup.group[+Data_Values.parentGroup]; //TODO: add to json addAttr_default
-   cage.zIndex = Data_Values.zIndex; //TODO: add to json addAttr_default
+   cage.parentGroup = $displayGroup.group[Data_Values.parentGroup]; //TODO: add to json addAttr_default
+   cage.zIndex = Data_Values.zIndex;
+   
    d.parentGroup = PIXI.lights.diffuseGroup;
-   n? n.parentGroup = PIXI.lights.normalGroup : void 0;
+   n.parentGroup = PIXI.lights.normalGroup;
    // reference
    cage.Sprites = {d:d,n:n};
    cage.name = Data.name;
@@ -105,35 +138,6 @@ _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textur
 
    cage.addChild(d);
    n && cage.addChild(n);
-    for (const key in Data_Values) {
-        const value = Data_Values[key];
-        switch (key) {
-            
-            case "position":case "scale":case "skew":case "pivot":
-                cage[key].set(...value);
-            break;
-            case "anchor":
-                d.anchor.set(...value);
-                n && n.anchor.set(...value);
-            break;
-            case "blendMode":case "tint":
-                d[key] = +value[0];
-                n? n[key] = +value[1] : void 0;
-            break;
-            case "color":
-                d.convertToHeaven();
-                d.color.setDark(...value.d[0]);
-                d.color.setLight(...value.d[1]);
-                n && n.convertToHeaven();
-                n && n.color.setDark(...value.n[0]);
-                n && n.color.setLight(...value.n[1]);
-            break;
-            case "parentGroup":break;
-            default:
-                cage[key] = value;
-            break;
-        };
-    };
 };
 
 _objs.prototype.getsByID = function(id) {
