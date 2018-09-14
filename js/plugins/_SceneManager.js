@@ -12,12 +12,17 @@ NOTE AND HELP:
 */
 SceneManager.run = function() {
     try {
-        const debug = require('nw.gui').Window.get().showDevTools();
-        const gui = require('nw.gui').Window.get();
-        gui.x = 0 ;
-        gui.focus();
-        // setup compatibility pointer lock
-        const element = document.body; // document.body.requestPointerLock()
+        // game gui
+        const winGui = require('nw.gui').Window.get();
+        winGui.show();
+        winGui.focus();
+        // debug gui
+       /* winGui.showDevTools();
+        const debugGui = require('nw.gui').Window.get();
+        debugGui.x = 0 ;
+        debugGui.focus();*/
+
+        //start
         this.initialize();
         this.goto(Scene_Loader,"Perma",Scene_Boot);
         this.requestUpdate();

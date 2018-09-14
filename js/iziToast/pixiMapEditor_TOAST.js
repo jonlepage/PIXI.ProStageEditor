@@ -15,7 +15,7 @@ _PME.prototype.izit_loading1 = function() { // load all sprites dependency for e
         icon: 'icon-person',
         title: 'PLEASE WAIT:',
         message: `Converting Engine for Editor:`,
-        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
         progressBarColor: 'rgb(0, 255, 184)',
         backgroundColor: '#3f3f3f',
         progressBarColor:'#f44242',

@@ -34,6 +34,7 @@ _objs.prototype.initialize = function(_OBJS) {
 _objs.prototype.createFromList = function(_OBJS) {
     for (let i=0, l=_OBJS.length; i<l; i++) {
         const e = _OBJS[i];
+        console.log('e: ', e);
         const Data_Values = e.Data_Values;
         const Data = $Loader.Data2[e.Data.name];
         const textureName = e.textureName;
@@ -44,17 +45,18 @@ _objs.prototype.createFromList = function(_OBJS) {
                 this.list_master[i] = this.create_fromTileSheet(Data,Data_Values,textureName);
             break;
             case "animationSheet":
-                this.list_master[i] = this.create_fromAnimationSheet(Data,Data_Values,textureName);
+                //this.list_master[i] = this.create_fromAnimationSheet(Data,Data_Values,textureName);
             break;
             case "spineSheet":
-                //this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
+                this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
             break;
         };
     };
 };
 
-_objs.prototype.create_fromSpineSheet = function(Data, Data_Values, textureName){
-    const cage = new PIXI.Container();
+_objs.prototype.create_fromSpineSheet = function(dataBase, dataValues, textureName){
+    const cage = new PIXI.CageContainer(dataBase, dataValues);
+    return console.log('cage: ', cage);
     const sprite_d = new PIXI.spine.Spine(Data.spineData);
         sprite_d.skeleton.setSkinByName(textureName);
         sprite_d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
@@ -92,34 +94,6 @@ _objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureN
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
 
-    for (const key in Data_Values) {
-        const value = Data_Values[key];
-        console.log('key: ', key,value);
-        switch (key) {
-            case "position":case "scale":case "skew":case "pivot":
-                cage[key].set(...value);
-                break;
-            case "anchor":
-                d.anchor.set(...value);
-                n.anchor.set(...value);
-            break;
-            case "blendMode":case "tint":
-                d[key] = value.d;
-                n[key] = value.n;
-            case "color":
-              /*  d.convertToHeaven();
-                d.color.setDark(...value.d[0]);
-                d.color.setLight(...value.d[1]);
-                n && n.convertToHeaven();
-                n && n.color.setDark(...value.n[0]);
-                n && n.color.setLight(...value.n[1]);*/
-            break;
-            case "parentGroup":break;
-            default:
-               // cage[key] = value;
-            break;
-        };
-    };
 
     
    // asign group display

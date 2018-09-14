@@ -25,11 +25,9 @@ class _mouse extends PIXI.Container {
         this.screenY = 1080;
         this.interaction = null; //Graphics._renderer.plugins.interaction;
         this.light = new PIXI.lights.PointLight(0xffffff,1);
-
         this.mPos = new PIXI.Point(0,0); // mouse position value // this.interaction.mouse.global.x
         this.follower = new PIXI.Point(0,0);
         this.ease = 0.35;
-
         this.onCase = null;
     };
   };
@@ -45,6 +43,9 @@ console.log1('$mouse. ', $mouse);
 //$mouse.initialize()
 _mouse.prototype.initialize = function() {
     this.interaction = Graphics._renderer.plugins.interaction;
+
+    this.interaction.interactionFrequency = 10;
+
     document.getElementById("GameCanvas").style.cursor = "none"; // hide win cursor
     this.interaction.cursorStyles.default = "none";
     this.interaction.cursorStyles.pointer = "none"

@@ -15,6 +15,7 @@ NOTE AND HELP:
  // START INITIALISE EDITOR (FROM RMMV PLUGIN MANAGER)
 document.addEventListener('keydown', initializeEditor);
 function initializeEditor(event){
+    console.log('event: ', event);
     if(event.key === "F1" && !$PME.started){
         console.log1('__________________initializeEditor:__________________ ');
         (function() {
@@ -542,13 +543,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let x = 100;
         for (const key in DATA) { // this._avaibleData === DATA
             if(!DATA[key].BG){ // dont add BG inside library
-                const cage = build_ThumbsLibs(key,"thumbs"); // create from Data ""
-                cage.buttonType = "thumbs";
-                cage.alpha = 0.75;
-                cage.interactive = true;
-                cage.on('pointerover', pointer_overIN);
-                cage.on('pointerout', pointer_overOUT);
-                cage.on('pointerup', pointer_UP);
+                const cage = build_ThumbsLibs(DATA[key]); // create from Data ""
                 CAGE_LIBRARY.list.push(cage);
             };
         };
@@ -839,66 +834,72 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
         
     };
-
-    function getDataJson(OBJ){
+    function getDataDefault(dataBase, textureName){
         // data for the scene setup
-        let data = {};
-        if(OBJ.Type === "AmbientLight"){
-            data =  { ...data,
-                brightness:{def:1, value:OBJ.brightness },
-                drawMode:{def:4, value:OBJ.drawMode},
-                color:{def:"0xffffff", value:OBJ.color},
-            };
+        const dataDefault = {
+            textureName: textureName,
+            groupID:"default",
+            name:"default",
+            position:[0,0],
+            scale:[1,1],
+            skew:[0,0],
+            pivot:[0,0],
+            anchor:[0.5,1],
+            rotation:0,
+            alpha:1,
+            blendMode:{d:0,n:0},
+            tint:{d:0xffffff,n:0xffffff},
+            autoGroups:[false,false,false,false,false,false,false],
+            zIndex:-1,
+            setDark:{d:[0,0,0], n:[0,0,0]},
+            setLight:{d:[1,1,1], n:[1,1,1]},
         };
-        if(OBJ.isStage){
-            data =  { ...data,
-                Background:{def:false, value:OBJ.Background ? OBJ.Background.name:false, hideHtml:true},
-            };
+        if(dataBase.type === "animationSheet"){
+            dataDefault = Object.assign({},{
+                animationSpeed:1,
+                loop:1
+            });
         };
-        // TODO: Spine have normal with array slots, find a way for computes all slots, : maybe add new Array with getter and setter for transform
-        if( ["animationSheet", "tileSheet", "spineSheet"].contains(OBJ.Type) ){
-            data.groupID = {def:"default", value:OBJ.groupID || "default" };
-            data.position = {def:[~~OBJ.position.x, ~~OBJ.position.y], value:[OBJ.position.x, OBJ.position.y]};
-            data.scale = {def:[1,1], value:[OBJ.scale.x, OBJ.scale.y]};
-            data.skew = {def:[0,0], value:[OBJ.skew.x, OBJ.skew.y]};
-            data.pivot = {def:[0,0], value:[OBJ.pivot.x, OBJ.pivot.y]};
-            OBJ.Sprites.d.anchor? data.anchor = { def:[0.5,1], value:[OBJ.Sprites.d.anchor.x, OBJ.Sprites.d.anchor.y] } : void 0;  // sub // not in spineSheet
-
-            data.rotation = {def:0, value:OBJ.rotation};
-            data.alpha = {def:1, value:OBJ.alpha};
-            
-            data.blendMode = {  // sub
-                d:{def:0, value:OBJ.Sprites.d.blendMode}, 
-                n:{def:0, value:(OBJ.Sprites.n && !Array.isArray(OBJ.Sprites.n))?OBJ.Sprites.n.blendMode:0}
-            };
-            data.tint = {  // sub
-                d:{def:"0xffffff", value:PIXI.utils.hex2string(OBJ.Sprites.d.tint).replace("#","0x")}, 
-                n:{def:"0xffffff", value:(OBJ.Sprites.n && !Array.isArray(OBJ.Sprites.n))?PIXI.utils.hex2string(OBJ.Sprites.n.tint).replace("#","0x"):"0xffffff"}
-            };
-
-            data.autoGroups = {def:[false,false,false,false,false,false,false], value:[false,false,false,false,false,false,false]};
-            data.zIndex = {def:-1, value:OBJ.zIndex, hideHtml:true}; // hide
-            
-        };
-
-        if(OBJ.Type === "animationSheet"){
-            data.animationSpeed = {def:1, value:OBJ.animationSpeed};
-            data.loop = {def:1, value:OBJ.loop};
-        };
-        //HEAVEN TODO: utiliser .color ? , enlever les boutons def .. posibility changer plugin name ?
-        if( ["animationSheet", "tileSheet"].contains(OBJ.Type) ){
-            data.setDark = {
-                d:{def:[0,0,0], value:OBJ.Sprites.d.color? PIXI.utils.hex2rgb(OBJ.Sprites.d.color.darkRgba).reverse() : [0,0,0] }, 
-                n:{def:[0,0,0], value:OBJ.Sprites.n.color? PIXI.utils.hex2rgb(OBJ.Sprites.n.color.darkRgba).reverse() : [0,0,0] }
-            };
-            data.setLight = {
-                d:{def:[1,1,1], value:OBJ.Sprites.d.color? PIXI.utils.hex2rgb(OBJ.Sprites.d.color.lightRgba).reverse() : [1,1,1] }, 
-                n:{def:[1,1,1], value:OBJ.Sprites.n.color? PIXI.utils.hex2rgb(OBJ.Sprites.n.color.lightRgba).reverse() : [1,1,1] }
-            };
-        };
-
-        return data;
+        return dataDefault;
     };
+
+    // current data to build a json dataValues
+    // the DataValues will used for save but also copy past
+    function getDataValues(){ // old getDataJson
+        // data for the scene setup
+        const dataValues = {
+            textureName: this.textureName,
+            groupID: this.groupID,
+            name: this.name,
+            position: [this.position.x, this.position.y],
+            scale: [this.scale.x, this.scale.y],
+            skew: [this.skew.x, this.skew.y],
+            pivot: [this.pivot.x, this.pivot.y],
+            anchor: [this.d.anchor.x, this.d.anchor.y],
+            rotation: this.rotation,
+            alpha: this.alpha,
+            blendMode: {d:this.d.blendMode, n:this.n.blendMode},
+            tint: {d:this.d.tint,n:this.n.tint},
+            autoGroups: this.autoGroups,
+            zIndex: this.zIndex,
+            parentGroup: +CurrentDisplayGroup,
+        };
+        if(this.heavenCage){ // flag heaven on cageContainer
+            dataValues = Object.assign({},{
+                setDark:{ d:PIXI.utils.hex2rgb(this.d.color.darkRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.darkRgba).reverse() },
+                setLight:{ d:PIXI.utils.hex2rgb(this.d.color.lightRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.lightRgba).reverse() },
+            });
+        };
+        if(this.Type === "animationSheet"){
+            dataValues = Object.assign({},{
+                animationSpeed:this.animationSpeed,
+                loop:this.loop
+            });
+        };
+        return dataValues;
+    };
+
+
     function pasteCopyDataIn(OBJ){
         setObjWithData.call(OBJ,ClipboarData, null)
         iziToast.info( $PME.izit_pasteCopyDataIn(OBJ,ClipboarData) );
@@ -1288,9 +1289,27 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // ┌------------------------------------------------------------------------------┐
     // METHOD CREATE CAGE OBJECT SPRITES 
     // └------------------------------------------------------------------------------┘
+    // refresh Debug elements with new values
+    function refreshDebugValues(){
+        this.Debug.bg.anchor.copy(this.d.anchor || new PIXI.Point(0.5,1));
+        // piv
+        this.Debug.piv.rotation = this.rotation*-1;
+        this.Debug.piv.position.copy(this.pivot);
+        this.Debug.piv.scale.x = 1/Math.cos(this.skew.y);
+        this.Debug.piv.pivLine.skew.y = -this.skew.y;
+        this.Debug.piv.scale.y = 1/Math.cos(this.skew.x);
+        this.Debug.piv.pivLine.skew.x = -this.skew.x;
+
+        // hitZone
+        this.Debug.hitZone.clear();
+        const LB = this.getLocalBounds();
+        this.hitArea = LB;
+        this.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+    }
+
     // build previews sprites
     function create_Previews(textures){
-        const list = [];
+        const cage = new PIXI.Container();
         let totalWidth = 0;
         for (let i = 0, l = textures.length; i < l; i++) { // build the preview sheets
             const sprite = new PIXI.Sprite(textures[i]);
@@ -1298,12 +1317,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             sprite.anchor.y = 1;
             sprite.x = totalWidth;
             totalWidth+=sprite.width;
-            list.push(sprite);
+            cage.addChild(sprite);
         };
-        return list;
+        const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
+        (bg.width = cage.width), (bg.height = cage.height);
+        bg.anchor.y = 1;
+        bg.alpha = 0.3;
+        cage.addChildAt(bg,0);
+        return cage;
     };
 
-    function create_IconsFilters(type,data){
+    function create_IconsFilters(dataBase){
         const cage = new PIXI.Container();
         const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
         const filtersID = []; // when we filtering by ID
@@ -1316,11 +1340,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.addChild(sprite);
             filtersID.push(id);
         };
-        if(data.type === "tileSheet"){ addIconFrom('filter_texturePacker.png'),0 };
-        if(data.type === "animationSheet"){ addIconFrom('filter_animation.png'),1 };
-        if(data.type === "spineSheet"){ addIconFrom('filter_spine.png'),2 };
-        if(data.normal){ addIconFrom('filter_normal.png'),3 };
-        if(data.name.contains("-0")){ addIconFrom('info_multiPack.png'),4 };
+        if(dataBase.type === "tileSheet"){ addIconFrom('filter_texturePacker.png'),0 };
+        if(dataBase.type === "animationSheet"){ addIconFrom('filter_animation.png'),1 };
+        if(dataBase.type === "spineSheet"){ addIconFrom('filter_spine.png'),2 };
+        if(dataBase.normal){ addIconFrom('filter_normal.png'),3 };
+        if(dataBase.name.contains("-0")){ addIconFrom('info_multiPack.png'),4 };
         cage.addChildAt(bg,0);
         cage.filtersID = filtersID;
         cage.bg = bg;
@@ -1394,37 +1418,44 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function create_DebugElements(){
-        this.Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
+    function create_DebugElements(dataBase){
+        const Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
         if(this.Type === "thumbs"){
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const previews = create_Previews(this.Data.baseTextures); // sprites preview reference;
-            const icons = create_IconsFilters(this.Type, this.Data); // icons
+            const previews = create_Previews(dataBase.baseTextures); // sprites preview reference;
+            const icons = create_IconsFilters(dataBase); // icons
             // setup
-            icons.x = this.Sprites.d.width;
-            bg.width = this.Sprites.d.width + icons.width;
-            bg.height =  Math.max(this.Sprites.d.height, icons.height);
-            bg.getBounds();
-            this.Debug.bg = bg;
-            this.Debug.previews = previews;
-            this.Debug.ico = icons;
+            icons.x = this.d.width;
+            bg.width = this.d.width + icons.width;
+            bg.height =  Math.max(this.d.height, icons.height);
+            //bg.getBounds();
+            Debug.bg = bg;
+            Debug.previews = previews;
+            Debug.ico = icons;
+            Debug.bg.name = "debug-bg";
+            Debug.previews.name = "debug-previews";
+            Debug.ico.name = "debug-ico";
+            this.Debug = Debug;
+            this.addChildAt(Debug.bg,0);
+            this.addChild(this.Debug.ico);
         };
         if(this.Type === "tileSheet" || this.Type === "animationSheet" || this.Type === "spineSheet"){
-            let w = this.Sprites.d.width;
-            let h = this.Sprites.d.height;
+            let w = this.d.width;
+            let h = this.d.height;
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const an = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
-            const piv = new PIXI.Container();//computeFastModes need a container
+            const piv = new PIXI.Container(); //computeFastModes need a container for skews
             const pivLine = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
-
+            // TODO: rendu ici , create asignValues dans class CageContainer pour utiliser les proprieter obj
             // BG
             bg.width = w, bg.height = h;
             bg.tint = 0xffffff;
-            bg.anchor.copy(this.Sprites.d.anchor|| new PIXI.Point(0.5,1));
+            bg.anchor.copy(this.d.anchor || new PIXI.Point(0.5,1));
+            this.parentGroup? bg.parentGroup = PIXI.lights.diffuseGroup : void 0;
 
             //anchor point
             var txt = new PIXI.Text("A",{fontSize:12,fill:0xffffff});
-                txt.anchor.set(0.5,0.5);
+            txt.anchor.set(0.5,0.5);
             an.anchor.set(0.5,0.5);
             an.addChild(txt);
 
@@ -1444,130 +1475,75 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
             hitZone.endFill();
 
-            this.Debug.bg = bg;
-            this.Debug.an = an;
-            this.Debug.piv = piv;
-            this.Debug.hitZone = hitZone;
-        };
-        /*if(this.Type === "spineSheet"){
-            const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const an = new PIXI.Sprite(PIXI.Texture.WHITE); // anchorPoint
-            const piv = new PIXI.Sprite(PIXI.Texture.WHITE);
-            // setup
-            let d = this.Sprites.d;
-            let vertices = d.skeleton.findSlot("bounds").attachment.vertices;
-            bg._bounds.addQuad(vertices);
-            bg._bounds.rect = bg._bounds.getRectangle();
-            
-            bg.width = bg._bounds.rect.width;
-            bg.height = bg._bounds.rect.height;
-            bg.tint = 0xffffff;
-            bg.anchor.set(0.5,1);
+            Debug.bg = bg;
+            Debug.an = an;
+            Debug.piv = piv;
+            Debug.hitZone = hitZone;
+            Debug.bg.name = "debug-bg";
+            Debug.an.name = "debug-an";
+            Debug.piv.name = "debug-piv";
+            Debug.hitZone.name = "debug-hitZone";
 
-            an.width = 24;
-            an.height = 24;
-            an.tint = 0xee5000;
-            an.alpha = 0.7;
-            an.anchor.set(0.5,0.5);
-            // pivot
-            piv.width = 16;
-            piv.height = 16;
-            piv.alpha = 0.9;
-            piv.anchor.set(0.5,0.5);
-            const pivTxt = new PIXI.Text("P",{fontSize:10,fill:0x000000});
-            pivTxt.anchor.set(0.5,0.5);
-            piv.addChild(pivTxt);
-            piv.position.set(this.pivot.x, this.pivot.y);
-            // line piv
-            let graphics = drawLine([0,0],[bg.width/2,0],2,"0xffffff"); // startXY[sx,sy],endXY[ex,ey]
-            let texture = Graphics._renderer.generateTexture(graphics);
-            const line = new PIXI.Sprite(texture);
-            line.anchor.set(0.5,0.5);
-            piv.addChild(line);
-
-            this.Debug.piv = piv;
-            this.Debug.bg = bg;
-            this.Debug.an = an;
-        };*/
-    };
-
-    // create sprites elements
-    function create_Sprites(){
-        this.Sprites = {d:null,n:null};
-        if(this.Type === "thumbs"){
-            const sprite = new PIXI.Sprite(this.Data.baseTextures[0]); // take first tex for thumbs, preview will take all array
-                sprite.scale.set( getRatio(sprite, 134, 100) ); //ratio for fitt in (obj, w, h)
-            this.Sprites.d = sprite;
-        };
-        if(this.Type === "tileSheet"){
-            const sprite_d = new PIXI.Sprite(this.Data.textures[this.TexName]); // take first tex for thumbs, preview will take all array
-            const sprite_n = new PIXI.Sprite(this.Data.textures_n[this.TexName+"_n"]); // allow swap texture hover tile
-            this.Sprites.d = sprite_d;
-            this.Sprites.n = sprite_n;
-        };
-        if(this.Type === "animationSheet"){
-            const sprite_d = new PIXI.extras.AnimatedSprite(this.Data.textures[this.TexName]);
-            const sprite_n = this.addNormal(sprite_d, this.Data.textures_n[this.TexName]);
-            this.Sprites.d = sprite_d;
-            this.Sprites.n = sprite_n;
-            this.play(0);
-        };
-        if(this.Type === "spineSheet"){
-            const spine = new PIXI.spine.Spine(this.Data.spineData);
-            const spine_n = spine.convertToNormal();
-            spine.skeleton.setSkinByName(this.TexName);
-            spine.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-            spine.skeleton.setSlotsToSetupPose();
-
-            this.Sprites.d = spine;
-            this.Sprites.n = spine_n;//spineBg_n// TODO: experimenter un sprite calque fix , ou grafics gardient.
+            this.Debug = Debug;
+            this.addChildAt(Debug.bg,0);
+            this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone);
         };
     };
 
-    // create container based on type
-    function create_Containers(data,type,textureName){
-        let cage;
-        switch (type) {
-            case "animationSheet":
-                cage = new PIXI.ContainerAnimations();
-            break;
-            default:
-                cage = new PIXI.Container();
-        };
-        // props
-        cage.Data = data;
-        cage.Type = type;
-        cage.name = data.name;
-        cage.TexName = textureName || false;
+    // create tiles ThumbsLibs
+    function build_ThumbsLibs(dataBase){
+        const cage = new PIXI.CageContainer(dataBase);
+        cage.d.scale.set( getRatio(cage.d, 134, 100)); //ratio for fitt in (obj, w, h)
+        create_DebugElements.call(cage,dataBase);
+        cage.buttonType = "thumbs";
+        cage.alpha = 0.75;
+        cage.interactive = true;
+        cage.on('pointerover', pointer_overIN);
+        cage.on('pointerout', pointer_overOUT);
+        cage.on('pointerup', pointer_UP);
         return cage;
     };
 
-    function build_ThumbsLibs(sheetName){
-        const cage = create_Containers(DATA[sheetName], "thumbs"); // force type thumbs
-        create_Sprites.call(cage);
-        create_DebugElements.call(cage);
-        setup_Parenting.call(cage);
+    // create tiles tileLibs
+    function build_tileLibs(dataBase, textureName){
+        let dataDefault = getDataDefault(dataBase, textureName); // create default data pack getDataJson
+        const cage = new PIXI.CageContainer(dataBase, dataDefault);
+        create_DebugElements.call(cage, dataBase);
+        //  hide non essential for tileLibs
+        cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
+        cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
+        console.log('cage: ', cage);
+        
+        cage.interactive = true;
+        cage.on('pointerover', pointer_overIN);
+        cage.on('pointerout', pointer_overOUT);
+        cage.on('pointerup', pointer_UP);
+        
+        cage.on('zoomTileLibs', wheelInLibs);
+        cage.on('pointermove', checkAnchor);
+        cage.buttonType = "tileLibs";
         return cage;
     };
 
-    // create tiles from type with texture name
-    function build_tileLibs(InLibs, TexName){
-        const cage = create_Containers(InLibs.Data, InLibs.Data.type, TexName); // force type thumbs
-        create_Sprites.call(cage);
-        create_DebugElements.call(cage);
-        setup_Parenting.call(cage);
-        return cage;
-    };
-
-    // create obj for mouse with current data setup from 
+    // create tiles for mouse or map
     function build_Sprites(fromCage){
-        const cage = create_Containers(fromCage.Data, fromCage.Data.type, fromCage.TexName); // force type thumbs
-        create_Sprites.call(cage);
-        create_DebugElements.call(cage);
-        setup_Parenting.call(cage);
-        setup_LayerGroup.call(cage);
+        const dataBase = DATA[fromCage.dataName];
+        const dataValues = getDataValues.call(fromCage); // create data pack based on currents values
+        const cage = new PIXI.CageContainer(dataBase, dataValues);
+        create_DebugElements.call(cage, dataBase);
 
-        setup_Propretys.call(cage,fromCage);
+        if(fromCage.buttonType === "tileLibs" || fromCage.buttonType === "tileMap"){
+            cage.buttonType = "tileMouse";
+            cage.interactive = true;
+        }else
+        if(fromCage.buttonType === "tileMouse"){
+            cage.buttonType = "tileMap";
+            cage.interactive = false;
+        };
+        cage.on('pointerup', pointer_UP);
+        cage.on('pointerdown', pointer_DW);
+        cage.on('pointerover', pointer_overIN);
+        cage.on('pointerout', pointer_overOUT);
         return cage;
     };
  
@@ -1578,40 +1554,31 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
-
     function show_tileSheet(InLibs) {
         // check if alrealy opened ???  open_tileSheet // return hide
         if(check_tileSheetStatus(InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
-        CAGE_TILESHEETS.name = InLibs.name;
-        const list = [];
-        const elements = InLibs.Data.textures || InLibs.Data.data.skins;
-        EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(elements).length}): ${InLibs.name}.json`; // update title 
-        Object.keys(elements).forEach(textureName => {
-            const cage = build_tileLibs(InLibs, textureName);
-            cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
-            cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
+        CAGE_TILESHEETS.name = InLibs.dataName;
         
+        const list = [];
+        const dataBase = DATA[InLibs.dataName];
+        const textures = dataBase.textures || dataBase.data.skins;
+        EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(textures).length}): ${dataBase.name}.json`; // update title 
+        Object.keys(textures).forEach(textureName => {
+            const cage = build_tileLibs(dataBase, textureName);
+            //cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
+            //cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage);
-            cage.interactive = true;
-            cage.on('pointerover', pointer_overIN);
-            cage.on('pointerout', pointer_overOUT);
-            cage.on('pointerup', pointer_UP);
-            cage.on('pointermove', function(e){checkAnchor(this)});
-            cage.on('zoomTileLibs', wheelInLibs);
-            cage.buttonType = "tileLibs";
-            //cage.on('mousemove', onMove_tileSheet);
-           // cage.on('pointerdown', onPointerdown_tileSheet);
-            //cage.on('pointerup', onPointerup_tileSheet);
+
         });
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
-        if(!CACHETILESSORT[InLibs.name]){
-            CACHETILESSORT[InLibs.name] = pathFindSheet(list,20);
+        if(!CACHETILESSORT[InLibs.dataName]){
+            CACHETILESSORT[InLibs.dataName] = pathFindSheet(list,20);
         }else{ // alrealy exist caches positions
             list.forEach(cage => {
-                cage.position.copy( CACHETILESSORT[InLibs.name][cage.TexName] ); 
+                cage.position.copy( CACHETILESSORT[InLibs.dataName][cage.TexName] ); 
                 cage.getBounds();
             });
         };
@@ -1619,7 +1586,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function check_tileSheetStatus(InLibs) {
         // if open, and same name or diff name, hide or clear
-        const sameName = CAGE_TILESHEETS.name === InLibs.name;
+        const sameName = CAGE_TILESHEETS.name === InLibs.dataName;
 
         if(CAGE_TILESHEETS.renderable && sameName){ close_tileSheet(); return true; };
         if(CAGE_TILESHEETS.renderable && !sameName){ clear_tileSheet(); return false; }
@@ -1681,59 +1648,55 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function add_toMouse(InTiles) {
+        setStatusInteractiveObj(false); // disable interactivity
+        close_editor(true);
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
         cage.position.set( mMX, mMY);
         CAGE_MAP.addChild(cage);
         CAGE_MOUSE.list = cage;
-        cage.interactive = true;
-        cage.on('pointerup', pointer_UP);
-        cage.on('pointerdown', pointer_DW);
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
         
 
-        cage.Debug.hitZone.clear();
         const LB = cage.getLocalBounds();
-        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        cage.Debug.hitZone.clear();
         cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+        LB.pad(1920,1080);
+        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        
         FreezeMouse = false; // force disable the mosue freeze 
         return cage;
     };
 
     // add to map new obj + Obj.Asign a copy unique of html Editor json asigned addtomap
-    function add_toScene(obj) {
-        const cage = build_Sprites(obj) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-        //TODO: if pined in a line. get position of old prite obj
-        if(FreezeMouse){ // freeze mouse allow to keep the position of the clone obj x,y
-            FreezeMouse = false;
-            cage.x = obj.x;
-            cage.y = obj.y;
+    function add_toScene(alreadyOnMap) {
+        if(alreadyOnMap){
+            // si exist sur la map, cetai juste un depalcement , dont call new build_Sprites
+            this.buttonType = "tileMap";
+            this.interactive = false;
+            CAGE_MOUSE.list = null;
+            this.asignValues( getDataValues.call(this) );
+            return add_toMouse(this);
         }else{
-            cage.x = mMX;
-            cage.y = FreezeMY?FreezeMY.y : mMY;
-        }
-        
-
-        cage.Debug.bg.renderable = false;
-        CAGE_MAP.addChild(cage);
-        $Objs.list_master.push(cage);
-
-        cage.Debug.hitZone.clear();
-        const LB = cage.getLocalBounds();
-        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
-        cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
-        
-        cage.interactive = false;
-        cage.on('pointerover', pointer_overIN);
-        cage.on('pointerout', pointer_overOUT);
-        cage.on('pointerup', pointer_UP);
-        cage.on('pointerdown', pointer_DW);
-
-        cage.buttonType = 'tileMap';
-        //cage.on('mousemove', onMove_objMap);
-        //cage.on('pointerup', onPointerup_objMap);
-        
-
+            const cage = build_Sprites(this) //(InTiles.Data, InTiles.Sprites.groupTexureName);
+            //TODO: if pined in a line. get position of old prite this
+            if(FreezeMouse){ // freeze mouse allow to keep the position of the clone this x,y
+                FreezeMouse = false;
+                cage.x = this.x;
+                cage.y = this.y;
+            }else{
+                cage.x = mMX;
+                cage.y = FreezeMY?FreezeMY.y : mMY;
+            };
+            cage.Debug.bg.renderable = false;
+            CAGE_MAP.addChild(cage);
+            $Objs.list_master.push(cage);
+    
+            cage.Debug.hitZone.clear();
+            const LB = cage.getLocalBounds();
+            cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+            cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+        };
     };
 
     function execute_buttons(buttonSprite) {
@@ -1783,17 +1746,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function show_previews(cage, show) {
         CAGE_MOUSE.previews.removeChildren();
         if(show){
-            CAGE_MOUSE.previews.addChild(...cage.Debug.previews);
+            CAGE_MOUSE.previews.addChild(cage.Debug.previews);
         }
         CAGE_MOUSE.previewsShowed = !!show;
     };
 
     // mX,mY: mouse Position
-    function checkAnchor(cage) {
-        if (cage.Type === "spineSheet") { return }
-        if(cage.Debug.bg._boundsRect.contains(mX,mY)){ // if in bg (no padding)
-            const z = CAGE_TILESHEETS.scale.x;
-            let b = cage.Debug.bg._boundsRect;
+    function checkAnchor() {
+        if (this.Type === "spineSheet") { return }; // spine dont have custom anchor
+        if(this.mouseIn){ // if pointer_overIN
+            const z = CAGE_TILESHEETS.scale.x; //zoom factor
+            let b = this._boundsRect;
             let vec4H = b.width/4;
             let vec4V = b.height/4;
             let vec3H = [0, b.width/2, b.width];
@@ -1807,7 +1770,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(inY>vec4V*3){ y = vec3V[2] };
             if(inY<vec4V*3){ y = vec3V[1] };
             if(inY<vec4V*1){ y = vec3V[0] };
-            cage.Debug.an.position.set(x/z,y/z);
+            this.Debug.an.position.set(x/z,y/z);
         };
     };
 
@@ -1873,23 +1836,29 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    function disableFastModes(OBJ){
-        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") ){
+    function disableFastModes(cage){
+        if((cage.buttonType === "tileMap" || cage.buttonType === "tileMouse") ){
             //MouseHold.Debug.fastModes.renderable = false;
             fastModes.renderable = false;
             FastModesObj = null;
         }
+         // reprendre interactivity only a tileMouse et recalculer les nouveau dataValues
+        if(cage.buttonType !== "tileMouse"){
+            setStatusInteractiveObj(true); // disable interactivity
+            cage.asignValues( getDataValues.call(cage) );
+        };
     };
 
-    function activeFastModes(OBJ, modeKey){
-        if((OBJ.buttonType === "tileMap" || OBJ.buttonType === "tileMouse") ){
+    function activeFastModes(cage, modeKey){
+        if((cage.buttonType === "tileMap" || cage.buttonType === "tileMouse") ){
             if(FastModesKey){ fastModes.txtModes[FastModesKey]._filters = null };
             FastModesKey = modeKey || FastModesKey || "p";
             fastModes.txtModes[FastModesKey]._filters = [FILTERS.OutlineFilterx8Red]
-            FastModesObj = OBJ;
+            FastModesObj = cage;
             fastModes.renderable = true;
-            OBJ.Debug.bg.renderable = false;
+            cage.Debug.bg.renderable = false;
             FreezeMouse = true;
+            setStatusInteractiveObj(false, cage);
         }
     };
 
@@ -1918,18 +1887,21 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function startMouseHold(activeTarget){
         clearTimeout(MouseTimeOut);
-        MouseHold? disableFastModes(MouseHold) : void 0;
-        MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
+        MouseHold && disableFastModes(MouseHold);
+        //MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
+
         MouseHold=false;
         if(activeTarget){ // active mouse MouseHold after 160 ms
             MouseTimeOut = setTimeout(() => {
-                HoldX = +mX, HoldY = +mY;
-                MouseHold = activeTarget;
-                activeFastModes(MouseHold);
-                setStatusInteractiveObj(false, MouseHold);
+                if(activeTarget.mouseIn){
+                    HoldX = +mX, HoldY = +mY;
+                    MouseHold = activeTarget;
+                    activeFastModes(MouseHold);
+                };
             }, 160);
         }else{ // disabling mousehold and affected feature
             // collapse the CAGE_LIBRARY mask
+            
             if(EDITOR.expendLibsMode){
                 EDITOR.state.setAnimation(3, 'colapseThumbLibs', false);
                 EDITOR.expendLibsMode = false;
@@ -1977,9 +1949,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 Obj.skew.x = Math.min(0.5, Math.max(Obj.skew.x+skewX, -0.5));
                 // update debug
                 Obj.Debug.piv.scale.x = 1/Math.cos(Obj.skew.y);
-                Obj.Debug.piv.pivLine.skew.y = -Obj.skew.y
+                Obj.Debug.piv.pivLine.skew.y = -Obj.skew.y;
                 Obj.Debug.piv.scale.y = 1/Math.cos(Obj.skew.x);
-                Obj.Debug.piv.pivLine.skew.x = -Obj.skew.x
+                Obj.Debug.piv.pivLine.skew.x = -Obj.skew.x;
             break;
             case "s": // Scale mode
                 Obj.scale.x-=MovementX/100;
@@ -2056,6 +2028,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
+        this.mouseIn = true;
         switch (event.currentTarget.buttonType) {
             case "thumbs":
                 show_previews(this,true);
@@ -2075,6 +2048,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function pointer_overOUT(event){
+        this.mouseIn = false;
         switch (event.currentTarget.buttonType ) {
             case "thumbs":
                 InLibs = null;
@@ -2093,7 +2067,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 InMapObj = null;
                 clearFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
             }
-
             break;
         };
     };
@@ -2103,13 +2076,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function pointer_UP(event){
+        console.log('pointer_UP: ');
         if(MouseHold){ return startMouseHold(false) };
         startMouseHold(false);
         const _clickRight = event.data.button === 0;
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
         if(_clickRight){// <= clickUp
-            if(LineDraw){
+            if(LineDraw){ // TODO: MAKE add line to map
                 LineDraw.off("pointerup",pointer_UP)
                 STAGE.CAGE_MAP.addChild(LineDraw);
                 LineDraw.position.set(mMX,mMY);
@@ -2120,41 +2094,32 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
                 return LineDraw = null;
             }
-            if(event.currentTarget.buttonType === "thumbs"){
-                return show_tileSheet(event.currentTarget) // || hide_tileSheet();
+            if(this.buttonType === "thumbs"){
+                return show_tileSheet(this) // || hide_tileSheet();
             }
-            if(event.currentTarget.buttonType === "tileLibs"){ 
-                setStatusInteractiveObj(false); // disable interactivity
+            if(this.buttonType === "tileLibs"){ 
+                return add_toMouse(this);
+            }
+            if(this.buttonType === "tileMouse"){
+                // if alrealy instance of map, c'etais un deplacement d'objet, just need deltete reference
+                return add_toScene.call(this, $Objs.list_master.contains(this)); 
+            }
+            if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
+                return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_tileSetupEditor(this);
+            }
+            if(this.buttonType === "tileMap" && event.data.originalEvent.altKey){ // in mapObj Clone
+                return add_toMouse(this); 
+            }
+            if(this.buttonType === "tileMap"){ // in mapObj Clone
+                setStatusInteractiveObj(false, this);
                 close_editor(true);
-                return add_toMouse(event.currentTarget);
-            }
-            if(event.currentTarget.buttonType === "tileMouse"){
-                // if alrealy instance of map, duplicate new id in mouse
-                if($Objs.list_master.contains(event.currentTarget)){
-                    event.currentTarget.buttonType = "tileMap";
-                    event.currentTarget.interactive = false;
-                    event.currentTarget.Data_Values = getDataJson(event.currentTarget);
-                    CAGE_MOUSE.list = null;
-                    return add_toMouse(event.currentTarget); 
-                };
-                return add_toScene(event.currentTarget); 
-            }
-            if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
-                return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_tileSetupEditor(event.currentTarget);
-            }
-            if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.altKey){ // in mapObj Clone
-                return add_toMouse(event.currentTarget); 
-            }
-            if(event.currentTarget.buttonType === "tileMap"){ // in mapObj Clone
-                setStatusInteractiveObj(false, event.currentTarget);
-                close_editor(true);
-                event.currentTarget.buttonType = "tileMouse";
-                CAGE_MOUSE.list = event.currentTarget;
+                this.buttonType = "tileMouse";
+                CAGE_MOUSE.list = this;
                 FreezeMouse = false;
                 return; 
             }
-            if(event.currentTarget.buttonType === "button"){ 
-                return execute_buttons(event.currentTarget);
+            if(this.buttonType === "button"){ 
+                return execute_buttons(this);
             }
         }
         if(clickLeft_){// => clickUp
@@ -2162,19 +2127,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             $Objs.list_master.forEach(cage => {
                 clearFiltersFX3(cage);
             });
-            if(event.currentTarget.buttonType === "tileMouse"){
-                // come back to data befor click
-                setObjWithData.call(CAGE_MOUSE.list, CAGE_MOUSE.list.Data_Values, CAGE_MOUSE.list.Data_CheckBox);
+            if(this.buttonType === "tileMouse"){
+                // if exist in $Objs registery, go back to dataValues befor click
+                if($Objs.list_master.contains(this)){
+                    this.buttonType = "tileMap";
+                    this.asignValues(this.DataValues);
+                    refreshDebugValues.call(this);
+                }else{
+                    CAGE_MAP.removeChild(CAGE_MOUSE.list);
+                }
                 setStatusInteractiveObj(true);
                 open_editor(true);
-                event.currentTarget.buttonType = "tileMap";
-                // if is obj create from libs, dont goback data, but delete.
-                !$Objs.list_master.contains(event.currentTarget) && CAGE_MAP.removeChild(CAGE_MOUSE.list);
                 return CAGE_MOUSE.list = null;
             }
-            if(event.currentTarget.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
-                const index = $Objs.destroy(event.currentTarget);
-                iziToast.info( $PME.removeSprite(event.currentTarget, index) );
+            if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
+                const index = $Objs.destroy(this);
+                iziToast.info( $PME.removeSprite(this, index) );
                 InMapObj = null;
             };
         }
@@ -2225,17 +2193,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function keydown_Editor(event) {
-
         if( isFinite(event.key) ){
             const spriteSlot = EDITOR.skeleton.findSlot("gb"+event.key).currentSprite;
             spriteSlot && execute_buttons(spriteSlot);
         };
 
         if(FastModesObj){
-            const modeKey = event.key.toLowerCase(); 
-            if( ["p","y","w","s","r","u"].contains(modeKey) ){
+            const modeKey = event.key.toLowerCase();
+            const keyList = ["p","y","w","s","r","u"]; 
+            if( keyList.contains(modeKey) ){
                 activeFastModes(FastModesObj, modeKey); // asign FastModesKey
-            }
+            }else
+            if(event.altKey){
+                console.log(FastModesKey);
+                const index = keyList.indexOf(FastModesKey);
+                const nextIndex = keyList[index+1] || keyList[0];
+                activeFastModes(FastModesObj, nextIndex);
+            };
         };
 
         if (event.ctrlKey && (event.key === "s" || event.key === "S")) {
@@ -2283,6 +2257,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const index = $Objs.destroy(InMapObj);
             iziToast.info( $PME.removeSprite(InMapObj, index) );
             InMapObj = null;
+            setStatusInteractiveObj(true);
+            open_editor(true);
         };
     };
 

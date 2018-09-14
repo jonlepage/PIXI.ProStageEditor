@@ -193,6 +193,8 @@ _coreLoader.prototype.load = function(set) {
 
     // check integrety, exist and if we have data in the set
     if(this.cantLoad(set)){return this.isLoading = false }; // check if cant or can load ??
+
+    
     // temp buffers
     let sheetsBuffer = this.loaderSet[set]._SHEETS; // ref to loaderSet sheets 
     let data2Buffer = this.Data2; // buffer ref to final storage
@@ -405,7 +407,7 @@ _coreLoader.prototype.load = function(set) {
 //└-----------------------------------------------------------------------------┘
 _coreLoader.prototype.cantLoad = function(set) {
     // check if pass set? or not exist? or is empty ?
-    if(!set || !this.loaderSet[set] || !Object.keys(this.loaderSet[set]).length || !this.loaderSet[set]._SHEETS ){
+    if(!set || !this.loaderSet[set] || !Object.keys(this.loaderSet[set]).length || !Object.keys(this.loaderSet[set]._SHEETS).length){
         return true; // we cant load
     };
     return false;  // we can load
