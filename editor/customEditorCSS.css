@@ -5,10 +5,8 @@
   }
   
   .funkyradio label {
-    min-width: 30px;
+    min-width: 25px;
     width: 100%;
-    border-radius: 3px;
-    border: 1px solid rgb(51, 51, 51);
     font-weight: normal;
   }
   
@@ -20,8 +18,6 @@
   .funkyradio input[type="radio"]:empty ~ label,
   .funkyradio input[type="checkbox"]:empty ~ label {
     position: relative;
-    text-indent: 3.25em;
-    margin-right: 7px;
     cursor: pointer;
     -webkit-user-select: none;
        -moz-user-select: none;
@@ -122,8 +118,7 @@
 
 
 .input-group.input-group-xs {
-    height: 19px;
-    width: 270px;
+    height: 16px;
     
 }
 
@@ -133,7 +128,10 @@
   }
   .selectRadius {
     border-radius: 4px;
-    
+    margin: 2px;
+    padding: 1px;
+    font-weight: 800;
+    color: #7726a4;
 }
 
 #RGB {
@@ -233,10 +231,201 @@ input.boxlock:hover::after {
 .form-control.dark {
   background-color: #1a1a1a;
   color: white;
-  
+  text-align: left;
+  padding: 5px;
 }
 
 
 input#copyCheck {    			
   margin: 4px;
 }
+
+div#dataEditor {
+  padding-right: 0px !important;
+  border-radius: 10px;
+}
+.iziToast > .iziToast-body {
+  position: relative;
+  padding: 0 0 0 10px;
+  height: auto;
+  min-height: 36px;
+  margin: -10px 0 0 0px;
+  text-align: left;
+
+}
+
+.container {
+  width: 100%;
+  padding-right: 10px;
+  padding-left: 5px;
+  margin-right: auto;
+  margin-left: auto;
+}
+.container.scrollable {
+    max-height: 800px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.input-group-text {
+  padding: 4px;
+  margin: 1px;
+}
+.input-group>.form-control:not(:last-child) {
+  /* border-top-right-radius: 0; */
+  /* border-bottom-right-radius: 0; */
+  border-radius: 0px;
+}
+
+.input-group>.custom-select:not(:first-child), .input-group>.form-control:not(:first-child) {
+  /* border-top-left-radius: 0; */
+  /* border-bottom-left-radius: 0; */
+  border-radius: 0px;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+.parentBreak{
+  margin-bottom: 5px;
+  }
+.green {
+    background-color: #1a812810;
+    color: white;
+    font-size: 13px;
+}
+.blue {
+  background-color: #23295611;
+  color: white;
+  font-size: 13px;
+}
+.red {
+  background-color: #c9171709;
+  color: white;
+  font-size: 13px;
+}
+.pink {
+  background-color: #4e224a15;
+  color: white;
+  font-size: 13px;
+  text-shadow: 0px 0px 8px #000000;
+}
+
+.smallz {
+  width: 65px !important;
+  padding-left: 16px !important;
+}
+
+table.table.table-hover.table-dark.table-sm {
+  margin-bottom: 1px;
+}
+.table td, .table th {
+  padding: 0px;
+  padding-left: 4px;
+  border-top: 0px solid #dee2e6;
+}
+
+.input-group-text {
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding: 0.5px 1px;
+  margin-bottom: 0px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  background-color: #00ffff00;
+  border: 0px solid #ced4da;
+  border-bottom: 0px solid #ff00f126;
+  border-radius: .25rem;
+}
+
+input.form-control {
+  padding-left: 2px;
+  font-size: 12px;
+  overflow: auto;
+  float: left;
+  padding: 0px 2px;
+  display: block;
+  height: 16px;
+  width: auto;
+  max-width: 100px;
+  padding-left: 14px;
+  font-weight: bold;
+  margin-left: -4px;
+}
+
+.labelXY {
+  margin-bottom: 0px;
+  color: #9400c1;
+  float: left;
+  overflow: -webkit-paged-x;
+  margin-right: -14px;
+  margin-top: -2px;
+  font-weight: bold;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 1px 1px;
+  font-size: 12px;
+  line-height: 12px;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.15rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+input.saveCheck {
+  vertical-align: bottom;
+}
+
+
+p.specialMessage {
+  width: 290px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  text-align: left;
+  color: #868686;
+  font-size: 10px;
+  /* border-radius: 4px; */
+  background-color: #00000033;
+  /* border: 1px solid #c74444; */
+  font-family: inherit;
+  padding: 0px 4px;
+  font-weight: 600;
+}
+
+.largeX {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+.largeY {
+  min-height: 38px;
+  border-radius: 4px;
+}
+

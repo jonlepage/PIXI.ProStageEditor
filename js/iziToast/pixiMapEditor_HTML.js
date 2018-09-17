@@ -1,773 +1,5 @@
-  //#region [rgba(200, 10, 10,0.5)]
-//#endregion
-function html_DataEditor2(CAGE) {
-    console.log7('CAGE: ', CAGE);
 
-return message = /*html*/ `
-<div class="container" id="dataIntepretor">
-<h6>
-    <font color="#d2bc97">CUSTOM OBJ SESSION PROPRETY EDITOR</font>
-    <small class="text-muted"><kbd>Json</kbd></small>
-</h6>
-
-    <div class="form-check-inline funkyradio">
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="checkbox3" checked/>
-            <label for="checkbox3">mouse mode</label>
-        </div>
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="checkbox33"/>
-            <label for="checkbox33">pixi haven</label>
-        </div>
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="reelZoom"/>
-            <label for="reelZoom">reelZoom</label>
-        </div>
-        <div class="funkyradio-success">
-            <input type="checkbox" name="checkbox" id="checkbox3333"/>
-            <label for="checkbox3333">light</label>
-        </div>
-    </div>     
-
-    <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">def</th>
-                <th scope="col">custom</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><!--eventID-->
-                <td>
-                    <div class="funkyradio funkyradio-danger">
-                        <input type="checkbox" name="checkbox" id="_eventID"/>
-                        <label for="_eventID" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>null</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">eventID:</small>
-                            </div>
-                        </div>
-                        <input type="text" autocomplete="on" placeholder="myID1A" class="form-control" id="eventID">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--scale-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_scale"/>
-                        <label for="_scale" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>[1,1]</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">Scale:&nbsp</small><input type="checkbox" id="scale_lock"><small class="text-muted">&#x1f512;</small>
-                            </div>
-                        </div>
-                        <input type="number" step=0.01 value=50 class="form-control" id="scale" arrId=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="scale" arrId=1>
-                    </div>
-                </td>
-            </tr>
-            <tr><!--skew-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_skew"/>
-                        <label for="_skew" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>[0,0]</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">skew:&nbsp</small><input type="checkbox" id="skew_lock"><small class="text-muted">&#x1f512;</small>
-                            </div>
-                        </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" arrId=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="skew" arrId=1>
-                    </div>
-                </td>
-            </tr>
-            <tr><!--pivot-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_pivot"/>
-                        <label for="_pivot" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>[0,0]</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">pivot:&nbsp</small><input type="checkbox" id="pivot_lock"><small class="text-muted">&#x1f512;</small>
-                            </div>
-                        </div>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=0>
-                        <input type="number" step=1 value=0 class="form-control" id="pivot" arrId=1>
-                    </div>
-                </td>
-            </tr>
-            <tr><!--anchor-->
-                <td>
-                    <div class="funkyradio funkyradio-danger">
-                        <input type="checkbox" name="checkbox" id="_anchor"/>
-                        <label for="_anchor" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>[0,0]</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">anchor:&nbsp</small><input type="checkbox" id="anchor_lock"><small class="text-muted">&#x1f512;</small>
-                            </div>
-                        </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" arrId=0>
-                        <input type="number" step=0.01 value=0 class="form-control" id="anchor" arrId=1>
-                    </div>
-                </td>
-            </tr>
-            <tr><!--rotation-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_rotation"/>
-                        <label for="_rotation" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>0</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">rotation:deg°:</small><input type="checkbox" id="deg_mode"><small class="text-muted"></small>
-                            </div>
-                        </div>
-                        <input type="number" step=0.01 value=0 class="form-control" id="rotation">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--alpha-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_alpha"/>
-                        <label for="_alpha" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>1</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">alpha:</small>
-                            </div>
-                        </div>
-                        <input type="number" step=0.01 value=0 min=0 max=1 class="form-control" id="alpha">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--blendMode-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_blendMode"/>
-                        <label for="_blendMode" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>0</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">blendMode:</small>
-                            </div>
-                        </div>
-                        <input type="number" step=1 value=0 min=0 max=3 class="form-control" id="blendMode">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--tint-->
-                <td>
-                    <div class="funkyradio funkyradio-success">
-                        <input type="checkbox" name="checkbox" id="_tint"/>
-                        <label for="_tint" style="text-indent:0px;margin-right:0px;">.</label>
-                    </div>
-                </td>
-                <td>0xffffff</td>
-                <td>
-                    <div class="input-group input-group-xs">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text">
-                            <small class="text-muted">tint:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
-                            </div>
-                        </div>
-                        <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="tint">
-                    </div>
-                </td>
-            </tr>
-            <tr><!--Layers Options autoDisplayGroup-->
-                <td><div class="custom-control custom-checkbox form-inline">
-                    <input type="checkbox" class="custom-control-input input-xs" id="_autoDisplayGroup">
-                    <label class="custom-control-label" for="_autoDisplayGroup"></label>
-                </div></td>
-                <td colspan="2">autoDisplayGroup: <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="AD0">
-                    <label class="form-check-label" for="AD0" style="padding-right: 10px;">:0</label>
-                    <input class="form-check-input" type="checkbox" id="AD1">
-                    <label class="form-check-label" for="AD1" style="padding-right: 10px;">:1</label>
-                    <input class="form-check-input" type="checkbox" id="AD2">
-                    <label class="form-check-label" for="AD2" style="padding-right: 10px;">:2</label>
-                    <input class="form-check-input" type="checkbox" id="AD3">
-                    <label class="form-check-label" for="AD3" style="padding-right: 10px;">:3</label>
-                    <input class="form-check-input" type="checkbox" id="AD4">
-                    <label class="form-check-label" for="AD4" style="padding-right: 10px;">:4</label>
-                    <input class="form-check-input" type="checkbox" id="AD5">
-                    <label class="form-check-label" for="AD5" style="padding-right: 10px;">:5</label>
-                    <input class="form-check-input" type="checkbox" id="AD6">
-                    <label class="form-check-label" for="AD6" style="padding-right: 10px;">:6</label>
-                </div></td>
-            </tr>
-            ${CAGE.type==='spineSheets' && appendSpineData(CAGE)||''}
-        </tbody>
-    </table>
-    <button id="applyAll" type="button" class="btn btn-outline-warning btn-sm">ApplyToAll</button>
-    <button id="reset" type="button" class="btn btn-outline-light btn-sm">Reset Cache Session</button>
-    <button id="randomize" type="button" class="btn btn-outline-secondary btn-sm">Randomize</button>
-    <br><br>
-    <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-    <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-</div>`//end
-};
-
-//append html data for spine dataEditor
-function appendSpineData(CAGE){
-    const objSprite = CAGE.objSprite;
-    console.log('objSprite: ', objSprite);
-    let animationsList =``;
-    objSprite.spineData.animations.forEach(ani => {
-       animationsList+=`<option>${ani.name}</option>`;
-    });
-    let skinList = ``;
-    objSprite.spineData.skins.forEach(skin => {
-       skinList+=`<option>${skin.name}</option>`;
-    });
-
-    return /*html*/`
-    <td colspan="3"><font color="#d2bc97">Spines proprety attributs</font></td>
-    <tr><!--defaultSkin-->
-        <td>
-            <div class="funkyradio funkyradio-danger">
-                <input type="checkbox" name="checkbox" id="_defaultSkin"/>
-                <label for="_defaultSkin" style="text-indent:0px;margin-right:0px;">.</label>
-            </div>
-        </td>
-        <td>"default"</td>
-        <td>
-            <div class="input-group input-group-xs">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                    <small class="text-muted">defaultSkin:</small>
-                    </div>
-                </div>
-                <select class="selectRadius" id="defaultSkin">${skinList}</select>
-            </div>
-        </td>
-    </tr>
-    <tr><!--defaultAni-->
-        <td>
-            <div class="funkyradio funkyradio-success">
-                <input type="checkbox" name="checkbox" id="_defaultAni"/>
-                <label for="_defaultAni" style="text-indent:0px;margin-right:0px;">.</label>
-            </div>
-        </td>
-        <td>"idle"</td>
-        <td>
-            <div class="input-group input-group-xs">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                    <small class="text-muted">defaultAni:</small>
-                    </div>
-                </div>
-                <select class="selectRadius" id="defaultAni">${animationsList}</select>
-            </div>
-        </td>
-    </tr>
-    <tr><!--startTime-->
-        <td>
-            <div class="funkyradio funkyradio-success">
-                <input type="checkbox" name="checkbox" id="_startTime"/>
-                <label for="_startTime" style="text-indent:0px;margin-right:0px;">.</label>
-            </div>
-        </td>
-        <td>"random"</td>
-        <td>
-            <div class="input-group input-group-xs">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                    <small class="text-muted">startTime:</small>
-                    </div>
-                </div>
-                <select class="selectRadius" id="startTime">
-                    <option value="default">default</option>
-                    <option value="random" selected>random</option>
-                </select>
-            </div>
-        </td>
-    </tr>
-    <tr><!--timeScale-->
-        <td>
-            <div class="funkyradio funkyradio-success">
-                <input type="checkbox" name="checkbox" id="_timeScale"/>
-                <label for="_timeScale" style="text-indent:0px;margin-right:0px;">.</label>
-            </div>
-        </td>
-        <td>1</td>
-        <td>
-            <div class="input-group input-group-xs">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                    <small class="text-muted">timeScale:</small>
-                    </div>
-                </div>
-                <input type="number" step=0.01 value=1 min=0.01 class="form-control" id="timeScale">
-            </div>
-        </td>
-    </tr>
-   `
-   };
-  //#region [rgba(200, 10, 10,0.5)]
-//#endregion
-
-   function html_lightEditor_p() {
-    return message = /*html*/ `
-    <div class="container" id="dataIntepretor">
-    <h6>
-        <font color="#d2bc97">CUSTOM LIGHT EDITOR POINTER</font>
-        <small class="text-muted"><kbd>Json</kbd></small>
-    </h6>
-    
-        <div class="form-check-inline funkyradio">
-            <div class="funkyradio-success">
-                <input type="checkbox" name="checkbox" id="checkbox3" checked/>
-                <label for="checkbox3">mouse mode</label>
-            </div>
-            <div class="funkyradio-success">
-                <input type="checkbox" name="checkbox" id="reelZoom"/>
-                <label for="reelZoom">reelZoom</label>
-            </div>
-        </div>     
-    
-        <table class="table table-hover table-dark table-sm">
-            <thead style="background-color: #393939" >
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">def</th>
-                    <th scope="col">custom</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><!--eventID-->
-                    <td>
-                        <div class="funkyradio funkyradio-danger">
-                            <input type="checkbox" name="checkbox" id="_eventID"/>
-                            <label for="_eventID" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>null</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">eventID:</small>
-                                </div>
-                            </div>
-                            <input type="text" autocomplete="on" placeholder="myID1A" class="form-control" id="eventID">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--blendMode-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_blendMode"/>
-                            <label for="_blendMode" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>1</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">blendMode:</small>
-                                </div>
-                            </div>
-                            <input type="number" step=1 value=1 min=0 max=3 class="form-control" id="blendMode">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--lightHeight-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_lightHeight"/>
-                            <label for="_lightHeight" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>0.075</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">lightHeight:</small>
-                                </div>
-                            </div>
-                            <input type="number" step=0.001 value=0.075 min=0.001 max=1 class="form-control" id="lightHeight">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--brightness-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_brightness"/>
-                            <label for="_brightness" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>1</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">brightness:</small>
-                                </div>
-                            </div>
-                            <input type="number" step=0.1 value=1 min=0.1 class="form-control" id="brightness">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--radius-->
-                    <td>
-                        <div class="funkyradio funkyradio-danger">
-                            <input type="checkbox" name="checkbox" id="_radius"/>
-                            <label for="_radius" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>Infinity</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">radius:</small>
-                                </div>
-                            </div>
-                            <input type="number" step=0.01 value=0 min=0 class="form-control" id="radius">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--drawMode-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_drawMode"/>
-                            <label for="_drawMode" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>TRIANGLES</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                    <small class="text-muted">drawMode:</small>
-                                </div>
-                            </div>
-                            <select class="selectRadius" id="drawMode">
-                                <option value=1>LINES</option>
-                                <option value=2>LINE_LOOP</option>
-                                <option value=3>LINE_STRIP</option>
-                                <option value=0>POINTS</option>
-                                <option value=4 selected>TRIANGLES</option>
-                                <option value=6>TRIANGLE_FAN</option>
-                                <option value=5>TRIANGLE_STRIP</option>
-                            </select>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--color-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_color"/>
-                            <label for="_color" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>0xffffff</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">color:HVS:</small><input type="checkbox" id="tint_mode"><small class="text-muted"></small>
-                                </div>
-                            </div>
-                            <input style="z-index:9999999;" value="ffffff" class="jscolor form-control" id="color">
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--falloff -->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_falloff"/>
-                            <label for="_falloff" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td>[0.75,3,20]</td>
-                    <td id="_setDark-BoxDisplay" style="display: block;">
-                        <font color="#d2bc97">falloff attenuation coefficients controler</font><br><br>
-                        <div class="form-control">
-                            <b>kc</b> <input value=0.75 data-slider-min=0.01 data-slider-max=2 data-slider-step=0.01 data-slider-value=0.75 data-slider-id="RC" id="kc" data-slider-handle="triangle" type="text" class="span2"  /><br>
-                            <b>kl</b> <input value=3 data-slider-min=0.01 data-slider-max=20 data-slider-step=0.01 data-slider-value=3 data-slider-id="GC" id="kl" data-slider-handle="triangle" type="text" class="span2"/><br>
-                            <b>kq</b> <input value=20 data-slider-min=0.01 data-slider-max=50 data-slider-step=0.01 data-slider-value=20 data-slider-id="BC" id="kq" data-slider-handle="triangle" type="text" class="span2"/>
-                        </div> 
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <button id="reset" type="button" class="btn btn-outline-light btn-sm">Reset Cache Session</button>
-        <button id="randomize" type="button" class="btn btn-outline-secondary btn-sm">Randomize</button>
-        <button id="apply" type="button" class="btn btn-outline-success btn-sm">Apply</button>
-        <button id="cancel" type="button" class="btn btn-outline-danger btn-sm">Cancel</button>
-    </div>`//end
-   };
-  //#region [rgba(200, 10, 10,0.5)]
-//#endregion
-function html_saveEditor() {
-    return message = /*html*/ `
-    <div class="container" id="dataIntepretor">
-    <h6>
-        <font color="#d2bc97">SAVE MAP EXPORT</font>
-        <small class="text-muted"><kbd>Json</kbd></small>
-    </h6>
-    
-        <table class="table table-hover table-dark table-sm">
-            <thead style="background-color: #393939" >
-                <tr>
-                    <th scope="col">options</th>
-                    <th scope="col">#</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><!--Rendering parralaxe for RMMV?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering parralaxe for RMMV?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_paraRmmv" checked>
-                            <label for="r_paraRmmv" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Layers For PhotoShops?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering Layers For PhotoShops?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_layerPSD"/>
-                            <label for="r_layerPSD" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Events and Players Sprites?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering Events and Players Sprites?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_event"/>
-                            <label for="r_event" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering grafics debugging?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering grafics debugging?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_grafics"/>
-                            <label for="r_grafics" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Light shadders?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering Light shadders?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_light"/>
-                            <label for="r_light" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering layers Normals?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering layers Normals?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_normal"/>
-                            <label for="r_normal" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering with current Animations times?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Rendering with current Animations times?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="r_currentTime"/>
-                            <label for="r_currentTime" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--eventID-->
-                    <td colspan="2">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="">data file name:</small>
-                                </div>
-                            </div>
-                            <input type="text" autocomplete="on" placeholder="Map001_sprites.json" class="form-control" id="fileName">
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-  
-        
-    <table class="table table-hover table-dark table-sm">
-        <thead class="thead-dark">
-            <tr>
-                <th scope="col">Information</th>
-                <th scope="col">Value</th>
-            </tr>
-        </thead>
-        <tbody id="information">
-            <tr>
-                <td>VERSION:</td>
-                <td class="text-success">Editor: ${Imported["pixiMapEditor"]}</td>
-            <tr>
-            <tr>
-                <td>savePath:</td>
-                <td class="text-success">/data/Map00${$gameMap._mapId}_sprites.json</td>
-            <tr>
-            <tr>
-                <td>totalSpines:</td>
-                <td class="text-success">${ SceneManager._scene._spriteset._tilemap.children.length}</td>
-            <tr>
-            <tr>
-                <td>totalTiles:</td>
-                <td class="text-danger"> not avaible ...</td>
-            <tr>
-            <tr>
-                <td>totalLight:</td>
-                <td class="text-danger"> not avaible ...</td>
-            <tr>
-            <tr>
-                <td>totalSheets:</td>
-                <td class="text-danger"> not avaible ... </td>
-            <tr>
-            <tr>
-                <td>totalMesh:</td>
-                <td class="text-danger"> not avaible ... </td>
-            <tr>
-            <tr>
-                <td>totalSpritesObj:</td>
-                <td class="text-danger"> not avaible ... </td>
-            <tr>
-        </tbody>
-    </table>  
-        <button id="export" type="button" class="btn btn-outline-success col-md-6">Export</button>
-        <button id="cancel" type="button" class="btn btn-outline-danger col-md-4">Cancel</button><br>
-        <td colspan="3"><font color="#c17d2e">**Be shure you alway have a backup for your json!**</font></td>
-    </div>`//end
-   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
-
-  //#region [rgba(70,70, 99,0.4)]
+//#region [rgba(70,70, 99,0.4)]
 //#endregion
 function html_izit_convertHeaven() {
     const message = /*html*/ `
@@ -998,8 +230,350 @@ function html_izit_sceneSetup(bgList, stage) {
     return message;
 };
 
+// create a new Tabs, Options
+function new_HTML_table_options(contents){
+    let c = ``;
+    contents.forEach(e => { c = c+e });
+
+    return /*html*/ `
+    <table class="table table-hover table-dark table-sm">
+        <thead style="background-color: #393939" >
+            <tr>
+                <th scope="col">Options</th>
+                <th scope="col">value</th>
+            </tr>
+        </thead>
+            <tbody>${c}</tbody>
+        </table>
+    `
+};
+
+// create new content for tbody tr
+// example:  p.position, d.position n.position
+function new_HTML_content_options(description,options){
+    return /*html*/ `
+        <tr>
+            <td>
+                <div class="input-group input-group-xs ${options.break? "parentBreak":''} ${options.smallz? "smallz":''}">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text ${options.trClass && options.trClass}" >
+                            <p>${description}:&nbsp</p>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td ${options.trClass && 'class='+options.trClass}>
+                <div class="form-check-inline funkyradio">
+                    <div class="funkyradio funkyradio-warning">
+                        <input type="checkbox" name="checkbox" id="check_haven"/>
+                        <label for="check_haven">&nbsp;</label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    `
+};
+
+// create a new Tabs, type propreties [parent,diffuse,normal]
+function new_HTML_table(contents){
+    let bodys = [];
+    let i = 0;
+    let colorClass = ["green","blue","red","pink","green"];
+    contents.forEach(c => {
+        let color = colorClass[i]? colorClass[i++] : colorClass[i=0];
+        bodys.push(`<tbody class="${color}">${c.join("")}</tbody>`); // TODO: ADD BODY CLASS color
+    });
+    bodys = bodys.join("");
+    return /*html*/ `
+    <table class="table table-hover table-dark table-sm">
+        <thead style="background-color: #393939" >
+            <tr>
+                <th scope="col">propreties</th>
+                <th scope="col">value</th>
+                <th scope="col">select</th>
+            </tr>
+        </thead>${bodys}</table>
+    `
+};
 
 
+
+
+function createOptsCalss(opts){
+    opts.break? opts.break = "parentBreak" : void 0;
+    opts.sm ? opts.sm = "smallz" : void 0;
+};
+
+function newInputType(target,id,type,opt,index){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    return /*html*/ `
+        <input 
+        class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
+        type=${type} 
+        step=${opt.step} 
+        id=${id} 
+        index=${index} 
+        target=${target} 
+        >
+    `
+};
+
+function newInputTypeSelect(target,id,type,opt,index){
+    // TODO: rendre dinamycs
+    return /*html*/ `
+        <select class="selectRadius" id=${id} target=${target} >
+            <option value=true>true</option>
+            <option value=false selected>false</option>
+        </select>
+    `
+};
+function newInputTypeTextareat(target,id,type,opt,index){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    return /*html*/ `
+        <textarea 
+        rows="5" 
+        class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
+        type=${type} 
+        step=${opt.step} 
+        id=${id} 
+        index=${index} 
+        target=${target} 
+        > </textarea>
+        `
+};
+
+function newInputTypeColor(target,id,type,opt){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    return /*html*/ `
+        <input 
+        class="jscolor form-control ${isSmall} ${isLargeX} ${isLargeY}"  
+        step=${opt.step} 
+        id=${target+'_'+id} 
+        target=${target} 
+        style="z-index:9999999;"
+        >
+    `
+};
+
+// create new content for tbody tr 2D Alway number type
+// example:  p.position, d.position n.position
+function new_HTML_content2D(targets,id,type,opts,end){
+    let result = [];
+    targets.forEach(target => {
+        let description = `${target}.${id}`;
+        let x = newInputType(target,id,type,opts,0);
+        let y = newInputType(target,id,type,opts,1);
+        let padLeft = targets.contains("p")&&["d","n"].contains(target)? `style="padding-left: 14px;"` : void 0;
+        result.push(
+            /*html*/ `
+            <tr>
+            <td ${padLeft}>
+                <div class="input-group-text"> <p>${description}:</p> </div>
+            </td>
+            <td>
+                <label for=${id} class="labelXY">x:</label>${x}
+                <label for=${id} class="labelXY">y:</label>${y}
+            </td>
+            <td ${opts.color?('class='+opts.color):void 0}>
+                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+            </td>
+            </tr>
+            `
+        );
+    });
+    return result;
+};
+
+// create new content for tbody tr 2D Alway number type
+// example:  p.position, d.position n.position
+function new_HTML_content1D(targets,id,type,opts,end){
+    let result = [];
+    targets.forEach(target => {
+        let description = `${target}.${id}`;
+        let i;
+        if(opts.jscolor){i = newInputTypeColor(target,id,type,opts);}
+        else if(type === "select"){i = newInputTypeSelect(target,id,type,opts);}
+        else if(type === "textArea"){i = newInputTypeTextareat(target,id,type,opts);}
+        else{ i = newInputType(target,id,type,opts,0);};
+        result.push(
+            /*html*/ `
+            <tr>
+            <td>
+                <div class="input-group-text"> <p>${description}:</p> </div>
+            </td>
+            <td>
+                ${i}
+            </td>
+            <td ${opts.color?('class='+opts.color):void 0}>
+                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+            </td>
+            </tr>
+            `
+        );
+    });
+    return result;
+};
+
+// create new content for tbody tr 2D Alway number type
+// example:  p.position, d.position n.position
+function new_HTML_contentMessage(description,caseID){
+    let checkBox = caseID? `<td>Enable: <input class="saveCheck" type="checkbox" id=${caseID}></td>` : void 0;
+    return [/*html*/ `
+        <tr>
+            ${checkBox}
+            <th colspan="2">
+                <div > <p class="specialMessage">${description}:</p> </div>
+            </th>
+        </tr>
+    `];
+};
+
+// create new content for tbody tr colors pickers
+function new_HTML_contentColorHeaven(targets,id,type,opts,end){
+    let result = [];
+    targets.forEach(target => {
+        let description = `${target}.${id}`;
+        result.push(
+            /*html*/ `
+            <tr>
+            <td>
+                <div class="input-group-text"> <p>${description}:</p> </div>
+            </td>
+            <td>
+                <div class="form-control dark"> <!--diffuse rvb setDark -->
+                    <b>dark.r:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" id="ddr" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>dark.g:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" id="ddg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>dark.b:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" id="ddb" data-slider-handle="triangle" type="text" class="span2"/>
+                </div>
+                <div class="form-control"> <!--diffuse rvb setLight -->
+                    <b>light.r:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" id="dlr" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>light.g:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" id="dlg" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>light.b:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" id="dlb" data-slider-handle="triangle" type="text" class="span2"/>
+                </div>
+            </td>
+            <td ${opts.color?('class='+opts.color):void 0}>
+                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+            </td>
+            </tr>
+            `
+        );
+    });
+    return result;
+};
+
+
+function HTML_DATA_UI(){
+    // if is a sprite obj
+    const message1 = /*html*/ `
+    <div class="container scrollable" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+
+            <div class="mn-accordion" id="accordion"><!--__NEW Accordions__-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table_options([
+                            // rotation
+                            new_HTML_content_options("Lock: normal value to Diffuse",{}),
+                            new_HTML_content_options("Lock: Y to X value",{}),
+                            new_HTML_content_options("Disable not avaible data",{}),
+                            new_HTML_content_options("Allow Camera mouse in inspecor",{}),
+                            new_HTML_content_options("Allow mouse sprite interaction in inspector",{}),
+                            new_HTML_content_options("Colors mode for jsColors HSV / HVS",{}),
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table([
+                            new_HTML_content1D(["p"],"groupID","text",{largeX:true}),// groupID
+                            new_HTML_content1D(["p"],"id","text",{largeX:true}),// id
+                            new_HTML_content1D(["p"],"name","text",{largeX:true}),// name
+                            new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table([
+                            new_HTML_content2D(["p","d","n"],"position","number",{step:0.2}),// position
+                            new_HTML_content2D(["p","d","n"],"pivot","number",{step:0.2}),// pivot
+                            new_HTML_content2D(["p","d","n"],"scale","number",{step:0.2,small:true}),// scale
+                            new_HTML_content2D(["p","d","n"],"skew","number",{step:0.2,small:true}),// skew
+                            new_HTML_content2D(["d","n"],"anchor","number",{step:0.2,small:true}),// anchor
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table([
+                            new_HTML_content1D(["p","d","n"],"rotation","number",{step:0.2,small:true}),// rotation
+                            new_HTML_content1D(["p","d","n"],"alpha","number",{step:0.2,small:true}),// alpha
+                            new_HTML_content1D(["d","n"],"blendMode","number",{step:0.2,small:true}),// blendMode
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Colors Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table([
+                            new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
+                        ])}
+                        ${ new_HTML_table([
+                            new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
+                            new_HTML_contentColorHeaven(["d","n"],"chanel","text",{}),// heaven color
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+                        ${ new_HTML_table([
+                            new_HTML_content1D(["p"],"animations","number",{step:0.1,small:true}),// animations
+                            new_HTML_content1D(["p"],"loop","select",{option:["true","false"]}),//loop
+                        ])}
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Spine Skeletons Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Events Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Audio API Manager </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+
+                    </div>
+                </div><!--accordion item END-->
+                <div class="accordion-item"> <!--accordion item-->
+                    <div class="accordion-heading"><h3>Display Groups </h3><div class="icon"><i class="arrow right"></i></div></div>
+                    <div class="accordion-content">
+
+                    </div>
+                </div><!--accordion item END-->
+            </div><!--__Accordions END__-->
+    </div> `;//END message1
+    return message1;
+};
 
   //#region [rgba(200, 10, 10,0.5)]
 //#endregion
@@ -1011,6 +585,7 @@ return message = /*html*/ `
         <font color="#d2bc97">CUSTOM OBJ SESSION PROPRETY EDITOR</font>
         <small class="text-muted"><kbd>Json</kbd></small>
     </h6>
+    <!--button top-->
     <div class="form-check-inline funkyradio">
         <div class="funkyradio funkyradio-warning">
             <input type="checkbox" name="checkbox" id="check_haven"/>
@@ -1026,16 +601,61 @@ return message = /*html*/ `
         </div>
     </div>
 
+
+    <!--table transforms parents-->
     <table class="table table-hover table-dark table-sm">
         <thead style="background-color: #393939" >
             <tr>
-                <th scope="col">#</th>
-                <th scope="col">def</th>
-                <th scope="col">custom</th>
+                <th scope="col">diffuse</th>
+                <th scope="col">diffuse</th>
                 <th scope="col">copy</th>
             </tr>
         </thead>
         <tbody>
+        
+        <div class="mn-accordion" id="accordion">
+
+            <!--Accordion item-->
+        <div class="accordion-item">
+                <div class="accordion-heading">
+                    <h3>Section 1</h3>
+                    <div class="icon">
+                        <i class="arrow right"></i>
+                    </div>
+                </div>
+                <div class="accordion-content">
+                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                </div>
+            </div>
+            <!--Accordion item-->
+        
+        </div>
+
+
+        <div class="mn-accordion" id="accordion2">
+                  <!--Accordion item-->
+            <div class="accordion-item">
+                  <div class="accordion-heading">
+                      <h3>Section 1faegfaeg</h3>
+                      <div class="icon">
+                          <i class="arrow right"></i>
+                      </div>
+                  </div>
+                  <div class="accordion-content">
+                      <p>32464264256425.</p>
+                  </div>
+              </div>
+              <!--Accordion item-->
+          
+          </div>
+
+
+
+
+
+
+
+        
             <tr><!--groupID-->
                 <td>
                     <div class="funkyradio funkyradio-success">

@@ -157,15 +157,15 @@ _PME.prototype.izit_pasteCopyDataIn = function(OBJ,ClipboarData){
 
 // open the tileEditor
 _PME.prototype.tileSetupEditor = function(InMapObj){
-    let message = htlm_tileSetupEditor(InMapObj);
+    let message = HTML_DATA_UI(InMapObj);
     return{
-        title: '',
+        title: 'ADAD',
         message: message,
         id:'dataEditor',
         layout: 2,
         transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
         transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
-        messageSize: 14,
+        messageSize: 10,
         maxWidth: false,
         theme: 'dark',
         position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter

@@ -17,10 +17,10 @@ SceneManager.run = function() {
         winGui.show();
         winGui.focus();
         // debug gui
-       /* winGui.showDevTools();
+        winGui.showDevTools();
         const debugGui = require('nw.gui').Window.get();
         debugGui.x = 0 ;
-        debugGui.focus();*/
+        debugGui.focus();
 
         //start
         this.initialize();

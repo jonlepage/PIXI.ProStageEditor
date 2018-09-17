@@ -22,18 +22,21 @@ function initializeEditor(event){
             $PME.started = true;
             $PME.stage = SceneManager._scene;
             $gameSystem && ($gameSystem._menuEnabled = false); // disable rmmv menu
+            
             const javascript = [
                 "js/iziToast/iziToast.js",
                 "js/iziToast/pixiMapEditor_HTML.js",
                 "js/iziToast/pixiMapEditor_TOAST.js",
                 "js/jscolor/bootstrap-slider.js",
                 "js/jscolor/jscolor.js",
+                "js/acordeon/mn-accordion.js", // acordeon collapser
             ];
             const css = [
                 'js/iziToast/iziToast.css',
                 "js/iziToast/bootstrap.min.css",
                 "js/jscolor/bootstrap-slider.css",
                 "editor/customEditorCSS.css",
+                "js/acordeon/mn-accordion.css",
             ];
             function onComplette(){
                 $PME.startEditorLoader();
@@ -997,12 +1000,28 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         clearFiltersFX3(InMapObj); // clear filters
         iniSetupIzit();
         iziToast.info( $PME.tileSetupEditor(InMapObj) );
+        var myAccordion = new Accordion(document.getElementById("accordion"), {
+            multiple: true,
+
+        });
+       
         // show tint colors pickers
-        const docuColorsID = document.querySelectorAll("#tint");
-        const _jscolor_d = new jscolor(docuColorsID[0]); // for case:id="_color" slider:id="color"
+        var docuColorsID = document.getElementById("d_tint");
+        const _jscolor_d = new jscolor(docuColorsID); // for case:id="_color" slider:id="color"
         _jscolor_d.zIndex = 9999999;
-        const _jscolor_n = new jscolor(docuColorsID[1]); // for case:id="_color" slider:id="color"
+        var docuColorsID = document.getElementById("n_tint");
+        const _jscolor_n = new jscolor(docuColorsID); // for case:id="_color" slider:id="color"
         _jscolor_n.zIndex = 9999999;
+
+        const ddr = new Slider("#ddr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
+        const ddg = new Slider("#ddg", {tooltip: 'always'});
+        const ddb = new Slider("#ddb", { tooltip: 'always'});
+        const dlr = new Slider("#dlr", {tooltip: 'always'});
+        const dlg = new Slider("#dlg", {tooltip: 'always'});
+        const dlb = new Slider("#dlb", {tooltip: 'always'});
+
+
+        return;
         //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
         // focuse on objet
         start_iziToastDataEditor(InMapObj, [_jscolor_d, _jscolor_n], null);

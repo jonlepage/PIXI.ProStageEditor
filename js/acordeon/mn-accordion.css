@@ -1,0 +1,81 @@
+.mn-accordion .accordion-item {
+  background-color: #2a2a2a;
+  border-bottom: 3px solid #000000;
+}
+
+.mn-accordion .accordion-item .accordion-heading {
+  position: relative;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.mn-accordion .accordion-item .accordion-heading .icon {
+  color: #4a6e78;
+  position: absolute;
+  top: 70%;
+  right: 2%;
+  margin-top: -11px;
+}
+
+.mn-accordion .accordion-item .accordion-heading .icon i {
+  -webkit-transition: all 0.2s ease;
+  -o-transition: all 0.2s ease;
+  transition: all 0.2s ease;
+  border: solid #4a6e78;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.mn-accordion .accordion-item .accordion-heading .icon i.right {
+  -webkit-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.mn-accordion .accordion-item .accordion-heading h3 {
+  color: #4a6e78;
+  margin: 0;
+  font-weight: normal;
+  font-size: 1.2em;
+}
+
+.mn-accordion .accordion-item .accordion-content {
+  overflow: hidden;
+  height: 0;
+  color: #333;
+  transition-property: all;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+  transition-delay: initial;
+}
+
+.mn-accordion .accordion-item .accordion-content p:first-child {
+  margin-top: 0;
+}
+
+.mn-accordion .accordion-item .accordion-content p:last-child {
+  margin-bottom: 0;
+}
+
+.mn-accordion .accordion-item .accordion-content > * {
+  padding: 20px;
+}
+
+.mn-accordion .accordion-item.state-open .accordion-heading {
+  border-bottom: 1px solid #d9e5e8;
+}
+
+.mn-accordion .accordion-item.state-open .accordion-heading .icon i {
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.accordion-content {
+  transition-duration: 200ms !important;
+  background-color: #262626;
+}
+
