@@ -435,10 +435,12 @@ function new_HTML_contentMessage(description,caseID){
 };
 
 // create new content for tbody tr colors pickers
-function new_HTML_contentColorHeaven(targets,id,type,opts,end){
+function new_HTML_contentColorHeaven(targets){
     let result = [];
     targets.forEach(target => {
-        let description = `${target}.${id}`;
+        let description = `${target}:chanel`;
+        let darkID = [`${target}dr`,`${target}dg`,`${target}db`];
+        let lightID = [`${target}lr`,`${target}lg`,`${target}lb`];
         result.push(
             /*html*/ `
             <tr>
@@ -447,18 +449,18 @@ function new_HTML_contentColorHeaven(targets,id,type,opts,end){
             </td>
             <td>
                 <div class="form-control dark"> <!--diffuse rvb setDark -->
-                    <b>dark.r:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" id="ddr" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>dark.g:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" id="ddg" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>dark.b:</b> <input value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" id="ddb" data-slider-handle="triangle" type="text" class="span2"/>
+                    <b>dr:</b> <input id=${darkID[0]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>dg:</b> <input id=${darkID[1]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>db:</b> <input id=${darkID[2]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" data-slider-handle="triangle" type="text" class="span2"/>
                 </div>
                 <div class="form-control"> <!--diffuse rvb setLight -->
-                    <b>light.r:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" id="dlr" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>light.g:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" id="dlg" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>light.b:</b> <input value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" id="dlb" data-slider-handle="triangle" type="text" class="span2"/>
+                    <b>lr:</b> <input id=${lightID[0]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>lg:</b> <input id=${lightID[1]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" data-slider-handle="triangle" type="text" class="span2"/><br>
+                    <b>lb:</b> <input id=${lightID[2]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" data-slider-handle="triangle" type="text" class="span2"/>
                 </div>
             </td>
-            <td ${opts.color?('class='+opts.color):void 0}>
-                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+            <td>
+                <input class="saveCheck" type="checkbox" id=${target+"heaven_select"}>
             </td>
             </tr>
             `
@@ -533,7 +535,7 @@ function HTML_DATA_UI(){
                         ])}
                         ${ new_HTML_table([
                             new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
-                            new_HTML_contentColorHeaven(["d","n"],"chanel","text",{}),// heaven color
+                            new_HTML_contentColorHeaven(["d","n"]),// heaven color
                         ])}
                     </div>
                 </div><!--accordion item END-->

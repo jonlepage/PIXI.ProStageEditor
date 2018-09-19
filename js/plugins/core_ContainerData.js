@@ -20,28 +20,30 @@ PIXI.CageContainer = (function () {
         };
         get d() { return this.Sprites.d }; // return diffuse sprites
         get n() { return this.Sprites.n }; // return normals sprites //TODO: spine normal are arrays
-
     };
 
     CageContainer.prototype.createBases = function(dataBase, dataValues) {
-        this.dataName = dataBase.name;
-        this.textureName = dataBase.textureName;
-        this.Type = dataValues && dataBase.type || "thumbs"; // if no dataValues arg? its a thumbs
-
-        if(this.Type === "tileSheet"){
-            const sprite_d = new PIXI.Sprite(dataBase.textures[dataValues.textureName]); // take first tex for thumbs, preview will take all array
-            const sprite_n = new PIXI.Sprite(dataBase.textures_n[dataValues.textureName+"_n"]); // allow swap texture hover tile
+        // if no dataValues, it a type "thumbs" from editor
+        if(!dataValues){
+            this.dataName = dataBase.name; // asign thumbs dataName
+            const sprite_thumbs = new PIXI.Sprite(dataBase.baseTextures[0]); // thumbs [0], and previews will take all arrays [...]
+            this.Sprites = {d:sprite_thumbs};
+            this.addChild(this.Sprites.d);
+        }else
+        if(dataValues.p.type === "tileSheet"){
+            const sprite_d = new PIXI.Sprite(dataBase.textures[dataValues.p.textureName[0]]); // take first tex for thumbs, preview will take all array
+            const sprite_n = new PIXI.Sprite(dataBase.textures_n[dataValues.p.textureName[1]]); // allow swap texture hover tile
             this.Sprites = {d:sprite_d, n:sprite_n};
             this.addChild(sprite_d, sprite_n);
         }else
-        if(this.Type === "animationSheet"){
+        if(dataValues.type === "animationSheet"){
             const sprite_d = new PIXI.extras.AnimatedSprite(this.Data.textures[this.TexName]);
             const sprite_n = this.addNormal(sprite_d, this.Data.textures_n[this.TexName]);
             this.Sprites = {d:sprite_d, n:sprite_n};
             this.addChild(sprite_d,sprite_n);
             this.play(0);
         }else
-        if(this.Type === "spineSheet"){
+        if(dataValues.type === "spineSheet"){
             const spine = new PIXI.spine.Spine(this.Data.spineData);
             const spine_n = spine.convertToNormal();
             
@@ -50,44 +52,38 @@ PIXI.CageContainer = (function () {
             spine.skeleton.setSlotsToSetupPose();
             this.Sprites = {d:spine, n:sprite_n};
             this.addChild(spine,spine_n);
-        }else
-        if(this.Type === "thumbs"){
-            const sprite_thumbs = new PIXI.Sprite(dataBase.baseTextures[0]); // thumbs [0], and previews will take all arrays [...]
-            this.Sprites = {d:sprite_thumbs};
-            this.addChild(this.Sprites.d);
         };
-        
-
     };
 
     CageContainer.prototype.asignValues = function(dataValues) {
-        for (const key in dataValues) {
-            const value = dataValues[key];
-            switch (key) {
-                case "position":case "scale":case "skew":case "pivot":
-                    this[key].set(...value);
-                    break;
-                case "anchor":
-                    this.d.anchor.set(...value);
-                    this.n.anchor.set(...value);
-                break;
-                case "blendMode":case "tint":
-                this.d[key] = value.d;
-                this.n[key] = value.n;
-                case "setDark": case "setLight":
-                    if(this.d.color){ // convertToHeaven(); based on boolean editor, or take look on pluginName ?
-                        this.d.color[key](...value.d);
-                        this.n.color[key](...value.n);
-                    };
-                break;
-                case "parentGroup": // if have parentGroup, also asign diffuseGroup,normalGroup
-                    this.parentGroup = $displayGroup.group[value];
-                    this.d? this.d.parentGroup = PIXI.lights.diffuseGroup : void 0;
-                    this.Type!=="spineSheet"? this.n.parentGroup = PIXI.lights.normalGroup : void 0;
-                break;
-                default: // "textureName", "groupID", "name"
-                    this[key] = value;
-                break;
+        console.log('dataValues: ', dataValues);
+        // asign parent cage keys
+        computeValue(this, dataValues.p);
+        computeValue(this.Sprites.d, dataValues.d);
+        computeValue(this.Sprites.n, dataValues.n);
+        function computeValue(that, data){
+            for (const key in data) {
+                const value = data[key];
+                switch (key) {
+                    case "position":case "scale":case "skew":case "pivot":case "anchor":
+                        that[key].set(...value);
+                        break;
+                    case "setDark": case "setLight":
+                        if(that.color){ // convertToHeaven(); based on boolean editor, or take look on pluginName ?
+                            that.color[key](...value.d);
+                            that.color[key](...value.n);
+                        };
+                        break;
+                    case "parentGroup": // if have parentGroup, also asign diffuseGroup,normalGroup
+                    //TODO: NE PAS ASIGNER NORMAL POUR CERTAIN CA , COMME POUR EDITOR tilelibs
+                        that.parentGroup = $displayGroup.group[value];
+                        that.d.parentGroup = PIXI.lights.diffuseGroup;
+                        !Array.isArray(that.n.parentGroup)? that.n.parentGroup = PIXI.lights.normalGroup : void 0;
+                        break;
+                    default:
+                        that[key] = value;
+                        break;
+                };
             };
         };
         this.DataValues = dataValues;

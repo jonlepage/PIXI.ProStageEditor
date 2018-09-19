@@ -385,8 +385,6 @@ _PME.prototype.computeData = function() {
     //EDITOR.state.setAnimation(2, 'hideTileSheets', false);
     spine.state.tracks[1].listener = {
         complete: function(trackEntry, count) {
-            iziToast.hide({transitionOut: 'fadeOutUp'}, document.getElementById("izit_loading1") );
-            iziToast.warning( $PME.izit_loading1() );
             $PME.startEditor();
         }
     };
@@ -838,68 +836,122 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         
     };
     function getDataDefault(dataBase, textureName){
+        console.log('dataBase, textureName: ', dataBase, textureName);
+        //TODO: mettre type: pour les thumbs , les type seron mintenant dans le datavalue, si type undefined, ces un thumbs
         // data for the scene setup
-        const dataDefault = {
-            textureName: textureName,
-            groupID:"default",
-            name:"default",
-            position:[0,0],
-            scale:[1,1],
-            skew:[0,0],
-            pivot:[0,0],
-            anchor:[0.5,1],
-            rotation:0,
-            alpha:1,
-            blendMode:{d:0,n:0},
-            tint:{d:0xffffff,n:0xffffff},
-            autoGroups:[false,false,false,false,false,false,false],
-            zIndex:-1,
-            setDark:{d:[0,0,0], n:[0,0,0]},
-            setLight:{d:[1,1,1], n:[1,1,1]},
+        const p = {
+            type        :  dataBase    .type                                 , // locked
+            textureName : [textureName, textureName+"_n"]                    , // locked
+            dataName    :  dataBase    .name                                 , // locked
+            groupID     :  dataBase    .dirArray[dataBase.dirArray.length-1]          , // asigner un groupe dapartenance ex: flags , par default utilise dossier parent
+            name        :  textureName+Math.random().toString(36).substring(2, 12) , // asigner un nom unique au hazard
+            description :  dataBase    .root                                 , // un description aide memoire, par default asign root
+            // observable point
+            position : [0,0],
+            scale    : [1,1],
+            skew     : [0,0],
+            pivot    : [0,0],
+            // transform
+            rotation: 0,
+            alpha   : 1,
+            // other
+            autoGroups : [false,false,false,false,false,false,false]         , // permet de changer automatiquement de layers selon player
+            zIndex     : 0            , // locked
+            parentGroup: 0, //  by default no parent groups in default, 
         };
-        if(dataBase.type === "animationSheet"){
+        // Diffuse Normal data value
+        let DN = [this.d,this.n];
+        let dn = [];
+        DN.forEach(that => {
+            dn.push({
+                // observable point
+                position : [0  ,0],
+                scale    : [1  ,1],
+                skew     : [0  ,0],
+                pivot    : [0  ,0],
+                anchor   : [0.5,1],
+                // transform
+                rotation  : 0        ,
+                alpha     : 1        ,
+                blendMode : 0        ,
+                tint      : 0xffffff ,
+                // other
+                setDark :[0,0,0],
+                setLight:[1,1,1],
+            });
+        });
+
+        /*if(dataBase.type === "animationSheet"){
             dataDefault = Object.assign({},{
                 animationSpeed:1,
                 loop:1
             });
-        };
+        };*/
+        let dataDefault = { p:p, d:dn[0], n:dn[1] };
         return dataDefault;
     };
 
     // current data to build a json dataValues
     // the DataValues will used for save but also copy past
     function getDataValues(){ // old getDataJson
-        // data for the scene setup
-        const dataValues = {
-            textureName: this.textureName,
-            groupID: this.groupID,
-            name: this.name,
+        // parent data value
+        const p = {
+            type       : this .type       , // locked
+            textureName: this .textureName, // locked
+            dataName   : this .dataName, // locked
+            groupID    : this .groupID    , // asigner un groupe dapartenance ex: flags
+            name       : this .name       , // asigner un nom unique
+            description: this .description, // un description aide memoire
+            // observable point
             position: [this.position.x, this.position.y],
-            scale: [this.scale.x, this.scale.y],
-            skew: [this.skew.x, this.skew.y],
-            pivot: [this.pivot.x, this.pivot.y],
-            anchor: [this.d.anchor.x, this.d.anchor.y],
+            scale   : [this.scale   .x, this.scale   .y],
+            skew    : [this.skew    .x, this.skew    .y],
+            pivot   : [this.pivot   .x, this.pivot   .y],
+            // transform
             rotation: this.rotation,
-            alpha: this.alpha,
-            blendMode: {d:this.d.blendMode, n:this.n.blendMode},
-            tint: {d:this.d.tint,n:this.n.tint},
-            autoGroups: this.autoGroups,
-            zIndex: this.zIndex,
-            parentGroup: +CurrentDisplayGroup,
+            alpha: this.alpha,// other
+            // other
+            autoGroups : this.autoGroups         , // permet de changer automatiquement de layers selon player
+            zIndex     : this.zIndex             , // locked
+            parentGroup: this.parentGroup? this.parentGroup.zIndex : CurrentDisplayGroup,
         };
-        if(this.heavenCage){ // flag heaven on cageContainer
+        // Diffuse Normal data value
+        let DN = [this.d,this.n];
+        let dn = [];
+        DN.forEach(that => {
+            dn.push({
+                // observable point
+                position: [that.position.x, that.position.y],
+                scale   : [that.scale   .x, that.scale   .y],
+                skew    : [that.skew    .x, that.skew    .y],
+                pivot   : [that.pivot   .x, that.pivot   .y],
+                anchor  : [that.anchor  .x, that.anchor  .y],
+                // transform
+                rotation  : that.rotation  ,
+                alpha     : that.alpha     ,
+                blendMode : that.blendMode ,
+                tint      : that.tint      ,
+                // other
+                ...that.color && {
+                    setDark  : PIXI.utils.hex2rgb(that.color.darkRgba ).reverse(),
+                    setLight : PIXI.utils.hex2rgb(that.color.lightRgba).reverse(),
+                }
+            });
+        });
+        let dataValues = { p:p, d:dn[0], n:dn[1] };
+        return dataValues;
+        /*if(this.heavenCage){ // flag heaven on cageContainer
             dataValues = Object.assign({},{
                 setDark:{ d:PIXI.utils.hex2rgb(this.d.color.darkRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.darkRgba).reverse() },
                 setLight:{ d:PIXI.utils.hex2rgb(this.d.color.lightRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.lightRgba).reverse() },
             });
         };
-        if(this.Type === "animationSheet"){
+        if(this.type === "animationSheet"){
             dataValues = Object.assign({},{
                 animationSpeed:this.animationSpeed,
                 loop:this.loop
             });
-        };
-        return dataValues;
+        };*/
     };
 
 
@@ -947,46 +999,46 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // create multi sliders light
-    function create_sliderHaven(OBJ, Data_Values, Data_CheckBox){
-        const setDark_d = !!Data_CheckBox.heaven_d? Data_Values.setDark.d.value : Data_Values.setDark.d.def;
+    function create_sliderHaven(){
+        /*const setDark_d = !!Data_CheckBox.heaven_d? Data_Values.setDark.d.value : Data_Values.setDark.d.def;
         const setLight_d = !!Data_CheckBox.heaven_d? Data_Values.setLight.d.value : Data_Values.setLight.d.def;
         const setDark_n = !!Data_CheckBox.heaven_n? Data_Values.setDark.n.value : Data_Values.setDark.n.def;
-        const setLight_n = !!Data_CheckBox.heaven_n? Data_Values.setLight.n.value : Data_Values.setLight.n.def;
+        const setLight_n = !!Data_CheckBox.heaven_n? Data_Values.setLight.n.value : Data_Values.setLight.n.def;*/
         // diffuse dark
         function upd() { return setObjWithData.call(OBJ, Data_Values, Data_CheckBox) };
         const ddr = new Slider("#ddr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
         const ddg = new Slider("#ddg", {tooltip: 'always'});
         const ddb = new Slider("#ddb", { tooltip: 'always'});
-        ddr.tooltip.style.opacity = 0.5, ddg.tooltip.style.opacity = 0.5, ddb.tooltip.style.opacity = 0.5;
-        ddr.on("slide", function(value) { Data_Values.setDark.d.value[0] = value; upd() }).setValue(setDark_d[0]);
+        ddr.tooltip.style.opacity = 1, ddg.tooltip.style.opacity = 1, ddb.tooltip.style.opacity = 1;
+        /*ddr.on("slide", function(value) { Data_Values.setDark.d.value[0] = value; upd() }).setValue(setDark_d[0]);
         ddg.on("slide", function(value) { Data_Values.setDark.d.value[1] = value; upd() }).setValue(setDark_d[1]);
-        ddb.on("slide", function(value) { Data_Values.setDark.d.value[2] = value; upd() }).setValue(setDark_d[2]);
+        ddb.on("slide", function(value) { Data_Values.setDark.d.value[2] = value; upd() }).setValue(setDark_d[2]);*/
 
         // diffuse light
         const dlr = new Slider("#dlr", {tooltip: 'always'});
         const dlg = new Slider("#dlg", {tooltip: 'always'});
         const dlb = new Slider("#dlb", {tooltip: 'always'});
-        dlr.tooltip.style.opacity = 0.5, dlg.tooltip.style.opacity = 0.5, dlb.tooltip.style.opacity = 0.5;
-        dlr.on("slide", function(value) { Data_Values.setLight.d.value[0] = value; upd() }).setValue(setLight_d[0]);
+        dlr.tooltip.style.opacity = 1, dlg.tooltip.style.opacity = 1, dlb.tooltip.style.opacity = 1;
+        /*dlr.on("slide", function(value) { Data_Values.setLight.d.value[0] = value; upd() }).setValue(setLight_d[0]);
         dlg.on("slide", function(value) { Data_Values.setLight.d.value[1] = value; upd() }).setValue(setLight_d[1]);
-        dlb.on("slide", function(value) { Data_Values.setLight.d.value[2] = value; upd() }).setValue(setLight_d[2]);
+        dlb.on("slide", function(value) { Data_Values.setLight.d.value[2] = value; upd() }).setValue(setLight_d[2]);*/
 
         // normal dark
         const ndr = new Slider("#ndr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
         const ndg = new Slider("#ndg", {tooltip: 'always'});
         const ndb = new Slider("#ndb", { tooltip: 'always'});
-        ndr.tooltip.style.opacity = 0.5, ndg.tooltip.style.opacity = 0.5, ndb.tooltip.style.opacity = 0.5;
-        ndr.on("slide", function(value) { Data_Values.setDark.n.value[0] = value; upd() }).setValue(setDark_n[0]);
+        ndr.tooltip.style.opacity = 1, ndg.tooltip.style.opacity = 1, ndb.tooltip.style.opacity = 1;
+        /*ndr.on("slide", function(value) { Data_Values.setDark.n.value[0] = value; upd() }).setValue(setDark_n[0]);
         ndg.on("slide", function(value) { Data_Values.setDark.n.value[1] = value; upd() }).setValue(setDark_n[1]);
-        ndb.on("slide", function(value) { Data_Values.setDark.n.value[2] = value; upd() }).setValue(setDark_n[2]);
+        ndb.on("slide", function(value) { Data_Values.setDark.n.value[2] = value; upd() }).setValue(setDark_n[2]);*/
         // normal light
         const nlr = new Slider("#nlr", {tooltip: 'always'});
         const nlg = new Slider("#nlg", {tooltip: 'always'});
         const nlb = new Slider("#nlb", {tooltip: 'always'});
-        nlr.tooltip.style.opacity = 0.5, nlg.tooltip.style.opacity = 0.5, nlb.tooltip.style.opacity = 0.5;
-        nlr.on("slide", function(value) { Data_Values.setLight.n.value[0] = value; upd() }).setValue(setLight_n[0]);
+        nlr.tooltip.style.opacity = 1, nlg.tooltip.style.opacity = 1, nlb.tooltip.style.opacity = 1;
+        /*nlr.on("slide", function(value) { Data_Values.setLight.n.value[0] = value; upd() }).setValue(setLight_n[0]);
         nlg.on("slide", function(value) { Data_Values.setLight.n.value[1] = value; upd() }).setValue(setLight_n[0]);
-        nlb.on("slide", function(value) { Data_Values.setLight.n.value[2] = value; upd() }).setValue(setLight_n[0]);
+        nlb.on("slide", function(value) { Data_Values.setLight.n.value[2] = value; upd() }).setValue(setLight_n[0]);*/
     };
 
     function iniSetupIzit(){
@@ -996,35 +1048,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     }
 
     // setup for tile in map
-    function open_tileSetupEditor(InMapObj) {
-        clearFiltersFX3(InMapObj); // clear filters
+    function open_tileSetupEditor(cage) {
+        clearFiltersFX3(cage); // clear filters
         iniSetupIzit();
-        iziToast.info( $PME.tileSetupEditor(InMapObj) );
-        var myAccordion = new Accordion(document.getElementById("accordion"), {
-            multiple: true,
-
-        });
-       
-        // show tint colors pickers
-        var docuColorsID = document.getElementById("d_tint");
-        const _jscolor_d = new jscolor(docuColorsID); // for case:id="_color" slider:id="color"
-        _jscolor_d.zIndex = 9999999;
-        var docuColorsID = document.getElementById("n_tint");
-        const _jscolor_n = new jscolor(docuColorsID); // for case:id="_color" slider:id="color"
-        _jscolor_n.zIndex = 9999999;
-
-        const ddr = new Slider("#ddr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
-        const ddg = new Slider("#ddg", {tooltip: 'always'});
-        const ddb = new Slider("#ddb", { tooltip: 'always'});
-        const dlr = new Slider("#dlr", {tooltip: 'always'});
-        const dlg = new Slider("#dlg", {tooltip: 'always'});
-        const dlb = new Slider("#dlb", {tooltip: 'always'});
-
-
-        return;
-        //const _Falloff = create_sliderFalloff(); // create slider html for pixiHaven
-        // focuse on objet
-        start_iziToastDataEditor(InMapObj, [_jscolor_d, _jscolor_n], null);
+        iziToast.info( $PME.tileSetupEditor(cage) );
+        // initialise Accordions
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        // initialise tint colors pickers
+        const _jscolor_d = new jscolor( document.getElementById("d_tint") ); // for case:id="_color" slider:id="color"
+        _jscolor_d.zIndex = 99999999;
+        const _jscolor_n = new jscolor( document.getElementById("n_tint") ); // for case:id="_color" slider:id="color"
+        _jscolor_n.zIndex = 99999999;
+        create_sliderHaven.call(cage); // create slider html for pixiHaven
+        //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
+        start_iziToastDataEditor(cage, [_jscolor_d, _jscolor_n], null);
     };
 
     // setup the global scene light :light_Ambient and directionLight
@@ -1077,10 +1114,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // for tiles on map
     function start_iziToastDataEditor(OBJ, _jscolor, _Falloff){
         const dataIntepretor = document.getElementById("dataIntepretor");
-        let Data_Values = OBJ ? getDataJson(OBJ) : void 0;
-        let Data_CheckBox = OBJ ? getDataCheckBoxWith(OBJ, Data_Values) : void 0; //checkBox boolean value
-        OBJ ? setHTMLWithData.call(OBJ, Data_Values, Data_CheckBox, _jscolor, _Falloff) : void 0;
-        
+        let Data_Values = getDataValues.call(OBJ);
+        console.log('Data_Values: ', Data_Values);
+        let Data_Default = null;//getDataDefault(OBJ); //TODO:
+        setHTMLWithData.call(OBJ, Data_Values, null, _jscolor, _Falloff); // asign Data_Values to HTML inspector
+        return;
         // ========= DATA LISTENER  ===========
         // when checkBox changes
         dataIntepretor.oninput = function(event){ 
@@ -1376,7 +1414,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
 
     function setup_Propretys(fromCage){
-        if(this.Type === "tileSheet" || this.Type === "animationSheet" || this.Type === "spineSheet"){
+        if(this.type === "tileSheet" || this.type === "animationSheet" || this.type === "spineSheet"){
             this.Data_Values = getDataJson(fromCage);
             this.Data_CheckBox = getDataCheckBoxWith(fromCage, this.Data_Values);
             setObjWithData.call(this, this.Data_Values, this.Data_CheckBox);
@@ -1384,7 +1422,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             fromCage.Sprites.d? this.Sprites.d.rotation = fromCage.Sprites.d.rotation : void 0;
             fromCage.Sprites.n? this.Sprites.n.rotation = fromCage.Sprites.n.rotation : void 0;
 
-            if(fromCage.buttonType==="tileLibs" && this.Type !== "spineSheet"){ // if it from libs, ajust anchor because it compute by another ways
+            if(fromCage.buttonType==="tileLibs" && this.type !== "spineSheet"){ // if it from libs, ajust anchor because it compute by another ways
                 let anX = fromCage.Debug.an.position.x/fromCage.Debug.bg.width;
                 let anY = fromCage.Debug.an.position.y/fromCage.Debug.bg.height;
                 this.Sprites.d.anchor.set(anX, anY);
@@ -1402,7 +1440,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function setup_LayerGroup(){
-        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
+        if(this.type === "tileSheet" || this.type === "animationSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
             this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
@@ -1410,7 +1448,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
             this.zIndex = this.zIndex || mMY; //TODO:
         };
-        if(this.Type === "spineSheet"){
+        if(this.type === "spineSheet"){
             this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
             this.Sprites.n? this.Sprites.n.parentGroup = PIXI.lights.normalGroup : void 0;
             this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
@@ -1420,17 +1458,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function setup_Parenting(){
-        if(this.Type === "thumbs"){
+        if(!this.type){ // "thumbs"
             this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.ico);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
-        if(this.Type === "tileSheet" || this.Type === "animationSheet"){
+        if(this.type === "tileSheet" || this.type === "animationSheet"){
             this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
             this.getBounds();
             this.Debug.bg.getBounds();
         };
-        if(this.Type === "spineSheet"){
+        if(this.type === "spineSheet"){
             this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
             this.getBounds();
             this.Debug.bg.getBounds();
@@ -1439,7 +1477,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function create_DebugElements(dataBase){
         const Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
-        if(this.Type === "thumbs"){
+        if(!this.type){ // if no data type, it a "thumbs"
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const previews = create_Previews(dataBase.baseTextures); // sprites preview reference;
             const icons = create_IconsFilters(dataBase); // icons
@@ -1458,7 +1496,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.addChildAt(Debug.bg,0);
             this.addChild(this.Debug.ico);
         };
-        if(this.Type === "tileSheet" || this.Type === "animationSheet" || this.Type === "spineSheet"){
+        if(this.type === "tileSheet" || this.type === "animationSheet" || this.type === "spineSheet"){
             let w = this.d.width;
             let h = this.d.height;
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -1526,9 +1564,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // create tiles tileLibs
     function build_tileLibs(dataBase, textureName){
         let dataDefault = getDataDefault(dataBase, textureName); // create default data pack getDataJson
+        delete dataDefault.p.parentGroup; // remove parentGroupe because in the tileLibs , we dont use parents and normal
         const cage = new PIXI.CageContainer(dataBase, dataDefault);
         create_DebugElements.call(cage, dataBase);
-        //  hide non essential for tileLibs
+        // hide non essential for tileLibs
         cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
         cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
         console.log('cage: ', cage);
@@ -1772,7 +1811,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // mX,mY: mouse Position
     function checkAnchor() {
-        if (this.Type === "spineSheet") { return }; // spine dont have custom anchor
+        if (this.type === "spineSheet") { return }; // spine dont have custom anchor
         if(this.mouseIn){ // if pointer_overIN
             const z = CAGE_TILESHEETS.scale.x; //zoom factor
             let b = this._boundsRect;

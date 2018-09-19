@@ -141,7 +141,7 @@
 #RC .slider-selection {
   background: #FF8282;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 500ms; /* transition when the mouse over */
+  transition: all 250ms; /* transition when the mouse over */
 }
 #RC .slider-handle {
 	background: red;
@@ -149,7 +149,7 @@
 #GC .slider-selection {
   background: #428041;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 500ms; /* transition when the mouse over */
+  transition: all 250ms; /* transition when the mouse over */
 }
 #GC .slider-handle {
 	background: green;
@@ -157,7 +157,7 @@
 #BC .slider-selection {
   background: #8283FF;
   border: 1px solid rgb(32, 32, 32);
-  transition: all 500ms; /* transition when the mouse over */
+  transition: all 250ms; /* transition when the mouse over */
 }
 #BC .slider-handle {
   border-bottom-color: blue;
@@ -166,25 +166,25 @@
 	width: 200px;
 }
 #BC {
-	transition: all 500ms; /* transition when the mouse over */
+  transition: all 100ms; /* transition when the mouse over */
+  margin-left: 10px;
 }
 #GC {
-	transition: all 500ms; /* transition when the mouse over */
+  transition: all 100ms; /* transition when the mouse over */
+  margin-left: 10px;
 }
 #RC {
-	transition: all 500ms; /* transition when the mouse over */
+  transition: all 100ms; /* transition when the mouse over */
+  margin-left: 10px;
 }
 #BC:hover { 
   border: 2px solid #8283FF;
-  border-radius: 50%;
 }
 #GC:hover { 
   border: 2px solid #428041;
-  border-radius: 50%;
 }
 #RC:hover { 
   border: 2px solid #FF8282;
-  border-radius: 50%;
 }
 
 
@@ -429,3 +429,36 @@ p.specialMessage {
   border-radius: 4px;
 }
 
+.slider.slider-horizontal {
+  width: 220px;
+  height: 20px;
+}
+
+.tooltip-inner {
+  max-width: 200px;
+  padding: 0px 2px;
+  color: #fff;
+  text-align: center;
+  background-color: #0000003e;
+  border-radius: 4.25rem;
+}
+.slider .tooltip.top {
+  margin-top: -14px;
+}
+
+.mn-accordion .accordion-item {
+  background-color: #313131;
+  /* border-bottom: 6px solid #000000; */
+  border-style: inset;
+  border-color: #353535;
+  border-width: 2px;
+  margin: -2px;
+}
+.accordion-item:hover {
+  background-color: aquamarine !important;
+  border-color: #07ceaf !important;
+}
+h3:hover {
+  font-weight: bold !important;
+  color: #000000 !important
+}
