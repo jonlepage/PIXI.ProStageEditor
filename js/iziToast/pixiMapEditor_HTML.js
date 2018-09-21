@@ -584,7 +584,7 @@ function HTML_DATA_UI(){
             </div><!--accordion item END-->
         </div><!--__Accordions END__-->
         <div class="container buttons"> 
-            <button id="ApplyToAllGroup" type="button" class="btn btn-outline-warning btn-sm">Apply To All Group</button>
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
             <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
             <br><br>
             <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>

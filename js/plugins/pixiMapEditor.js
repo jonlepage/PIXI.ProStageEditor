@@ -1154,16 +1154,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         dataIntepretor.onclick = (function(event){
             const e = event.target; // buttons
             if(e.type === "button"){
-                if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
-                if(e.id==="apply"){ close_dataInspector(OBJ, Data_Values, Data_CheckBox); };// apply and close
                 if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
+                if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
+                if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
                 if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
-                if(e.id==="reset"){ // reset session cache and data
-                    $PME.storage.removeItem(name);
-                    session = getSession(objLight); // session (final data)
-                    // refresh
-                    refreshHtmlWith_session(session);// asign session value to html input
-                    refreshSpriteWith_session(objLight,session);// asign session value to sprite obj
+                if(e.id==="reset"){ // reset dataValues to old DataValues
+                    this.asignValues(this.DataValues, false);
+                    setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
+                    dataValues = getDataValues.call(this);
                 };
             };
         }).bind(this);
