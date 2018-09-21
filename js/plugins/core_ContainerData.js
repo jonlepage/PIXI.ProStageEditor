@@ -16,7 +16,7 @@ PIXI.CageContainer = (function () {
         constructor(dataBase, dataValues) {
             super();
             this.createBases(dataBase, dataValues);
-            dataValues && this.asignValues(dataValues);
+            dataValues && this.asignValues(dataValues, true);
         };
         get d() { return this.Sprites.d }; // return diffuse sprites
         get n() { return this.Sprites.n }; // return normals sprites //TODO: spine normal are arrays
@@ -55,7 +55,7 @@ PIXI.CageContainer = (function () {
         };
     };
 
-    CageContainer.prototype.asignValues = function(dataValues) {
+    CageContainer.prototype.asignValues = function(dataValues, storeValues) {
         console.log('dataValues: ', dataValues);
         // asign parent cage keys
         computeValue(this, dataValues.p);
@@ -70,8 +70,7 @@ PIXI.CageContainer = (function () {
                         break;
                     case "setDark": case "setLight":
                         if(that.color){ // convertToHeaven(); based on boolean editor, or take look on pluginName ?
-                            that.color[key](...value.d);
-                            that.color[key](...value.n);
+                            that.color[key](...value);
                         };
                         break;
                     case "parentGroup": // if have parentGroup, also asign diffuseGroup,normalGroup
@@ -86,7 +85,9 @@ PIXI.CageContainer = (function () {
                 };
             };
         };
-        this.DataValues = dataValues;
+        if(storeValues){ // can set false, if need keep temp old value for html data editor
+            this.DataValues = dataValues;
+        };
     };
 
 

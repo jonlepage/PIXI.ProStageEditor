@@ -2,7 +2,7 @@
     "name": "game",
     "main": "index.html",
     "js-flags": "--expose-gc",
-    "chromium-args" : "--remote-debugging-port=9222 --ignore-gpu-blacklist --force-gpu-mem-available-mb=14000 --show-fps-counter --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers ",
+    "chromium-args" : "--enable-smooth-scrolling --remote-debugging-port=9222 --ignore-gpu-blacklist --force-gpu-mem-available-mb=14000 --show-fps-counter --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers ",
 
     "window": {
         "title": "",

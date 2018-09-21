@@ -275,13 +275,14 @@ function new_HTML_content_options(description,options){
 };
 
 // create a new Tabs, type propreties [parent,diffuse,normal]
-function new_HTML_table(contents){
+function new_HTML_table(contents,id){
+    id? id = `id=${id}` : ``;
     let bodys = [];
     let i = 0;
     let colorClass = ["green","blue","red","pink","green"];
     contents.forEach(c => {
         let color = colorClass[i]? colorClass[i++] : colorClass[i=0];
-        bodys.push(`<tbody class="${color}">${c.join("")}</tbody>`); // TODO: ADD BODY CLASS color
+        bodys.push(`<tbody ${id} class="${color}">${c.join("")}</tbody>`); // TODO: ADD BODY CLASS color
     });
     bodys = bodys.join("");
     return /*html*/ `
@@ -296,9 +297,6 @@ function new_HTML_table(contents){
     `
 };
 
-
-
-
 function createOptsCalss(opts){
     opts.break? opts.break = "parentBreak" : void 0;
     opts.sm ? opts.sm = "smallz" : void 0;
@@ -308,14 +306,21 @@ function newInputType(target,id,type,opt,index){
     let isSmall = opt.small? "smallz" : "" ;
     let isLargeX = opt.largeX? "largeX" : "" ;
     let isLargeY = opt.largeY? "largeY" : "" ;
+    let isDisable = opt.disable && `disabled` || ``;
+    let min = opt.hasOwnProperty("min") && `min=${opt.min}` || ``;
+    let max = opt.hasOwnProperty("max") && `max=${opt.max}` || ``;
+    let step = opt.hasOwnProperty("step") && `step=${opt.step}` || ``;
     return /*html*/ `
         <input 
         class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
         type=${type} 
-        step=${opt.step} 
-        id=${id} 
+        id=${target+'_'+id}  
         index=${index} 
         target=${target} 
+        ${step} 
+        ${min} 
+        ${max} 
+        ${isDisable}
         >
     `
 };
@@ -323,7 +328,7 @@ function newInputType(target,id,type,opt,index){
 function newInputTypeSelect(target,id,type,opt,index){
     // TODO: rendre dinamycs
     return /*html*/ `
-        <select class="selectRadius" id=${id} target=${target} >
+        <select class="selectRadius" id=${target+'_'+id} target=${target} >
             <option value=true>true</option>
             <option value=false selected>false</option>
         </select>
@@ -339,7 +344,7 @@ function newInputTypeTextareat(target,id,type,opt,index){
         class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
         type=${type} 
         step=${opt.step} 
-        id=${id} 
+        id=${target+'_'+id}  
         index=${index} 
         target=${target} 
         > </textarea>
@@ -370,6 +375,7 @@ function new_HTML_content2D(targets,id,type,opts,end){
         let x = newInputType(target,id,type,opts,0);
         let y = newInputType(target,id,type,opts,1);
         let padLeft = targets.contains("p")&&["d","n"].contains(target)? `style="padding-left: 14px;"` : void 0;
+        let lockDN = target === "n"? `<input class="lockDN" type="checkbox" id=${id+"_lockDN"} checked>` : ``;
         result.push(
             /*html*/ `
             <tr>
@@ -377,11 +383,12 @@ function new_HTML_content2D(targets,id,type,opts,end){
                 <div class="input-group-text"> <p>${description}:</p> </div>
             </td>
             <td>
-                <label for=${id} class="labelXY">x:</label>${x}
-                <label for=${id} class="labelXY">y:</label>${y}
+                <label for=${target+'_'+id} class="labelXY">x:</label>${x}
+                <label for=${target+'_'+id} class="labelXY">y:</label>${y}
+                ${lockDN}
             </td>
             <td ${opts.color?('class='+opts.color):void 0}>
-                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+                <input class="saveCheck" type="checkbox" id=${target+'_'+id+"_select"}>
             </td>
             </tr>
             `
@@ -397,6 +404,7 @@ function new_HTML_content1D(targets,id,type,opts,end){
     targets.forEach(target => {
         let description = `${target}.${id}`;
         let i;
+        let lockDN = (target === "n")? `<input class="lockDN" type="checkbox" id=${id+"_lockDN"} checked>` : ``;
         if(opts.jscolor){i = newInputTypeColor(target,id,type,opts);}
         else if(type === "select"){i = newInputTypeSelect(target,id,type,opts);}
         else if(type === "textArea"){i = newInputTypeTextareat(target,id,type,opts);}
@@ -409,9 +417,10 @@ function new_HTML_content1D(targets,id,type,opts,end){
             </td>
             <td>
                 ${i}
+                ${lockDN}
             </td>
             <td ${opts.color?('class='+opts.color):void 0}>
-                <input class="saveCheck" type="checkbox" id=${id+"_select"}>
+                <input class="saveCheck" type="checkbox" id=${target+'_'+id+"_select"}>
             </td>
             </tr>
             `
@@ -473,106 +482,116 @@ function new_HTML_contentColorHeaven(targets){
 function HTML_DATA_UI(){
     // if is a sprite obj
     const message1 = /*html*/ `
-    <div class="container scrollable" id="dataIntepretor">
+    <div class="container" id="dataIntepretor">
         <h6>
             <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
             <small class="text-muted"><kbd>Json</kbd></small>
         </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table_options([
+                        // rotation
+                        new_HTML_content_options("Lock: normal value to Diffuse",{}),
+                        new_HTML_content_options("Lock: Y to X value",{}),
+                        new_HTML_content_options("Disable not avaible data",{}),
+                        new_HTML_content_options("Allow Camera mouse in inspecor",{}),
+                        new_HTML_content_options("Allow mouse sprite interaction in inspector",{}),
+                        new_HTML_content_options("Colors mode for jsColors HSV / HVS",{}),
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"textureName","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"dataName","text",{largeX:true,disable:true}),// locked
+                        new_HTML_content1D(["p"],"groupID","text",{largeX:true}),
+                        new_HTML_content1D(["p"],"name","text",{largeX:true}),
+                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content2D(["p","d","n"],"position","number",{step:1}),// position
+                        new_HTML_content2D(["p","d","n"],"pivot","number",{step:1}),// pivot
+                        new_HTML_content2D(["p","d","n"],"scale","number",{step:0.05,small:true}),// scale
+                        new_HTML_content2D(["p","d","n"],"skew","number",{step:0.05,small:true}),// skew
+                        new_HTML_content2D(["d","n"],"anchor","number",{step:0.01,min:0,max:1,small:true}),// anchor
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p","d","n"],"rotation","number",{step:0.01,small:true}),// rotation
+                        new_HTML_content1D(["p","d","n"],"alpha","number",{step:0.01,min:0,max:1,small:true}),// alpha
+                        new_HTML_content1D(["d","n"],"blendMode","number",{step:1,min:0,max:3,small:true}),// blendMode
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Colors Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
+                        new_HTML_contentColorHeaven(["d","n"]),// heaven color
+                    ],"HeavenSliders")}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"animations","number",{step:0.1,small:true}),// animations
+                        new_HTML_content1D(["p"],"loop","select",{option:["true","false"]}),//loop
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Spine Skeletons Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
 
-            <div class="mn-accordion" id="accordion"><!--__NEW Accordions__-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table_options([
-                            // rotation
-                            new_HTML_content_options("Lock: normal value to Diffuse",{}),
-                            new_HTML_content_options("Lock: Y to X value",{}),
-                            new_HTML_content_options("Disable not avaible data",{}),
-                            new_HTML_content_options("Allow Camera mouse in inspecor",{}),
-                            new_HTML_content_options("Allow mouse sprite interaction in inspector",{}),
-                            new_HTML_content_options("Colors mode for jsColors HSV / HVS",{}),
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table([
-                            new_HTML_content1D(["p"],"groupID","text",{largeX:true}),// groupID
-                            new_HTML_content1D(["p"],"id","text",{largeX:true}),// id
-                            new_HTML_content1D(["p"],"name","text",{largeX:true}),// name
-                            new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table([
-                            new_HTML_content2D(["p","d","n"],"position","number",{step:0.2}),// position
-                            new_HTML_content2D(["p","d","n"],"pivot","number",{step:0.2}),// pivot
-                            new_HTML_content2D(["p","d","n"],"scale","number",{step:0.2,small:true}),// scale
-                            new_HTML_content2D(["p","d","n"],"skew","number",{step:0.2,small:true}),// skew
-                            new_HTML_content2D(["d","n"],"anchor","number",{step:0.2,small:true}),// anchor
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table([
-                            new_HTML_content1D(["p","d","n"],"rotation","number",{step:0.2,small:true}),// rotation
-                            new_HTML_content1D(["p","d","n"],"alpha","number",{step:0.2,small:true}),// alpha
-                            new_HTML_content1D(["d","n"],"blendMode","number",{step:0.2,small:true}),// blendMode
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Colors Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table([
-                            new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
-                        ])}
-                        ${ new_HTML_table([
-                            new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
-                            new_HTML_contentColorHeaven(["d","n"]),// heaven color
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
-                        ${ new_HTML_table([
-                            new_HTML_content1D(["p"],"animations","number",{step:0.1,small:true}),// animations
-                            new_HTML_content1D(["p"],"loop","select",{option:["true","false"]}),//loop
-                        ])}
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Spine Skeletons Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Events Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
 
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Events Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Audio API Manager </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
 
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Audio API Manager </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Display Groups </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
 
-                    </div>
-                </div><!--accordion item END-->
-                <div class="accordion-item"> <!--accordion item-->
-                    <div class="accordion-heading"><h3>Display Groups </h3><div class="icon"><i class="arrow right"></i></div></div>
-                    <div class="accordion-content">
+                </div>
+            </div><!--accordion item END-->
+        </div><!--__Accordions END__-->
+        <div class="container buttons"> 
+            <button id="ApplyToAllGroup" type="button" class="btn btn-outline-warning btn-sm">Apply To All Group</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
 
-                    </div>
-                </div><!--accordion item END-->
-            </div><!--__Accordions END__-->
     </div> `;//END message1
     return message1;
 };

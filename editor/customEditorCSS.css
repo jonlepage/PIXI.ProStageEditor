@@ -261,10 +261,17 @@ div#dataEditor {
   margin-right: auto;
   margin-left: auto;
 }
-.container.scrollable {
-    max-height: 800px;
+.scrollable {
+    max-height: 665px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+.container.buttons {
+  padding-top: 10px;
+  text-align: end;
+  background-color: #2b2b2ba8;
+  border-radius: 0px 0px 25px 122px;
 }
 
 .input-group-text {
@@ -462,3 +469,14 @@ h3:hover {
   font-weight: bold !important;
   color: #000000 !important
 }
+.lockDN {
+  margin-top: -7px;
+  float: left;
+  margin-left: 5px;
+}
+.form-control:disabled, .form-control[readonly] {
+  background-color: #9f9f9f;
+  border-style: dashed;
+  opacity: 1;
+}
+

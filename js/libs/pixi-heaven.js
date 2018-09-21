@@ -2600,26 +2600,22 @@ var pixi_heaven;
             this.children[i].convertSubtreeToHeaven();
         }
     };
-    PIXI.Sprite.prototype.deconvertHeaven = function () {
+    PIXI.Sprite.prototype.destroyHeaven = function () {
         if (this.color) {
+            this.pluginName = "sprite";
+            delete this._tintRGB;
+            delete this.color;
             Object.defineProperty(this, "tint", {
                 get: function get() { return this._tint },
                 set: function set(value){
                     this._tint = value;
                     this._tintRGB = (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
                 },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(this, "_tintRGB", {
-                get: void 0,
-                enumerable: true,
-                configurable: true
-            });
+                enumerable: true, configurable: true
+            }); 
             this._onTextureUpdate = Sprite.prototype._onTextureUpdate;
             this.updateTransform = Sprite.prototype.updateTransform;
-            this.pluginName = "sprite";
-            return delete this.color;
+            return true;
         };
         return false;
     };
