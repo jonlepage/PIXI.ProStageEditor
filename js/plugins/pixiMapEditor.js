@@ -544,7 +544,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let x = 100;
         for (const key in DATA) { // this._avaibleData === DATA
             if(!DATA[key].BG){ // dont add BG inside library
-                const cage = build_ThumbsLibs(DATA[key]); // create from Data ""
+                const cage = build_ThumbsGUI(DATA[key]); // create from Data ""
                 CAGE_LIBRARY.list.push(cage);
             };
         };
@@ -840,12 +840,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         //TODO: mettre type: pour les thumbs , les type seron mintenant dans le datavalue, si type undefined, ces un thumbs
         // data for the scene setup
         const p = {
-            type        :  dataBase    .type                                 , // locked
-            textureName : [textureName, textureName+"_n"]                    , // locked
-            dataName    :  dataBase    .name                                 , // locked
-            groupID     :  dataBase    .dirArray[dataBase.dirArray.length-1]          , // asigner un groupe dapartenance ex: flags , par default utilise dossier parent
-            name        :  textureName+Math.random().toString(36).substring(2, 12) , // asigner un nom unique au hazard
-            description :  dataBase    .root                                 , // un description aide memoire, par default asign root
+            type        : dataBase    .type                                 , // locked
+            textureName : textureName                                       , // locked
+            dataName    : dataBase    .name                                 , // locked
+            groupID     : dataBase    .dirArray[dataBase.dirArray.length-1] , // asigner un groupe dapartenance ex: flags , par default utilise dossier parent
+            name        : textureName+Math.random().toString(36).substring(2, 12) , // asigner un nom unique au hazard
+            description : dataBase    .root                                 , // un description aide memoire, par default asign root
             // observable point
             position : [0,0],
             scale    : [1,1],
@@ -857,12 +857,17 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             // other
             autoGroups : [false,false,false,false,false,false,false]         , // permet de changer automatiquement de layers selon player
             zIndex     : 0            , // locked
-            parentGroup: 0, //  by default no parent groups in default, 
+            parentGroup: 0, //  by default no parent groups in default,
+            // animations
+            ...(dataBase.type === "animationSheet") && {
+                totalFrames   :dataBase.textures[textureName].length, // locked
+                animationSpeed:1,
+                loop          :1,
+            }
         };
         // Diffuse Normal data value
-        let DN = [this.d,this.n];
         let dn = [];
-        DN.forEach(that => {
+        for (let i = 0; i < 2; i++) {
             dn.push({
                 // observable point
                 position : [0  ,0],
@@ -878,15 +883,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 // other
                 setDark :[0,0,0],
                 setLight:[1,1,1],
-            });
-        });
-
-        /*if(dataBase.type === "animationSheet"){
-            dataDefault = Object.assign({},{
-                animationSpeed:1,
-                loop:1
-            });
-        };*/
+            });  
+        };
         let dataDefault = { p:p, d:dn[0], n:dn[1] };
         return dataDefault;
     };
@@ -940,7 +938,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         });
         let dataValues = { p:p, d:dn[0], n:dn[1] };
         return dataValues;
-        /*if(this.heavenCage){ // flag heaven on cageContainer
+        /*if(this.heavenCage){ // flag heaven 
             dataValues = Object.assign({},{
                 setDark:{ d:PIXI.utils.hex2rgb(this.d.color.darkRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.darkRgba).reverse() },
                 setLight:{ d:PIXI.utils.hex2rgb(this.d.color.lightRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.lightRgba).reverse() },
@@ -1374,7 +1372,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const an = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
             const piv = new PIXI.Container(); //computeFastModes need a container for skews
             const pivLine = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
-            // TODO: rendu ici , create asignValues dans class CageContainer pour utiliser les proprieter obj
             // BG
             bg.width = w, bg.height = h;
             bg.tint = 0xffffff;
@@ -1418,8 +1415,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         };
     };
 
-    // create tiles ThumbsLibs
-    function build_ThumbsLibs(dataBase){
+    // create tiles for ThumbsGUI libs
+    function build_ThumbsGUI(dataBase){
         const cage = new PIXI.CageContainer(dataBase);
         cage.d.scale.set( getRatio(cage.d, 134, 100)); //ratio for fitt in (obj, w, h)
         create_DebugElements.call(cage,dataBase);
@@ -1432,11 +1429,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return cage;
     };
 
-    // create tiles tileLibs
-    function build_tileLibs(dataBase, textureName){
+    // create tiles for tilesGUI
+    function build_tilesGUI(dataBase, textureName){
         let dataDefault = getDataDefault(dataBase, textureName); // create default data pack getDataJson
-        delete dataDefault.p.parentGroup; // remove parentGroupe because in the tileLibs , we dont use parents and normal
-        const cage = new PIXI.CageContainer(dataBase, dataDefault);
+        delete dataDefault.p.parentGroup; // remove parentGroupe because in the tilesGui, we dont use parents and normal
+        let cage;
+        switch (dataBase.type) {
+            case "animationSheet":
+            cage =  new PIXI.ContainerAnimations(dataBase, dataDefault);break;
+            case "spineSheet":
+            cage =  new PIXI.ContainerSpine(dataBase, dataDefault);break;
+            default:
+            cage =  new PIXI.ContainerTiles(dataBase, dataDefault);break;           
+        }
+
         create_DebugElements.call(cage, dataBase);
         // hide non essential for tileLibs
         cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
@@ -1458,7 +1464,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function build_Sprites(fromCage){
         const dataBase = DATA[fromCage.dataName];
         const dataValues = getDataValues.call(fromCage); // create data pack based on currents values
-        const cage = new PIXI.CageContainer(dataBase, dataValues);
+        switch (dataBase.type) {
+            case "animationSheet":
+            cage =  new PIXI.ContainerAnimations(dataBase, dataValues);break;
+            default:
+            cage =  new PIXI.ContainerTiles(dataBase, dataValues);break;           
+        }
         create_DebugElements.call(cage, dataBase);
 
         if(fromCage.buttonType === "tileLibs" || fromCage.buttonType === "tileMap"){
@@ -1494,7 +1505,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const textures = dataBase.textures || dataBase.data.skins;
         EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(textures).length}): ${dataBase.name}.json`; // update title 
         Object.keys(textures).forEach(textureName => {
-            const cage = build_tileLibs(dataBase, textureName);
+            const cage = build_tilesGUI(dataBase, textureName);
             //cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
             //cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
             list.push(cage); // reference,  sheetName
@@ -1631,14 +1642,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
-            open_sceneSetup(); // edit ligth brigth , and custom BG            
+             //TODO: RENDU ICI
+            //open_sceneSetup(); // edit ligth brigth , and custom BG            
         }
         if(name.contains("icon_grid")){
             drawGrids();
         };
         if(name.contains("icon_masterLight")){
             //open_dataEditor();
-            open_sceneGlobalLight(); // edit ligth brigth , and custom BG
+            //TODO: RENDU ICI
+            //open_sceneGlobalLight(); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
