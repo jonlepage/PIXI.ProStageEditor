@@ -777,7 +777,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
             // no break hitCheck, we can add
             tmp_list.push(cage);
-            cache[cage.TexName] = new PIXI.Point(x,y); //REGISTER
+            cache[cage.textureName] = new PIXI.Point(x,y); //REGISTER
             cage._boundsRect.pad(pad+2,pad+1);
             //cage.DebugElements.bg._boundsRect.pad(pad,pad);
         };
@@ -835,123 +835,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
         
     };
-    function getDataDefault(dataBase, textureName){
-        console.log('dataBase, textureName: ', dataBase, textureName);
-        //TODO: mettre type: pour les thumbs , les type seron mintenant dans le datavalue, si type undefined, ces un thumbs
-        // data for the scene setup
-        const p = {
-            type        : dataBase    .type                                 , // locked
-            textureName : textureName                                       , // locked
-            dataName    : dataBase    .name                                 , // locked
-            groupID     : dataBase    .dirArray[dataBase.dirArray.length-1] , // asigner un groupe dapartenance ex: flags , par default utilise dossier parent
-            name        : textureName+Math.random().toString(36).substring(2, 12) , // asigner un nom unique au hazard
-            description : dataBase    .root                                 , // un description aide memoire, par default asign root
-            // observable point
-            position : [0,0],
-            scale    : [1,1],
-            skew     : [0,0],
-            pivot    : [0,0],
-            // transform
-            rotation: 0,
-            alpha   : 1,
-            // other
-            autoGroups : [false,false,false,false,false,false,false]         , // permet de changer automatiquement de layers selon player
-            zIndex     : 0            , // locked
-            parentGroup: 0, //  by default no parent groups in default,
-            // animations
-            ...(dataBase.type === "animationSheet") && {
-                totalFrames   :dataBase.textures[textureName].length, // locked
-                animationSpeed:1,
-                loop          :1,
-            }
-        };
-        // Diffuse Normal data value
-        let dn = [];
-        for (let i = 0; i < 2; i++) {
-            dn.push({
-                // observable point
-                position : [0  ,0],
-                scale    : [1  ,1],
-                skew     : [0  ,0],
-                pivot    : [0  ,0],
-                anchor   : [0.5,1],
-                // transform
-                rotation  : 0        ,
-                alpha     : 1        ,
-                blendMode : 0        ,
-                tint      : 0xffffff ,
-                // other
-                setDark :[0,0,0],
-                setLight:[1,1,1],
-            });  
-        };
-        let dataDefault = { p:p, d:dn[0], n:dn[1] };
-        return dataDefault;
-    };
-
-    // current data to build a json dataValues
-    // the DataValues will used for save but also copy past
-    function getDataValues(){ // old getDataJson
-        // parent data value
-        const p = {
-            type       : this .type       , // locked
-            textureName: this .textureName, // locked
-            dataName   : this .dataName, // locked
-            groupID    : this .groupID    , // asigner un groupe dapartenance ex: flags
-            name       : this .name       , // asigner un nom unique
-            description: this .description, // un description aide memoire
-            // observable point
-            position: [this.position.x, this.position.y],
-            scale   : [this.scale   .x, this.scale   .y],
-            skew    : [this.skew    .x, this.skew    .y],
-            pivot   : [this.pivot   .x, this.pivot   .y],
-            // transform
-            rotation: this.rotation,
-            alpha: this.alpha,// other
-            // other
-            autoGroups : this.autoGroups         , // permet de changer automatiquement de layers selon player
-            zIndex     : this.zIndex             , // locked
-            parentGroup: this.parentGroup? this.parentGroup.zIndex : CurrentDisplayGroup,
-        };
-        // Diffuse Normal data value
-        let DN = [this.d,this.n];
-        let dn = [];
-        DN.forEach(that => {
-            dn.push({
-                // observable point
-                position: [that.position.x, that.position.y],
-                scale   : [that.scale   .x, that.scale   .y],
-                skew    : [that.skew    .x, that.skew    .y],
-                pivot   : [that.pivot   .x, that.pivot   .y],
-                anchor  : [that.anchor  .x, that.anchor  .y],
-                // transform
-                rotation  : that.rotation  ,
-                alpha     : that.alpha     ,
-                blendMode : that.blendMode ,
-                tint      : that.tint      ,
-                // other
-                ...that.color && {
-                    setDark  : PIXI.utils.hex2rgb(that.color.darkRgba ).reverse(),
-                    setLight : PIXI.utils.hex2rgb(that.color.lightRgba).reverse(),
-                }
-            });
-        });
-        let dataValues = { p:p, d:dn[0], n:dn[1] };
-        return dataValues;
-        /*if(this.heavenCage){ // flag heaven 
-            dataValues = Object.assign({},{
-                setDark:{ d:PIXI.utils.hex2rgb(this.d.color.darkRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.darkRgba).reverse() },
-                setLight:{ d:PIXI.utils.hex2rgb(this.d.color.lightRgba).reverse(), n:PIXI.utils.hex2rgb(this.n.color.lightRgba).reverse() },
-            });
-        };
-        if(this.type === "animationSheet"){
-            dataValues = Object.assign({},{
-                animationSpeed:this.animationSpeed,
-                loop:this.loop
-            });
-        };*/
-    };
-
 
     function pasteCopyDataIn(OBJ){
         //setObjWithData.call(OBJ,ClipboarData, null)
@@ -999,6 +882,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // create multi sliders light
     function create_sliderHaven(dataValues){
         // diffuse dark
+        const isSpine = dataValues.p.type=== "spineSheet";
         function upd() { this.asignValues(dataValues, false) };
         const ddr = new Slider("#ddr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
         const ddg = new Slider("#ddg", { tooltip: 'always'});
@@ -1016,24 +900,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         dlr.on("slide", (function(value) { dataValues.d.setLight[0] = value; upd.call(this) }).bind(this));
         dlg.on("slide", (function(value) { dataValues.d.setLight[1] = value; upd.call(this) }).bind(this));
         dlb.on("slide", (function(value) { dataValues.d.setLight[2] = value; upd.call(this) }).bind(this));
+        if (!isSpine){
+            // normal dark
+            const ndr = new Slider("#ndr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
+            const ndg = new Slider("#ndg", { tooltip: 'always'});
+            const ndb = new Slider("#ndb", { tooltip: 'always'});
+            ndr.tooltip.style.opacity = 1, ndg.tooltip.style.opacity = 1, ndb.tooltip.style.opacity = 1;
+            ndr.on("slide", (function(value) { dataValues.n.setDark[0] = value; upd.call(this) }).bind(this));
+            ndg.on("slide", (function(value) { dataValues.n.setDark[1] = value; upd.call(this) }).bind(this));
+            ndb.on("slide", (function(value) { dataValues.n.setDark[2] = value; upd.call(this) }).bind(this));
 
-        // normal dark
-        const ndr = new Slider("#ndr", { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1, 
-        const ndg = new Slider("#ndg", { tooltip: 'always'});
-        const ndb = new Slider("#ndb", { tooltip: 'always'});
-        ndr.tooltip.style.opacity = 1, ndg.tooltip.style.opacity = 1, ndb.tooltip.style.opacity = 1;
-        ndr.on("slide", (function(value) { dataValues.n.setDark[0] = value; upd.call(this) }).bind(this));
-        ndg.on("slide", (function(value) { dataValues.n.setDark[1] = value; upd.call(this) }).bind(this));
-        ndb.on("slide", (function(value) { dataValues.n.setDark[2] = value; upd.call(this) }).bind(this));
+            // normal light
+            const nlr = new Slider("#nlr", {tooltip: 'always'});
+            const nlg = new Slider("#nlg", {tooltip: 'always'});
+            const nlb = new Slider("#nlb", {tooltip: 'always'});
+            nlr.tooltip.style.opacity = 1, nlg.tooltip.style.opacity = 1, nlb.tooltip.style.opacity = 1;
+            nlr.on("slide", (function(value) { dataValues.n.setLight[0] = value; upd.call(this) }).bind(this));
+            nlg.on("slide", (function(value) { dataValues.n.setLight[1] = value; upd.call(this) }).bind(this));
+            nlb.on("slide", (function(value) { dataValues.n.setLight[2] = value; upd.call(this) }).bind(this));
+        }
 
-        // normal light
-        const nlr = new Slider("#nlr", {tooltip: 'always'});
-        const nlg = new Slider("#nlg", {tooltip: 'always'});
-        const nlb = new Slider("#nlb", {tooltip: 'always'});
-        nlr.tooltip.style.opacity = 1, nlg.tooltip.style.opacity = 1, nlb.tooltip.style.opacity = 1;
-        nlr.on("slide", (function(value) { dataValues.n.setLight[0] = value; upd.call(this) }).bind(this));
-        nlg.on("slide", (function(value) { dataValues.n.setLight[1] = value; upd.call(this) }).bind(this));
-        nlb.on("slide", (function(value) { dataValues.n.setLight[2] = value; upd.call(this) }).bind(this));
 
         const checkBoxHeaven = document.getElementById("enableHeaven");
         document.querySelectorAll(`#HeavenSliders`)[1].style.display = "none";
@@ -1042,19 +928,23 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         checkBoxHeaven.onclick = (function(e){
             if(e.target.checked){
                 this.d.convertToHeaven();
-                this.n.convertToHeaven();
                 dataValues.d.setDark  = [ ddr.getValue(), ddg.getValue(), ddb.getValue() ];
                 dataValues.d.setLight = [ dlr.getValue(), dlg.getValue(), dlb.getValue() ];
-                dataValues.n.setDark  = [ ndr.getValue(), ndg.getValue(), ndb.getValue() ];
-                dataValues.n.setLight = [ nlr.getValue(), nlg.getValue(), nlb.getValue() ];
+                if(!isSpine){
+                    this.n.convertToHeaven();
+                    dataValues.n.setDark  = [ ndr.getValue(), ndg.getValue(), ndb.getValue() ];
+                    dataValues.n.setLight = [ nlr.getValue(), nlg.getValue(), nlb.getValue() ];
+                };
                 this.asignValues(dataValues, false);
             }else{
                 this.d.destroyHeaven();
-                this.n.destroyHeaven();
                 delete dataValues.d.setDark;
                 delete dataValues.d.setLight;
-                delete dataValues.n.setDark;
-                delete dataValues.n.setLight;
+                if(!isSpine){
+                    this.n.destroyHeaven();
+                    delete dataValues.n.setDark;
+                    delete dataValues.n.setLight;
+                };
             };
             document.querySelectorAll(`#HeavenSliders`)[1].style.display = !e.target.checked && "none" || '';
         }).bind(this);
@@ -1062,22 +952,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
     function create_jsColors(dataValues){
         // initialise tint colors pickers
+        const isSpine = dataValues.p.type=== "spineSheet";
+
         const _jscolor_d = new jscolor( document.getElementById("d_tint") ); // for case:id="_color" slider:id="color"
+        _jscolor_d.fromString( PIXI.utils.hex2string(dataValues.d.tint) ); // force asign current value 
         _jscolor_d.zIndex = 99999999;
         _jscolor_d.onFineChange = (function(){
             dataValues.d.tint = +`0x${_jscolor_d.targetElement.value}`;
             this.asignValues(dataValues, false);
         }).bind(this);
-
-        const _jscolor_n = new jscolor( document.getElementById("n_tint") ); // for case:id="_color" slider:id="color"
-        _jscolor_n.zIndex = 99999999;
-        _jscolor_n.onFineChange = (function(){
-            dataValues.n.tint = +`0x${_jscolor_n.targetElement.value}`;
-            this.asignValues(dataValues, false);
-        }).bind(this);
-        // force asign current value
-        _jscolor_d.fromString( PIXI.utils.hex2string(dataValues.d.tint) );
-        _jscolor_n.fromString( PIXI.utils.hex2string(dataValues.n.tint) );
+        if(!isSpine){
+            const _jscolor_n = new jscolor( document.getElementById("n_tint") ); // for case:id="_color" slider:id="color"
+            _jscolor_n.fromString( PIXI.utils.hex2string(dataValues.n.tint) );
+            _jscolor_n.zIndex = 99999999;
+            _jscolor_n.onFineChange = (function(){
+                dataValues.n.tint = +`0x${_jscolor_n.targetElement.value}`;
+                this.asignValues(dataValues, false);
+            }).bind(this);
+        }else{
+            document.getElementById("n_tint").disabled = true;
+        }
     };
 
     function iniSetupIzit(){
@@ -1090,12 +984,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function open_dataInspector(cage) {
         clearFiltersFX3(cage); // clear filters
         iniSetupIzit();
-        const dataValues = getDataValues.call(cage); // it a clone,we have another one in OBJ.DataValues for cancel
+        const dataValues = cage.getDataValues();
         iziToast.info( $PME.tileSetupEditor(cage) );
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
 
         //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
-        create_jsColors.call(cage, dataValues); // create slider html for pixiHaven
+        create_jsColors.call(cage, dataValues); // create color box for tint 
         create_sliderHaven.call(cage, dataValues); // create slider html for pixiHaven
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
@@ -1114,10 +1008,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             };
             if(type === "number"){
                 // check if locked d,n
-                const isLockedDN = document.getElementById(`${id[1]}_lockDN`).checked;
+                const isLockedDN = ["d","n"].contains(id[0]) && document.getElementById(`${id[1]}_lockDN`).checked;
                 const index = e.attributes.index.value; // x:,y: ?
                 const is2DArray = Array.isArray(dataValues[id[0]][[id[1]]]);
-                if(isLockedDN && (id[0]==="d" || id[0]==="n")){
+                if(isLockedDN){
                     if( is2DArray ){
                         const oldValue = dataValues[id[0]][[id[1]]][index];
                         const isStepUp = (+e.value - oldValue > 0 );
@@ -1143,10 +1037,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     }
                 };
             };
-            if(type === "select-one"){ 
-    
+            if(type === "select-one"){
+                dataValues[id[0]][id[1]] = JSON.parse(e.value);
+                if(dataValues.p.type === "animationSheet"){
+                    this.play(0);
+                }
             };
             this.asignValues(dataValues, false);
+            refreshDebugValues.call(this);
         }).bind(this);
         // BUTTONS
         dataIntepretor.onclick = (function(event){
@@ -1160,6 +1058,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     this.asignValues(this.DataValues, false);
                     setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
                     dataValues = getDataValues.call(this);
+                    refreshDebugValues.call(this);
                 };
             };
         }).bind(this);
@@ -1418,6 +1317,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // create tiles for ThumbsGUI libs
     function build_ThumbsGUI(dataBase){
         const cage = new PIXI.CageContainer(dataBase);
+        cage.dataBase = dataBase; // ref database for thumbs only
         cage.d.scale.set( getRatio(cage.d, 134, 100)); //ratio for fitt in (obj, w, h)
         create_DebugElements.call(cage,dataBase);
         cage.buttonType = "thumbs";
@@ -1431,23 +1331,21 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create tiles for tilesGUI
     function build_tilesGUI(dataBase, textureName){
-        let dataDefault = getDataDefault(dataBase, textureName); // create default data pack getDataJson
-        delete dataDefault.p.parentGroup; // remove parentGroupe because in the tilesGui, we dont use parents and normal
         let cage;
         switch (dataBase.type) {
             case "animationSheet":
-            cage =  new PIXI.ContainerAnimations(dataBase, dataDefault);break;
+            cage =  new PIXI.ContainerAnimations(dataBase, textureName);break;
             case "spineSheet":
-            cage =  new PIXI.ContainerSpine(dataBase, dataDefault);break;
+            cage =  new PIXI.ContainerSpine(dataBase, textureName);break;
             default:
-            cage =  new PIXI.ContainerTiles(dataBase, dataDefault);break;           
+            cage =  new PIXI.ContainerTiles(dataBase, textureName);break;           
         }
-
+        //delete dataDefault.p.parentGroup; // remove parentGroupe because in the tilesGui, we dont use parents and normal
         create_DebugElements.call(cage, dataBase);
         // hide non essential for tileLibs
         cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
-        cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
-        console.log('cage: ', cage);
+        //cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
+
         
         cage.interactive = true;
         cage.on('pointerover', pointer_overIN);
@@ -1462,13 +1360,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create tiles for mouse or map
     function build_Sprites(fromCage){
-        const dataBase = DATA[fromCage.dataName];
-        const dataValues = getDataValues.call(fromCage); // create data pack based on currents values
+        const dataBase = DATA[fromCage.dataValues.p.dataName];
+        const textureName = fromCage.dataValues.p.textureName;
+        const dataValues = fromCage.getDataValues(); // update and clone dataValues from ref
+        // hack parentGroup and also Anchors
+            dataValues.p.parentGroup = +CurrentDisplayGroup; // hack current parent groups
+        let cage;
         switch (dataBase.type) {
             case "animationSheet":
-            cage =  new PIXI.ContainerAnimations(dataBase, dataValues);break;
+            cage =  new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
+            case "spineSheet":
+            cage =  new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
             default:
-            cage =  new PIXI.ContainerTiles(dataBase, dataValues);break;           
+            cage =  new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;           
         }
         create_DebugElements.call(cage, dataBase);
 
@@ -1484,7 +1388,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerdown', pointer_DW);
         cage.on('pointerover', pointer_overIN);
         cage.on('pointerout', pointer_overOUT);
+        console.log('cage: ', cage);
         return cage;
+        
     };
  
 
@@ -1506,22 +1412,26 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(textures).length}): ${dataBase.name}.json`; // update title 
         Object.keys(textures).forEach(textureName => {
             const cage = build_tilesGUI(dataBase, textureName);
-            //cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
-            //cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage);
-
         });
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
-        if(!CACHETILESSORT[InLibs.dataName]){
-            CACHETILESSORT[InLibs.dataName] = pathFindSheet(list,20);
+        const cacheDataName = (InLibs.dataBase.name);
+        if(!CACHETILESSORT[cacheDataName]){
+            CACHETILESSORT[cacheDataName] = pathFindSheet(list,20);
         }else{ // alrealy exist caches positions
             list.forEach(cage => {
-                cage.position.copy( CACHETILESSORT[InLibs.dataName][cage.TexName] ); 
-                cage.getBounds();
+                const point = CACHETILESSORT[cacheDataName][cage.textureName];
+                cage.position.copy(point ); 
             });
         };
+        CAGE_TILESHEETS.scale.set(0.6,0.6); // reset zoom if first time 
+        const exeed = CAGE_TILESHEETS.getLocalBounds();
+        list.forEach(element => {
+            element.x+= Math.abs(exeed.x);
+            element.y+= Math.abs(exeed.y);
+        });
     };
 
     function check_tileSheetStatus(InLibs) {
@@ -1615,7 +1525,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             this.buttonType = "tileMap";
             this.interactive = false;
             CAGE_MOUSE.list = null;
-            this.asignValues( getDataValues.call(this) );
+            this.asignValues( PIXI.CageContainer.prototype.getDataValues.call(this) );
             return add_toMouse(this);
         }else{
             const cage = build_Sprites(this) //(InTiles.Data, InTiles.Sprites.groupTexureName);
@@ -1787,7 +1697,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
          // reprendre interactivity only a tileMouse et recalculer les nouveau dataValues
         if(cage.buttonType !== "tileMouse"){
             setStatusInteractiveObj(true); // disable interactivity
-            cage.asignValues( getDataValues.call(cage) );
+            cage.asignValues( PIXI.CageContainer.prototype.getDataValues.call(cage) );
         };
     };
 

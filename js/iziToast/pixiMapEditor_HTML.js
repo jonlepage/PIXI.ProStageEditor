@@ -553,7 +553,8 @@ function HTML_DATA_UI(){
                 <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"animations","number",{step:0.1,small:true}),// animations
+                        new_HTML_content1D(["p"],"totalFrames","text",{step:0.1,small:true,disable:true}),// animations
+                        new_HTML_content1D(["p"],"animationSpeed","number",{step:0.1,small:true}),// animations
                         new_HTML_content1D(["p"],"loop","select",{option:["true","false"]}),//loop
                     ])}
                 </div>
