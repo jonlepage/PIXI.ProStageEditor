@@ -156,6 +156,7 @@ Scene_Base.prototype.initialize = function(set) {
     this.loaderSet = $Loader.getCurrentLoaderSet(set);
     this.asignDisplayGroup();
     if(this.loaderSet){
+        this.setup = {}; // store lights,background
         this.createLights();
         this.create_Cages();
         this.createBackground();
@@ -182,10 +183,9 @@ Scene_Base.prototype.asignDisplayGroup = function() {
 //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
 Scene_Base.prototype.createLights = function() {
     const _SCENE = this.loaderSet._SCENE || {color:0xffffff, brightness:0.6}; // ref loaderSet for light or asign default value
-
-    this.light_Ambient = new PIXI.lights.AmbientLight(_SCENE.color, _SCENE.brightness); // the general ambiance from sun and game clock (affect all normalGroup)
-    this.light_Ambient.Type = "AmbientLight";
-    this.addChild(this.light_Ambient);
+    const ambientLight = new PIXI.ContainerAmbientLight(); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
+    this.addChild(ambientLight);
+    this.setup.ambientLight = ambientLight;
     // ajust the mouse light scene if custom data exist?
     if(this.loaderSet._SCENE){
         $mouse.light
@@ -201,11 +201,10 @@ Scene_Base.prototype.create_Cages = function() {
 };
 
 // pass background arg or use from loaderSet ?
-Scene_Base.prototype.createBackground = function(bg) {
-    console.log1('bg: ', bg);
-    bg = bg || this.loaderSet._SCENE && this.loaderSet._SCENE.Background || null;
+Scene_Base.prototype.createBackground = function() {
+    this.loaderSet._SCENE && this.loaderSet._SCENE.Background || null;
     this.clearBackground();
-    if(bg){
+    /*if(bg){
         const data = typeof bg === "string" && $Loader.Data2[bg] || bg;
         const cage = new PIXI.Container();
         cage.name = data.name;
@@ -217,14 +216,14 @@ Scene_Base.prototype.createBackground = function(bg) {
         cage.parentGroup = $displayGroup.group[0];
         cage.addChild(sprite_d, sprite_n);
         this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
-        this.Background = cage;
-    };
+        this.setup.background = cage;
+    };*/
 };
 
 // clear remove Background
 Scene_Base.prototype.clearBackground = function() {
-    this.CAGE_MAP.removeChild(this.Background);
-    this.Background = null;
+    this.CAGE_MAP.removeChild(this.setup.background);
+    this.setup.background = null;
 };
 
 // create Objs from this.loaderSet

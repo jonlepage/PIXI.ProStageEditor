@@ -994,6 +994,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
+    // setup for tile in map
+    function open_stageLightInspector(AmbientLight) {
+        iniSetupIzit();
+        const dataValues = PIXI.CageContainer.prototype.getDataValues_AmbientLight.call(AmbientLight);
+        iziToast.info( $PME.izitGlobalLightEditor(AmbientLight) );
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+            
+        
+    };
 
     // open data HTML inspector
     function create_dataIntepretor(dataValues){
@@ -1559,9 +1568,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             drawGrids();
         };
         if(name.contains("icon_masterLight")){
-            //open_dataEditor();
-            //TODO: RENDU ICI
-            //open_sceneGlobalLight(); // edit ligth brigth , and custom BG
+            open_stageLightInspector(STAGE.AmbientLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();

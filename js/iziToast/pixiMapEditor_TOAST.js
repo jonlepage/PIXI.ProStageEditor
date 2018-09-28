@@ -4,7 +4,51 @@
 // iziToast Builder See=>pixiMapEditor_HTML.js   http://izitoast.marcelodolce.com/
 //└------------------------------------------------------------------------------------------------┘
 
+// open the tileEditor
+_PME.prototype.tileSetupEditor = function(InMapObj){
+    let message = HTML_DATA_UI(InMapObj);
+    return{
+        title: 'ADAD',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 10,
+        maxWidth: false,
+        theme: 'dark',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.99)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
 
+// open the tileEditor
+_PME.prototype.izitGlobalLightEditor = function(scene){
+    let message = HTML_LIGHT_UI(scene);
+    return{
+        title: 'GLOBAL LIGHT',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 10,
+        maxWidth: false,
+        theme: 'dark',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.99)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
 
 _PME.prototype.izit_loading1 = function() { // load all sprites dependency for editor gui only
     return{
@@ -155,28 +199,7 @@ _PME.prototype.izit_pasteCopyDataIn = function(OBJ,ClipboarData){
 };
 
 
-// open the tileEditor
-_PME.prototype.tileSetupEditor = function(InMapObj){
-    let message = HTML_DATA_UI(InMapObj);
-    return{
-        title: 'ADAD',
-        message: message,
-        id:'dataEditor',
-        layout: 2,
-        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
-        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
-        messageSize: 10,
-        maxWidth: false,
-        theme: 'dark',
-        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
-        backgroundColor: 'rgba(38, 38, 38, 0.99)',
-        close: false,
-        progressBar: false,
-        timeout:false,
-        icon:false,
-        drag: false,
-    };
-};
+
 
 _PME.prototype.savedComplette = function(){
     return{

@@ -327,12 +327,13 @@ function newInputType(target,id,type,opt,index){
 
 function newInputTypeSelect(target,id,type,opt,index){
     // TODO: rendre dinamycs
+    let options=``;
+    opt.option.forEach(o => { options+=`<option value=${o[1]}>${o[0]}</option>` });
     return /*html*/ `
         <select class="selectRadius" id=${target+'_'+id} target=${target} >
-            <option value=true>true</option>
-            <option value=false selected>false</option>
+            ${options}
         </select>
-    `
+    `;
 };
 function newInputTypeTextareat(target,id,type,opt,index){
     let isSmall = opt.small? "smallz" : "" ;
@@ -584,6 +585,41 @@ function HTML_DATA_UI(){
                 </div>
             </div><!--accordion item END-->
         </div><!--__Accordions END__-->
+        <div class="container buttons"> 
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
+
+    </div> `;//END message1
+    return message1;
+};
+
+function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
+    // if is a sprite obj
+    const message1 = /*html*/ `
+    <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"brightness","number",{step:0.1,small:true}),
+                        new_HTML_content1D(["p"],"drawMode","select",{option:[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]}),//loop
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"tint","text",{jscolor:"jscolor"}),// tint
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+        </div><!--END-->
         <div class="container buttons"> 
             <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
             <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>

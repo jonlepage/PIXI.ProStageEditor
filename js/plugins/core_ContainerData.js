@@ -11,6 +11,7 @@ Comme obtenir de facon general les propreties pour les json
 La class containerData est atribuer a tous les obj sprites du jeux pour difuse et normal
 */
 
+
 /*#region [rgba(0, 255, 0,0.03)]
 // ┌------------------------------------------------------------------------------┐
 // CageContainer:=>
@@ -252,7 +253,6 @@ PIXI.ContainerAnimations = (function () {
         };
     };
 
-
     ContainerAnimations.prototype.play = function(frame) {
        if(Number.isFinite(frame)){
             this.Sprites.d.gotoAndPlay(~~frame);
@@ -311,5 +311,60 @@ PIXI.ContainerSpine = (function () {
     
 //END
 return ContainerSpine;
+})();
+//#endregion
+
+/*#region [rgba(0, 0, 0, 0.1)]
+// ┌------------------------------------------------------------------------------┐
+// ContainerSpine
+// └------------------------------------------------------------------------------┘
+*/
+PIXI.ContainerAmbientLight = (function () {
+    // TODO: mette tileContainer, ContainerAnimations, spineContainer .. corige spine avec les get n array
+    // en sperarant les conainer on peut suprimer quelquemethod dans CageContainer.
+    class ContainerAmbientLight extends PIXI.lights.AmbientLight {
+        constructor(dataValues ,brightness, color) { //TODO: verifier que on peut changer brightness et color dans asignValues sans constructor
+            super();
+            dataValues = dataValues || this.getDataValues(true);
+            this.asignValues(dataValues, true);
+        };
+        // getters for ContainerSpine
+    };
+    
+    // get dataValue of AmbientLight
+    ContainerAmbientLight.prototype.getDataValues = function(def) {
+        const AmbientLight_Data = {
+            // base
+            shaderName      : def? "ambientLightShader" : this.shaderName     , //lock ?
+            blendMode       : def? 1                    : this.blendMode      ,
+            alpha           : def? 1                    : this.alpha          ,
+            // light
+            drawMode        : def? 4                    : this.drawMode       ,
+            lightHeight     : def? 0.075                : this.lightHeight    ,
+            brightness      : def? 1                    : this.brightness     ,
+            falloff         : def? [0.75,3,20]          : this.falloff        ,
+            color           : def? 16777215             : this.color          ,
+            // other
+            //useViewportQuad : def? true                 : this.useViewportQuad,
+            //indices         : def? [0,1,2,0,2,3]        : this.indices        ,
+            //displayOrder    : def? 8                    : this.displayOrder   ,
+        };
+        return AmbientLight_Data;
+    };
+
+    // dispatch values asigment for spine
+    ContainerAmbientLight.prototype.asignValues = function(dataValues, storeValues=true) {
+        this.computeValue(dataValues);
+    };
+
+    ContainerAmbientLight.prototype.computeValue = function(data) {
+        for (const key in data) {
+            const value = data[key];
+            this[key] = value;
+        };
+    };
+    
+//END
+return ContainerAmbientLight;
 })();
 //#endregion
