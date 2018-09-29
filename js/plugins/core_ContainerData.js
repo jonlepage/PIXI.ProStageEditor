@@ -26,6 +26,7 @@ PIXI.CageContainer = (function () {
     class CageContainer extends PIXI.Container {
         constructor(dataBase) {
             super();
+            this.Sprites = {};
             // if have parameter dataBase, its a "thumbs" from editor or maybe others future
             dataBase && this.createBases(dataBase);
         };
@@ -165,8 +166,6 @@ return CageContainer;
 // └------------------------------------------------------------------------------┘
 */
 PIXI.ContainerTiles = (function () {
-    // TODO: mette tileContainer, ContainerAnimations, spineContainer .. corige spine avec les get n array
-    // en sperarant les conainer on peut suprimer quelquemethod dans CageContainer.
     class ContainerTiles extends PIXI.CageContainer {
         constructor(dataBase, textureName, dataValues) {
             super();
@@ -200,8 +199,6 @@ return ContainerTiles;
 // └------------------------------------------------------------------------------┘
 */
 PIXI.ContainerAnimations = (function () {
-    // TODO: mette tileContainer, ContainerAnimations, spineContainer .. corige spine avec les get n array
-    // en sperarant les conainer on peut suprimer quelquemethod dans CageContainer.
     class ContainerAnimations extends PIXI.CageContainer {
         constructor(dataBase, textureName, dataValues) {
             super();
@@ -273,8 +270,6 @@ return ContainerAnimations;
 // └------------------------------------------------------------------------------┘
 */
 PIXI.ContainerSpine = (function () {
-    // TODO: mette tileContainer, ContainerAnimations, spineContainer .. corige spine avec les get n array
-    // en sperarant les conainer on peut suprimer quelquemethod dans CageContainer.
     class ContainerSpine extends PIXI.CageContainer {
         constructor(dataBase, textureName, dataValues) {
             super();
@@ -366,5 +361,42 @@ PIXI.ContainerAmbientLight = (function () {
     
 //END
 return ContainerAmbientLight;
+})();
+//#endregion
+
+/*#region [rgba(0, 0, 90, 0.06)]
+// ┌------------------------------------------------------------------------------┐
+// ContainerBackground
+// └------------------------------------------------------------------------------┘
+instance de .CAGE_MAP , permet de gerer le bg, 
+mais egalement quelque methode pour gestions objs childrend, camera, combat fx ..
+*/
+PIXI.ContainerBG = (function () {
+    class ContainerBG extends PIXI.CageContainer {
+        // note: les bg peut etre decouper en arrays[[1,2,3],[1,2,3]] pour textures packer, et textureName pourrai etre diferent version , season !?
+        constructor(dataBase, dataValues) {
+            super();
+            if(dataBase){ // if pass a bg ?
+                dataValues = dataValues || this.getDataValues(dataBase);
+                this.createBases(dataBase);
+                this.asignValues(dataValues, true);
+            }
+        };
+        // getters for ContainerTiles
+    };
+    
+    ContainerBG.prototype.createBases = function(dataBase, dataValues) {
+        // TODO: les bg pourrai etre parfoi decouper en arrays dans textures packer 
+        const td = dataBase.textures; // ref texture:diffuse
+        const tn = dataBase.textures_n; // ref texture:normal
+        const d = new PIXI.Sprite(td);
+        const n = new PIXI.Sprite(tn);
+        this.Sprites = {d,n};
+        this.addChild(d,n);
+    };
+
+    
+//END
+return ContainerBG;
 })();
 //#endregion

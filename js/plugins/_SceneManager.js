@@ -159,7 +159,7 @@ Scene_Base.prototype.initialize = function(set) {
         this.setup = {}; // store lights,background
         this.createLights();
         this.create_Cages();
-        this.createBackground();
+       // this.createBackground();
         this.create_ObjFromJson();
 
         $camera.initialise(this.CAGE_MAP, [1920/2,1080/2]); // initialise the cam with current scene
@@ -193,7 +193,7 @@ Scene_Base.prototype.createLights = function() {
 };
 
 Scene_Base.prototype.create_Cages = function() {
-    this.CAGE_MAP = new PIXI.Container();
+    this.CAGE_MAP = new PIXI.ContainerBG(); //TODO: PASS BG dataBase
     this.CAGE_GUI = new PIXI.Container();
     this.CAGE_MOUSE = new PIXI.Container();
     this.CAGE_MAP.name = "CAGE_MAP", this.CAGE_GUI.name = "CAGE_GUI", this.CAGE_MOUSE.name = "CAGE_MOUSE";

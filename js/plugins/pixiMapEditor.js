@@ -1032,6 +1032,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
 
+    // setup for background 
+    function open_dataBGInspector(cage) {
+
+    };
+
     // open data HTML inspector
     function create_dataIntepretor(dataValues){
         const dataIntepretor = document.getElementById("dataIntepretor");
@@ -1633,8 +1638,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
-             //TODO: RENDU ICI
-            //open_sceneSetup(); // edit ligth brigth , and custom BG            
+             open_dataBGInspector(STAGE.setup.background); // edit ligth brigth , and custom BG            
         }
         if(name.contains("icon_grid")){
             drawGrids();
