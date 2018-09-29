@@ -413,7 +413,6 @@ input.saveCheck {
 
 
 p.specialMessage {
-  width: 290px;
   word-wrap: break-word;
   white-space: pre-wrap;
   text-align: left;
@@ -434,11 +433,6 @@ p.specialMessage {
 .largeY {
   min-height: 38px;
   border-radius: 4px;
-}
-
-.slider.slider-horizontal {
-  width: 220px;
-  height: 20px;
 }
 
 .tooltip-inner {
@@ -480,3 +474,13 @@ h3:hover {
   opacity: 1;
 }
 
+.slider.slider-horizontal {
+  width: 230px;
+  height: 24px;
+  margin-left: 12px;
+}
+.slider-handle.min-slider-handle {
+  opacity: 0.8;
+  border-radius: 14px;
+  transform: scale(0.8);
+}

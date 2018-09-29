@@ -409,7 +409,7 @@ function new_HTML_content1D(targets,id,type,opts,end){
         if(opts.jscolor){i = newInputTypeColor(target,id,type,opts);}
         else if(type === "select"){i = newInputTypeSelect(target,id,type,opts);}
         else if(type === "textArea"){i = newInputTypeTextareat(target,id,type,opts);}
-        else{ i = newInputType(target,id,type,opts,0);};
+        else{ i = newInputType(target,id,type,opts,0) };
         result.push(
             /*html*/ `
             <tr>
@@ -437,7 +437,7 @@ function new_HTML_contentMessage(description,caseID){
     return [/*html*/ `
         <tr>
             ${checkBox}
-            <th colspan="2">
+            <th colspan="3" style="max-width: 360px;">
                 <div > <p class="specialMessage">${description}:</p> </div>
             </th>
         </tr>
@@ -477,6 +477,28 @@ function new_HTML_contentColorHeaven(targets){
         );
     });
     return result;
+};
+
+// create new content for tbody tr colors pickers
+function new_HTML_contentSlidersFalloff(targets){
+    return [/*html*/ `
+        <tr>
+            <td>
+                <div class="input-group-text"> <p>fallOff:</p> </div>
+            </td>
+            <td>
+                <div class="form-control dark"> <!--light fallOff Slider -->
+                <p>[Kc: Constante, Kl: Linéaire Kq: Quadratique]</p>
+                    <b>Kc:</b> <input id="Kc" type="text" data-slider-handle="square" class="span2"/><br>
+                    <b>Kl:</b> <input id="Kl" type="text" data-slider-handle="square" class="span2"/><br>
+                    <b>Kq:</b> <input id="Kq" type="text" data-slider-handle="square" class="span2"/><br>
+                </div>
+            </td>
+            <td>
+                <input class="saveCheck" type="checkbox" id=fallOff_select>
+            </td>
+        </tr>
+    `];
 };
 
 
@@ -611,12 +633,26 @@ function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
                 <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"brightness","number",{step:0.1,small:true}),
+                        new_HTML_content1D(["p"],"shaderName","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"blendMode","number",{step:1,min:0,max:3,small:true}),
+                        new_HTML_content1D(["p"],"alpha","number",{step:0.05,min:0,max:1,small:true}),
                         new_HTML_content1D(["p"],"drawMode","select",{option:[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]}),//loop
+                        new_HTML_content1D(["p"],"lightHeight","number",{step:0.001,small:true}),
+                        new_HTML_content1D(["p"],"brightness","number",{step:0.02,min:0,small:true}),
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_contentMessage("Control the rate at which light is gradually reduced as a function of the distance between a point in 3D space and the light source."),
+                        new_HTML_contentSlidersFalloff(),// heaven color
                     ])}
                     ${ new_HTML_table([
                         new_HTML_content1D(["p"],"tint","text",{jscolor:"jscolor"}),// tint
                     ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Light Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+
                 </div>
             </div><!--accordion item END-->
         </div><!--END-->

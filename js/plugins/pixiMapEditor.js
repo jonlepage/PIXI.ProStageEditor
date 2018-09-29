@@ -879,8 +879,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return {kc:kc,kl:kl,kq:kq};
     };
 
-    // create multi sliders light
-    function create_sliderHaven(dataValues){
+    // create multi sliders Heaven
+    function create_sliderHeaven(dataValues){
         // diffuse dark
         const isSpine = dataValues.p.type=== "spineSheet";
         function upd() { this.asignValues(dataValues, false) };
@@ -920,7 +920,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             nlb.on("slide", (function(value) { dataValues.n.setLight[2] = value; upd.call(this) }).bind(this));
         }
 
-
         const checkBoxHeaven = document.getElementById("enableHeaven");
         document.querySelectorAll(`#HeavenSliders`)[1].style.display = "none";
         if(this.d.color){ checkBoxHeaven.click() };
@@ -950,6 +949,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }).bind(this);
          // if checked, force onclick
     };
+
+     // create multi sliders light falloff for Coefficient light attenuation
+    function create_sliderFallOff(dataValues){
+        function upd() { this.asignValues(dataValues, false) };
+        const Kc = new Slider("#Kc", { value: dataValues.falloff[0], min: 0, max: 1  , step: 0.01, ticks: [0,0.75,1], ticks_snap_bounds: 0.02, tooltip: 'always'});
+        const Kl = new Slider("#Kl", { value: dataValues.falloff[1], min: 0, max: 20 , step: 0.1 , ticks: [0, 3, 20], ticks_snap_bounds: 0.25 , tooltip: 'always'});
+        const Kq = new Slider("#Kq", { value: dataValues.falloff[2], min: 0, max: 50, step: 0.1 , ticks: [0,20,50], ticks_snap_bounds: 0.25 , tooltip: 'always'});
+        
+        Kc.tooltip.style.opacity = 1, Kl.tooltip.style.opacity = 1, Kq.tooltip.style.opacity = 1;
+        Kc.on("slide", (function(value) { dataValues.falloff[0] = value; upd.call(this) }).bind(this));
+        Kl.on("slide", (function(value) { dataValues.falloff[1] = value; upd.call(this) }).bind(this));
+        Kq.on("slide", (function(value) { dataValues.falloff[2] = value; upd.call(this) }).bind(this));
+    };
+
     function create_jsColors(dataValues){
         // initialise tint colors pickers
         const isSpine = dataValues.p.type=== "spineSheet";
@@ -974,6 +987,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }
     };
 
+    // create color for light elements
+    function create_jsColorsLight(dataValues){
+        console.log('dataValues: ', dataValues);
+        // initialise tint colors pickers
+        const _jscolor_p = new jscolor( document.getElementById("p_tint") ); // for case:id="_color" slider:id="color"
+        _jscolor_p.fromString( PIXI.utils.hex2string(dataValues.color) ); // force asign current value 
+        _jscolor_p.zIndex = 99999999;
+        _jscolor_p.onFineChange = (function(){
+            dataValues.color = +`0x${_jscolor_p.targetElement.value}`;
+            this.asignValues(dataValues, false);
+        }).bind(this);
+    };
+
     function iniSetupIzit(){
         close_editor(true);
         setStatusInteractiveObj(false);
@@ -990,18 +1016,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
         //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
         create_jsColors.call(cage, dataValues); // create color box for tint 
-        create_sliderHaven.call(cage, dataValues); // create slider html for pixiHaven
+        create_sliderHeaven.call(cage, dataValues); // create slider html for pixiHaven
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
     // setup for tile in map
-    function open_stageLightInspector(AmbientLight) {
+    function open_stageLightInspector(cage) {
         iniSetupIzit();
-        const dataValues = PIXI.CageContainer.prototype.getDataValues_AmbientLight.call(AmbientLight);
-        iziToast.info( $PME.izitGlobalLightEditor(AmbientLight) );
+        const dataValues = cage.getDataValues();
+        iziToast.info( $PME.izitGlobalLightEditor(cage) );
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-            
-        
+        create_sliderFallOff.call(cage, dataValues); // create slider html for pixiHaven
+        create_jsColorsLight.call(cage, dataValues); // create color box for tint colors
+        create_dataLightIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
+        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
 
     // open data HTML inspector
@@ -1073,16 +1101,51 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }).bind(this);
     };
 
+    // LIGHT DATA INSPECTOR listener
+    function create_dataLightIntepretor(dataValues){
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        dataIntepretor.oninput = (function(event){
+            const e = event.target;
+            const type = e.type;
+            const id = e.id.split("_")[1]; // no need p,d,n for light
+            if(type === "text"){ dataValues[id] = String(e.value) };
+            if(type === "number"){ dataValues[id] = +e.value };
+            if(type === "select-one"){ dataValues[id] = JSON.parse(e.value) };
+            this.asignValues(dataValues, false);
+            //refreshDebugValues.call(this);
+        }).bind(this);
+        // BUTTONS
+        dataIntepretor.onclick = (function(event){
+            const e = event.target; // buttons
+            if(e.type === "button"){
+                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
+                if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
+                if(e.id==="apply"){ close_dataLightInspector.call(this, dataValues) };// apply and close
+                if(e.id==="cancel"){close_dataLightInspector.call(this)};// cancel and close
+                if(e.id==="reset"){ // reset dataValues to old DataValues
+                    this.asignValues(this.DataValues, false);
+                    setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
+                    dataValues = this.getDataValues();
+                    //refreshDebugValues.call(this);
+                };
+            };
+        }).bind(this);
+    };
+
     // asign props value to HTML data Inspector
     function setHTMLWithData(dataValues, Data_CheckBox, _jscolor, _Falloff) {
-        computeHTMLValue("p",dataValues.p);
-        computeHTMLValue("d",dataValues.d);
-        computeHTMLValue("n",dataValues.n);
+        if(['p','d','n'].contains(Object.keys(dataValues))){ // OBJS
+            computeHTMLValue("p",dataValues.p);
+            computeHTMLValue("d",dataValues.d);
+            computeHTMLValue("n",dataValues.n);
+        }else{
+            computeHTMLValue("p",dataValues); // LIGHT
+        }
         function computeHTMLValue(K, data){
             Object.keys(data).forEach(key => {
                 const value = data[key];
-                const id = `${K}_${key}`;
-                const colorIndex = (K==="n") && 1 || 0; // index of jscolors array d,n
+                const id = `${K}_${key}`; // html id
+                const colorIndex = (K==="n") && 1 || 0; // index of jscolors array d,n //TODO: DELETE ME , 
                 let e = Array.isArray(value)? document.querySelectorAll(`#${id}`) : document.getElementById(id);
                 if(e){
                     e.length===1? e = e[0] : void 0; // if value are array but not html array,
@@ -1117,6 +1180,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         open_editor(true);
     };
 
+    // close the data HTML inspector LIGHT
+    function close_dataLightInspector(dataValues){
+        const oldDataBack = dataValues || this.DataValues; // add or back to old values
+        this.asignValues(oldDataBack, true);
+        iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
+        iziToast.opened = false;
+        setStatusInteractiveObj(true); // pull back tiles interactions
+        open_editor(true);
+    };
 //#endregion
 
     //#region [rgba(40, 5, 50,0.2)]
@@ -1568,7 +1640,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             drawGrids();
         };
         if(name.contains("icon_masterLight")){
-            open_stageLightInspector(STAGE.AmbientLight); // edit ligth brigth , and custom BG
+            open_stageLightInspector(STAGE.setup.ambientLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
