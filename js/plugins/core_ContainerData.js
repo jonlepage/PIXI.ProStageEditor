@@ -376,27 +376,64 @@ PIXI.ContainerBG = (function () {
         // note: les bg peut etre decouper en arrays[[1,2,3],[1,2,3]] pour textures packer, et textureName pourrai etre diferent version , season !?
         constructor(dataBase, dataValues) {
             super();
-            if(dataBase){ // if pass a bg ?
-                dataValues = dataValues || this.getDataValues(dataBase);
-                this.createBases(dataBase);
-                this.asignValues(dataValues, true);
-            }
+            dataValues = dataValues || this.getDataValues(dataBase);
+            this.createBases(dataBase || {});
+            this.asignValues(dataValues, true);
+
         };
         // getters for ContainerTiles
     };
     
     ContainerBG.prototype.createBases = function(dataBase, dataValues) {
         // TODO: les bg pourrai etre parfoi decouper en arrays dans textures packer 
-        const td = dataBase.textures; // ref texture:diffuse
-        const tn = dataBase.textures_n; // ref texture:normal
+        const td = dataBase.textures || PIXI.Texture.EMPTY; // ref texture:diffuse
+        const tn = dataBase.textures_n || PIXI.Texture.EMPTY; // ref texture:normal
         const d = new PIXI.Sprite(td);
         const n = new PIXI.Sprite(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
     };
 
+    // the DataValues will used for make saveGame or dataEditor manager
+    ContainerBG.prototype.getDataValues = function(dataBase) {
+        const def = !!dataBase;
+        // parent data value
+        const p = {
+            type        : def? dataBase .type : this .type         , // locked
+            dataName    : def? dataBase .name : this .dataName     , // locked
+            name        : def? "map name information" : this .name , // asigner un nom pour la carte, permet afficher titre
+            description : def? dataBase .root : this .description  , // un description aide memoire
+            parentGroup : 0                                        , // BG alway group 0
+        };
+        let dn = function(){ // Diffuse Normal data value 
+           return {
+                // observable point
+                position :  def            ? [0   ,0] : [this.position .x, this.position .y],
+                scale    :  def            ? [1   ,1] : [this.scale    .x, this.scale    .y],
+                skew     :  def            ? [0   ,0] : [this.skew     .x, this.skew     .y],
+                pivot    :  def            ? [0   ,0] : [this.pivot    .x, this.pivot    .y],
+                // transform
+                blendMode : def? 0        : this.blendMode ,
+                tint      : def? 0xffffff : this.tint      ,
+                // other
+                ...this.color && {
+                    setDark  : def? [0,0,0] : PIXI.utils.hex2rgb(this.color.darkRgba ).reverse(),
+                    setLight : def? [1,1,1] : PIXI.utils.hex2rgb(this.color.lightRgba).reverse(),
+                },
+            };
+        };
+        const d = this.d && dn.call( this.d );
+        const n = this.n && dn.call( this.n );
+        return { p, d, n };
+    };
     
+    ContainerBG.prototype.clearBackground = function() {
+        this.removeChild(this.d,this.n);
+        PIXI.utils.clearTextureCache();
+    };
+
 //END
 return ContainerBG;
 })();
 //#endregion
+

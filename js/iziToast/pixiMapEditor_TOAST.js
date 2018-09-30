@@ -50,6 +50,29 @@ _PME.prototype.izitGlobalLightEditor = function(scene){
     };
 };
 
+// open the tileEditor
+_PME.prototype.izitBackgroundEditor = function(bg){
+    let message = HTML_BG_UI();
+    return{
+        title: 'BACKGROUND MAP',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 10,
+        maxWidth: false,
+        theme: 'dark',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.99)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
 _PME.prototype.izit_loading1 = function() { // load all sprites dependency for editor gui only
     return{
         transitionOut: 'fadeOutUp',

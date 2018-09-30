@@ -1032,9 +1032,25 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
 
-    // setup for background 
+    // setup for background => CAGE_MAP
+    // TODO: RENDU ICI
     function open_dataBGInspector(cage) {
-
+        // compute all BG folder
+        iniSetupIzit();
+        const dataValues = cage.getDataValues();
+        iziToast.info( $PME.izitBackgroundEditor(cage) );
+        // create select and selected if current
+        const HTMLSelectBG = document.getElementById('p_dataName');
+        let result = Object.keys(DATA).filter(s =>  {
+            if (DATA[s].BG) {
+                const opt = document.createElement("option");
+                opt.text = DATA[s].name;
+                opt.selected = (dataValues.p.dataName === DATA[s].name);
+                HTMLSelectBG.add(opt);
+            };
+        });  
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
     };
 
     // open data HTML inspector
@@ -1080,13 +1096,24 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 };
             };
             if(type === "select-one"){
-                dataValues[id[0]][id[1]] = JSON.parse(e.value);
+                if(e.value==="true" || e.value === "false"){
+                    dataValues[id[0]][id[1]] = JSON.parse(e.value);
+                }else{
+                    dataValues[id[0]][id[1]] = e.value;
+                    // if is BG, create new base
+                    if(id[1] === "dataName"){
+                        const dataBase = DATA[e.value];
+                        this.clearBackground();
+                        dataBase && this.createBases(dataBase);
+                    };
+                }
                 if(dataValues.p.type === "animationSheet"){
                     this.play(0);
                 }
+
             };
             this.asignValues(dataValues, false);
-            refreshDebugValues.call(this);
+            this.Debug && refreshDebugValues.call(this);
         }).bind(this);
         // BUTTONS
         dataIntepretor.onclick = (function(event){
@@ -1100,7 +1127,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     this.asignValues(this.DataValues, false);
                     setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
                     dataValues = getDataValues.call(this);
-                    refreshDebugValues.call(this);
+                    this.Debug && refreshDebugValues.call(this);
                 };
             };
         }).bind(this);
@@ -1638,7 +1665,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
-             open_dataBGInspector(STAGE.setup.background); // edit ligth brigth , and custom BG            
+             open_dataBGInspector(CAGE_MAP); // edit ligth brigth , and custom BG            
         }
         if(name.contains("icon_grid")){
             drawGrids();

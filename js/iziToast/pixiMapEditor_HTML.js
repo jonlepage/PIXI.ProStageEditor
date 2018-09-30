@@ -505,6 +505,67 @@ function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
 };
 
 
+function HTML_BG_UI(resultBG){ // html_izit_sceneGlobalLight
+    // if is a sprite obj
+    const message1 = /*html*/ `
+    <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:[[void 0]]}), // locked
+                        new_HTML_content1D(["p"],"name","text",{largeX:true}), // locked
+                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
+                   ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content2D(["d","n"],"position","number",{step:1}),// position
+                        new_HTML_content2D(["d","n"],"pivot","number",{step:1}),// pivot
+                        new_HTML_content2D(["d","n"],"scale","number",{step:0.05,small:true}),// scale
+                        new_HTML_content2D(["d","n"],"skew","number",{step:0.05,small:true}),// skew
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["d","n"],"alpha","number",{step:0.01,min:0,max:1,small:true}),// alpha
+                        new_HTML_content1D(["d","n"],"blendMode","number",{step:1,min:0,max:3,small:true}),// blendMode
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
+                        new_HTML_contentColorHeaven(["d","n"]),// heaven color
+                    ],"HeavenSliders")}
+                </div>
+            </div><!--accordion item END-->
+        </div><!--END-->
+        <div class="container buttons"> 
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
+
+    </div> `;//END message1
+    return message1;
+};
+
 
   //#region [rgba(255,100, 0,0.8)]
 //#endregion
