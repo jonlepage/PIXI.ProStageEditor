@@ -185,7 +185,10 @@ Scene_Base.prototype.createLights = function() {
     const _SCENE = this.loaderSet._SCENE || {color:0xffffff, brightness:0.6}; // ref loaderSet for light or asign default value
     const ambientLight = new PIXI.ContainerAmbientLight(); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
     this.addChild(ambientLight);
+    const directionalLight = new PIXI.ContainerDirectionalLight();
+    this.addChild(directionalLight);
     this.setup.ambientLight = ambientLight;
+    this.setup.directionalLight = directionalLight;
     // ajust the mouse light scene if custom data exist?
     if(this.loaderSet._SCENE){
         $mouse.light

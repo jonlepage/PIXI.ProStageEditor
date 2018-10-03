@@ -47,8 +47,8 @@ PIXI.CageContainer = (function () {
     // dispatch values asigment
     CageContainer.prototype.asignValues = function(dataValues, storeValues=true) {
         this.computeValue(dataValues.p);
-        this.computeValue.call(this.Sprites.d, dataValues.d);
-        this.computeValue.call(this.Sprites.n, dataValues.n);
+        dataValues.d && this.computeValue.call(this.Sprites.d, dataValues.d);
+        dataValues.n && this.computeValue.call(this.Sprites.n, dataValues.n);
         // can set false, if need keep temp old values for HTML dataEditor
         if(storeValues){ this.dataValues = dataValues };
     };
@@ -309,9 +309,9 @@ return ContainerSpine;
 })();
 //#endregion
 
-/*#region [rgba(0, 0, 0, 0.1)]
+/*#region [rgba(255, 255, 255, 0.04)]
 // ┌------------------------------------------------------------------------------┐
-// ContainerSpine
+// ContainerAmbientLight
 // └------------------------------------------------------------------------------┘
 */
 PIXI.ContainerAmbientLight = (function () {
@@ -364,6 +364,61 @@ return ContainerAmbientLight;
 })();
 //#endregion
 
+/*#region [rgba(200, 200, 200, 0.04)]
+// ┌------------------------------------------------------------------------------┐
+// ContainerDirectionalLight
+// └------------------------------------------------------------------------------┘
+*/
+PIXI.ContainerDirectionalLight = (function () {
+    // TODO: mette tileContainer, ContainerAnimations, spineContainer .. corige spine avec les get n array
+    // en sperarant les conainer on peut suprimer quelquemethod dans CageContainer.
+    class ContainerDirectionalLight extends PIXI.lights.DirectionalLight {
+        constructor(dataValues ,brightness, color) {
+            super(0xffffff, 1, $mouse.follower);
+            dataValues = dataValues || this.getDataValues(true);
+            this.asignValues(dataValues, true);
+        };
+        // getters for ContainerDirectionalLight
+    };
+    
+    // get dataValue of AmbientLight
+    ContainerDirectionalLight.prototype.getDataValues = function(def) {
+        const AmbientLight_Data = {
+            // base
+            shaderName      : def? "directionalLightShader" : this.shaderName     , //lock ?
+            blendMode       : def? 1                    : this.blendMode      ,
+            alpha           : def? 1                    : this.alpha          ,
+            // light
+            drawMode        : def? 4                    : this.drawMode       ,
+            lightHeight     : def? 0.075                : this.lightHeight    ,
+            brightness      : def? 1                    : this.brightness     ,
+            falloff         : def? [0.75,3,20]          : this.falloff        ,
+            color           : def? 16777215             : this.color          ,
+            // other
+            //useViewportQuad : def? true                 : this.useViewportQuad,
+            //indices         : def? [0,1,2,0,2,3]        : this.indices        ,
+            //displayOrder    : def? 8                    : this.displayOrder   ,
+        };
+        return AmbientLight_Data;
+    };
+
+    // dispatch values asigment for spine
+    ContainerDirectionalLight.prototype.asignValues = function(dataValues, storeValues=true) {
+        this.computeValue(dataValues);
+    };
+
+    ContainerDirectionalLight.prototype.computeValue = function(data) {
+        for (const key in data) {
+            const value = data[key];
+            this[key] = value;
+        };
+    };
+    
+//END
+return ContainerDirectionalLight;
+})();
+//#endregion
+
 /*#region [rgba(0, 0, 90, 0.06)]
 // ┌------------------------------------------------------------------------------┐
 // ContainerBackground
@@ -405,26 +460,7 @@ PIXI.ContainerBG = (function () {
             description : def? dataBase .root : this .description  , // un description aide memoire
             parentGroup : 0                                        , // BG alway group 0
         };
-        let dn = function(){ // Diffuse Normal data value 
-           return {
-                // observable point
-                position :  def            ? [0   ,0] : [this.position .x, this.position .y],
-                scale    :  def            ? [1   ,1] : [this.scale    .x, this.scale    .y],
-                skew     :  def            ? [0   ,0] : [this.skew     .x, this.skew     .y],
-                pivot    :  def            ? [0   ,0] : [this.pivot    .x, this.pivot    .y],
-                // transform
-                blendMode : def? 0        : this.blendMode ,
-                tint      : def? 0xffffff : this.tint      ,
-                // other
-                ...this.color && {
-                    setDark  : def? [0,0,0] : PIXI.utils.hex2rgb(this.color.darkRgba ).reverse(),
-                    setLight : def? [1,1,1] : PIXI.utils.hex2rgb(this.color.lightRgba).reverse(),
-                },
-            };
-        };
-        const d = this.d && dn.call( this.d );
-        const n = this.n && dn.call( this.n );
-        return { p, d, n };
+        return { p };
     };
     
     ContainerBG.prototype.clearBackground = function() {

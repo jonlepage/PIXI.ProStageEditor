@@ -500,6 +500,9 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     CAGE_TILESHEETS.interactive = true;
     CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
     CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
+                
+    CAGE_TILESHEETS.on('pointerover', pointer_overIN);
+    CAGE_TILESHEETS.on('pointerout', pointer_overOUT);
     CAGE_TILESHEETS.on('pointerdown', pointer_DW);
     CAGE_TILESHEETS.on('pointerup', pointer_UP);
     CAGE_TILESHEETS.on('zoomTileLibs', wheelInLibs);
@@ -1039,7 +1042,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         iniSetupIzit();
         const dataValues = cage.getDataValues();
         iziToast.info( $PME.izitBackgroundEditor(cage) );
-        // create select and selected if current
+        // create select for change BG
         const HTMLSelectBG = document.getElementById('p_dataName');
         let result = Object.keys(DATA).filter(s =>  {
             if (DATA[s].BG) {
@@ -1051,6 +1054,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         });  
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
+        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+
     };
 
     // open data HTML inspector
@@ -1104,7 +1109,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     if(id[1] === "dataName"){
                         const dataBase = DATA[e.value];
                         this.clearBackground();
+                        dataValues = this.getDataValues(dataBase);
                         dataBase && this.createBases(dataBase);
+                        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
                     };
                 }
                 if(dataValues.p.type === "animationSheet"){
@@ -1123,9 +1130,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
                 if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
-                if(e.id==="reset"){ // reset dataValues to old DataValues
-                    this.asignValues(this.DataValues, false);
-                    setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
+                if(e.id==="reset"){ // reset dataValues to old dataValues
+                    this.asignValues(this.dataValues, false);
+                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
                     dataValues = getDataValues.call(this);
                     this.Debug && refreshDebugValues.call(this);
                 };
@@ -1154,9 +1161,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_dataLightInspector.call(this, dataValues) };// apply and close
                 if(e.id==="cancel"){close_dataLightInspector.call(this)};// cancel and close
-                if(e.id==="reset"){ // reset dataValues to old DataValues
-                    this.asignValues(this.DataValues, false);
-                    setHTMLWithData.call(this, this.DataValues); // asign dataValues to HTML inspector
+                if(e.id==="reset"){ // reset dataValues to old dataValues
+                    this.asignValues(this.dataValues, false);
+                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
                     dataValues = this.getDataValues();
                     //refreshDebugValues.call(this);
                 };
@@ -1166,10 +1173,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // asign props value to HTML data Inspector
     function setHTMLWithData(dataValues, Data_CheckBox, _jscolor, _Falloff) {
-        if(['p','d','n'].contains(Object.keys(dataValues))){ // OBJS
-            computeHTMLValue("p",dataValues.p);
-            computeHTMLValue("d",dataValues.d);
-            computeHTMLValue("n",dataValues.n);
+        if(dataValues.p){ // OBJS
+            dataValues.p && computeHTMLValue("p",dataValues.p);
+            dataValues.d && computeHTMLValue("d",dataValues.d);
+            dataValues.n && computeHTMLValue("n",dataValues.n);
         }else{
             computeHTMLValue("p",dataValues); // LIGHT
         }
@@ -1200,11 +1207,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // close the data HTML inspector
     function close_dataInspector(dataValues){
         // if cancel, and if old value not have heaven, destroyHeaven
-        if(!dataValues && !this.DataValues.d.setDark){
+        if(!dataValues && !this.dataValues.d.setDark){
             this.d.destroyHeaven();
             this.n.destroyHeaven();
         }
-        const oldDataBack = dataValues || this.DataValues; // add or back to old values
+        const oldDataBack = dataValues || this.dataValues; // add or back to old values
         this.asignValues(oldDataBack, true);
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
         iziToast.opened = false;
@@ -1214,7 +1221,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // close the data HTML inspector LIGHT
     function close_dataLightInspector(dataValues){
-        const oldDataBack = dataValues || this.DataValues; // add or back to old values
+        const oldDataBack = dataValues || this.dataValues; // add or back to old values
         this.asignValues(oldDataBack, true);
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
         iziToast.opened = false;
@@ -1466,7 +1473,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.on('pointerup', pointer_UP);
         
         cage.on('zoomTileLibs', wheelInLibs);
-        cage.on('pointermove', checkAnchor);
+        //cage.on('pointermove', checkAnchor); TODO: permet de changer le anchor par default de 0.5 a unknow...
         cage.buttonType = "tileLibs";
         return cage;
     };
@@ -1673,6 +1680,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(name.contains("icon_masterLight")){
             open_stageLightInspector(STAGE.setup.ambientLight); // edit ligth brigth , and custom BG
         };
+        if(name.contains("icon_spotLight")){
+            open_stageLightInspector(STAGE.setup.directionalLight); // edit ligth brigth , and custom BG
+        };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
         }
@@ -1799,6 +1809,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function disableFastModes(cage){
+        console.log('cage: ', cage);
         if((cage.buttonType === "tileMap" || cage.buttonType === "tileMouse") ){
             //MouseHold.Debug.fastModes.renderable = false;
             fastModes.renderable = false;
@@ -1807,7 +1818,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
          // reprendre interactivity only a tileMouse et recalculer les nouveau dataValues
         if(cage.buttonType !== "tileMouse"){
             setStatusInteractiveObj(true); // disable interactivity
-            cage.asignValues( PIXI.CageContainer.prototype.getDataValues.call(cage) );
         };
     };
 
@@ -1847,18 +1857,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         if(LineDraw){ LineDraw.position.set(mX,mY) };
     };
 
-    function startMouseHold(activeTarget){
+    function startMouseHold(cage){
         clearTimeout(MouseTimeOut);
         MouseHold && disableFastModes(MouseHold);
         //MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
-
         MouseHold=false;
-        if(activeTarget){ // active mouse MouseHold after 160 ms
+        if(cage){ // active mouse MouseHold after 160 ms
             MouseTimeOut = setTimeout(() => {
-                if(activeTarget.mouseIn){
+                if(cage.mouseIn){
                     HoldX = +mX, HoldY = +mY;
-                    MouseHold = activeTarget;
-                    activeFastModes(MouseHold);
+                    MouseHold = cage;
+                if( ["tileMap","tileMouse"].contains(cage.buttonType) ){
+                        activeFastModes(MouseHold);
+                    }
                 };
             }, 160);
         }else{ // disabling mousehold and affected feature
@@ -1943,6 +1954,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         refreshMouse();
         if(MouseHold){
             if( MouseHold.buttonType === "CAGE_TILESHEETS" ){
+                
                 CAGE_TILESHEETS.list.forEach(cage => {
                     cage.x+= MovementX*1.5;//performe scroll libs mouse
                     cage.y+= MovementY*1.5;//performe scroll libs mouse
@@ -1991,6 +2003,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
         this.mouseIn = true;
+        console.log('this: ', this);
         switch (event.currentTarget.buttonType) {
             case "thumbs":
                 show_previews(this,true);
@@ -2011,6 +2024,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function pointer_overOUT(event){
         this.mouseIn = false;
+        console.log('this: ', this);
         switch (event.currentTarget.buttonType ) {
             case "thumbs":
                 InLibs = null;
@@ -2034,11 +2048,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function pointer_DW(event){
-        startMouseHold(event.currentTarget); // timeOut check MouseHold
+        startMouseHold(this); // timeOut check MouseHold
     };
 
     function pointer_UP(event){
-        console.log('pointer_UP: ');
         if(MouseHold){ return startMouseHold(false) };
         startMouseHold(false);
         const _clickRight = event.data.button === 0;
@@ -2093,7 +2106,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 // if exist in $Objs registery, go back to dataValues befor click
                 if($Objs.list_master.contains(this)){
                     this.buttonType = "tileMap";
-                    this.asignValues(this.DataValues);
+                    this.asignValues(this.dataValues);
                     refreshDebugValues.call(this);
                 }else{
                     CAGE_MAP.removeChild(CAGE_MOUSE.list);

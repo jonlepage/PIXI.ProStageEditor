@@ -525,33 +525,6 @@ function HTML_BG_UI(resultBG){ // html_izit_sceneGlobalLight
                    ])}
                 </div>
             </div><!--accordion item END-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content2D(["d","n"],"position","number",{step:1}),// position
-                        new_HTML_content2D(["d","n"],"pivot","number",{step:1}),// pivot
-                        new_HTML_content2D(["d","n"],"scale","number",{step:0.05,small:true}),// scale
-                        new_HTML_content2D(["d","n"],"skew","number",{step:0.05,small:true}),// skew
-                    ])}
-                </div>
-            </div><!--accordion item END-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["d","n"],"alpha","number",{step:0.01,min:0,max:1,small:true}),// alpha
-                        new_HTML_content1D(["d","n"],"blendMode","number",{step:1,min:0,max:3,small:true}),// blendMode
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
-                        new_HTML_contentColorHeaven(["d","n"]),// heaven color
-                    ],"HeavenSliders")}
-                </div>
-            </div><!--accordion item END-->
         </div><!--END-->
         <div class="container buttons"> 
             <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
