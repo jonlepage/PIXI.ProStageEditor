@@ -1,70 +1,3 @@
-
-
-
-  //#region [rgba(220,20, 210,0.2)]
-//#endregion
-function html_izit_sceneSetup(bgList, stage) {
-    console.log('stage: ', stage);
-    console.log('bgList: ', bgList);
-
-    let _bgList = `<option value=false selected>false</option>`; // 
-    for (let i=0, l=bgList.length; i<l; i++) {
-        if(stage.Background && stage.Background.name === bgList[i]){
-            _bgList+=`<option value=${bgList[i]} selected>${bgList[i]}</option>`;
-        }else{
-            _bgList+=`<option value=${bgList[i]}>${bgList[i]}</option>`;
-        }
-        
-    };
-
-
-    const message = /*html*/ `
-        <div class="container" id="dataIntepretor">
-        <h6>
-            <font color="#d2bc97">SETUP SCENE OPTIONS</font>
-            <small class="text-muted"><kbd>[json]</kbd></small>
-        </h6>
-
-
-        <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">def</th>
-                <th scope="col"><font color="#c17d2e">Add more backgrounds: </font>&nbsp;&nbsp;  ../data2/BG/ </th>
-            </tr>
-        </thead>
-            <tbody>
-                <tr><!--BG LIST AVAIBLE-->
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input id="_Background" type="checkbox" name="checkbox"/>
-                            <label for="_Background" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                    <td id="Background_def">"false"</td>
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">Background:</small>
-                                </div>
-                            </div>
-                            <select class="selectRadius" id="Background">${_bgList}</select>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table> 
-        <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-        <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-        <br><td colspan="3"><font color="#c17d2e">**Warning: Background for sceneMap are define in RMMV!"</font></td>
-        </div>
-    `;
-////////////////////////////////////////END
-    return message;
-};
-
 // create a new Tabs, Options
 function new_HTML_table_options(contents){
     let c = ``;
@@ -644,14 +577,12 @@ function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
             </div><!--accordion item END-->
         </div><!--END-->
         <div class="container buttons">
-            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
-            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Refresh Memory</button>
             <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
             <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+            <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
         </div>
-
     </div> `;//END message1
     return message1;
 };
