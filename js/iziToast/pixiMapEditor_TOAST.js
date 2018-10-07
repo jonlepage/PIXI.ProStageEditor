@@ -73,15 +73,16 @@ _PME.prototype.izitBackgroundEditor = function(bg){
     };
 };
 
-_PME.prototype.izit_loading1 = function() { // load all sprites dependency for editor gui only
+_PME.prototype.izit_loading1 = function(stage) { // load all sprites dependency for editor gui only
+    console.log('stage: ', stage);
     return{
         transitionOut: 'fadeOutUp',
         id:'izit_loading1',
-        timeout:4600,
+        timeout:3600,
         theme: 'dark',
         icon: 'icon-person',
         title: 'PLEASE WAIT:',
-        message: `Converting Engine for Editor:`,
+        message: `Converting Engine for editor in scene:=> ${stage.constructor.name}`,
         position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
         progressBarColor: 'rgb(0, 255, 184)',
         backgroundColor: '#3f3f3f',
@@ -162,8 +163,8 @@ _PME.prototype.izit_sceneSetup = function() {
 };
 
 // open save interactions
-_PME.prototype.izit_saveSetup = function() {
-    let message = html_izit_saveSetup.call(this);
+_PME.prototype.izit_saveSetup = function(stage) {
+    let message = html_izit_saveSetup(stage);
     return{
         title: 'Save and compute progress in json format \n',
         message: message,

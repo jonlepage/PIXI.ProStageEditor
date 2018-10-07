@@ -102,7 +102,7 @@ class _PME{
 
 
 _PME.prototype.startEditorLoader = function() {
-    iziToast.warning( this.izit_loading1() );
+    iziToast.warning( this.izit_loading1(SceneManager._scene) );
     const loader = new PIXI.loaders.Loader();
     loader.add('editorGui', `editor/pixiMapEditor1.json`);
     loader.load();
@@ -482,6 +482,8 @@ const CAGE_LIBRARY = new PIXI.Container(); // Store all avaibles libary
     CAGE_LIBRARY.interactive = true;
     CAGE_LIBRARY.hitArea = new PIXI.Rectangle(0,0,1740,220);
     CAGE_LIBRARY.buttonType = "CAGE_LIBRARY";
+    CAGE_LIBRARY.on('pointerover', pointer_overIN);
+    CAGE_LIBRARY.on('pointerout', pointer_overOUT);
     CAGE_LIBRARY.on('pointerdown', pointer_DW);
     STAGE.CAGE_EDITOR.addChild(CAGE_LIBRARY);
 // CAGE_TILESHEETS ________________
@@ -653,12 +655,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function drawGrids(){
-        if(GRID){
+        if(GRID && GRID._texture){
             STAGE.CAGE_MAP.removeChild(GRID);
-            GRID.destroy();
+            return GRID.destroy();
         }
-        const eX = 1920; // map width + zoom
-        const eY = 1080; // map width + zoom
+        const eX = STAGE.width; // map width + zoom
+        const eY = STAGE.height; // map width + zoom
         const maxLineH = eX/48, maxLineV = eY/48;
         const fWH = 48; // factor squares width heigth
         const color = [0xffffff,0x000000,0xff0000,0x0000ff][~~(Math.random()*4)];
@@ -668,7 +670,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const graphics = new PIXI.Graphics();
             graphics.lineStyle(2, color, 0.5);
             return graphics.moveTo(sX,sY).lineTo(eX, eY).endFill();
-        }
+        };
         for (let l=0, y=0; l < maxLineV; l++, y=l*fWH) {
             rc_grid.addChild(draw(0,y,eX,y));
         };
@@ -930,12 +932,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         checkBoxHeaven.onclick = (function(e){
             if(e.target.checked){
                 this.d.convertToHeaven();
-                dataValues.d.setDark  = [ ddr.getValue(), ddg.getValue(), ddb.getValue() ];
-                dataValues.d.setLight = [ dlr.getValue(), dlg.getValue(), dlb.getValue() ];
+                dataValues.d.setDark  = [ +ddr.value, +ddg.value, +ddb.value ];
+                dataValues.d.setLight = [ +dlr.value, +dlg.value, +dlb.value ];
                 if(!isSpine){
                     this.n.convertToHeaven();
-                    dataValues.n.setDark  = [ ndr.getValue(), ndg.getValue(), ndb.getValue() ];
-                    dataValues.n.setLight = [ nlr.getValue(), nlg.getValue(), nlb.getValue() ];
+                    dataValues.n.setDark  = [ +ndr.value, +ndg.value, +ndb.value ];
+                    dataValues.n.setLight = [ +nlr.value, +nlg.value, +nlb.value ];
                 };
                 this.asignValues(dataValues, false);
             }else{
@@ -1036,7 +1038,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // setup for background => CAGE_MAP
-    // TODO: RENDU ICI
     function open_dataBGInspector(cage) {
         // compute all BG folder
         iniSetupIzit();
@@ -1055,7 +1056,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+    };
 
+    // setup for tile in map
+    function open_SaveSetup(stage) {
+        iniSetupIzit();
+        iziToast.info( $PME.izit_saveSetup(stage) );
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
     };
 
     // open data HTML inspector
@@ -1687,7 +1694,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             addDebugLineToMouse();
         }
         if(name.contains("icon_Save")){
-            open_SaveSetup();
+            open_SaveSetup(STAGE);
         }
         if( name.contains("gb") ){
             // old gb
@@ -2003,7 +2010,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
         this.mouseIn = true;
-        console.log('this: ', this);
         switch (event.currentTarget.buttonType) {
             case "thumbs":
                 show_previews(this,true);
@@ -2024,7 +2030,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function pointer_overOUT(event){
         this.mouseIn = false;
-        console.log('this: ', this);
         switch (event.currentTarget.buttonType ) {
             case "thumbs":
                 InLibs = null;
@@ -2273,7 +2278,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
     //call fast save with ctrl+s
-    function start_DataSavesFromKey_CTRL_S(useOption) {
+    function start_DataSavesFromKey_CTRL_S(useOption) { // open_SaveSetup
         if(useOption){
             useOption = {
                 _renderParaForRMMV : document.getElementById("_renderParaForRMMV").value,
@@ -2332,9 +2337,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             });
         };
-        writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data_perma);   // perma
-        writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
-        writeFile(`data/PlanetID${STAGE.planetID}.json` , JSON.stringify(data_planets, null, '\t'), data_planets); // planets
+        //writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data_perma);   // perma
+        //writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        //writeFile(`data/PlanetID${STAGE.planetID}.json` , JSON.stringify(data_planets, null, '\t'), data_planets); // planets
     };
 
     function computeSave_PERMASHEETS(DATA) {

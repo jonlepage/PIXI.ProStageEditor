@@ -83,6 +83,24 @@ function new_HTML_table_options(contents){
     `
 };
 
+// create a new Tabs, Options
+function new_HTML_table_Info(contents){
+    let c = ``;
+    contents.forEach(e => { c = c+e });
+
+    return /*html*/ `
+    <table class="table table-hover table-dark table-sm">
+        <thead style="background-color: #393939" >
+            <tr>
+                <th scope="col">information</th>
+                <th scope="col">currentValue</th>
+                <th scope="col">oldValue</th>
+            </tr>
+        </thead>
+            <tbody>${c}</tbody>
+        </table>
+    `
+};
 // create new content for tbody tr
 // example:  p.position, d.position n.position
 function new_HTML_content_options(description,options){
@@ -279,6 +297,23 @@ function new_HTML_contentMessage(description,caseID){
     `];
 };
 
+// simple data information value show
+function new_HTML_contentDataInfo(description,oldData,newData){
+    return [/*html*/ `
+        <tr>
+            <td>
+                <div class="input-group-text"> <p>${description}:</p> </div>
+            </td>
+            <td>
+                <div class="input-group-text"> <p>${oldData}:</p> </div>
+            </td>
+            <td>
+                <div class="input-group-text"> <p>${newData}:</p> </div>
+            </td>
+        </tr>
+    `];
+};
+
 // create new content for tbody tr colors pickers
 function new_HTML_contentColorHeaven(targets){
     let result = [];
@@ -289,9 +324,9 @@ function new_HTML_contentColorHeaven(targets){
         result.push(
             /*html*/ `
             <tr>
-            <td>
-                <div class="input-group-text"> <p>${description}:</p> </div>
-            </td>
+                <td>
+                    <div class="input-group-text"> <p>${description}:</p> </div>
+                </td>
             <td>
                 <div class="form-control dark"> <!--diffuse rvb setDark -->
                     <b>dr:</b> <input id=${darkID[0]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" data-slider-handle="triangle" type="text" class="span2"/><br>
@@ -539,14 +574,12 @@ function HTML_BG_UI(resultBG){ // html_izit_sceneGlobalLight
     return message1;
 };
 
-
-  //#region [rgba(255,100, 0,0.8)]
+//#region [rgba(255,100, 0,0.8)]
 //#endregion
-function html_izit_saveSetup() {
+function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
     // get a copy of old file? if exist
-    console.log0('this: ', this);
     const fs = require('fs');
-    const path = `data/${this.stage.constructor.name}_data.json`;
+    const path = `data/${stage.constructor.name}_data.json`;
     const buffer = fs.existsSync(path)? JSON.parse(fs.readFileSync(path, 'utf8')) : false;
     const oldSystem = buffer.system || false;
     // help converting byte memory to readable size
@@ -574,204 +607,51 @@ function html_izit_saveSetup() {
         <font color="#bb5179">rss:</font>  <span id="rss">${reel?memory.rss:rss_old}</span>
         `;
     };
-    return message = /*html*/ `
+    const message1 = /*html*/ `
     <div class="container" id="dataIntepretor">
-    <h6>
-        <font color="#d2bc97">SAVE PROGRESS TO JSON</font>
-        <small class="text-muted"><kbd>Json</kbd></small>
-    </h6>
-        <table class="table table-hover table-dark table-sm">
-            <thead style="background-color: #393939" >
-                <tr>
-                    <th scope="col">options</th>
-                    <th scope="col">#</th>
-                </tr>
-            </thead>
-            <tbody>
-                <td colspan="3"><font color="#d2bc97">Rendering options for rmmv editor parralaxe</font></td>
-                <tr><!--Rendering parralaxe for RMMV?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderParaForRMMV': Rendering parralaxe for RMMV?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderParaForRMMV" checked>
-                            <label for="_renderParaForRMMV" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Layers For PhotoShops?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderLayersPSD': Rendering Layers For PhotoShops?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderLayersPSD"/>
-                            <label for="_renderLayersPSD" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Events and Players Sprites?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderEventsPlayers': Rendering Events and Players Sprites?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderEventsPlayers"/>
-                            <label for="_renderEventsPlayers" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering grafics debugging?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderDebugsElements': Rendering grafics debugging?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderDebugsElements"/>
-                            <label for="_renderDebugsElements" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering Light shadders?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderingLight': Rendering Light shadders?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderingLight"/>
-                            <label for="_renderingLight" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering layers Normals?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">'_renderLayers_n': Rendering layers Normals?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderLayers_n"/>
-                            <label for="_renderLayers_n" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr><!--Rendering with current Animations times?-->
-                    <td>
-                        <div class="input-group input-group-xs">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text">
-                                <small class="text-muted">"_renderAnimationsTime0": Reset Animations time to 0 befor render?:</small>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="funkyradio funkyradio-success">
-                            <input type="checkbox" name="checkbox" id="_renderAnimationsTime0"/>
-                            <label for="_renderAnimationsTime0" style="text-indent:0px;margin-right:0px;">.</label>
-                        </div>
-                    </td>
-                </tr>
+        <h6>
+            <font color="#d2bc97">SAVE STAGE DATAS/font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table_options([
+                        // rotation
+                        new_HTML_content_options("_renderParaForRMMV': Rendering parralaxe for RMMV?:"              ,{}),
+                        new_HTML_content_options("_renderLayersPSD': Rendering Layers For PhotoShops?"              ,{}),
+                        new_HTML_content_options("_renderEventsPlayers': Rendering Events and Players Sprites?"     ,{}),
+                        new_HTML_content_options("_renderingLight': Rendering Light shadders?:"                     ,{}),
+                        new_HTML_content_options("_renderAnimationsTime0: Reset Animations time to 0 befor render?:",{}),
+                        new_HTML_content_options("_renderDebugsElements': Rendering grafics debugging?:"            ,{}),
+                    ])}
+                    ${ new_HTML_table_Info([
+                        `<tr><td>MEMORY USAGES:</td>
+                            <td class="text-success">${getMemorySize(true)}</td>
+                            <td class="text-danger">${getMemorySize()}</td>
+                        <tr>`,
+                        new_HTML_contentDataInfo("versionEditor"   ,`${stage.version         }`,`${oldSystem?oldSystem.versionEditor   :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("SavePath"        ,`${stage.SavePath        }`,`${oldSystem?oldSystem.SavePath        :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalSpines"     ,`${stage.totalSpines     }`,`${oldSystem?oldSystem.totalSpines     :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalAnimations" ,`${stage.totalAnimations }`,`${oldSystem?oldSystem.totalAnimations :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalTileSprites",`${stage.totalTileSprites}`,`${oldSystem?oldSystem.totalTileSprites:">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalLight"      ,`${stage.totalLight      }`,`${oldSystem?oldSystem.totalLight      :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalEvents"     ,`${stage.totalEvents     }`,`${oldSystem?oldSystem.totalEvents     :">not avaible ..."}`),
+                        new_HTML_contentDataInfo("totalSheets"     ,`${stage.totalSheets     }`,`${oldSystem?oldSystem.totalSheets     :">not avaible ..."}`),
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+        </div><!--END-->
+        <div class="container buttons">
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
 
-            </tbody>
-        </table>
-
-        <table class="table table-hover table-dark table-sm">
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">Information</th>
-                    <th scope="col">Value Current</th>
-                    <th scope="col">Value Old</th>
-                </tr>
-            </thead>
-            <tbody id="information">
-                <tr>
-                    <td>MEMORY USAGES:</td>
-                    <td class="text-success">${getMemorySize(true)}</td>
-                    <td class="text-danger">${getMemorySize()}</td>
-                <tr>
-                <tr>
-                    <td>versionEditor:</td>
-                    <td class="text-success" id="versionEditor">${this.version}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.versionEditor:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>SavePath:</td>
-                    <td class="text-success" id="SavePath">data/${this.stage.constructor.name}_data.json</td>
-                    <td class="text-danger">${oldSystem?oldSystem.SavePath:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total Spines:</td>
-                    <td class="text-success" id="totalSpines">${$Objs.getsByType("spineSheet").length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalSpines:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total Animations:</td>
-                    <td class="text-success" id="totalAnimations">${$Objs.getsByType("animationSheet").length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalAnimations:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total TileSprites:</td>
-                    <td class="text-success" id="totalTileSprites">${$Objs.getsByType("tileSheet").length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalTileSprites:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total Light:</td>
-                    <td class="text-success" id="totalLight">${$Objs.getsByType("light").length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalLight:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total Events:</td>
-                    <td class="text-success" id="totalEvents">${$Objs.getsByType("event").length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalEvents:">not avaible ..."}</td>
-                <tr>
-                <tr>
-                    <td>Total Sheets:</td>
-                    <td class="text-success" id="totalSheets">${$Objs.getsSheetLists().length}</td>
-                    <td class="text-danger">${oldSystem?oldSystem.totalSheets:">not avaible ..."}</td>
-                <tr>
-            </tbody>
-        </table>
-        <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
-        <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-        <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
-    </div>`//end
-////////////////////////////////////////END
-    return message;
+    </div> `;//END message1
+    return message1;
 };
