@@ -358,7 +358,7 @@ _coreLoader.prototype.load = function(set) {
             else if(origin.type === "tileSheet"){
                 Object.assign(origin.data, ressBuffer[name].data);
                  // BG are special, asign single first texture only without the name reference.
-                if( origin.BG ){
+                if( origin.isBG ){
                     const texName = Object.keys(ressBuffer[name].textures)[0];
                     const texture = ressBuffer[name].textures[texName];
                     const texture_n = ressBuffer[name].textures_n[texName+"_n"];

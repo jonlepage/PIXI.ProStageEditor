@@ -1682,16 +1682,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
         if(name.contains("icon_setup")){
-             open_dataBGInspector(CAGE_MAP); // edit ligth brigth , and custom BG            
+             open_dataBGInspector(STAGE.background); // edit ligth brigth , and custom BG            
         }
         if(name.contains("icon_grid")){
             drawGrids();
         };
         if(name.contains("icon_masterLight")){
-            open_stageLightInspector(STAGE.setup.ambientLight); // edit ligth brigth , and custom BG
+            open_stageLightInspector(STAGE.lights.ambientLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_spotLight")){
-            open_stageLightInspector(STAGE.setup.directionalLight); // edit ligth brigth , and custom BG
+            open_stageLightInspector(STAGE.lights.directionalLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
@@ -2328,7 +2328,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let _lights      = addToSave_Lights      () ; // scene global light
         let _background  = addToSave_BG          () ; // scene bg
         let _objs        = addToSave_OBJS        () ; // obj use in this scene
-        let _sheets      = addToSave_Sheets      () ; // cheet use in this scene
+        let _sheets      = addToSave_Sheets      (_objs,_background) ; // all cheets used in this scene
         const sceneData = { _lights , _background, _objs, _sheets, system:options.systemInfo };
         const permaData = { _sheets :_permaSheets } ;
 
@@ -2384,8 +2384,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // check all elements and add base data need for loader
-    function addToSave_Sheets(STAGE,OBJS) {
-        return null;
+    function addToSave_Sheets(_objs,_background) {
+        const data = {};
+        let dataName;
+        if(_background){
+            dataName = _background.p.dataName;
+            data[dataName] = DATA[dataName];
+        }
+        _objs.forEach(obj => {
+            dataName = obj.p.dataName;
+            data[dataName] = DATA[dataName];
+        });
+        return data;
     };
 
 

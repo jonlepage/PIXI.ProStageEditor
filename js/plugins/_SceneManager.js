@@ -157,8 +157,8 @@ Scene_Base.prototype.initialize = function() {
     this.asignDisplayGroup();
     if(this.loaderSet){
         this.createLights();
-        this.create_Cages();
-       // this.createBackground();
+        this.create_Cages(); // create master cage distribution for Scene
+        this.create_Background();
         this.create_ObjFromJson();
 
         $camera.initialise(this.CAGE_MAP, [1920/2,1080/2]); // initialise the cam with current scene
@@ -191,38 +191,21 @@ Scene_Base.prototype.createLights = function() {
     // ajust the mouse light scene if custom data exist?
 };
 
+// TODO: CAGE_MESSAGETOP, CAGE_FX... 
 Scene_Base.prototype.create_Cages = function() {
-    this.CAGE_MAP = new PIXI.ContainerBG(); //TODO: PASS BG dataBase
+    this.CAGE_MAP = new PIXI.Container();
     this.CAGE_GUI = new PIXI.Container();
     this.CAGE_MOUSE = new PIXI.Container();
-    this.CAGE_MAP.name = "CAGE_MAP", this.CAGE_GUI.name = "CAGE_GUI", this.CAGE_MOUSE.name = "CAGE_MOUSE";
     this.addChild( this.CAGE_MAP, this.CAGE_GUI, this.CAGE_MOUSE);
 };
 
-// pass background arg or use from loaderSet ?
-Scene_Base.prototype.createBackground = function() {
-    this.loaderSet._SCENE && this.loaderSet._SCENE.Background || null;
+// create, add, background from loaderSet or editor
+Scene_Base.prototype.create_Background = function(customBG) {
     this.clearBackground();
-    /*if(bg){
-        const data = typeof bg === "string" && $Loader.Data2[bg] || bg;
-        const cage = new PIXI.Container();
-        cage.name = data.name;
-        const sprite_d = new PIXI.Sprite(data.textures);
-        const sprite_n = new PIXI.Sprite(data.textures_n);
-        // asign group display
-        sprite_d.parentGroup = PIXI.lights.diffuseGroup;
-        sprite_n.parentGroup = PIXI.lights.normalGroup;
-        cage.parentGroup = $displayGroup.group[0];
-        cage.addChild(sprite_d, sprite_n);
-        this.CAGE_MAP.addChildAt(cage,0); // at 0 ?
-        this.setup.background = cage;
-    };*/
-};
-
-// clear remove Background
-Scene_Base.prototype.clearBackground = function() {
-    this.CAGE_MAP.removeChild(this.setup.background);
-    this.background = null;
+    const dataValues = this.loaderSet._background;
+    const dataBase = dataValues? $Loader.Data2[dataValues.p.dataName] : void 0;
+    this.background = new PIXI.ContainerBG(dataBase,dataValues);
+    this.CAGE_MAP.addChild(this.background); // TODO: test if need addChildAt() ? because objs are in CAGE_MAP
 };
 
 // create Objs from this.loaderSet
@@ -257,3 +240,9 @@ Scene_Base.prototype.initialiseCasesInteractivity = function() {
 
 };
 
+
+// clear remove Background
+Scene_Base.prototype.clearBackground = function() {
+    this.CAGE_MAP.removeChild(this.background);
+    this.background = null;
+};
