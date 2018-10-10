@@ -182,17 +182,13 @@ Scene_Base.prototype.asignDisplayGroup = function() {
 //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
 Scene_Base.prototype.createLights = function() {
     this.lights = {};
-    const _SCENE = this.loaderSet._SCENE || {color:0xffffff, brightness:0.6}; // ref loaderSet for light or asign default value
-    const ambientLight = new PIXI.ContainerAmbientLight(); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
-    this.addChild(ambientLight);
-    const directionalLight = new PIXI.ContainerDirectionalLight();
-    this.addChild(directionalLight);
-    this.lights.ambientLight = ambientLight;
-    this.lights.directionalLight = directionalLight;
-    // ajust the mouse light scene if custom data exist?
-    if(this.loaderSet._SCENE){
-        $mouse.light
+    if(this.loaderSet._lights){
+        const ambientLight     = new PIXI.ContainerAmbientLight     (this.loaderSet._lights.ambientLight     ); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
+        const directionalLight = new PIXI.ContainerDirectionalLight (this.loaderSet._lights.directionalLight );
+        this.addChild(ambientLight, directionalLight);
+        this.lights = {ambientLight,directionalLight};
     };
+    // ajust the mouse light scene if custom data exist?
 };
 
 Scene_Base.prototype.create_Cages = function() {
