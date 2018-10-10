@@ -330,7 +330,7 @@ _PME.prototype.computeData = function() {
                 const texName = Object.keys(tmpRes.textures)[0];
                 Object.assign(tmpData.textures, tmpRes.textures[texName]);
                 Object.assign(tmpData.textures_n, tmpRes.textures_n[texName+"_n"]);
-                tmpData.BG = true;
+                tmpData.isBG = true;
             }else{
                 Object.assign(tmpData.textures, tmpRes.textures);
                 Object.assign(tmpData.textures_n, tmpRes.textures_n);
@@ -548,7 +548,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
      (function(){
         let x = 100;
         for (const key in DATA) { // this._avaibleData === DATA
-            if(!DATA[key].BG){ // dont add BG inside library
+            if(!DATA[key].isBG){ // dont add BG inside library
                 const cage = build_ThumbsGUI(DATA[key]); // create from Data ""
                 CAGE_LIBRARY.list.push(cage);
             };
@@ -1046,7 +1046,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // create select for change BG
         const HTMLSelectBG = document.getElementById('p_dataName');
         let result = Object.keys(DATA).filter(s =>  {
-            if (DATA[s].BG) {
+            if (DATA[s].isBG) {
                 const opt = document.createElement("option");
                 opt.text = DATA[s].name;
                 opt.selected = (dataValues.p.dataName === DATA[s].name);
@@ -1063,6 +1063,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         iniSetupIzit();
         iziToast.info( $PME.izit_saveSetup(stage) );
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        create_dataIntepretor.call(stage); // create the data Interpretor listener for inputs and buttons
     };
 
     // open data HTML inspector
@@ -1134,7 +1135,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const e = event.target; // buttons
             if(e.type === "button"){
                 if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
-                if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
+                if(e.id==="save"){ startSaveDataToJson(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
                 if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
                 if(e.id==="reset"){ // reset dataValues to old dataValues
@@ -1165,7 +1166,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const e = event.target; // buttons
             if(e.type === "button"){
                 if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
-                if(e.id==="save"){ close_dataInspector(); start_DataSavesFromKey_CTRL_S(true) };// call save json with scan options true:
                 if(e.id==="apply"){ close_dataLightInspector.call(this, dataValues) };// apply and close
                 if(e.id==="cancel"){close_dataLightInspector.call(this)};// cancel and close
                 if(e.id==="reset"){ // reset dataValues to old dataValues
@@ -1213,13 +1213,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // close the data HTML inspector
     function close_dataInspector(dataValues){
-        // if cancel, and if old value not have heaven, destroyHeaven
-        if(!dataValues && !this.dataValues.d.setDark){
-            this.d.destroyHeaven();
-            this.n.destroyHeaven();
-        }
-        const oldDataBack = dataValues || this.dataValues; // add or back to old values
-        this.asignValues(oldDataBack, true);
+        // if is a gui inspectors ?
+        if(this.dataValues){
+            // if cancel, and if old value not have heaven, destroyHeaven
+            if(!dataValues && !this.dataValues.d.setDark){
+                this.d.destroyHeaven();
+                this.n.destroyHeaven();
+            };
+            const oldDataBack = dataValues || this.dataValues; // add or back to old values
+            this.asignValues(oldDataBack, true);
+        };
         iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
         iziToast.opened = false;
         setStatusInteractiveObj(true); // pull back tiles interactions
@@ -2278,9 +2281,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
     //call fast save with ctrl+s
-    function start_DataSavesFromKey_CTRL_S(useOption) { // open_SaveSetup
+    function startSaveDataToJson(useOption) { // open_SaveSetup
+        useOption = useOption && {} || false;
+        console.log('useOption: ', useOption);
+        // close html editor
         if(useOption){
-            useOption = {
+            /*useOption = {
                 _renderParaForRMMV : document.getElementById("_renderParaForRMMV").value,
                 _renderLayersPSD : document.getElementById("_renderLayersPSD").value,
                 _renderEventsPlayers : document.getElementById("_renderEventsPlayers").value,
@@ -2288,61 +2294,63 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _renderingLight : document.getElementById("_renderingLight").value,
                 _renderLayers_n : document.getElementById("_renderLayers_n").value,
                 _renderAnimationsTime0 : document.getElementById("_renderAnimationsTime0").value,
-            }
+            }*/
             // system info data
             useOption.systemInfo = {
                 //MEMORY USAGES
-                heaps : +document.getElementById("heaps").innerHTML.replace("MB",""),
-                heapTotal : +document.getElementById("heapTotal").innerHTML.replace("MB",""),
-                external : +document.getElementById("external").innerHTML.replace("MB",""),
-                rss : +document.getElementById("rss").innerHTML.replace("MB",""),
+                heaps     : +document.getElementById("heaps"    ).innerHTML.replace("MB","").replace("GB",""),
+                heapTotal : +document.getElementById("heapTotal").innerHTML.replace("MB","").replace("GB",""),
+                external  : +document.getElementById("external" ).innerHTML.replace("MB","").replace("GB",""),
+                rss       : +document.getElementById("rss"      ).innerHTML.replace("MB","").replace("GB",""),
                 // generique
-                versionEditor : document.getElementById("versionEditor").innerHTML,
-                SavePath : document.getElementById("SavePath").innerHTML,
-                totalSpines : +document.getElementById("totalSpines").innerHTML,
-                totalAnimations : +document.getElementById("totalAnimations").innerHTML,
-                totalTileSprites : +document.getElementById("totalTileSprites").innerHTML,
-                totalLight : +document.getElementById("totalLight").innerHTML,
-                totalEvents : +document.getElementById("totalEvents").innerHTML,
-                totalSheets : +document.getElementById("totalSheets").innerHTML,
+                versionEditor    :  document.getElementById("versionEditor"    ).innerText,
+                SavePath         :  document.getElementById("SavePath"         ).innerText,
+                totalSpines      : +document.getElementById("totalSpines"      ).innerText,
+                totalAnimations  : +document.getElementById("totalAnimations"  ).innerText,
+                totalTileSprites : +document.getElementById("totalTileSprites" ).innerText,
+                totalLight       : +document.getElementById("totalLight"       ).innerText,
+                totalEvents      : +document.getElementById("totalEvents"      ).innerText,
+                totalSheets      : +document.getElementById("totalSheets"      ).innerText,
             }
         };
+
         create_SceneJSON(useOption);
-        console.log('useOption: ', useOption.systemInfo);
         //useOption ? create_RenderingOptions(useOption):void 0; TODO:
+        //close_dataInspector();
         iziToast.warning( $PME.savedComplette() );
+
     };
 
     function create_SceneJSON(options) {
-        const fs = require('fs');
-        const sceneName = STAGE.constructor.name;
-        let PERMASHEETS = computeSave_PERMASHEETS(DATA); // permanent objs
-        let SCENE = computeSave_SCENE(STAGE); // scene configuration, bg ..
-        let OBJS = computeSave_OBJ($Objs.list_master); // scene objs
-        let SHEETS = computeSave_SHEETS(SCENE,OBJS); // sheet need for scene
-        let PLANETSHEETS = computeSave_PLANETS(SCENE,OBJS,SHEETS); // CREATE PlanetID?.json with ._SHEETS
-        console.log('PLANETSHEETS: ', PLANETSHEETS);
-
-        const data = {_SCENE:SCENE, _OBJS:OBJS, _SHEETS:SHEETS, system:options.systemInfo };
-        const data_perma = {_SHEETS:PERMASHEETS};
-        const data_planets = {_SHEETS:PLANETSHEETS}
+        console.log1('options: ', options);
         
-        function writeFile(path,content,data){
+        let _permaSheets = addToSave_PermaSheets () ; // perma cache from coreLoader list
+        let _lights      = addToSave_Lights      () ; // scene global light
+        let _background  = addToSave_BG          () ; // scene bg
+        let _objs        = addToSave_OBJS        () ; // obj use in this scene
+        let _sheets      = addToSave_Sheets      () ; // cheet use in this scene
+        const sceneData = { _lights , _background, _objs, _sheets, system:options.systemInfo };
+        const permaData = { _sheets :_permaSheets } ;
+
+        const fs = require('fs');
+        function writeFile(path,content){
             // backup current to _old.json with replace() rename()
-            fs.rename(`${path}`, `${path.replace(".","_old.")}`, function(err) {
-                if ( err ) console.log('ERROR:rename ' + err);
-                // enrigistre write json
+            fs.rename(`${path}`, `${path.replace(".","_OLD.")}`, function(err) {
+                if ( err ) { return console.log('ERROR:rename ' + err) };
                 fs.writeFile(path, content, 'utf8', function (err) { 
-                    if(err){return console.error(path,err) }return console.log9("Created: "+path,data);
+                    if(err){return console.error(path,err) }
+                    return console.log9("Created: "+path,JSON.parse(content));
                 });
             });
-        };
-        //writeFile(`data/perma.json`, JSON.stringify(data_perma, null, '\t'), data_perma);   // perma
-        //writeFile(`data/${sceneName}_data.json` , JSON.stringify(data, null, '\t'), data); // scene
+        };      
+        writeFile(`data/perma.json`                          , JSON.stringify(permaData, null, '\t') );
+        writeFile(`data/${STAGE.constructor.name}_data.json` , JSON.stringify(sceneData, null, '\t') ); // scene
         //writeFile(`data/PlanetID${STAGE.planetID}.json` , JSON.stringify(data_planets, null, '\t'), data_planets); // planets
     };
 
-    function computeSave_PERMASHEETS(DATA) {
+    //save permanent sheets for game (refresh:add:remove)
+    // perma sheet are used in bootGame and cant not erase
+    function addToSave_PermaSheets() {
         const data = {};
         for (const key in DATA) {
             DATA[key].perma ? data[DATA[key].name] =  DATA[key] : void 0;
@@ -2350,42 +2358,38 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return data;
     };
 
-    function computeSave_SCENE(STAGE) {
-        // get light setup
-        const Data_Values = getDataJson(STAGE.light_Ambient);
-        const Data_CheckBox = getDataCheckBoxWith(STAGE.light_Ambient, Data_Values);
-        const data = {};
-        for (const key in Data_Values) {
-            data[key] = Data_CheckBox[key] ? Data_Values[key].value : Data_Values[key].def;
-        };
-        STAGE.Background ? data.Background = STAGE.Background.name: void 0;
-        return data;
+    //save scene global light
+    function addToSave_Lights() {
+        const ambientLight     = STAGE.lights.ambientLight    .getDataValues();
+        const directionalLight = STAGE.lights.directionalLight.getDataValues();
+        return {ambientLight,directionalLight};
     };
 
-    function computeSave_OBJ(list_master) {
-        console.log('list_master: ', list_master);
-        const objs = [];
-        list_master.forEach(e => {
-            const _Data_Values = computeDataForJson(e); // version simple du Data_Values baser sur les values reel de l'elements
-            objs.push({Data: e.Data, Data_Values:_Data_Values, textureName:e.TexName });
+    //save scene background data
+    function addToSave_BG() {
+        if(STAGE.background){
+            return STAGE.background.getDataValues();
+        }else{
+            return null;
+        }
+    };
+
+    // save objs sprites from map
+    function addToSave_OBJS() {
+        let objs = [];
+        $Objs.list_master.forEach(e => {
+            objs.push(e.getDataValues());
         });
         return objs;
     };
 
     // check all elements and add base data need for loader
-    function computeSave_SHEETS(SCENE,OBJS) {
-        const data = {};
-        if(SCENE.Background){ // add the background sprite
-            data[SCENE.Background] = $PME.Data2[SCENE.Background];
-        };
-        OBJS.forEach(e => {
-            data[e.Data.name] = $PME.Data2[e.Data.name];
-        });
-        return data;
+    function addToSave_Sheets(STAGE,OBJS) {
+        return null;
     };
 
-    // check all elements and add base data need for loader
-    function computeSave_PLANETS(SCENE,OBJS,SHEETS) {
+
+    /*function computeSave_PLANETS(STAGE,OBJS,SHEETS) {
         let data = Object.assign({}, SHEETS);
         const list = Object.keys($Loader.loaderSet); // get list of all Scene_MapID?_data
         let i = 1;
@@ -2395,7 +2399,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             i++;
         }
         return data;
-    };
+    };*/
 
 
 

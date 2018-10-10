@@ -241,7 +241,7 @@ function new_HTML_contentDataInfo(description,oldData,newData){
                 <div class="input-group-text"> <p>${oldData}:</p> </div>
             </td>
             <td>
-                <div class="input-group-text"> <p>${newData}:</p> </div>
+                <div class="input-group-text" id=${description}>${newData}</div>
             </td>
         </tr>
     `];
@@ -529,14 +529,14 @@ function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
             const r = memory[entry];
             memory[entry] = bytesToSize( memory[entry] );
         }
-        const heapUsed_old = oldSystem? oldSystem.heaps : "...notAvaible!";
+        const heapUsed_old  = oldSystem? oldSystem.heaps     : "...notAvaible!";
         const heapTotal_old = oldSystem? oldSystem.heapTotal : "...notAvaible!";
-        const external_old = oldSystem? oldSystem.external : "...notAvaible!";
-        const rss_old = oldSystem? oldSystem.rss : "...notAvaible!";
+        const external_old  = oldSystem? oldSystem.external  : "...notAvaible!";
+        const rss_old       = oldSystem? oldSystem.rss       : "...notAvaible!";
 
         return `
-        <font color="#bb5179">heaps: </font> <font color="#fff"> Used:</font> (<span id="heaps">${reel?memory.heapUsed:heapUsed_old}</span>) / <font color="#fff">Total:</font> <span id="heapTotal">${reel?memory.heapTotal:heapTotal_old}</span><br>
-        <font color="#bb5179">external:</font> <span id="external">${reel?memory.external:external_old}</span><br>
+        <font color="#bb5179">heaps: </font><font color="#fff"> Used:</font> (<span id="heaps">${reel?memory.heapUsed:heapUsed_old}</span>) / <font color="#fff">Total:</font> <span id="heapTotal">${reel?memory.heapTotal:heapTotal_old}</span><br>
+        <font color="#bb5179">external:</font><span id="external">${reel?memory.external:external_old}</span><br>
         <font color="#bb5179">rss:</font>  <span id="rss">${reel?memory.rss:rss_old}</span>
         `;
     };
@@ -579,8 +579,8 @@ function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
         <div class="container buttons">
             <button id="copy" type="button" class="btn btn-outline-light btn-sm">Refresh Memory</button>
             <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>
+            <button id="close" type="button" class="btn btn-outline-danger btn-sm col-md-4">close</button>
             <br><td colspan="3"><font color="#c17d2e">**use [ctrl+S] for fast save without options"</font></td>
         </div>
     </div> `;//END message1

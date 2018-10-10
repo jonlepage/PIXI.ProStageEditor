@@ -196,7 +196,7 @@ _coreLoader.prototype.load = function(set) {
 
     
     // temp buffers
-    let sheetsBuffer = this.loaderSet[set]._SHEETS; // ref to loaderSet sheets 
+    let sheetsBuffer = this.loaderSet[set]._sheets; // ref to loaderSet sheets 
     let data2Buffer = this.Data2; // buffer ref to final storage
     let ressBuffer = {}; // buffer for store ressource temporary.
     let normalBuffer = {}; // buffer for store Normal packs temporary.
@@ -213,7 +213,7 @@ _coreLoader.prototype.load = function(set) {
 
     loader.onProgress.add((loader, res) => {
     if(res.extension.contains("json")){
-            asignBase(res.name, res); // add more informations to ._SHEETS 
+            asignBase(res.name, res); // add more informations to ._sheets 
             ressBuffer[res.name] = res;
         };
     });
@@ -407,7 +407,7 @@ _coreLoader.prototype.load = function(set) {
 //└-----------------------------------------------------------------------------┘
 _coreLoader.prototype.cantLoad = function(set) {
     // check if pass set? or not exist? or is empty ?
-    if(!set || !this.loaderSet[set] || !Object.keys(this.loaderSet[set]).length || !Object.keys(this.loaderSet[set]._SHEETS).length){
+    if(!set || !this.loaderSet[set] || !this.loaderSet[set]._sheets){
         return true; // we cant load
     };
     return false;  // we can load

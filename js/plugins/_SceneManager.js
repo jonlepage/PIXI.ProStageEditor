@@ -145,7 +145,7 @@ SceneManager.onSceneStart = function() {
 //└------------------------------------------------------------------------------┘
 
 
-Scene_Base.prototype.initialize = function(set) {
+Scene_Base.prototype.initialize = function() {
     Stage.prototype.initialize.call(this);
     this._active = false;
     this._fadeSign = 0;
@@ -153,10 +153,9 @@ Scene_Base.prototype.initialize = function(set) {
     this._fadeSprite = null;
     this._imageReservationId = Utils.generateRuntimeId();
     // customCode base
-    this.loaderSet = $Loader.getCurrentLoaderSet(set);
+    this.loaderSet = $Loader.getCurrentLoaderSet(); // get last set loaded from core
     this.asignDisplayGroup();
     if(this.loaderSet){
-        this.setup = {}; // store lights,background
         this.createLights();
         this.create_Cages();
        // this.createBackground();
@@ -182,13 +181,14 @@ Scene_Base.prototype.asignDisplayGroup = function() {
 // add to STAGE, lights and ambiants
 //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
 Scene_Base.prototype.createLights = function() {
+    this.lights = {};
     const _SCENE = this.loaderSet._SCENE || {color:0xffffff, brightness:0.6}; // ref loaderSet for light or asign default value
     const ambientLight = new PIXI.ContainerAmbientLight(); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
     this.addChild(ambientLight);
     const directionalLight = new PIXI.ContainerDirectionalLight();
     this.addChild(directionalLight);
-    this.setup.ambientLight = ambientLight;
-    this.setup.directionalLight = directionalLight;
+    this.lights.ambientLight = ambientLight;
+    this.lights.directionalLight = directionalLight;
     // ajust the mouse light scene if custom data exist?
     if(this.loaderSet._SCENE){
         $mouse.light
@@ -226,7 +226,7 @@ Scene_Base.prototype.createBackground = function() {
 // clear remove Background
 Scene_Base.prototype.clearBackground = function() {
     this.CAGE_MAP.removeChild(this.setup.background);
-    this.setup.background = null;
+    this.background = null;
 };
 
 // create Objs from this.loaderSet
