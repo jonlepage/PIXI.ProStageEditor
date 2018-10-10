@@ -591,19 +591,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // convert current objs to editor format
     (function() {
         $Objs.list_master.forEach(cage => {
-            cage._events = {}; // remove event
-            cage.Data = DATA[cage.name];         
-
-            create_DebugElements.call(cage);
-            setup_Parenting.call(cage);
-            setup_LayerGroup.call(cage);
-            setup_Propretys.call(cage,cage);
-            // if animations, in editorMode we play loop
-            if(cage.play){
-                cage.play();
-            };
-
+            const dataBase = DATA[cage.dataName];
+            create_DebugElements.call(cage, dataBase);
             
+            cage._events = {}; // remove event
             cage.on('pointerover', pointer_overIN);
             cage.on('pointerout', pointer_overOUT);
             cage.on('pointerup', pointer_UP);

@@ -210,8 +210,8 @@ Scene_Base.prototype.create_Background = function(customBG) {
 
 // create Objs from this.loaderSet
 Scene_Base.prototype.create_ObjFromJson = function() {
-    if(this.loaderSet._OBJS){
-        $Objs.initialize(this.loaderSet._OBJS); // initialise
+    if(this.loaderSet._objs){
+        $Objs.initialize(this.loaderSet._objs); // initialise
         $Objs.list_master.length && this.CAGE_MAP.addChild(...$Objs.list_master);
         //$Objs.list_master.forEach(cage => { cage.getBounds() });
         // groupe all case and interactivity

@@ -25,32 +25,27 @@ $Objs = new _objs();
 console.log1('$Objs: ', $Objs);
 
 //$Objs.initialize();
-_objs.prototype.initialize = function(_OBJS) {
+_objs.prototype.initialize = function(list) {
     this.list_master = [];
     this.list_cases = [];
-    _OBJS && this.createFromList(_OBJS);
+    list && this.createFromList(list);
 };
 
-_objs.prototype.createFromList = function(_OBJS) {
-    for (let i=0, l=_OBJS.length; i<l; i++) {
-        const e = _OBJS[i];
-        console.log('e: ', e);
-        const Data_Values = e.Data_Values;
-        const Data = $Loader.Data2[e.Data.name];
-        const textureName = e.textureName;
-        // from type
-
-        switch (Data.type) {
-            case "tileSheet":
-                this.list_master[i] = this.create_fromTileSheet(Data,Data_Values,textureName);
-            break;
+_objs.prototype.createFromList = function(list) {
+    for (let i=0, l=list.length; i<l; i++) {
+        const dataValues = list[i];
+        const textureName = dataValues.p.textureName;
+        const dataBase = $Loader.Data2[dataValues.p.dataName];
+        let cage;
+        switch (dataValues.p.type) {
             case "animationSheet":
-                //this.list_master[i] = this.create_fromAnimationSheet(Data,Data_Values,textureName);
-            break;
+            cage =  new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
             case "spineSheet":
-                this.list_master[i] = this.create_fromSpineSheet(Data,Data_Values,textureName);
-            break;
-        };
+            cage =  new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
+            default:
+            cage =  new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;           
+        }
+        this.list_master.push(cage);
     };
 };
 
