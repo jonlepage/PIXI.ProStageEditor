@@ -12,15 +12,6 @@ NOTE AND HELP:
 */
 SceneManager.run = function() {
     try {
-        // game gui
-        const winGui = require('nw.gui').Window.get();
-        winGui.show();
-        winGui.focus();
-        // debug gui
-        winGui.showDevTools();
-        const debugGui = require('nw.gui').Window.get();
-        debugGui.x = 0 ;
-        debugGui.focus();
 
         //start
         this.initialize();
