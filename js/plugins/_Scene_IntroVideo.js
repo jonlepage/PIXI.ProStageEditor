@@ -62,5 +62,6 @@ Scene_IntroVideo.prototype.update = function() {
 
 //TODO:
 Scene_IntroVideo.prototype.nextVideo = function() {
-   SceneManager.goto(Scene_Loader,"Scene_Local_data",Scene_Local);
+   //SceneManager.goto(Scene_Loader,"Scene_Local_data",Scene_Local);
+   Scene_Title.prototype.startNewGame.call(); //hacked for tmp debug :TODO: REMOVE ME
 };
