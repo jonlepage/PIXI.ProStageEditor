@@ -91,99 +91,10 @@ _coreLoader.prototype.preLoad_Json = function() {
         });
         loader0.onComplete.add((loader, res) => {
             this._progressTxt = this._progressTxt+`___________________________\n`; //FIXME: loader Text
-            L1.call(this);
+            this.isLoading = false; // allow continue scene laoder
         });
     };
     L0.call(this);
-    const L1 = function(){
-        // Scene_Map, load tous les maps from rmmv editor
-        // note que quand ont creer une map dans rmmv, il faut creer equivalent en Map${id}._data.json
-        const loader1 = new PIXI.loaders.Loader();
-        this.loaderSet.MapInfos.forEach(map => {
-            if(map){
-                const id = map.id.padZero(3);
-                const path = `data/Map${id}.json`;
-                loader1.add(String(map.id), path);
-                this._progressTxt = this._progressTxt+` ${id} : ${path}\n`; //FIXME: loader Text
-            };
-        });
-        loader1.load();
-        loader1.onProgress.add((loader, res) => {
-            const _res = this.loaderSet.MapInfos[res.name];
-            _res.displayName = res.data.displayName;
-            _res.encounterList = res.data.encounterList;
-            _res.height = res.data.height;
-            _res.width = res.data.width;
-            _res.events = res.data.events;
-            _res.note = res.data.note? JSON.parse(res.data.note) : {};
-            this._progressTxt = this._progressTxt+`=>> : ${res.data.note}\n`; //FIXME: loader Text
-        });
-        loader1.onComplete.add((loader, res) => {
-            //TODO: JE pense que on peut ne plus avoir besoin du map editor rmmv
-            // determine and add reference of galaxiID and planetID
-            // it will allow editor to compile a loaderset for planet and map navigation
-            /*function getGalaxiID(original, MapInfos){
-                let current = original;
-                while (!current.note.galaxiID) { current = MapInfos[current.parentId] };
-                return current.note.galaxiID;
-            };
-            function getPlanetID(original, MapInfos){
-                let current = original;
-                if(current.note.galaxiID){return false}; // galaxi no have planet id
-                while (!current.note.planetID) { current = MapInfos[current.parentId] };
-                return current.note.planetID;
-            };
-            this.loaderSet.MapInfos.forEach(map => {
-                if(map){
-                    map.galaxiID = getGalaxiID(map, this.loaderSet.MapInfos);
-                    map.planetID = getPlanetID(map, this.loaderSet.MapInfos);
-                };
-            });*/
-            L2.call(this);
-        });
-    };
-
-    const L2 = function(){
-        // Scene_Map .DATA// TODO:
-        const loader2 = new PIXI.loaders.Loader();
-        this.loaderSet.MapInfos.forEach(map => {
-            if(map){
-                
-                const id = map.id.padZero(3);
-                const path = `data/Scene_MapID${map.id}_data.json`;
-                loader2.add(String(map.id), path);
-            };
-        });
-        loader2.load();
-        loader2.onError.add((err, loader, res) => { console.error(`Error on load MapID${res.name} Use Editor To create Scene_MapID${res.name}_data.json`) });
-
-        loader2.onProgress.add((loader, res) => {
-            if(res.data){ this.loaderSet[`Scene_MapID${res.name}_data`] = res.data };
-        });
-        loader2.onComplete.add((loader, res) => {
-            L3.call(this);
-        });
-    };
-
-    const L3 = function(){
-        // normalize and asign planet galaxi id to all map id.
-
-        // build planet information
-       /* this.loaderSet.PlanetsInfos = {};
-        for (const key in this.loaderSet.Scene_Map) {
-            const data = this.loaderSet.Scene_Map[key].data;
-            const planetID = data.planet;
-            // registering all planet id existe from rmmv comment json
-            if(planetID && !this.loaderSet.PlanetsInfos[planetID]){
-                this.loaderSet.PlanetsInfos[planetID] = {};
-            };
-            // scan all game maps and store sheets need for each planet id
-            for (const sheetKey in data.sheets) {
-                this.loaderSet.PlanetsInfos[planetID][sheetKey] = data.sheets[sheetKey];
-            };
-        };*/
-        this.isLoading = false; // allow continue scene laoder
-    };
 };
 
 // ┌-----------------------------------------------------------------------------┐
