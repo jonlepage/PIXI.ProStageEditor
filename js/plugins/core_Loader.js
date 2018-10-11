@@ -32,14 +32,17 @@ class _coreLoader {
         this._progressTxt = `BOOT:cores:  `;
         // JSON BOOT LIST
         Object.defineProperties(this, { "_JsonPath": { value: {
+            //RMMV
             MapInfos:"data/MapInfos.json", // also load all maps Map###_data.json and create galaxi register
             System:"data/System.json", // also load all maps Map###_data.json and create galaxi register
-
+            //EDITOR
             Perma:"data/perma.json", // perma , Enemies,cursor,loader,Avatar...
             Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
             Scene_Local_data:"data/Scene_Local_data.json",
             Scene_Title_data:"data/Scene_Title_data.json",
             PlanetID1:"data/PlanetID1.json",
+            //GAMEMAPS
+            map001:"data/Map001_data.json",
         },}});
         // PERMA LIST // PERMA LIST IN GAME , also allow editor to create or update perma.json based on this
         Object.defineProperties(this, { "_permaName": { value: [
@@ -93,7 +96,8 @@ _coreLoader.prototype.preLoad_Json = function() {
     };
     L0.call(this);
     const L1 = function(){
-        // Scene_Map
+        // Scene_Map, load tous les maps from rmmv editor
+        // note que quand ont creer une map dans rmmv, il faut creer equivalent en Map${id}._data.json
         const loader1 = new PIXI.loaders.Loader();
         this.loaderSet.MapInfos.forEach(map => {
             if(map){
@@ -115,9 +119,10 @@ _coreLoader.prototype.preLoad_Json = function() {
             this._progressTxt = this._progressTxt+`=>> : ${res.data.note}\n`; //FIXME: loader Text
         });
         loader1.onComplete.add((loader, res) => {
+            //TODO: JE pense que on peut ne plus avoir besoin du map editor rmmv
             // determine and add reference of galaxiID and planetID
             // it will allow editor to compile a loaderset for planet and map navigation
-            function getGalaxiID(original, MapInfos){
+            /*function getGalaxiID(original, MapInfos){
                 let current = original;
                 while (!current.note.galaxiID) { current = MapInfos[current.parentId] };
                 return current.note.galaxiID;
@@ -133,7 +138,7 @@ _coreLoader.prototype.preLoad_Json = function() {
                     map.galaxiID = getGalaxiID(map, this.loaderSet.MapInfos);
                     map.planetID = getPlanetID(map, this.loaderSet.MapInfos);
                 };
-            });
+            });*/
             L2.call(this);
         });
     };
@@ -143,6 +148,7 @@ _coreLoader.prototype.preLoad_Json = function() {
         const loader2 = new PIXI.loaders.Loader();
         this.loaderSet.MapInfos.forEach(map => {
             if(map){
+                
                 const id = map.id.padZero(3);
                 const path = `data/Scene_MapID${map.id}_data.json`;
                 loader2.add(String(map.id), path);
