@@ -1028,7 +1028,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
 
-    // setup for background => CAGE_MAP
+    // setup for background and maps informations => CAGE_MAP
     function open_dataBGInspector(cage) {
         // compute all BG folder
         iniSetupIzit();

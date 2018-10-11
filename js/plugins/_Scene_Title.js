@@ -133,6 +133,7 @@ Scene_Title.prototype.commandClick = function(e) {
 // playCommand_startNewGame
 Scene_Title.prototype.startNewGame = function(option) {
     //TODO: SETUP NEW GAME() METHOD
-    const startMapID = $Loader.loaderSet.System.startMapId;
+    // TODO: CREER UN sceneSystems json ?
+    const startMapID = 1;
     $player.transferMap(startMapID);
 };

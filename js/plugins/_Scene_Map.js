@@ -30,9 +30,11 @@ Scene_MapID1.prototype = Object.create(Scene_Base.prototype);
 Scene_MapID1.prototype.constructor = Scene_MapID1;
 
 Scene_MapID1.prototype.initialize = function() {
+    this.planetID = 1; // planet indicator for the loader
+    this.mapID = 1; // mapID for the editor
     this.alpha = 0; // active the fadeIn
     this.waitReady = 30; // stabiliser
-    Scene_Base.prototype.initialize.call(this,"Scene_MapID1_data");
+    Scene_Base.prototype.initialize.call(this);
 };
 
 // create element for scene and setup.
