@@ -71,17 +71,15 @@
 
     var parameters = PluginManager.parameters('Community_Basic');
     var cacheLimit = toNumber(parameters['cacheLimit'], 10);
-    var screenWidth = toNumber(parameters['screenWidth'], 816);
-    var screenHeight = toNumber(parameters['screenHeight'], 624);
-    var renderingMode = parameters['renderingMode'].toLowerCase();
-    var alwaysDash = parameters['alwaysDash'].toLowerCase() === 'on';
+    var screenWidth = toNumber(parameters['screenWidth'], 1920);
+    var screenHeight = toNumber(parameters['screenHeight'], 1080);
     var windowWidthTo = toNumber(parameters['changeWindowWidthTo'], 0);
     var windowHeightTo = toNumber(parameters['changeWindowHeightTo'], 0);
 
     var windowWidth;
     var windowHeight;
 
-    if(windowWidthTo){
+    /*if(windowWidthTo){
         windowWidth = windowWidthTo;
     }else if(screenWidth !== SceneManager._screenWidth){
         windowWidth = screenWidth;
@@ -91,7 +89,7 @@
         windowHeight = windowHeightTo;
     }else if(screenHeight !== SceneManager._screenHeight){
         windowHeight = screenHeight;
-    }
+    }*/
 
 
     ImageCache.limit = cacheLimit * 1000 * 1000;
@@ -100,19 +98,6 @@
     SceneManager._boxWidth = screenWidth;
     SceneManager._boxHeight = screenHeight;
 
-    SceneManager.preferableRendererType = function() {
-        if (Utils.isOptionValid('canvas')) {
-            return 'canvas';
-        } else if (Utils.isOptionValid('webgl')) {
-            return 'webgl';
-        } else if (renderingMode === 'canvas') {
-            return 'canvas';
-        } else if (renderingMode === 'webgl') {
-            return 'webgl';
-        } else {
-            return 'auto';
-        }
-    };// The scene class for initializing the entire game.
 
 
     var _ConfigManager_applyData = ConfigManager.applyData;

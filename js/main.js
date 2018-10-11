@@ -2,7 +2,7 @@
 // main.js
 //=============================================================================
 
-PluginManager.setup($plugins);
+//PluginManager.setup($plugins);
 
 window.onload = function() {
     SceneManager.run();
