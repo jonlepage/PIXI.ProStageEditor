@@ -2302,6 +2302,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 totalLight       : +document.getElementById("totalLight"       ).innerText,
                 totalEvents      : +document.getElementById("totalEvents"      ).innerText,
                 totalSheets      : +document.getElementById("totalSheets"      ).innerText,
+                planetID : STAGE.planetID,
+                mapID    : STAGE.mapID   ,
             }
         };
 
@@ -2313,8 +2315,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     function create_SceneJSON(options) {
-        console.log1('options: ', options);
-        
         let _permaSheets = addToSave_PermaSheets () ; // perma cache from coreLoader list
         let _lights      = addToSave_Lights      () ; // scene global light
         let _background  = addToSave_BG          () ; // scene bg
@@ -2327,16 +2327,32 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         function writeFile(path,content){
             // backup current to _old.json with replace() rename()
             fs.rename(`${path}`, `${path.replace(".","_OLD.")}`, function(err) {
-                if ( err ) { return console.log('ERROR:rename ' + err) };
+                if ( err ) { console.log('ERROR:rename ' + err) };
                 fs.writeFile(path, content, 'utf8', function (err) { 
                     if(err){return console.error(path,err) }
-                    return console.log9("Created: "+path,JSON.parse(content));
+                    return console.log9("WriteFile Complette: "+path,JSON.parse(content));
                 });
             });
         };      
-        writeFile(`data/perma.json`                          , JSON.stringify(permaData, null, '\t') );
-        writeFile(`data/${STAGE.constructor.name}_data.json` , JSON.stringify(sceneData, null, '\t') ); // scene
-        //writeFile(`data/PlanetID${STAGE.planetID}.json` , JSON.stringify(data_planets, null, '\t'), data_planets); // planets
+
+        // CREATE A PLANETS JSON
+        if(STAGE.planetID){
+            const merge = require('package-merge');
+            let i = 1;
+            let package = [JSON.stringify({_sheets:_sheets},null,'\t')]; // current Sheets
+            let classMapID = window.Scene_MapID1;
+            while (classMapID) {
+                let buffer = JSON.parse( fs.readFileSync(`data/Scene_MapID${i}_data.json`) );
+                if((buffer.system.planetID === STAGE.planetID) && (buffer.system.mapID !== STAGE.mapID)){
+                    package.push( JSON.stringify({_sheets:buffer._sheets},null,'\t') );
+                }
+                classMapID = window[`Scene_MapID${++i}`];
+            };
+            const concatedBuffer = package.length-1? merge(...package) : package[0];
+            writeFile(`data/PlanetID${STAGE.planetID}_data.json` , concatedBuffer ); // planets
+            writeFile(`data/perma.json`                          , JSON.stringify(permaData, null, '\t') );
+            writeFile(`data/${STAGE.constructor.name}_data.json` , JSON.stringify(sceneData, null, '\t') );
+        };
     };
 
     //save permanent sheets for game (refresh:add:remove)

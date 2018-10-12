@@ -37,12 +37,13 @@ class _coreLoader {
             System:"data/System.json", // also load all maps Map###_data.json and create galaxi register
             //EDITOR
             Perma:"data/perma.json", // perma , Enemies,cursor,loader,Avatar...
-            Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
+            //Scene_IntroVideo_data:"data/Scene_IntroVideo_data.json",
             Scene_Local_data:"data/Scene_Local_data.json",
             Scene_Title_data:"data/Scene_Title_data.json",
-            PlanetID1:"data/PlanetID1.json",
-            //GAMEMAPS
-            map001:"data/Map001_data.json",
+            // PLANETS
+            PlanetID1_data:"data/PlanetID1_data.json",
+            //MAPS
+            Scene_MapID1_data:"data/Scene_MapID1_data.json", // nathalia Farm
         },}});
         // PERMA LIST // PERMA LIST IN GAME , also allow editor to create or update perma.json based on this
         Object.defineProperties(this, { "_permaName": { value: [
@@ -79,22 +80,21 @@ _coreLoader.prototype.preLoad_Json = function() {
     this._tmpData = null; // store temp data befor normalise structure 
     this._tmpRes = null; // store ressources for compute
 
-    const L0 = function(){
-        const loader0 = new PIXI.loaders.Loader();
-        for (const key in this._JsonPath) {
-            loader0.add(key, this._JsonPath[key]);
-        };
-        loader0.load();
-        loader0.onProgress.add((loader, res) => {
-            this.loaderSet[res.name] = res.data;
-            this._progressTxt = this._progressTxt+` ${res.url }\n`; //FIXME: loader Text
-        });
-        loader0.onComplete.add((loader, res) => {
-            this._progressTxt = this._progressTxt+`___________________________\n`; //FIXME: loader Text
-            this.isLoading = false; // allow continue scene laoder
-        });
+
+    const loader0 = new PIXI.loaders.Loader();
+    for (const key in this._JsonPath) {
+        loader0.add(key, this._JsonPath[key]);
     };
-    L0.call(this);
+    loader0.load();
+    loader0.onProgress.add((loader, res) => {
+        this.loaderSet[res.name] = res.data;
+        console.log('this.loaderSet[res.name]: ', this.loaderSet[res.name]);
+        this._progressTxt = this._progressTxt+` ${res.url }\n`; //FIXME: loader Text
+    });
+    loader0.onComplete.add((loader, res) => {
+        this._progressTxt = this._progressTxt+`___________________________\n`; //FIXME: loader Text
+        this.isLoading = false; // allow continue scene laoder
+    });
 };
 
 // ┌-----------------------------------------------------------------------------┐

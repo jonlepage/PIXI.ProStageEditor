@@ -10,9 +10,28 @@ SceneManager.goto(Scene_Loader,["loaderSet"],Scene_Boot,false);
 NOTE AND HELP:
 
 */
+SceneManager.initNwjs = function() {
+    if (Utils.isNwjs()) {
+        var gui = require('nw.gui');
+        var win = gui.Window.get();
+        if (process.platform === 'darwin' && !win.menu) {
+            var menubar = new gui.Menu({ type: 'menubar' });
+            var option = { hideEdit: true, hideWindow: true };
+            menubar.createMacBuiltin('Game', option);
+            win.menu = menubar;
+        };
+
+        //FIXME: TRY FOCUSING ON THE NWJS APP
+        win.show();
+        win.focus();
+        win.restore();
+        win.appWindow.focus();
+        win.appWindow.outerBounds.setPosition(0,0);
+    };
+};
+
 SceneManager.run = function() {
     try {
-
         //start
         this.initialize();
         this.goto(Scene_Loader,"Perma",Scene_Boot);
@@ -136,7 +155,7 @@ SceneManager.onSceneStart = function() {
 //└------------------------------------------------------------------------------┘
 
 
-Scene_Base.prototype.initialize = function() {
+Scene_Base.prototype.initialize = function(set) {
     Stage.prototype.initialize.call(this);
     this._active = false;
     this._fadeSign = 0;
@@ -144,7 +163,7 @@ Scene_Base.prototype.initialize = function() {
     this._fadeSprite = null;
     this._imageReservationId = Utils.generateRuntimeId();
     // customCode base
-    this.loaderSet = $Loader.getCurrentLoaderSet(); // get last set loaded from core
+    this.loaderSet = $Loader.getCurrentLoaderSet(set); // get last set loaded from core
     this.asignDisplayGroup();
     if(this.loaderSet){
         this.createLights();
@@ -173,12 +192,18 @@ Scene_Base.prototype.asignDisplayGroup = function() {
 //http://pixijs.io/pixi-lights/docs/PIXI.lights.PointLight.html
 Scene_Base.prototype.createLights = function() {
     this.lights = {};
+    let ambientLight,directionalLight;
     if(this.loaderSet._lights){
-        const ambientLight     = new PIXI.ContainerAmbientLight     (this.loaderSet._lights.ambientLight     ); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
-        const directionalLight = new PIXI.ContainerDirectionalLight (this.loaderSet._lights.directionalLight );
-        this.addChild(ambientLight, directionalLight);
-        this.lights = {ambientLight,directionalLight};
-    };
+        ambientLight     = new PIXI.ContainerAmbientLight     (this.loaderSet._lights.ambientLight     ); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
+        directionalLight = new PIXI.ContainerDirectionalLight (this.loaderSet._lights.directionalLight );
+ 
+    }else{
+        ambientLight     = new PIXI.ContainerAmbientLight     (); // the general ambiance from sun and game clock (affect all normalGroup) _SCENE.color, _SCENE.brightness
+        directionalLight = new PIXI.ContainerDirectionalLight ();
+    }
+
+    this.addChild(ambientLight, directionalLight);
+    this.lights = {ambientLight,directionalLight};
     // ajust the mouse light scene if custom data exist?
 };
 

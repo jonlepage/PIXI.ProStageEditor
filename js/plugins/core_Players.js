@@ -77,16 +77,16 @@ _player.prototype.moveToCase = function(objCase) {
 
 //TODO: OBSOLETE, mapid planetid seron mintenant dans le editor
 // $player.transferMap(1,1,1); // setupNewGame
-_player.prototype.transferMap = function(mapID) {
+_player.prototype.transferMap = function(id) {
     // check if need load all stuff for planet ?
-    const planetID = $Loader.loaderSet.MapInfos[mapID].planetID; // target planet id need for this mapID
+    const planetID = $Loader.loaderSet[`Scene_MapID${id}_data`].system.mapID; // target planet id need for this mapID
     if(planetID !== this._planetID){
+        // need load planet
         this._planetID = planetID;
-        SceneManager.goto(Scene_Loader,"PlanetID1",Scene_MapID1);
+        SceneManager.goto(Scene_Loader,`PlanetID${planetID}_data`,Scene_MapID1);
     }else{
-        SceneManager.goto(window[`Scene_MapID${mapID}`]); // planet loaded , just go mapScene id
+        SceneManager.goto(window[`Scene_MapID${id}`]); // planet was loaded , just go mapScene id
     };
-    
 };
 
 // ┌------------------------------------------------------------------------------┐

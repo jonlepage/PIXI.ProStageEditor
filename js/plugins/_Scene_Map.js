@@ -34,12 +34,15 @@ Scene_MapID1.prototype.initialize = function() {
     this.mapID = 1; // mapID for the editor
     this.alpha = 0; // active the fadeIn
     this.waitReady = 30; // stabiliser
-    Scene_Base.prototype.initialize.call(this);
+    Scene_Base.prototype.initialize.call(this,"Scene_MapID1_data");
 };
 
 // create element for scene and setup.
 Scene_MapID1.prototype.create = function() {
+
     this.CAGE_MAP.addChild($player); //TODO:
+    
+    
     this.CAGE_MAP.addChild($player2); //TODO:
     // add player to case_door1;
     /*const startCase = $Objs.getsByID("case_door1")[0];

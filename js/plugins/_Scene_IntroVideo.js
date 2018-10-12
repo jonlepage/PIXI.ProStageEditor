@@ -60,9 +60,9 @@ Scene_IntroVideo.prototype.update = function() {
     Scene_Base.prototype.update.call(this);
 };
 
-//TODO:
+//TODO: compiler un planet id json
 Scene_IntroVideo.prototype.nextVideo = function() {
    //SceneManager.goto(Scene_Loader,"Scene_Local_data",Scene_Local);
-   SceneManager.goto(Scene_Loader,"PlanetID1",Scene_MapID1);
+   $player.transferMap(1);
    
 };
