@@ -28,10 +28,14 @@ console.log1('$Objs: ', $Objs);
 _objs.prototype.initialize = function(list) {
     this.list_master = [];
     this.list_cases = [];
-    list && this.createFromList(list);
+    if(list){
+        // TODO: RENDU ICI, PEUT ETRE fair un dispatch all in one [list_masterm, list_cases....]
+        this.create_list_master(list); //create: list_master
+        this.create_list_cases(list); //create: list_cases
+    };
 };
 
-_objs.prototype.createFromList = function(list) {
+_objs.prototype.create_list_master = function(list) {
     for (let i=0, l=list.length; i<l; i++) {
         const dataValues = list[i];
         const textureName = dataValues.p.textureName;
@@ -49,48 +53,27 @@ _objs.prototype.createFromList = function(list) {
     };
 };
 
-_objs.prototype.create_fromSpineSheet = function(dataBase, dataValues, textureName){
-    const cage = new PIXI.CageContainer(dataBase, dataValues);
-    return console.log('cage: ', cage);
-    const sprite_d = new PIXI.spine.Spine(Data.spineData);
-        sprite_d.skeleton.setSkinByName(textureName);
-        sprite_d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-        sprite_d.skeleton.setSlotsToSetupPose();
-    const sprite_n = sprite_d.convertToNormal(); // allow swap texture hover tile
-
-   this.addAttr_default(cage, Data_Values, sprite_d, null, Data, textureName); //TODO: sprite_n: LOOK A WAY TO WORK WIT HSPINE NORMAL AS SLOTS ARRAYS
-   cage.getBounds(cage); //TODO: BOUND MAP
-   
-   return cage;
+_objs.prototype.create_list_master = function(list) {
+    for (let i=0, l=list.length; i<l; i++) {
+        const dataValues = list[i];
+        const textureName = dataValues.p.textureName;
+        const dataBase = $Loader.Data2[dataValues.p.dataName];
+        let cage;
+        switch (dataValues.p.type) {
+            case "animationSheet":
+            cage =  new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
+            case "spineSheet":
+            cage =  new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
+            default:
+            cage =  new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;           
+        }
+        this.list_master.push(cage);
+    };
 };
 
-_objs.prototype.create_fromAnimationSheet = function(Data, Data_Values, textureName){
-   const cage = new PIXI.ContainerAnimations();
-   const sprite_d = new PIXI.extras.AnimatedSprite(Data.textures[textureName]);
-   const sprite_n = cage.addNormal(sprite_d, Data.textures_n[textureName]);
-
-   // proprety attributs
-   this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
-   cage.getBounds(cage); //TODO: BOUND MAP
-   cage.play(0);
-   return cage;
-};
-
- _objs.prototype.create_fromTileSheet = function(Data, Data_Values, textureName){
-    const cage = new PIXI.Container();
-    const sprite_d = new PIXI.Sprite(Data.textures[textureName]);
-    const sprite_n = new PIXI.Sprite(Data.textures_n[textureName+"_n"]);
-    // proprety attributs
-    this.addAttr_default(cage, Data_Values, sprite_d, sprite_n, Data, textureName);
-    return cage;
-    
-};
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
-
-
-    
    // asign group display
    cage.parentGroup = $displayGroup.group[Data_Values.parentGroup]; //TODO: add to json addAttr_default
    cage.zIndex = Data_Values.zIndex;
@@ -139,9 +122,9 @@ _objs.prototype.getsByType = function(type) {
 _objs.prototype.getCases = function() {
     const list = [];
     for (let i=0, l=this.list_master.length; i<l; i++) {
-        this.list_master[i].name === "cases" && list.push(this.list_master[i]);
+        this.list_master[i].groupID === "case" && list.push(this.list_master[i]);
     };
-    return this.list_cases = list;
+    return list;
 };
 
 // get list from type : "spineSheet", "animationSheet", "tileSheet"

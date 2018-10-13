@@ -26,7 +26,7 @@ SceneManager.initNwjs = function() {
         win.focus();
         win.restore();
         win.appWindow.focus();
-        win.appWindow.outerBounds.setPosition(0,0);
+        win.appWindow.outerBounds.setPosition(700,0);
     };
 };
 

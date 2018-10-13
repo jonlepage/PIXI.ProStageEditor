@@ -493,16 +493,17 @@ const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
     // setup && hack
     CAGE_TILESHEETS.position.set(1280,50);
     CAGE_TILESHEETS.mask.position.set(1280, 50);
-    CAGE_TILESHEETS.mask.width = 1000, CAGE_TILESHEETS.mask.height = 850;
+    CAGE_TILESHEETS.mask.width = 640;
+    CAGE_TILESHEETS.mask.height = 880;
     CAGE_TILESHEETS.mask.getBounds();
     CAGE_TILESHEETS.opened = false;
     CAGE_TILESHEETS.list = []; // store list of tile
     CAGE_TILESHEETS.renderable = false;
     CAGE_TILESHEETS.visible = false; 
     CAGE_TILESHEETS.interactive = true;
-    CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,1000,1000);
+    CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,3600,3600); // compense le scale zoom
     CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
-                
+
     CAGE_TILESHEETS.on('pointerover', pointer_overIN);
     CAGE_TILESHEETS.on('pointerout', pointer_overOUT);
     CAGE_TILESHEETS.on('pointerdown', pointer_DW);
@@ -560,7 +561,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     (function(){
         const list = this.editorGui.spineData.slots;
         for (let i = 0, l = list.length; i < l; i++) {
-            const slot = list[i];
+            const slot = list[i]; 
             const boneName = slot.boneData.name;
             if(boneName.contains("icon_")){
                 const _slot = this.editorGui.skeleton.findSlot(slot.name);
@@ -569,6 +570,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 _slot.color.a = 0.35;
                 _slot._boundsRect = _slot.currentSprite.getBounds();
                 _slot.currentSprite.buttonType = "button";
+                _slot.buttonType = "button";
                 _slot.currentSprite.interactive = true;
                 _slot.currentSprite.on('pointerover', pointer_overIN,_slot);
                 _slot.currentSprite.on('pointerout', pointer_overOUT,_slot);
@@ -863,7 +865,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // create multi sliders light
-    function create_sliderFalloff(){
+    function create_sliderFalloff2(){
         const kc = new Slider("#kc", {  step: 0.01,value:0, min: 0.01, max: 1, tooltip: false });
         kc.tooltip.style.opacity = 0.5;
 
@@ -1002,9 +1004,14 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         iziToast.opened = true;
     }
 
+    //TODO: ENDU ICI, AJOUTER UN Case Inspector, les case son des cas special pour le jeux.
     // setup for tile in map
     function open_dataInspector(cage) {
         clearFiltersFX3(cage); // clear filters
+        cage.Debug.bg.renderable = true;
+        cage.Debug.an.renderable = true;
+        cage.Debug.hitZone.renderable = true;
+        cage.Debug.piv.renderable = true;
         iniSetupIzit();
         const dataValues = cage.getDataValues();
         iziToast.info( $PME.tileSetupEditor(cage) );
@@ -1628,7 +1635,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.buttonType = "tileMouse";
         // disable other interactive obj map
         
-
         const LB = cage.getLocalBounds();
         cage.Debug.hitZone.clear();
         cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
@@ -1787,6 +1793,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // active filter1, for thumbs
     function activeFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask et alpha, mettre dans un buffer []
+        cage.Debug.hitZone.renderable = true;
         cage._filters = [ FILTERS.OutlineFilterx8Green];
         cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ,FILTERS.OutlineFilterx6White];
     };
@@ -1829,7 +1836,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             fastModes.txtModes[FastModesKey]._filters = [FILTERS.OutlineFilterx8Red]
             FastModesObj = cage;
             fastModes.renderable = true;
-            cage.Debug.bg.renderable = false;
+            cage.Debug.bg.renderable = true;
+            cage.Debug.an.renderable = true;
+            cage.Debug.hitZone.renderable = true;
+            cage.Debug.piv.renderable = true;
             FreezeMouse = true;
             setStatusInteractiveObj(false, cage);
         }
@@ -2000,11 +2010,16 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }
     };
 
+    //TODO: VOIR: key H
+    // creer un buffer , can la sourit bouge, appeller H, pour active le objet en dessous, si pas object en dessous , ignorer et buffer la list, sinon continuer en loop
 
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
         this.mouseIn = true;
-        switch (event.currentTarget.buttonType) {
+        console.log('this.buttonType: ', this);
+        console.log('this.buttonType: ', this.buttonType);
+        switch (this.buttonType) {
+            
             case "thumbs":
                 show_previews(this,true);
                 activeFiltersFX1(event.currentTarget);
@@ -2024,7 +2039,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function pointer_overOUT(event){
         this.mouseIn = false;
-        switch (event.currentTarget.buttonType ) {
+        switch (this.buttonType ) {
             case "thumbs":
                 InLibs = null;
                 show_previews(this,false);

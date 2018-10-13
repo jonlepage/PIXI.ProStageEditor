@@ -76,7 +76,7 @@ _player.prototype.moveToCase = function(objCase) {
 
 
 //TODO: OBSOLETE, mapid planetid seron mintenant dans le editor
-// $player.transferMap(1,1,1); // setupNewGame
+// $player.transferMap(1); // setupNewGame
 _player.prototype.transferMap = function(id) {
     // check if need load all stuff for planet ?
     const planetID = $Loader.loaderSet[`Scene_MapID${id}_data`].system.mapID; // target planet id need for this mapID

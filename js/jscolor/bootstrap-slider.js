@@ -407,11 +407,10 @@ var windowIsDefined = (typeof window === "undefined" ? "undefined" : _typeof(win
 			function getDataAttrib(element, optName) {
 				var dataName = "data-slider-" + optName.replace(/_/g, '-');
 				var dataValString = element.getAttribute(dataName);
-
-				try {
-					return JSON.parse(dataValString);
-				} catch (err) {
+				if (typeof dataValString === 'string') {
 					return dataValString;
+				}else{
+					return JSON.parse(dataValString);
 				}
 			}
 
