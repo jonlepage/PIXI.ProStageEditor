@@ -1682,6 +1682,7 @@ var c = Math.sqrt( a*a + b*b );
         };
     };
 
+    let ObjMouse = null;
     function add_toMouse(InTiles) {
         setStatusInteractiveObj(false); // disable interactivity
         close_editor(true);
@@ -1698,7 +1699,8 @@ var c = Math.sqrt( a*a + b*b );
         LB.pad(1920,1080);
         cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
         
-        FreezeMouse = false; // force disable the mosue freeze 
+        FreezeMouse = false; // force disable the mosue freeze
+        ObjMouse = cage;
         return cage;
     };
 
@@ -1710,6 +1712,7 @@ var c = Math.sqrt( a*a + b*b );
             this.interactive = false;
             CAGE_MOUSE.list = null;
             this.asignValues( PIXI.CageContainer.prototype.getDataValues.call(this) );
+            ObjMouse = null;
             return add_toMouse(this);
         }else{
             const cage = build_Sprites(this) //(InTiles.Data, InTiles.Sprites.groupTexureName);
@@ -2169,6 +2172,7 @@ var c = Math.sqrt( a*a + b*b );
                 this.buttonType = "tileMouse";
                 CAGE_MOUSE.list = this;
                 FreezeMouse = false;
+                ObjMouse = this;
                 return; 
             }
             if(this.buttonType === "button"){ 
@@ -2191,6 +2195,7 @@ var c = Math.sqrt( a*a + b*b );
                 }
                 setStatusInteractiveObj(true);
                 open_editor(true);
+                ObjMouse = null;
                 return CAGE_MOUSE.list = null;
             }
             if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
@@ -2578,12 +2583,14 @@ var c = Math.sqrt( a*a + b*b );
 
     //add a mouse position debugger
     function addMouseCoorDebug() {
-        const txtDebug = new PIXI.Text("",{fontSize:16,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-        txtDebug.y = 60;
-        txtDebug.x = -30;
-        $mouse.addChild(txtDebug); 
+        const coor = new PIXI.Text("",{fontSize:16,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+        const holding = new PIXI.Text("",{fontSize:16,fill:0xff0000,strokeThickness:4,stroke:0xffffff});
+        coor.y = 60;
+        coor.x = -30;
+        $mouse.addChild(coor,holding); 
         setInterval(function(){ 
-            txtDebug.text = `x:${~~mMX}, y:${~~mMY}`;
+            coor.text = `x:${~~mMX}, y:${~~mMY}`;
+            ObjMouse? holding.text = ObjMouse.name : holding.text = '';
 
         }, 50);
     };
