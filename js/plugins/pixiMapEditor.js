@@ -1465,9 +1465,6 @@ var c = Math.sqrt( a*a + b*b );
             an.anchor.set(0.5,0.5);
             an.addChild(txt);
 
-            //pathConnextion
-            var pathLine = drawLine([0,-h/2], [200,0], 12, "0x000000");
-
             // pivot
             var txt = new PIXI.Text("↓■↓-P-↑□↑",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
                 txt.anchor.set(0.5,0.5);
@@ -1484,7 +1481,7 @@ var c = Math.sqrt( a*a + b*b );
             hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
             hitZone.endFill();
 
-            Debug.path = [pathLine];
+            Debug.path = [];
             Debug.bg = bg;
             Debug.an = an;
             Debug.piv = piv;
@@ -1498,7 +1495,7 @@ var c = Math.sqrt( a*a + b*b );
 
             this.Debug = Debug;
             this.addChildAt(Debug.bg,0);
-            this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone,...Debug.path);
+            this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone);
         };
     };
 
@@ -2529,7 +2526,7 @@ var c = Math.sqrt( a*a + b*b );
    };
     //#endregion
 
-//////// ┌------------------------------------------------------------------------------┐
+//////// ┌-----------------------------------------------------------------------------┐
 //////// MOUSE TRAILS
 ////////└------------------------------------------------------------------------------┘
     //Get the texture for Rope.
@@ -2578,5 +2575,18 @@ var c = Math.sqrt( a*a + b*b );
         };
     };
     startTrailMouse();
+
+    //add a mouse position debugger
+    function addMouseCoorDebug() {
+        const txtDebug = new PIXI.Text("",{fontSize:16,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+        txtDebug.y = 60;
+        txtDebug.x = -30;
+        $mouse.addChild(txtDebug); 
+        setInterval(function(){ 
+            txtDebug.text = `x:${~~mMX}, y:${~~mMY}`;
+
+        }, 50);
+    };
+    addMouseCoorDebug()
 };//END EDITOR
 
