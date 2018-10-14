@@ -110,9 +110,11 @@ PIXI.CageContainer = (function () {
             rotation : def? 0 : this.rotation ,
             alpha    : def? 1 : this.alpha    ,
             // other
-            autoGroups  : def? new Array(7).fill(false) : this.autoGroups                            , // permet de changer automatiquement de layers selon player
-            zIndex      : def?           0              : this.zIndex                                , // locked
-            parentGroup : def?          void 0          : this.parentGroup && this.parentGroup.zIndex, //  for editor, need to manual set parentGroup on addMouse 
+            autoGroups    : def? new Array(7).fill(false) : this.autoGroups                              , // permet de changer automatiquement de layers selon player
+            zIndex        : def? 0                        : this.zIndex                                  , // locked
+            parentGroup   : def? void 0                   : this.parentGroup   && this.parentGroup.zIndex, //  for editor, need to manual set parentGroup on addMouse
+            pathConnexion : def? []                       : this.pathConnexion || []                          , // store path connect by id
+            
             // animations
             ...isAnimations && {
                 totalFrames    :def? dataBase.textures[textureName].length : this.totalFrames    , // locked

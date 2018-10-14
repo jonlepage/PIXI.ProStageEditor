@@ -53,22 +53,44 @@ _objs.prototype.create_list_master = function(list) {
     };
 };
 
-_objs.prototype.create_list_master = function(list) {
-    for (let i=0, l=list.length; i<l; i++) {
-        const dataValues = list[i];
-        const textureName = dataValues.p.textureName;
-        const dataBase = $Loader.Data2[dataValues.p.dataName];
-        let cage;
-        switch (dataValues.p.type) {
-            case "animationSheet":
-            cage =  new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
-            case "spineSheet":
-            cage =  new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
-            default:
-            cage =  new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;           
-        }
-        this.list_master.push(cage);
-    };
+_objs.prototype.create_list_cases = function() {
+    this.list_cases = this.getCases();
+    this.list_cases.forEach(c => {
+        c.interactive = true;
+        c.on('pointerover', this.pointer_overIN, this);
+        c.on('pointerout', this.pointer_overOUT, this);
+        
+    });
+};
+
+// TODO:  need buffers cache
+_objs.prototype.newHitFX = function(e) {
+    const textureName = "casesHitsG";
+    const dataBase = $Loader.Data2.caseFXhit1;
+    const dataValues = PIXI.CageContainer.prototype.getDataValues(dataBase, textureName);
+    dataValues.p.parentGroup = 1;
+    var fx = new PIXI.ContainerAnimations(dataBase, textureName,dataValues);
+     fx.parentGroup = $displayGroup.group[0];
+     fx.position.set(this.x,this.y+120);
+     fx.scale.set(0.8,0.8)
+    this.parent.addChild(fx);
+};
+
+_objs.prototype.pointer_overIN = function(e) {
+    e.currentTarget.alpha = 1;
+    console.log('this.list_cases.indexOf(e.currentTarget): ', this.list_cases.indexOf(e.currentTarget));
+    this.newHitFX.call(e.currentTarget);
+    this.computePathTo(e.currentTarget);
+};
+
+_objs.prototype.pointer_overOUT = function(e) {
+    e.currentTarget.alpha = 0.7;
+};
+
+//TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
+// calcule le chemin vers un target
+_objs.prototype.computePathTo = function(target) {
+    const from = this.list_cases[16];
 };
 
 

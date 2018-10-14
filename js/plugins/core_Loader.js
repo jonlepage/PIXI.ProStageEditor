@@ -47,7 +47,7 @@ class _coreLoader {
         },}});
         // PERMA LIST // PERMA LIST IN GAME , also allow editor to create or update perma.json based on this
         Object.defineProperties(this, { "_permaName": { value: [
-            "gloves","heroe1_rendered","heroe2"
+            "gloves","heroe1_rendered","heroe2","caseFXhit1"
         ],}});
     };
     

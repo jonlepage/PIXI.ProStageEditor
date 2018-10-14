@@ -348,7 +348,7 @@ _PME.prototype.computeData = function() {
                 const keyList = tmpRes.data.animations[key];
                 keyList.sort().forEach(keyAni => {
                     const ani = tmpRes.textures[keyAni];
-                    const ani_n = tmpRes.textures_n[keyAni+"_n"];
+                    const ani_n = tmpRes.textures_n && tmpRes.textures_n[keyAni+"_n"];
                     tmpData.textures[key].push(ani);
                     tmpData.textures_n[key].push(ani_n);
                 });
@@ -1055,7 +1055,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
-
+    
     // setup for tile in map
     function open_SaveSetup(stage) {
         iniSetupIzit();
@@ -1064,6 +1064,60 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         create_dataIntepretor.call(stage); // create the data Interpretor listener for inputs and buttons
     };
 
+    // Draw path mode
+    let DrawPathMode = false; // flag,switch
+    let PathsBuffers = []; // asign path by order
+    function open_drawPathMode(stage) {
+        DrawPathMode = true;
+        $Objs.list_master.forEach(e => {
+            e.interactive = false;
+            e.alpha = 0.1;
+        });
+        $Objs.list_cases.forEach(c => {
+            c.interactive = true;
+            c.alpha = 1;
+        });
+        const zoomBuffer = Zoom.clone();
+        Zoom.set(1);
+        refreshPath();
+        Zoom.copy(zoomBuffer);
+        
+    };
+
+    function refreshPath() {
+        if(DrawPathMode){
+            $Objs.list_cases[16].pathConnexion = [19];
+            $Objs.list_cases.forEach(c => {
+                c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
+                c.Debug.path = [];
+                c.pathConnexion.forEach(id => { // connextion
+                    const cc = $Objs.list_cases[id];
+                    //cc.scale.set(1)
+                    //c.scale.set(1)
+                    let point = new PIXI.Point(0,0);
+                    const cXY = c.toGlobal(point)
+                    const ccXY = cc.toGlobal(point)
+                    const dX = ccXY.x-cXY.x
+                    const dY = ccXY.y-cXY.y;
+
+                    const path = new PIXI.Graphics();
+                    path.lineStyle(4, 0xffffff, 1);
+                    path.moveTo(0,0).lineTo(dX, dY).endFill();
+                    c.addChild(path);
+
+                    c.Debug.path.push(path);
+                    c.addChild(path);
+                });
+            });
+        }
+    };
+/*
+var a = c.x - cc.x; 460
+var b = c.y - cc.y;
+
+var c = Math.sqrt( a*a + b*b );
+*/
+        
     // open data HTML inspector
     function create_dataIntepretor(dataValues){
         const dataIntepretor = document.getElementById("dataIntepretor");
@@ -1411,6 +1465,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             an.anchor.set(0.5,0.5);
             an.addChild(txt);
 
+            //pathConnextion
+            var pathLine = drawLine([0,-h/2], [200,0], 12, "0x000000");
+
             // pivot
             var txt = new PIXI.Text("↓■↓-P-↑□↑",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
                 txt.anchor.set(0.5,0.5);
@@ -1427,6 +1484,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
             hitZone.endFill();
 
+            Debug.path = [pathLine];
             Debug.bg = bg;
             Debug.an = an;
             Debug.piv = piv;
@@ -1436,9 +1494,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             Debug.piv.name = "debug-piv";
             Debug.hitZone.name = "debug-hitZone";
 
+            
+
             this.Debug = Debug;
             this.addChildAt(Debug.bg,0);
-            this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone);
+            this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone,...Debug.path);
         };
     };
 
@@ -1678,6 +1738,13 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
+        console.log('name: ', name);
+
+        
+        if(name.contains("icon_pathMaker")){ // draw path 
+            open_drawPathMode(); // edit ligth brigth , and custom BG            
+        }
+
         if(name.contains("icon_setup")){
              open_dataBGInspector(STAGE.background); // edit ligth brigth , and custom BG            
         }
