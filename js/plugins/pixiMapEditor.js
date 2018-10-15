@@ -1008,7 +1008,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // setup for tile in map
     function open_dataInspector(cage) {
         clearFiltersFX3(cage); // clear filters
-        cage.Debug.bg.renderable = true;
         cage.Debug.an.renderable = true;
         cage.Debug.hitZone.renderable = true;
         cage.Debug.piv.renderable = true;
@@ -1065,8 +1064,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // Draw path mode
-    let DrawPathMode = false; // flag,switch
+    let DrawPathMode = false; // flag,switch from icon buttons
     let PathsBuffers = []; // asign path by order
+    let MouseHoldDrawPath = false; // actived when DrawPathMode + holdClick
     function open_drawPathMode(stage) {
         DrawPathMode = true;
         $Objs.list_master.forEach(e => {
@@ -1077,46 +1077,113 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             c.interactive = true;
             c.alpha = 1;
         });
-        const zoomBuffer = Zoom.clone();
-        Zoom.set(1);
         refreshPath();
-        Zoom.copy(zoomBuffer);
-        
+    };
+
+    function close_drawPathMode(stage) {
+        DrawPathMode = false;
+        PathsBuffers = [];
+        MouseHoldDrawPath = false; 
+        $Objs.list_master.forEach(e => {
+            e.interactive = true;
+            e.alpha = e.dataValues.p.alpha; // restor
+        });
+        refreshPath();
     };
 
     function refreshPath() {
-        if(DrawPathMode){
-            $Objs.list_cases[16].pathConnexion = [19];
-            $Objs.list_cases.forEach(c => {
-                c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
-                c.Debug.path = [];
+        const zoomBuffer = Zoom.clone();
+        Zoom.set(1);
+        $Objs.list_cases.forEach(c => {
+            c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
+            c.Debug.path = [];
+            if(DrawPathMode){
                 c.pathConnexion.forEach(id => { // connextion
                     const cc = $Objs.list_cases[id];
-                    //cc.scale.set(1)
-                    //c.scale.set(1)
                     let point = new PIXI.Point(0,0);
                     const cXY = c.toGlobal(point)
                     const ccXY = cc.toGlobal(point)
                     const dX = ccXY.x-cXY.x
                     const dY = ccXY.y-cXY.y;
-
                     const path = new PIXI.Graphics();
                     path.lineStyle(4, 0xffffff, 1);
                     path.moveTo(0,0).lineTo(dX, dY).endFill();
+                    const scaleXY = new PIXI.Point(~~1/c.scale.x,~~1/c.scale.y);
+                    path.scale.copy(scaleXY);
                     c.addChild(path);
-
                     c.Debug.path.push(path);
                     c.addChild(path);
                 });
-            });
-        }
+            };
+        });
+        Zoom.copy(zoomBuffer);
     };
-/*
-var a = c.x - cc.x; 460
-var b = c.y - cc.y;
 
-var c = Math.sqrt( a*a + b*b );
-*/
+    function checkPathMode(cage) {
+        if(MouseHoldDrawPath){
+            if(!PathsBuffers.contains(cage)){
+                const txt = new PIXI.Text(PathsBuffers.length,{fontSize:42,fill:0xff0000,strokeThickness:8,stroke:0x000000});
+                txt.pivot.y = txt.height+cage.Debug.bg.height;
+                cage.pathIndexTxt = txt;
+                cage.addChild(txt);
+                PathsBuffers.push(cage);
+            }else{
+                const index = PathsBuffers.indexOf(cage);
+                for (let i=PathsBuffers.length-1; i>index; i--) {
+                    const c = PathsBuffers[i];
+                    c.removeChild(c.pathIndexTxt);
+                    delete c.pathIndexTxt;
+                    PathsBuffers.pop();
+                };
+            };
+        };
+    };
+
+    function removePath(cage) {
+        // remove persitance path connextions
+        const currentID = $Objs.list_cases.indexOf(cage);
+        cage.pathConnexion.forEach(id => {
+            const cageConnect = $Objs.list_cases[id];
+            const indexPathAttached = cageConnect.pathConnexion.indexOf(currentID);
+            cageConnect.removeChild(cageConnect.Debug.path[indexPathAttached]);
+            cageConnect.Debug.path.splice(indexPathAttached,1);
+        });
+        cage.Debug.path.forEach(p => { cage.removeChild(p) }); // remove path grafics
+        cage.Debug.path = [];
+        cage.pathConnexion = [];
+    };
+
+    // finalise compute path draw in buffers
+    //TODO: rendu ici , verifier le syste ID pour pathConnexion.
+    function computeDrawPathBuffers() {
+        let preview,current,next;
+        for (let i=0, l=PathsBuffers.length; i<l; i++) {
+            const preview = PathsBuffers[i-1];
+            const current = PathsBuffers[i  ];
+            const next    = PathsBuffers[i+1];
+            if(preview && !current.pathConnexion.contains(preview)){
+                console.log('$Objs.list_cases.indexOf(preview): ', $Objs.list_cases.indexOf(preview));
+                current.pathConnexion.push($Objs.list_cases.indexOf(preview),preview);
+                
+            };
+            if(next && !current.pathConnexion.contains(next)){
+                console.log('$Objs.list_cases.indexOf(next): ', $Objs.list_cases.indexOf(next));
+                current.pathConnexion.push($Objs.list_cases.indexOf(next),next);
+                
+            };
+        };
+        PathsBuffers.forEach(cage => {
+            cage.removeChild(cage.pathIndexTxt);
+            delete cage.pathIndexTxt;
+        });
+
+        PathsBuffers = [];
+        
+        refreshPath();
+    };
+
+
+
         
     // open data HTML inspector
     function create_dataIntepretor(dataValues){
@@ -1738,16 +1805,23 @@ var c = Math.sqrt( a*a + b*b );
 
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
-        console.log('name: ', name);
 
-        
-        if(name.contains("icon_pathMaker")){ // draw path 
-            open_drawPathMode(); // edit ligth brigth , and custom BG            
-        }
-
+        if(name.contains("icon_pathMaker")){ // draw path MODE
+            if(!DrawPathMode){
+                open_drawPathMode()
+                buttonSprite._slot.color.b = 0;
+                buttonSprite._slot.color.r = 1;
+                buttonSprite.scale.set(1.5,-1.5);
+            }else{
+                close_drawPathMode();
+                buttonSprite._slot.color.b = 1;
+                buttonSprite._slot.color.r = 1;
+                buttonSprite.scale.set(1,-1);
+            }   
+        };
         if(name.contains("icon_setup")){
              open_dataBGInspector(STAGE.background); // edit ligth brigth , and custom BG            
-        }
+        };
         if(name.contains("icon_grid")){
             drawGrids();
         };
@@ -1763,7 +1837,7 @@ var c = Math.sqrt( a*a + b*b );
         if(name.contains("icon_Save")){
             open_SaveSetup(STAGE);
         }
-        if( name.contains("gb") ){
+        if( name.contains("gb") ){ // pixi-layers buttons only
             // old gb
             const oldGB = EDITOR.skeleton.findSlot("gb"+CurrentDisplayGroup);
             oldGB.color.a = 0.35;
@@ -1784,7 +1858,7 @@ var c = Math.sqrt( a*a + b*b );
 
 //#endregion
 
-//#region [rgba(0, 0, 0,0.3)]
+//#region [rgba(0, 0, 0,0.1)]
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
@@ -1938,16 +2012,23 @@ var c = Math.sqrt( a*a + b*b );
     function startMouseHold(cage){
         clearTimeout(MouseTimeOut);
         MouseHold && disableFastModes(MouseHold);
+        MouseHoldDrawPath && computeDrawPathBuffers();
         //MouseHold? MouseHold.Data_Values = getDataJson(MouseHold) : void 0; // if obj was hold, update all change made from mouse edit
-        MouseHold=false;
+        MouseHold = false;
+        MouseHoldDrawPath = false;
         if(cage){ // active mouse MouseHold after 160 ms
             MouseTimeOut = setTimeout(() => {
                 if(cage.mouseIn){
-                    HoldX = +mX, HoldY = +mY;
-                    MouseHold = cage;
-                if( ["tileMap","tileMouse"].contains(cage.buttonType) ){
-                        activeFastModes(MouseHold);
-                    }
+                    if(DrawPathMode){
+                        MouseHoldDrawPath = true;
+                        checkPathMode(cage);
+                    }else{
+                        HoldX = +mX, HoldY = +mY;
+                        MouseHold = cage;
+                        if( ["tileMap","tileMouse"].contains(cage.buttonType) ){
+                            activeFastModes(cage);
+                        };
+                    };
                 };
             }, 160);
         }else{ // disabling mousehold and affected feature
@@ -1973,7 +2054,7 @@ var c = Math.sqrt( a*a + b*b );
 //#endregion
 
  
-//#region [rgba(0, 5, 5,0.5)]
+//#region [rgba(0, 5, 5,0.7)]
 // ┌------------------------------------------------------------------------------┐
 // CHECK INTERACTION MOUSE
 // └------------------------------------------------------------------------------┘
@@ -2083,16 +2164,13 @@ var c = Math.sqrt( a*a + b*b );
     // mouse [=>IN <=OUT] FX
     function pointer_overIN(event){
         this.mouseIn = true;
-        console.log('this.buttonType: ', this);
-        console.log('this.buttonType: ', this.buttonType);
         switch (this.buttonType) {
-            
             case "thumbs":
                 show_previews(this,true);
                 activeFiltersFX1(event.currentTarget);
             break;
             case "button":
-                activeFiltersFX2(event.currentTarget,this);
+                !DrawPathMode && activeFiltersFX2(event.currentTarget,this);
             break;
             case "tileLibs":
                 activeFiltersFX1(event.currentTarget);
@@ -2100,6 +2178,9 @@ var c = Math.sqrt( a*a + b*b );
             case "tileMap":
                 InMapObj = event.currentTarget;
                 activeFiltersFX3(event.currentTarget, event.data.originalEvent.ctrlKey);
+                if(DrawPathMode){
+                    checkPathMode(this);
+                };
             break;
         };
     };
@@ -2113,7 +2194,7 @@ var c = Math.sqrt( a*a + b*b );
                 clearFiltersFX1(event.currentTarget);
             break;
             case "button":
-                clearFiltersFX2(event.currentTarget,this);
+                !DrawPathMode && clearFiltersFX2(event.currentTarget,this);
             break;
             case "tileLibs":
                 clearFiltersFX1(event.currentTarget);
@@ -2133,12 +2214,12 @@ var c = Math.sqrt( a*a + b*b );
     };
 
     function pointer_UP(event){
-        if(MouseHold){ return startMouseHold(false) };
+        if(MouseHold || MouseHoldDrawPath){ return startMouseHold(false) };
         startMouseHold(false);
         const _clickRight = event.data.button === 0;
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
-        if(_clickRight){// <= clickUp
+        if(_clickRight && !DrawPathMode){// <= clickUp
             if(LineDraw){ // TODO: MAKE add line to map
                 LineDraw.off("pointerup",pointer_UP)
                 STAGE.CAGE_MAP.addChild(LineDraw);
@@ -2184,6 +2265,9 @@ var c = Math.sqrt( a*a + b*b );
             $Objs.list_master.forEach(cage => {
                 clearFiltersFX3(cage);
             });
+            if (this.buttonType === "tileMap" && DrawPathMode) { // remove path in DrawPathMode
+                removePath(this);
+            };
             if(this.buttonType === "tileMouse"){
                 // if exist in $Objs registery, go back to dataValues befor click
                 if($Objs.list_master.contains(this)){
@@ -2591,7 +2675,6 @@ var c = Math.sqrt( a*a + b*b );
         setInterval(function(){ 
             coor.text = `x:${~~mMX}, y:${~~mMY}`;
             ObjMouse? holding.text = ObjMouse.name : holding.text = '';
-
         }, 50);
     };
     addMouseCoorDebug()
