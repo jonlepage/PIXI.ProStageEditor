@@ -42,7 +42,7 @@ _player.prototype.initialize = function() {
         spineBg_n.anchor.set(0.5,1);
     
     this.scale.set(0.45,0.45);
-    this.position.set(945,610);
+    this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING 
 
     spine.parentGroup = PIXI.lights.diffuseGroup;
     spine.convertToNormal();

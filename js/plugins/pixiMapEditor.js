@@ -619,6 +619,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return ('0x' + Math.floor(Math.random() * 16777215).toString(16) || 0xffffff);
     };
 
+    // remove specific element in array by filters
+    Array.prototype.remove = function() {
+        var what, a = arguments, L = a.length, ax;
+        while (L && this.length) {
+            what = a[--L];
+            while ((ax = this.indexOf(what)) !== -1) {
+                this.splice(ax, 1);
+            }
+        }
+        return this;
+    };
+
     // draw a grafics lines sXY[x,eX]
     function drawLine(sXY,eXY,l,c,a){
         const graphics = new PIXI.Graphics();
@@ -1064,9 +1076,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     };
 
     // Draw path mode
-    let DrawPathMode = false; // flag,switch from icon buttons
+    let DrawPathMode = false; // flag,switch from icon buttons, DrawPathMode freeze all other interactions
     let PathsBuffers = []; // asign path by order
     let MouseHoldDrawPath = false; // actived when DrawPathMode + holdClick
+    // disable interactive and forcus on path
     function open_drawPathMode(stage) {
         DrawPathMode = true;
         $Objs.list_master.forEach(e => {
@@ -1095,10 +1108,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const zoomBuffer = Zoom.clone();
         Zoom.set(1);
         $Objs.list_cases.forEach(c => {
+            // clear reset grafic path
             c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
             c.Debug.path = [];
             if(DrawPathMode){
-                c.pathConnexion.forEach(id => { // connextion
+                c.pathConnexion.forEach(id => { // connextion id
                     const cc = $Objs.list_cases[id];
                     let point = new PIXI.Point(0,0);
                     const cXY = c.toGlobal(point)
@@ -1121,18 +1135,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function checkPathMode(cage) {
         if(MouseHoldDrawPath){
+            // si pas deja dans buffer: ajouter les connextion
             if(!PathsBuffers.contains(cage)){
+                PathsBuffers.push(cage);
+                // create debug number
                 const txt = new PIXI.Text(PathsBuffers.length,{fontSize:42,fill:0xff0000,strokeThickness:8,stroke:0x000000});
                 txt.pivot.y = txt.height+cage.Debug.bg.height;
-                cage.pathIndexTxt = txt;
+                cage.Debug.pathIndexTxt = txt;
                 cage.addChild(txt);
-                PathsBuffers.push(cage);
-            }else{
+            }else 
+             // si deja dans buffer, enlever tous les autre devant
+            if(PathsBuffers.contains(cage)){
                 const index = PathsBuffers.indexOf(cage);
                 for (let i=PathsBuffers.length-1; i>index; i--) {
                     const c = PathsBuffers[i];
-                    c.removeChild(c.pathIndexTxt);
-                    delete c.pathIndexTxt;
+                    c.removeChild(c.Debug.pathIndexTxt);
+                    delete c.Debug.pathIndexTxt;
                     PathsBuffers.pop();
                 };
             };
@@ -1144,13 +1162,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const currentID = $Objs.list_cases.indexOf(cage);
         cage.pathConnexion.forEach(id => {
             const cageConnect = $Objs.list_cases[id];
-            const indexPathAttached = cageConnect.pathConnexion.indexOf(currentID);
-            cageConnect.removeChild(cageConnect.Debug.path[indexPathAttached]);
-            cageConnect.Debug.path.splice(indexPathAttached,1);
+            cageConnect.pathConnexion.remove(currentID);
         });
-        cage.Debug.path.forEach(p => { cage.removeChild(p) }); // remove path grafics
-        cage.Debug.path = [];
         cage.pathConnexion = [];
+        refreshPath();
     };
 
     // finalise compute path draw in buffers
@@ -1161,24 +1176,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const preview = PathsBuffers[i-1];
             const current = PathsBuffers[i  ];
             const next    = PathsBuffers[i+1];
-            if(preview && !current.pathConnexion.contains(preview)){
-                console.log('$Objs.list_cases.indexOf(preview): ', $Objs.list_cases.indexOf(preview));
-                current.pathConnexion.push($Objs.list_cases.indexOf(preview),preview);
-                
+            const preview_id = $Objs.list_cases.indexOf(preview);
+            const current_id = $Objs.list_cases.indexOf(current);
+            const next_id    = $Objs.list_cases.indexOf(next   );
+            if(preview && !current.pathConnexion.contains(preview_id)){
+                current.pathConnexion.push( preview_id );
             };
-            if(next && !current.pathConnexion.contains(next)){
-                console.log('$Objs.list_cases.indexOf(next): ', $Objs.list_cases.indexOf(next));
-                current.pathConnexion.push($Objs.list_cases.indexOf(next),next);
-                
+            if(next && !current.pathConnexion.contains(next_id)){
+                current.pathConnexion.push( next_id );
             };
         };
+        // clear number text debug
         PathsBuffers.forEach(cage => {
-            cage.removeChild(cage.pathIndexTxt);
-            delete cage.pathIndexTxt;
+            cage.removeChild(cage.Debug.pathIndexTxt);
+            delete cage.Debug.pathIndexTxt;
         });
-
         PathsBuffers = [];
-        
         refreshPath();
     };
 
@@ -1805,7 +1818,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function execute_buttons(buttonSprite) {
         const name = buttonSprite.region.name;
-
         if(name.contains("icon_pathMaker")){ // draw path MODE
             if(!DrawPathMode){
                 open_drawPathMode()
@@ -1946,7 +1958,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         cage.Debug.bg.renderable = false;
         cage.Debug.hitZone.alpha = 1;
         cage.Debug.piv.alpha = 1;
-        cage.interactive = true;
         if(hideInteractive){
             cage.interactive = false;
             cage.Debug.hitZone.alpha = 0.3;
@@ -2219,7 +2230,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const _clickRight = event.data.button === 0;
         const clickLeft_ = event.data.button === 2;
         const click_Middle = event.data.button === 1;
-        if(_clickRight && !DrawPathMode){// <= clickUp
+        if(_clickRight){// <= clickUp
+            if(this.buttonType === "button"){ 
+                return execute_buttons(this);
+            }
+            if(DrawPathMode){return}; // avoid other buttonType if DrawPathMode
             if(LineDraw){ // TODO: MAKE add line to map
                 LineDraw.off("pointerup",pointer_UP)
                 STAGE.CAGE_MAP.addChild(LineDraw);
@@ -2256,9 +2271,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 ObjMouse = this;
                 return; 
             }
-            if(this.buttonType === "button"){ 
-                return execute_buttons(this);
-            }
+
         }
         if(clickLeft_){// => clickUp
             // clear filters on left click
@@ -2267,7 +2280,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             });
             if (this.buttonType === "tileMap" && DrawPathMode) { // remove path in DrawPathMode
                 removePath(this);
-            };
+            }else
             if(this.buttonType === "tileMouse"){
                 // if exist in $Objs registery, go back to dataValues befor click
                 if($Objs.list_master.contains(this)){
