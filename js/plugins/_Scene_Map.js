@@ -44,11 +44,14 @@ Scene_MapID1.prototype.create = function() {
     
     this.CAGE_MAP.addChild($player2); //TODO:
     // add player to case_door1;
-    /*const startCase = $Objs.getsByID("case_door1")[0];
-    console.log('startCase: ', startCase);
-    $player.position.set(startCase.x, startCase.y+1);
-    $player.zIndex = $player.y;*/
-    $camera.setTarget($player,4);
+    const startCase = $Objs.list_cases[0];
+    if(startCase){
+        $player.position.copy(startCase.position);
+        $player.zIndex = $player.y;
+        $camera.setTarget($player,4);
+        $player.alpha = 0;
+    };
+
     this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
      
 };

@@ -63,6 +63,9 @@ _objs.prototype.create_list_cases = function() {
     });
 };
 
+
+
+
 // TODO:  need buffers cache
 _objs.prototype.newHitFX = function(e) {
     const textureName = "casesHitsG";
@@ -90,9 +93,61 @@ _objs.prototype.pointer_overOUT = function(e) {
 //TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
 // calcule le chemin vers un target
 _objs.prototype.computePathTo = function(target) {
-    const from = this.list_cases[16];
+    const playerCase = this.list_cases[0]; //FIXME: faire une method player pour obtenir la case sur laquelle il est 
+    console.log('target: ', target);
+    const pathInterval = []; //
+    const patternFromInterval = []; // store path id pattern
+
+    testPath.push( setInterval(function(){ 
+        alert("Hello") 
+    }, 100) );
+
+
 };
 
+
+/*
+var tree = [ // ex fake pixi node display objs
+    {id: 0, pathConnexion:[1]},
+    {id: 1, pathConnexion:[0,2]},
+    {id: 2, pathConnexion:[1,3,4]},
+    {id: 3, pathConnexion:[2,4]},
+    {id: 4, pathConnexion:[2,5]},
+    {id: 5, pathConnexion:[4,6]},
+    {id: 6, pathConnexion:[5]},
+    {id: 7, pathConnexion:[]},
+    {id: 8, pathConnexion:[]},
+    {id: 9, pathConnexion:[]}
+    ];
+
+function dfs() {
+
+};
+
+*/
+// Depth First Search algo, return path matix
+_objs.prototype.dfs = function(tree, from=0, id) {
+    const stack   = [];
+    const pattern = [];
+    stack.push(tree[from]);
+    while (stack.length !== 0) {
+        for (let i = 0; i < stack.length; i++) {
+            let node = stack.pop();
+            if (node.id === id) {
+                 // pattern succed draw and found node target, so return the path matrix
+                 pattern.push(node.id);
+                return pattern;
+            };
+            node.pathConnexion.forEach(nextID => {
+                if(!pattern.contains(nextID)){
+                    !pattern.contains(node.id) && pattern.push(node.id); // valid pattern
+                    stack.push(tree[nextID]);
+                }
+            });
+        };
+    };
+    return null
+};
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){
