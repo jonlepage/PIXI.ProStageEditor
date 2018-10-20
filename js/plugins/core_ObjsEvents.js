@@ -81,7 +81,6 @@ _objs.prototype.newHitFX = function(e) {
 
 _objs.prototype.pointer_overIN = function(e) {
     e.currentTarget.alpha = 1;
-    console.log('this.list_cases.indexOf(e.currentTarget): ', this.list_cases.indexOf(e.currentTarget));
     this.newHitFX.call(e.currentTarget);
     this.computePathTo(e.currentTarget);
 };
@@ -94,60 +93,115 @@ _objs.prototype.pointer_overOUT = function(e) {
 // calcule le chemin vers un target
 _objs.prototype.computePathTo = function(target) {
     const playerCase = this.list_cases[0]; //FIXME: faire une method player pour obtenir la case sur laquelle il est 
-    console.log('target: ', target);
     const pathInterval = []; //
     const patternFromInterval = []; // store path id pattern
-
-    testPath.push( setInterval(function(){ 
-        alert("Hello") 
-    }, 100) );
-
-
+    //const pattern = this.dfs(this.list_cases, 0, this.list_cases.indexOf(target));
+   /* this.list_cases.forEach(cases => {
+        cases.d.tint = 0xffffff;
+    });
+    pattern.forEach(id => {
+        this.list_cases[id].d.tint = 0x42f465;
+    });
+    console.log('pattern: ', pattern);*/
 };
 
+// TODO: reprend le system unique ID
+// il doi pouvoir suprimer un obj, mais pouvoir en recreer un au meme id
+// dc: distance connextion dijkstra.js
+const nodes = {
+    0: {1: 1, 2: 1, 3: 1},
+    1: {0: 50, 2: 4},
+    2: {1: 50, 0:4, 4:10},
+    3: {},
+    4: {2: 10, 5: 10},
+    5: {4: 10}
+  };
 
-/*
-var tree = [ // ex fake pixi node display objs
-    {id: 0, pathConnexion:[1]},
-    {id: 1, pathConnexion:[0,2]},
-    {id: 2, pathConnexion:[1,3,4]},
-    {id: 3, pathConnexion:[2,4]},
-    {id: 4, pathConnexion:[2,5]},
-    {id: 5, pathConnexion:[4,6]},
-    {id: 6, pathConnexion:[5]},
-    {id: 7, pathConnexion:[]},
-    {id: 8, pathConnexion:[]},
-    {id: 9, pathConnexion:[]}
-    ];
+  // findShortestPath(nodes, 0, 5);  
 
-function dfs() {
 
-};
+    function extractKeys(obj) {
+		return Object.keys(obj);
+	};
 
-*/
-// Depth First Search algo, return path matix
-_objs.prototype.dfs = function(tree, from=0, id) {
-    const stack   = [];
-    const pattern = [];
-    stack.push(tree[from]);
-    while (stack.length !== 0) {
-        for (let i = 0; i < stack.length; i++) {
-            let node = stack.pop();
-            if (node.id === id) {
-                 // pattern succed draw and found node target, so return the path matrix
-                 pattern.push(node.id);
-                return pattern;
-            };
-            node.pathConnexion.forEach(nextID => {
-                if(!pattern.contains(nextID)){
-                    !pattern.contains(node.id) && pattern.push(node.id); // valid pattern
-                    stack.push(tree[nextID]);
-                }
-            });
-        };
-    };
-    return null
-};
+	function sorter(a, b) {
+		return parseFloat (a) - parseFloat (b);
+	};
+
+    function extractShortest(predecessors, end) {
+        const nodes = [];
+        let u = end;
+		while (u !== void 0) {
+			nodes.push(u);
+			u = predecessors[u];
+		};
+		nodes.reverse();
+		return nodes;
+	};
+
+    function addToOpen(cost, vertex, open) {
+        var key = "" + cost;
+        if (!open[key]) open[key] = [];
+        open[key].push(vertex);
+    }
+
+    function findShortestPath(map, s,e) {
+        const nodes = [s,e];
+        let start = nodes.shift(),
+            path = [],
+		    end,
+		    predecessors,
+		    shortest;
+		while (nodes.length) {
+			end = nodes.shift();
+			predecessors = findPaths(map, start, end);
+			if (predecessors) {
+				shortest = extractShortest(predecessors, end);
+				if (nodes.length) {
+					path.push.apply(path, shortest.slice(0, -1));
+				} else {
+					return path.concat(shortest);
+				}
+			} else {
+				return null;
+			}
+			start = end;
+		}
+    }
+
+	function findPaths(map, start, end) {
+        const costs = {}, predecessors = {};
+        let open = {'0': [start]}, keys;
+		costs[start] = 0;
+		while (open) {
+			if(!(keys = extractKeys(open)).length) break;
+			keys.sort(sorter);
+			let key = keys[0],
+			    bucket = open[key],
+			    node = bucket.shift(),
+			    currentCost = parseFloat(key),
+			    adjacentNodes = map[node] || {};
+			if (!bucket.length) delete open[key];
+			for (const vertex in adjacentNodes) {
+                let cost = adjacentNodes[vertex],
+                    totalCost = cost + currentCost,
+                    vertexCost = costs[vertex];
+                if ((vertexCost === void 0) || (vertexCost > totalCost)) {
+                    costs[vertex] = totalCost;
+                    addToOpen(totalCost, vertex, open);
+                    predecessors[vertex] = node;
+                };
+			};
+		};
+        if (costs[end] === void 0) { return null; } 
+        else { return predecessors; };
+	}
+    
+    
+
+    
+
+
 
 // add general attributs
 _objs.prototype.addAttr_default = function(cage, Data_Values, d, n, Data, textureName){

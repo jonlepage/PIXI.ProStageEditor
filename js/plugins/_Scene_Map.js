@@ -49,7 +49,6 @@ Scene_MapID1.prototype.create = function() {
         $player.position.copy(startCase.position);
         $player.zIndex = $player.y;
         $camera.setTarget($player,4);
-        $player.alpha = 0;
     };
 
     this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
