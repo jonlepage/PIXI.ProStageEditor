@@ -94,7 +94,9 @@ _objs.prototype.pointer_overOUT = function(e) {
 // TODO: faire un sytem global event manager et interaction dans mouse
 _objs.prototype.pointer_UP = function(e) {
     if(this.pathBuffer){
+        console.log('this.pathBuffer: ', this.pathBuffer);
         //TODO: MOVE PLAYER
+        $player.startMoveToCases(this.pathBuffer);
     }
 };
 
@@ -135,7 +137,7 @@ _objs.prototype.computePathTo = function(target) {
 
 	function sorter(a, b) {
 		return parseFloat (a) - parseFloat (b);
-	};
+    };
 
     function extractShortest(predecessors, end) {
         const nodes = [];

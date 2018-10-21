@@ -1792,7 +1792,7 @@ var pixi_spine;
                 configurable: true
             });
             TrackEntry.prototype.loopsCount = function () {
-                return Math.floor(this.trackTime / this.trackEnd);
+                return ~~(this.trackTime / this.animationLast);
             };
             TrackEntry.deprecatedWarning1 = false;
             TrackEntry.deprecatedWarning2 = false;

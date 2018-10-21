@@ -59,18 +59,36 @@ _player.prototype.initialize = function() {
 
  // TODO: system transfer
  _player.prototype.transferPlayerToCase = function(objCase) {
-    this.spine.x = objCase.x;
-    this.spine.y = objCase.y+objCase.height/2;
-    this.spine.zIndex = this.spine.y;
+    this.Sprites.x = objCase.x;
+    this.Sprites.y = objCase.y+objCase.height/2;
+    this.Sprites.zIndex = this.Sprites.y;
     this.inCase = objCase;
 };
 
-//$player.moveToCase();
-_player.prototype.moveToCase = function(objCase) {
-    this.spine.x = objCase.x;
-    this.spine.y = objCase.y+objCase.height/2;
-    this.spine.zIndex = this.spine.y;
-    this.inCase = objCase;
+//$player.startMoveToCases(); matrix 
+_player.prototype.startMoveToCases = function(pathBuffer) {
+    let total = pathBuffer.lenght;
+    let next = $Objs.list_cases[pathBuffer[1]];
+    
+
+
+    this.children[0].state.setAnimation(0, "jump1", true);
+    this.children[0].state.tracks[0].listener = { 
+        event: function(entry, event) { console.log('event fired '+event.data+' at track' + entry.trackIndex) },
+        complete: function(entry) { console.log('track '+entry.trackIndex+' completed '+entry.loopsCount()+' times') },
+        start: function(entry) { console.log('animation is set at '+entry.trackIndex) },
+        end: function(entry) { console.log('animation was ended at '+entry.trackIndex) },
+        
+        
+        dispose: function(entry) { console.log('animation was disposed at '+entry.trackIndex) },
+        interrupted: function(entry) { console.log('animation was interrupted at '+entry.trackIndex) }
+    }
+    
+
+   /* this.x = next.x;
+    this.y = next.y;
+    this.zIndex = this.Sprites.y;
+    this.inCase = next;*/
 };
 
 
