@@ -113,7 +113,7 @@ PIXI.CageContainer = (function () {
             autoGroups    : def? new Array(7).fill(false) : this.autoGroups                              , // permet de changer automatiquement de layers selon player
             zIndex        : def? 0                        : this.zIndex                                  , // locked
             parentGroup   : def? void 0                   : this.parentGroup   && this.parentGroup.zIndex, //  for editor, need to manual set parentGroup on addMouse
-            pathConnexion : def? []                       : this.pathConnexion || []                          , // store path connect by id
+            pathConnexion : def? {}                       : this.pathConnexion || {}                     , // store path connect by id
             
             // animations
             ...isAnimations && {

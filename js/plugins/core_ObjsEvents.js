@@ -19,6 +19,7 @@ class _objs{
         //this.list_noEvents = [];
         //this.list_events = [];
         this.list_cases = [];
+        this.pathBuffer = null; // buffer path to move 
     };
 };
 $Objs = new _objs();
@@ -59,6 +60,7 @@ _objs.prototype.create_list_cases = function() {
         c.interactive = true;
         c.on('pointerover', this.pointer_overIN, this);
         c.on('pointerout', this.pointer_overOUT, this);
+        c.on('pointerup', this.pointer_UP, this);
         
     });
 };
@@ -89,37 +91,44 @@ _objs.prototype.pointer_overOUT = function(e) {
     e.currentTarget.alpha = 0.7;
 };
 
+// TODO: faire un sytem global event manager et interaction dans mouse
+_objs.prototype.pointer_UP = function(e) {
+    if(this.pathBuffer){
+        //TODO: MOVE PLAYER
+    }
+};
+
 //TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
 // calcule le chemin vers un target
 _objs.prototype.computePathTo = function(target) {
-    const playerCase = this.list_cases[0]; //FIXME: faire une method player pour obtenir la case sur laquelle il est 
+    const playerCase = this.list_cases[0];
     const pathInterval = []; //
     const patternFromInterval = []; // store path id pattern
-    //const pattern = this.dfs(this.list_cases, 0, this.list_cases.indexOf(target));
-   /* this.list_cases.forEach(cases => {
+    const nodes = {};
+    Object.keys(this.list_cases).forEach(k => {
+        nodes[k] = this.list_cases[k].pathConnexion;
+    });
+    const pattern = findShortestPath(nodes, this.list_cases.indexOf(playerCase), this.list_cases.indexOf(target));
+    //const pattern = this.dfs(this.list_cases, 0, );
+    this.list_cases.forEach(cases => {
         cases.d.tint = 0xffffff;
     });
-    pattern.forEach(id => {
+    pattern && pattern.forEach(id => {
         this.list_cases[id].d.tint = 0x42f465;
     });
-    console.log('pattern: ', pattern);*/
+    if(pattern){
+        this.pathBuffer = pattern;
+    }else{
+        this.pathBuffer = null;
+    }
 };
 
 // TODO: reprend le system unique ID
 // il doi pouvoir suprimer un obj, mais pouvoir en recreer un au meme id
-// dc: distance connextion dijkstra.js
-const nodes = {
-    0: {1: 1, 2: 1, 3: 1},
-    1: {0: 50, 2: 4},
-    2: {1: 50, 0:4, 4:10},
-    3: {},
-    4: {2: 10, 5: 10},
-    5: {4: 10}
-  };
+// dc: distance connextion .js
 
-  // findShortestPath(nodes, 0, 5);  
-
-
+// custom dijkstra algo
+//   const pattern = findShortestPath(nodes, 0, this.list_cases.indexOf(target));
     function extractKeys(obj) {
 		return Object.keys(obj);
 	};
@@ -140,7 +149,7 @@ const nodes = {
 	};
 
     function addToOpen(cost, vertex, open) {
-        var key = "" + cost;
+        const key = "" + cost;
         if (!open[key]) open[key] = [];
         open[key].push(vertex);
     }
@@ -195,7 +204,7 @@ const nodes = {
 		};
         if (costs[end] === void 0) { return null; } 
         else { return predecessors; };
-	}
+	};
     
     
 

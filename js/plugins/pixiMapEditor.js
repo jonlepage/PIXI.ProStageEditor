@@ -1112,7 +1112,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
             c.Debug.path = [];
             if(DrawPathMode){
-                c.pathConnexion.forEach(id => { // connextion id
+                Object.keys(c.pathConnexion).forEach(id => { // connextion id
                     const cc = $Objs.list_cases[id];
                     let point = new PIXI.Point(0,0);
                     const cXY = c.toGlobal(point)
@@ -1160,11 +1160,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     function removePath(cage) {
         // remove persitance path connextions
         const currentID = $Objs.list_cases.indexOf(cage);
-        cage.pathConnexion.forEach(id => {
-            const cageConnect = $Objs.list_cases[id];
-            cageConnect.pathConnexion.remove(currentID);
-        });
-        cage.pathConnexion = [];
+        for (const id in cage.pathConnexion) {
+            delete $Objs.list_cases[id].pathConnexion[currentID];
+        }
+        cage.pathConnexion = {};
         refreshPath();
     };
 
@@ -1179,11 +1178,12 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             const preview_id = $Objs.list_cases.indexOf(preview);
             const current_id = $Objs.list_cases.indexOf(current);
             const next_id    = $Objs.list_cases.indexOf(next   );
-            if(preview && !current.pathConnexion.contains(preview_id)){
-                current.pathConnexion.push( preview_id );
+            //TODO: FIXME: compute distance via global position for Math.hypot
+            if(preview){
+                current.pathConnexion[String(preview_id)] = Math.hypot(preview.x-current.x, preview.y-current.y);;
             };
-            if(next && !current.pathConnexion.contains(next_id)){
-                current.pathConnexion.push( next_id );
+            if(next){
+                current.pathConnexion[String(next_id)] = Math.hypot(next.x-current.x, next.y-current.y);;
             };
         };
         // clear number text debug
@@ -1191,7 +1191,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             cage.removeChild(cage.Debug.pathIndexTxt);
             delete cage.Debug.pathIndexTxt;
         });
+        console.log('PathsBuffers: ', PathsBuffers);
         PathsBuffers = [];
+        
         refreshPath();
     };
 
