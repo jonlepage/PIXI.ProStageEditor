@@ -287,7 +287,7 @@ PIXI.ContainerSpine = (function () {
         const sd = dataBase.spineData; // ref spineData
         const d = new PIXI.spine.Spine(sd);
         const n = d.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
-        d.skeleton.setSkinByName(dataValues.p.textureName);
+        dataValues.p.textureName && d.skeleton.setSkinByName(dataValues.p.textureName); //FIXME: player have no skin for now
         d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
         d.skeleton.setSlotsToSetupPose();
         this.Sprites = {d,n};

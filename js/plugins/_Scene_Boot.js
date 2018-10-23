@@ -23,7 +23,7 @@ Scene_Boot.prototype.initialize = function() {
 
     $Loader.setPermaCurrentData(); // all loaded from SceneBoot are Perma ressource, protect perma ressource once for avoid destoyed
     $mouse.initialize(); // initialise mouse core
-    $player.initialize();
+    $player = new _player($Loader.Data2.heroe1_rendered); // create game player
     $player2.initialize();
     //$gui.initialize(); 
     //$avatar.initialize();

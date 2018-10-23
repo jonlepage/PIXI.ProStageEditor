@@ -12,67 +12,41 @@ dans les class, . pour les objects, function deep (non Json), _ pour les props a
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
 //└------------------------------------------------------------------------------┘
-class _player extends PIXI.Container {
-    constructor() {
-        super();
-        this.Sprites = {d:null, n:null};
+class _player extends PIXI.ContainerSpine {
+    constructor(dataBase, textureName, dataValues) {
+        super(dataBase, textureName, dataValues);
         this._planetID = null; // player current planet id
         this._dir = 6; //player direction
+        this.setupOnce(); // one time setup player1
     };
-    get d() { return this.Sprites.d };
-    get n() { return this.Sprites.n };
 };
 
-$player = new _player(); // create game player
-console.log1('$player.', $player);
-
-// $player.initialize(); // setupNewGame
-_player.prototype.initialize = function() {
-    const spine = new PIXI.spine.Spine($Loader.Data2.heroe1_rendered.spineData);
-        //spine.skeleton.setSkinByName()//
-        spine.stateData.defaultMix = 0.1;
-        spine.state.setAnimation(0, "idle", true);
-        spine.state.setAnimation(1, "hair_idle", true);
-        setInterval(function(){ //TODO:
-            const allowWink = Math.random() >= 0.5;
-            allowWink && spine.state.setAnimation(2, 'wink1', false); 
-        }, 1200);
-        spine.skeleton.setSlotsToSetupPose();
-
-    const spineBg_n = new PIXI.Sprite(PIXI.Texture.WHITE); // allow swap texture hover tile
-        spineBg_n.width = spine.width, spineBg_n.height = spine.height;
-        spineBg_n.anchor.set(0.5,1);
-    
+// player setup once, configuration
+_player.prototype.setupOnce = function() {
+    // spine
+    const spine = this.d;
+    spine.stateData.defaultMix = 0.1;
+    spine.state.setAnimation(0, "idle", true);
+    spine.state.setAnimation(1, "hair_idle", true);
+    setInterval(function(){ //TODO: wink eyes, use spine events random
+        const allowWink = Math.random() >= 0.5;
+        allowWink && spine.state.setAnimation(2, 'wink1', false); 
+    }, 1200);
+    // player transform
     this.scale.set(0.45,0.45);
-    this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING 
-
-    spine.parentGroup = PIXI.lights.diffuseGroup;
-    spine.convertToNormal();
-    
-    //spineBg_n.parentGroup = PIXI.lights.normalGroup;
-    
+    //this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING 
+    // player layers
     this.parentGroup = $displayGroup.group[1];
     this.zIndex = this.position._y;
-    this.Sprites.d = spine;
-    this.addChild(spine);
 
-// callBack event for animations
+    spine.skeleton.setSlotsToSetupPose();
+    this.setupListeners();
+    this.setupTweens();
+};
 
-    // initialise position without delay
-    this.tweenPosition = new TweenLite(this.position, 0, {
-        x:this.position.x,
-        y:this.position.y,
-        ease:Power4.easeOut,
-    });
-    // initialise position without delay
-    this.tweenScale = new TweenLite(this.scale, 0, {
-        x:this.scale.x,
-        y:this.scale.y,
-        ease:Power4.easeOut,
-        
-    });
-    // listener once setup
-    // TODO: AJOUTER UN EVENT MANAGER, VOIR SI LES EVENT SAUTE PARFOI ?
+// setup all spine events for player1
+// https://github.com/pixijs/pixi-spine/blob/master/examples/index.md
+_player.prototype.setupListeners= function() {
     spine.state.addListener({
         event: (function(entry, event) {
             if(event.data.name === "jumpStart"){
@@ -87,18 +61,22 @@ _player.prototype.initialize = function() {
         }).bind(this),
         start: function(entry) { console.log0('animation is set at '+entry.trackIndex) },
     });
-
-    // player 2 TODO:
-    
-   
 };
 
- // TODO: system transfer
- _player.prototype.transferPlayerToCase = function(objCase) {
-    this.Sprites.x = objCase.x;
-    this.Sprites.y = objCase.y+objCase.height/2;
-    this.Sprites.zIndex = this.Sprites.y;
-    this.inCase = objCase;
+// setup all tweens once or reset if need
+// https://greensock.com/docs/Core/Animation
+_player.prototype.setupTweens = function() {
+    this.tweenPosition = new TweenLite(this.position, 0, {
+        x:this.position.x,
+        y:this.position.y,
+        ease:Power4.easeOut,
+    });
+    // initialise position without delay
+    this.tweenScale = new TweenLite(this.scale, 0, {
+        x:this.scale.x,
+        y:this.scale.y,
+        ease:Power4.easeOut,
+    });
 };
 
 //$player.initialisePath(); matrix 
@@ -186,6 +164,8 @@ _player.prototype.reversePlayer = function() {
 
 
 
+
+
 //TODO: OBSOLETE, mapid planetid seron mintenant dans le editor
 // $player.transferMap(1); // setupNewGame
 _player.prototype.transferMap = function(id) {
@@ -199,6 +179,15 @@ _player.prototype.transferMap = function(id) {
         SceneManager.goto(window[`Scene_MapID${id}`]); // planet was loaded , just go mapScene id
     };
 };
+
+ // TODO: system transfer
+ _player.prototype.transferPlayerToCase = function(objCase) {
+    this.Sprites.x = objCase.x;
+    this.Sprites.y = objCase.y+objCase.height/2;
+    this.Sprites.zIndex = this.Sprites.y;
+    this.inCase = objCase;
+};
+
 
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
