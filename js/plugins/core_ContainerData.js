@@ -303,7 +303,7 @@ PIXI.ContainerSpine = (function () {
     };
 
     ContainerSpine.prototype.asignParentGroups = function() {
-        this.d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+        this.Sprites.n = this.d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
     };
     
 //END

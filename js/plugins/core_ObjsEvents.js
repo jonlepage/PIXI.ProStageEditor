@@ -94,7 +94,6 @@ _objs.prototype.pointer_overOUT = function(e) {
 // TODO: faire un sytem global event manager et interaction dans mouse
 _objs.prototype.pointer_UP = function(e) {
     if(this.pathBuffer){
-        console.log('this.pathBuffer: ', this.pathBuffer);
         //TODO: MOVE PLAYER
         $player.initialisePath(this.pathBuffer);
     }
@@ -212,10 +211,12 @@ _objs.prototype.computePathTo = function(target) {
 
   // get dir from x1 => x2, can be factored by 10-dir
 _objs.prototype.getDirXFromId = function(id1,id2) {
-    if(!id2 || this.list_cases[id1].x === this.list_cases[id2].x){ // dont reverse
-        return 0;
+    if (Number.isFinite(id1) && Number.isFinite(id2) ){
+        const c1 = this.list_cases[id1].x;
+        const c2 = this.list_cases[id2].x;
+        return c1<c2 && 6 || c2<c1 && 4 || false;
     };
-    return this.list_cases[id1].x<this.list_cases[id2].x && 6 || 4;
+    return false;
 };
     // get dir from y1 => y2, can be factored by 10-dir
   _objs.prototype.getDirYFromId = function(id1,id2) {
