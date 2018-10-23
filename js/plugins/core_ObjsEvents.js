@@ -96,14 +96,14 @@ _objs.prototype.pointer_UP = function(e) {
     if(this.pathBuffer){
         console.log('this.pathBuffer: ', this.pathBuffer);
         //TODO: MOVE PLAYER
-        $player.startMoveToCases(this.pathBuffer);
+        $player.initialisePath(this.pathBuffer);
     }
 };
 
 //TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
 // calcule le chemin vers un target
 _objs.prototype.computePathTo = function(target) {
-    const playerCase = this.list_cases[0];
+    const playerCase = $player.inCase;
     const pathInterval = []; //
     const patternFromInterval = []; // store path id pattern
     const nodes = {};
@@ -153,7 +153,7 @@ _objs.prototype.computePathTo = function(target) {
     function addToOpen(cost, vertex, open) {
         const key = "" + cost;
         if (!open[key]) open[key] = [];
-        open[key].push(vertex);
+        open[key].push(+vertex);
     }
 
     function findShortestPath(map, s,e) {
@@ -210,7 +210,20 @@ _objs.prototype.computePathTo = function(target) {
     
     
 
-    
+  // get dir from x1 => x2, can be factored by 10-dir
+_objs.prototype.getDirXFromId = function(id1,id2) {
+    if(!id2 || this.list_cases[id1].x === this.list_cases[id2].x){ // dont reverse
+        return 0;
+    };
+    return this.list_cases[id1].x<this.list_cases[id2].x && 6 || 4;
+};
+    // get dir from y1 => y2, can be factored by 10-dir
+  _objs.prototype.getDirYFromId = function(id1,id2) {
+    if(!id2 || this.list_cases[id1].y === this.list_cases[id2].y){
+        return 0;
+    };
+    return this.list_cases[id1].y<this.list_cases[id2].y && 6 || 4;
+};
 
 
 

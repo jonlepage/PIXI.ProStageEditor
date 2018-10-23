@@ -46,8 +46,7 @@ Scene_MapID1.prototype.create = function() {
     // add player to case_door1;
     const startCase = $Objs.list_cases[0];
     if(startCase){
-        $player.position.copy(startCase.position);
-        $player.zIndex = $player.y;
+        $player.transferPlayerToCase(startCase);
         $camera.setTarget($player,4);
     };
 
