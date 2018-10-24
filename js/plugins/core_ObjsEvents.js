@@ -69,14 +69,16 @@ _objs.prototype.create_list_cases = function() {
 
 
 // TODO:  need buffers cache
-_objs.prototype.newHitFX = function(e) {
+_objs.prototype.newHitFX = function() {
     const textureName = "casesHitsG";
     const dataBase = $Loader.Data2.caseFXhit1;
     const dataValues = PIXI.CageContainer.prototype.getDataValues(dataBase, textureName);
     dataValues.p.parentGroup = 1;
     var fx = new PIXI.ContainerAnimations(dataBase, textureName,dataValues);
-     fx.parentGroup = $displayGroup.group[0];
-     fx.position.set(this.x,this.y+120);
+     fx.parentGroup = $displayGroup.group[1];
+     fx.position.set(this.x,this.y);
+     fx.pivot.y = -140;
+     fx.zIndex = fx.y-1;
      fx.scale.set(0.8,0.8)
     this.parent.addChild(fx);
 };

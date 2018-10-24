@@ -25,13 +25,13 @@ class _player extends PIXI.ContainerSpine {
 _player.prototype.setupOnce = function() {
     // spine
     const spine = this.d;
-    spine.stateData.defaultMix = 0.1;
+    spine.stateData.defaultMix = 0.2;
     spine.state.setAnimation(0, "idle", true);
     spine.state.setAnimation(1, "hair_idle", true);
     setInterval(function(){ //TODO: wink eyes, use spine events random
         const allowWink = Math.random() >= 0.5;
         allowWink && spine.state.setAnimation(2, 'wink1', false); 
-    }, 1200);
+    }, 1250);
     // player transform
     this.scale.set(0.45,0.45);
     this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING 
@@ -52,13 +52,15 @@ _player.prototype.setupListeners= function() {
         event: (function(entry, event) {
             if(event.data.name === "jumpStart"){
                this.moveToNextPath(entry);
-            }else
+            }else   
             if(event.data.name === "reverse"){
                this.reversePlayer(entry);
+            }else
+            if(event.data.name === "jumpEnd"){
+                this.d.state.addAnimation(4, "hair_jump1", false);
+                this.d.state.addEmptyAnimation(4,1);
+                this.checkCaseInteraction();
             }
-             // hair flow, faire un event dans spine pour appelle les cheveux jump
-            //this.d.state.setAnimation(1, "hair_jump1", false);
-
         }).bind(this),
         start: function(entry) { console.log0('animation is set at '+entry.trackIndex) },
     });
@@ -86,7 +88,7 @@ _player.prototype.initialisePath = function(pathBuffer) {
     this.pathBuffer = pathBuffer;
     this.sequenceBuffer = 0;
     let dirBuffer = +this._dirX; // track direction path, (2,4,8,6 base:10)
-    this.d.state.timeScale = 1.5; //TODO: MATH speed player dexterity
+    this.d.state.timeScale = 1.4; //TODO: MATH speed player dexterity
     for (let i=0, started = false, l=pathBuffer.length; i<l; i++) {
         const id = pathBuffer[i];
         const id_next = pathBuffer[i+1];
@@ -134,6 +136,14 @@ _player.prototype.reversePlayer = function() {
         this.tweenScale.play(0);
         // update setup
         this._dirX = 10-this._dirX; // reverse dir 
+};
+
+
+// when player jump to a case, do all stuff here
+_player.prototype.checkCaseInteraction = function() {
+   // stamina, sfx,fx , check auto-break cases .... 
+   $Objs.newHitFX.call(this.inCase); // fx hit case
+   //play audio
 };
 
 
