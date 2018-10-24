@@ -40,8 +40,6 @@ Scene_MapID1.prototype.initialize = function() {
 Scene_MapID1.prototype.create = function() {
 
     this.CAGE_MAP.addChild($player); //TODO:
-    
-    
     this.CAGE_MAP.addChild($player2); //TODO:
     // add player to case_door1;
     const startCase = $Objs.list_cases[0];
@@ -51,6 +49,10 @@ Scene_MapID1.prototype.create = function() {
     };
 
     this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
+    // huds
+    this.CAGE_GUI.addChild($huds.displacement);
+    $huds.displacement.show(1);
+   
      
 };
 

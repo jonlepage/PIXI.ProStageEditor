@@ -47,7 +47,7 @@ class _coreLoader {
         },}});
         // PERMA LIST // PERMA LIST IN GAME , also allow editor to create or update perma.json based on this
         Object.defineProperties(this, { "_permaName": { value: [
-            "gloves","heroe1_rendered","heroe2","caseFXhit1"
+            "gloves","heroe1_rendered","heroe2","caseFXhit1","hud_displacement"
         ],}});
     };
     
@@ -80,7 +80,6 @@ _coreLoader.prototype.preLoad_Json = function() {
     this._tmpData = null; // store temp data befor normalise structure 
     this._tmpRes = null; // store ressources for compute
 
-
     const loader0 = new PIXI.loaders.Loader();
     for (const key in this._JsonPath) {
         loader0.add(key, this._JsonPath[key]);
@@ -88,14 +87,43 @@ _coreLoader.prototype.preLoad_Json = function() {
     loader0.load();
     loader0.onProgress.add((loader, res) => {
         this.loaderSet[res.name] = res.data;
-        console.log('this.loaderSet[res.name]: ', this.loaderSet[res.name]);
         this._progressTxt = this._progressTxt+` ${res.url }\n`; //FIXME: loader Text
     });
     loader0.onComplete.add((loader, res) => {
         this._progressTxt = this._progressTxt+`___________________________\n`; //FIXME: loader Text
-        this.isLoading = false; // allow continue scene laoder
+        this.checkFontsLoaded();
+ 
     });
 };
+
+// ┌-----------------------------------------------------------------------------┐
+// loader FONTS
+// load game fonts
+//└------------------------------------------------------------------------------┘
+_coreLoader.prototype.checkFontsLoaded = function() {
+    this.isLoading = true;
+    const fonts = [
+        {name:"ShadowsIntoLight", url:"fonts/ShadowsIntoLight.ttf"},
+        {name:"ArchitectsDaughter", url:"fonts/ArchitectsDaughter.ttf"},
+    ];
+    fonts.forEach(font => {
+        Graphics.loadFont(font.name, font.url);
+        const div = document.createElement('div');
+        div.style.fontFamily = font.name;
+        div.appendChild( document.createTextNode('.') );
+        document.body.appendChild(div);
+    });
+
+    function isFontsLoaded(font){ return Graphics.isFontLoaded(font.name) };
+    function check() {
+        if(fonts.every(isFontsLoaded)){
+            clearInterval(fontCheck);
+            this.isLoading = false;
+        };
+    };
+    let fontCheck = setInterval(check.bind(this), 100);
+};
+
 
 // ┌-----------------------------------------------------------------------------┐
 // LOADER DATA

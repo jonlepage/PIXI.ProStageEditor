@@ -8,7 +8,7 @@
 */
 
 // ┌-----------------------------------------------------------------------------┐
-// GLOBAL $hubs CLASS: _hubs
+// GLOBAL $huds CLASS: _huds
 //└------------------------------------------------------------------------------┘
 
 
@@ -18,22 +18,162 @@
 // Controls and manage all bases class hubs 
 // └------------------------------------------------------------------------------┘
 */
-class _hubs{
-    constructor() {
 
+class _huds{
+    constructor() {
+        this.hudsList = {};
 
     };
     // getters,setters
-    get a() { return 0 };
+    get displacement() { return this.hudsList.displacements };
 
 };
 
-$hubs = new _hubs();
-console.log1('$hubs.', $hubs);
+$huds = new _huds();
+console.log1('$huds.', $huds);
 
 // hubs prototype
-_hubs.prototype.initialise = function() {
+_huds.prototype.initialize = function() {
     // creates all hubs [displacements,stats,]
+    this.hudsList.displacements = new _huds_displacement();
+};
+
+
+
+
+
+
+// setup all tweens once or reset if need
+// https://greensock.com/docs/Core/Animation
+_huds.prototype.move = function(x,y) {
+    // tween
+    this.tweenPosition.vars.x = x;
+    this.tweenPosition.vars.y = y;
+    this.tweenPosition._duration = 0.5;
+    this.tweenPosition.invalidate(); // TODO: deep study source of this
+    this.tweenPosition.play(0);
+};
+
+
+
+//#endregion
+
+
+
+
+/*#region [rgba(241, 244, 66, 0.03)]
+// ┌------------------------------------------------------------------------------┐
+// Hub Displacement
+// hubs de stamina pour deplacement
+// └------------------------------------------------------------------------------┘
+*/
+class _huds_displacement extends PIXI.Container{
+    constructor() {
+       super();
+       this.Sprites = {};
+        this.initialize();
+    };
+    // getters,setters
+    get d() { return this.Sprites.d };
+    get n() { return this.Sprites.n };
+
+};
+
+// create spine displacement hud
+_huds_displacement.prototype.initialize = function() {
+    const dataBase = $Loader.Data2.hud_displacement;
+    const d = new PIXI.spine.Spine(dataBase.spineData);
+    const n = d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+    this.Sprites.d = d;
+    this.Sprites.n = n;
+
+    const idle = d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
+    idle.timeScale = 0.05;
+
+    d.parentGroup = $displayGroup.group[4]; //FIXME:
+    d.stateData.defaultMix = 0.2;
+    d.skeleton.setSlotsToSetupPose();
+
+    this.setupStamina();
+    this.setupInteractions();
+    //this.setupListeners();
+    this.setupTweens(d);
+    this.hide();
+    this.addChild(d);
+};
+
+
+_huds_displacement.prototype.setupStamina = function() {
+    const slot = this.d.skeleton.findSlot("txt_stamina"); // 1px sprite slot
+    const style = new PIXI.TextStyle({ dropShadow: true, dropShadowAlpha: 0.4, 
+        dropShadowAngle: 1.6, dropShadowBlur: 4, dropShadowDistance: 4, 
+        fill: ["black", "#6d6d6d"], fillGradientStops: [0.5, 0.4], fontFamily: "ArchitectsDaughter", 
+        fontSize: 48, letterSpacing: -3, lineJoin: "round", miterLimit: 15, padding: 6, 
+        stroke: "white", strokeThickness: 4 });
+    const txt = new PIXI.Text("asd fmaefaf afewf",style);
+    txt.pivot.set(txt.width/2,txt.height/2);
+    slot.currentSprite.addChild(txt);
+};
+
+_huds_displacement.prototype.setupInteractions = function() {
+    const d = this.d;
+    d.interactive = true;
+    d.on('pointerover', this.pointer_overIN, this);
+    d.on('pointerout', this.pointer_overOUT, this);
+    d.on('pointerup', this.pointer_UP, this);
+};
+
+// setup all tweens once or reset if need
+// https://greensock.com/docs/Core/Animation
+_huds_displacement.prototype.setupTweens = function() {
+    this.tweenPosition = new TweenLite(this.position, 0, {
+        x:this.position.x,
+        y:this.position.y,
+        ease:Power4.easeOut,
+    });
+};
+
+_huds_displacement.prototype.hide = function(duration) {
+    duration? this.move(-150,850,duration) : this.position.set(-150,850);
+};
+
+_huds_displacement.prototype.show = function(duration) {
+    this.d.state.addEmptyAnimation(1,0.1);
+    duration? this.move(100,995,duration) : this.position.set(100,995);
+};
+
+_huds_displacement.prototype.showDice = function() {
+    this.move(180,890,1);
+    this.d.state.setAnimation(1, "hover_dice", false);
+};
+
+_huds_displacement.prototype.showBigStamina = function() {
+    this.move(140,940,1);
+    this.d.state.setAnimation(1, "hover_stamina", false);
+};
+
+// tween move
+_huds_displacement.prototype.move = function(x,y,duration) {
+    this.tweenPosition.vars.x = x;
+    this.tweenPosition.vars.y = y;
+    this.tweenPosition._duration = duration;
+    this.tweenPosition.invalidate(); // TODO: deep study source of this
+    this.tweenPosition.play(0);
+};
+
+
+// interactions
+_huds_displacement.prototype.pointer_overIN = function(e) {
+    this.showBigStamina();
+};
+
+_huds_displacement.prototype.pointer_overOUT = function(e) {
+    this.show(0.4);
+};
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_displacement.prototype.pointer_UP = function(e) {
+    this.showDice();
     
 };
 
