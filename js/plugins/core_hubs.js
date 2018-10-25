@@ -71,6 +71,7 @@ class _huds_displacement extends PIXI.Container{
     constructor() {
        super();
        this.Sprites = {};
+       this.stamina = 9999;
         this.initialize();
     };
     // getters,setters
@@ -107,12 +108,13 @@ _huds_displacement.prototype.setupStamina = function() {
     const slot = this.d.skeleton.findSlot("txt_stamina"); // 1px sprite slot
     const style = new PIXI.TextStyle({ dropShadow: true, dropShadowAlpha: 0.4, 
         dropShadowAngle: 1.6, dropShadowBlur: 4, dropShadowDistance: 4, 
-        fill: ["black", "#6d6d6d"], fillGradientStops: [0.5, 0.4], fontFamily: "ArchitectsDaughter", 
-        fontSize: 48, letterSpacing: -3, lineJoin: "round", miterLimit: 15, padding: 6, 
-        stroke: "white", strokeThickness: 4 });
-    const txt = new PIXI.Text("asd fmaefaf afewf",style);
+        fill: ["black", "#6d6d6d"], fillGradientStops: [0.5, 0.4], fontFamily: "zBirdyGame", 
+        fontSize: 76, letterSpacing: -3, lineJoin: "round", miterLimit: 15, padding: 6,
+        fontWeight: "bold", stroke: "white", strokeThickness: 6 });
+    const txt = new PIXI.Text(this.stamina+'',style);
     txt.pivot.set(txt.width/2,txt.height/2);
     slot.currentSprite.addChild(txt);
+    this.stamina_txt = txt;
 };
 
 _huds_displacement.prototype.setupInteractions = function() {
@@ -129,7 +131,7 @@ _huds_displacement.prototype.setupTweens = function() {
     this.tweenPosition = new TweenLite(this.position, 0, {
         x:this.position.x,
         y:this.position.y,
-        ease:Power4.easeOut,
+        ease:Elastic.easeOut.config(1.2, 0.4),
     });
 };
 
@@ -148,7 +150,7 @@ _huds_displacement.prototype.showDice = function() {
 };
 
 _huds_displacement.prototype.showBigStamina = function() {
-    this.move(140,940,1);
+    this.move(140,940,2);
     this.d.state.setAnimation(1, "hover_stamina", false);
 };
 
@@ -159,8 +161,7 @@ _huds_displacement.prototype.move = function(x,y,duration) {
     this.tweenPosition._duration = duration;
     this.tweenPosition.invalidate(); // TODO: deep study source of this
     this.tweenPosition.play(0);
-};
-
+}; 
 
 // interactions
 _huds_displacement.prototype.pointer_overIN = function(e) {
@@ -168,13 +169,20 @@ _huds_displacement.prototype.pointer_overIN = function(e) {
 };
 
 _huds_displacement.prototype.pointer_overOUT = function(e) {
-    this.show(0.4);
+    this.show(1);
 };
 
 // TODO: faire un sytem global event manager et interaction dans mouse
 _huds_displacement.prototype.pointer_UP = function(e) {
     this.showDice();
-    
+};
+
+
+_huds_displacement.prototype.addStamina = function(value) {
+    this.stamina+=value;
+    this.stamina_txt.text = this.stamina;
+    this.d.state.setAnimation(1, "changeNumber", false);
+    this.d.state.addEmptyAnimation(1,0.1);
 };
 
 //#endregion

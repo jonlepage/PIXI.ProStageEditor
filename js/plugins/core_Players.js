@@ -143,6 +143,7 @@ _player.prototype.reversePlayer = function() {
 _player.prototype.checkCaseInteraction = function() {
    // stamina, sfx,fx , check auto-break cases .... 
    $Objs.newHitFX.call(this.inCase); // fx hit case
+   $huds.displacement.addStamina(-1);
    //play audio
 };
 
