@@ -26,6 +26,8 @@ class _huds{
     };
     // getters,setters
     get displacement() { return this.hudsList.displacements };
+    get pinBar() { return this.hudsList.pinBar };
+    get stats() { return this.hudsList.stats };
 
 };
 
@@ -36,6 +38,9 @@ console.log1('$huds.', $huds);
 _huds.prototype.initialize = function() {
     // creates all hubs [displacements,stats,]
     this.hudsList.displacements = new _huds_displacement();
+    this.hudsList.pinBar = new _huds_pinBar();
+    this.hudsList.stats = new _huds_stats();
+    
 };
 
 
@@ -177,12 +182,246 @@ _huds_displacement.prototype.pointer_UP = function(e) {
     this.showDice();
 };
 
-
 _huds_displacement.prototype.addStamina = function(value) {
     this.stamina+=value;
     this.stamina_txt.text = this.stamina;
     this.d.state.setAnimation(1, "changeNumber", false);
     this.d.state.addEmptyAnimation(1,0.1);
+};
+
+//#endregion
+
+
+/*#region [rgba(60, 60, 120, 0.03)]
+// ┌------------------------------------------------------------------------------┐
+// Hub Displacement
+// hubs de stamina pour deplacement
+// └------------------------------------------------------------------------------┘
+*/
+
+class _huds_pinBar extends PIXI.Container{
+    constructor() {
+       super();
+        this.maxPinBar = 15;
+        this.startingPinBar = 3; // le nombre de pinBar que le joueur debute
+        this.initialize();
+    };
+    // getters,setters
+    get colorBar() { return this.pinners.colorBar };
+    get pinBar() { return this.pinners.pinBar };
+
+};
+
+
+// create pinBar hud
+_huds_pinBar.prototype.initialize = function() {
+    const dataBase = $Loader.Data2.hudsPinBar;
+    // create master bg slider bar
+    const masterPinBar = new PIXI.Container();
+    let d = new PIXI.Sprite(dataBase.textures.pinBarSlider);
+    let n = new PIXI.Sprite(dataBase.textures_n.pinBarSlider_n);
+    d.parentGroup = PIXI.lights.diffuseGroup;
+    n.parentGroup = PIXI.lights.normalGroup;
+    masterPinBar.addChild(d,n);
+    // create pinners
+    let pinners = new PIXI.Container();
+    pinners.pinnerID = [];
+    for (let i=0, l=this.maxPinBar, x = 50, marge = 100; i<l; i++, x+=marge) {
+        const d = new PIXI.Sprite(dataBase.textures.pinner);
+        const n = new PIXI.Sprite(dataBase.textures_n.pinner_n);
+        d.parentGroup = PIXI.lights.diffuseGroup;
+        n.parentGroup = PIXI.lights.normalGroup;
+        d.position.set(x,25);
+        n.position.set(x,25);
+        d.pivot.set(d.width/2, d.height/2);
+        n.pivot.set(n.width/2, n.height/2);
+        d.id = i;
+        pinners.pinnerID[i] = d;
+        pinners.addChild(d,n);
+    
+    };
+    // create pinBars : ce sont les bar attachable au pinners, commence avec 3 renderable.
+    // ont pourra attacher des couleur au bar lorsquel seront renderable
+    pinners.pinBar = [];
+    for (let i=0, l=this.maxPinBar; i<l; i++) {
+        const isVisible =  i<this.startingPinBar;
+        const d = new PIXI.Sprite(dataBase.textures.pinBar);
+        const n = new PIXI.Sprite(dataBase.textures_n.pinBar_n);
+        d.parentGroup = PIXI.lights.diffuseGroup;
+        n.parentGroup = PIXI.lights.normalGroup;
+        d.position.copy(pinners.pinnerID[i].position);
+        n.position.copy(d.position);
+        d.pivot.set(d.width/2, d.height-10);
+        n.pivot.set(n.width/2, n.height-10);
+        d.renderable = isVisible;
+        n.renderable = isVisible;
+        d.id = i;
+        d.n = n; // link normal
+        pinners.pinBar[i] = d;
+        pinners.addChild(d,n);
+    };
+    // add colorPinBar attachement. par default , toujours type:dice
+    pinners.colorBar = [];
+    for (let i=0, l=this.maxPinBar; i<l; i++) {
+        const isVisible =  pinners.pinBar[i].renderable;
+        const d = new PIXI.Sprite(dataBase.textures.cBar_dice_S);
+        const n = new PIXI.Sprite(dataBase.textures_n.cBar_dice_S_n);
+        d.parentGroup = PIXI.lights.diffuseGroup;
+        n.parentGroup = PIXI.lights.normalGroup;
+        d.position.copy(pinners.pinnerID[i].position);
+        n.position.copy(d.position);
+        d.pivot.set(d.width/2, d.height+2);
+        n.pivot.set(n.width/2, n.height+2);
+        d.renderable = isVisible;
+        n.renderable = isVisible;
+        d.id = i;
+        console.log('d: ', d);
+        d.n = n; // link normal
+        pinners.colorBar[i] = d;
+        pinners.addChild(d,n);
+    };
+    
+    this.pinners = pinners;
+    this.parentGroup = $displayGroup.group[4]; //FIXME:
+    this.addChild(masterPinBar,pinners);
+    this.pivot.x = this.width;
+    this.x = 1840, this.y = 1020;
+    //setup
+    this.setupInteractions();
+
+};
+
+_huds_pinBar.prototype.setupInteractions = function() {
+    this.colorBar.forEach(cBar => {
+        cBar.interactive = true;
+        //d.on('pointerover', this.pointer_overIN, this);
+        //d.on('pointerout', this.pointer_overOUT, this);
+        cBar.on('pointerup', this.pointer_UP, this);
+    });
+};
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_pinBar.prototype.pointer_UP = function(e) {
+    this.setBarMode_Large(e);
+};
+
+_huds_pinBar.prototype.setBarMode_Large = function(e) {
+    console.log('e: ', e);
+    const cBar = e.currentTarget;
+    cBar.scale.x = 3;
+    cBar.n.scale.x = 3;
+   console.log(this);
+
+};
+
+//#endregion
+
+
+
+/*#region [rgba(20, 20, 100, 0.09)]
+// ┌------------------------------------------------------------------------------┐
+// Hub stats
+// hubs affiche les stats
+// └------------------------------------------------------------------------------┘
+*/
+
+class _huds_stats extends PIXI.Container{
+    constructor() {
+       super();
+       //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
+       //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
+        this.statsList_L = ['hp','mp','hg','hy','miw','mic']
+        this.statsList_S = ['atk','def','sta','lck','exp','int'];
+
+        this.initialize();
+    };
+    // getters,setters
+    get d() { return this.Sprites.d };
+    get n() { return this.Sprites.n };
+};
+
+// create states hud
+_huds_stats.prototype.initialize = function() {
+    const dataBase = $Loader.Data2.hudStats;
+    // scope method
+    function assignGroups(d,n){
+        d.parentGroup = PIXI.lights.diffuseGroup;
+        n.parentGroup = PIXI.lights.normalGroup;
+    }
+    let x = 0, y = 0;
+    let tint_L = [0xff0000,0x8c00ff,0x00ff08,0x00d4ff,0xffb600,0x684810];
+    this.statsList_L.forEach(state => {
+        console.log2('state: ', state);
+        // create master_L
+        const master_L = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures.masterBar_L);
+        var n = new PIXI.Sprite(dataBase.textures_n.masterBar_L_n);
+        assignGroups(d,n);
+        master_L.addChild(d,n);
+        // create BG for barColor
+        const bgBar = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures.barBG_L);
+        var n = new PIXI.Sprite(dataBase.textures_n.barBG_L_n);
+        d.position.set(45,2);
+        n.position.copy(d.position);
+        assignGroups(d,n);
+        bgBar.addChild(d,n);
+        // create barColor large
+        const barColorL = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures.barColor_L);
+        var n = new PIXI.Sprite(dataBase.textures_n.barColor_L_n);
+        d.position.set(45+4,2+3);
+        n.position.copy(d.position);
+        d.tint = tint_L.shift();
+        d.blendMode = 1;
+        assignGroups(d,n);
+        barColorL.addChild(d,n);
+        // create icon TODO: make spine icon animated
+        const icon = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures[`${state}_icon`]);
+        var n = new PIXI.Sprite(dataBase.textures_n[`${state}_icon_n`]);
+        assignGroups(d,n);
+        icon.addChild(d,n);
+
+        master_L.addChild(bgBar, barColorL, icon);
+        this.addChild(master_L);
+        // master states position
+        master_L.position.set(x,y);
+        y===45? (y=0, x+=220) : y=45;
+    });
+    // create small states
+    this.statsList_S.forEach(state => {
+        console.log2('state: ', state);
+        // create master_S
+        const master_S = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures.barMaster_S);
+        var n = new PIXI.Sprite(dataBase.textures_n.barMaster_S_n);
+        assignGroups(d,n);
+        master_S.addChild(d,n);
+        // create barColor small
+        const barColorS = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures.barColor_S);
+        var n = new PIXI.Sprite(dataBase.textures_n.barColor_S_n);
+        d.position.set(50,4);
+        n.position.copy(d.position);
+        assignGroups(d,n);
+        barColorS.addChild(d,n);
+        // create icon TODO: make spine icon animated
+        const icon = new PIXI.Container();
+        var d = new PIXI.Sprite(dataBase.textures[`${state}_icon`]);
+        var n = new PIXI.Sprite(dataBase.textures_n[`${state}_icon_n`]);
+        assignGroups(d,n);
+        icon.addChild(d,n);
+
+        master_S.addChild(barColorS, icon);
+        this.addChild(master_S);
+        // master states position
+        master_S.position.set(x,y);
+        y===45? (y=0, x+=145) : y=45;
+    });
+    this.parentGroup = $displayGroup.group[4]; //FIXME:
+    this.position.set(4,6);
+
 };
 
 //#endregion
