@@ -420,8 +420,41 @@ _huds_stats.prototype.initialize = function() {
         y===45? (y=0, x+=145) : y=45;
     });
     this.parentGroup = $displayGroup.group[4]; //FIXME:
-    this.position.set(4,6);
+    this.position.set(1920/4,6);
 
+    this.setupInteractions();
+    //this.setupListeners();
+    this.setupTweens();
 };
 
+
+_huds_stats.prototype.setupInteractions = function() {
+    $player.interactive = true;
+    $player.on('pointerover', this.pointer_overIN, this);
+    $player.on('pointerout', this.pointer_overOUT, this);
+    //$player.on('pointerup', this.pointer_UP, this);
+};
+
+_huds_stats.prototype.pointer_overIN = function() {
+    this.move(6,1);
+};
+
+_huds_stats.prototype.pointer_overOUT = function() {
+    this.move(-120,1);
+};
+
+_huds_stats.prototype.setupTweens = function() {
+    this.tweenPosition = new TweenLite(this.position, 0, {
+        y:this.position.y,
+        ease:Elastic.easeOut.config(1.2, 0.4),
+    });
+};
+
+// tween move
+_huds_stats.prototype.move = function(y,duration) {
+    this.tweenPosition.vars.y = y;
+    this.tweenPosition._duration = duration;
+    this.tweenPosition.invalidate(); // TODO: deep study source of this
+    this.tweenPosition.play(0);
+}; 
 //#endregion
