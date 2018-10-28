@@ -43,24 +43,6 @@ _huds.prototype.initialize = function() {
     
 };
 
-
-
-
-
-
-// setup all tweens once or reset if need
-// https://greensock.com/docs/Core/Animation
-_huds.prototype.move = function(x,y) {
-    // tween
-    this.tweenPosition.vars.x = x;
-    this.tweenPosition.vars.y = y;
-    this.tweenPosition._duration = 0.5;
-    this.tweenPosition.invalidate(); // TODO: deep study source of this
-    this.tweenPosition.play(0);
-};
-
-
-
 //#endregion
 
 
