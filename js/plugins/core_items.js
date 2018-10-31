@@ -814,6 +814,7 @@ _menu_items.prototype.initialize = function() {
 ┌------------------------------------------------------------------------------┐
   TWEENS EASINGS DISPLACEMENTS mix with spine2D core
   https://greensock.com/docs/Core/Animation
+  
 └------------------------------------------------------------------------------┘
 */
 // setup and cache all thning need for easing tweens

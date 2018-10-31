@@ -50,9 +50,7 @@ Scene_MapID1.prototype.create = function() {
 
     this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
     // huds
-    this.CAGE_GUI.addChild($huds.displacement);
-    this.CAGE_GUI.addChild($huds.pinBar);
-    this.CAGE_GUI.addChild($huds.stats);
+    this.CAGE_GUI.addChild(...$huds.getHubsList()); // add huds list
     $huds.displacement.show(1);
    
      
