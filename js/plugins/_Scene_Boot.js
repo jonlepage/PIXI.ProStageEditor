@@ -25,6 +25,7 @@ Scene_Boot.prototype.initialize = function() {
     $mouse.initialize(); // initialise mouse core
     $player = new _player($Loader.Data2.heroe1_rendered); // create game player
     $player2.initialize();
+    $items.initialize();
     $huds.initialize(); // initialise all hubs
     //$gui.initialize(); 
     //$avatar.initialize();

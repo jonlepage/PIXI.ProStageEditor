@@ -345,13 +345,15 @@ _huds_pinBar.prototype.OUT_pinGem = function(e) {
 // TODO: faire un sytem global event manager et interaction dans mouse
 _huds_pinBar.prototype.UP_pinGem = function(e) {
     const pinGem  = e.currentTarget;
-    if(event.data.button === 0){ // _clickRight ==>
-
+    if(e.data.button === 0){ // clickLeft_ <==
+       //FIXME: FAST menue items show
+       $huds.menuItems.hide();
     }else
-    if(event.data.button === 2){ // clickLeft_ <==
-
+    if(e.data.button === 2){ // _clickRight ==>
+       //FIXME: FAST menue items show
+       $huds.menuItems.show();
     }else
-    if(event.data.button === 1){ // click_Middle =>|<=
+    if(e.data.button === 1){ // click_Middle =>|<=
 
     }
 };
@@ -631,9 +633,11 @@ class _menu_items extends PIXI.Container{
     constructor() {
        super();
        this.initializeProprety();
-       this.initialize();
-       this.setupTweens();
-       this.setupInteractions();
+        this.initialize();
+      this.setupTweens();
+      this.setupInteractions();
+
+      this.hide();
     };
     // getters,setters
 
@@ -643,56 +647,120 @@ class _menu_items extends PIXI.Container{
 _menu_items.prototype.initializeProprety = function() {
     this.tweens = {};
     this.Sprites = {};
-    this.gemPinsTints = [0xffffff,0x425bd9 ,0xc42626,0x40b312,0xb7b7b7,0xbb42f3,0x8a5034,0x464646,0x584615]; // also use as filters
-    this.gemPinsNames = ["all"   ,"diceGem","food"  ,"plant" ,"mineral","alchemie","builder","tools","keys"]; // also use as filters
-    this.filtersGems = [];
-    this._sortByLists = ["name","recent","weigth","quantity","value","rarity"];
-    this.interactive = true; // TODO: prevents map back map interaction
+    this._currentFilter = false; 
+    this._sortByLists = ["id","name","recent","weigth","quantity","value","rarity"];
+    this._currentSort = 0;
+    this.gemPinsNames =  Object.keys($items.types); // get gems name and filters
+    this.gemPinsTints = Object.values($items.types).map(obj => obj.tint) // get gems color tint
+    this.slots = [];//new Array(3).fill({}); // $items.totalGameItems
+    const dataBase = $Loader.Data2.gameItems;
+    for (let i=0, l=35; i<l; i++) { //$items.totalGameItems
+        this.slots.push({items:{
+            d:new PIXI.Sprite(dataBase.textures[i]), 
+            n:new PIXI.Sprite(dataBase.textures_n[i+'n'])
+            }
+        });
+        Object.defineProperty(this.slots[i], "renderables", { set: function (b) { 
+            for (const key in this) {
+                this[key].d.renderable = b;
+                this[key].n.renderable = b;
+            };
+        } });
+        Object.defineProperty(this.slots[i], "id", { value:i } );
+        Object.defineProperty(this.slots[i], 'name', { value: $items.getNames(i) });
+        Object.defineProperty(this.slots[i], 'type', { value: $items.getTypes(i) });
+    };
+    this.parentGroup = $displayGroup.group[4];
 };
 
 // create menu Items 
 _menu_items.prototype.initialize = function() {
+     // contour frame du menue
     const dataBase = $Loader.Data2.menueItems;
-    // contour frame du menue
     const frames = new PIXI.Container();
-    var d = new PIXI.Sprite(dataBase.textures.menueItemFrame);
-    var n = new PIXI.Sprite(dataBase.textures_n.menueItemFrame_n);
-        d.parentGroup = PIXI.lights.diffuseGroup;
-        n.parentGroup = PIXI.lights.normalGroup;
-        frames.pivot.set(d.width/2,d.height/2);
-    frames.addChild(d,n);
-    
-    //MASK container split D,N for masking scroll items
+    const frames_d = new PIXI.Sprite(dataBase.textures.menueItemFrame);
+    const frames_n = new PIXI.Sprite(dataBase.textures_n.menueItemFrame_n);
+    const w = frames_d.width, h = frames_n.height;
+    frames_d.parentGroup = PIXI.lights.diffuseGroup;
+    frames_n.parentGroup = PIXI.lights.normalGroup;
+    frames.addChild(frames_d,frames_n);
+
+    //MASK Master Container D,N for all masked elements
     const masked_d = new PIXI.Container(); // difuse menu mask limit 
     const masked_n = new PIXI.Container(); // normal menu mask limit
-        masked_d.parentGroup = PIXI.lights.diffuseGroup;
-        masked_n.parentGroup = PIXI.lights.normalGroup;
-    const mask_d = new PIXI.Sprite(PIXI.Texture.WHITE);
-    //const mask_n = new PIXI.Sprite(PIXI.Texture.WHITE);
-        mask_d.width = d.width-42, mask_d.height = d.height-45;
-       // mask_n.width = d.width-42, mask_n.height = d.height-45;
-        mask_d.position.set(42,45);
-       // mask_n.position.set(42,45);
-    masked_d.mask = masked_d.addChild(mask_d);
-    masked_n.mask = mask_d;
+    const mask = new PIXI.Sprite(PIXI.Texture.WHITE);
+    masked_d.parentGroup = PIXI.lights.diffuseGroup;
+    masked_n.parentGroup = PIXI.lights.normalGroup;
+    mask.width  = w -42;
+    mask.height = h -45;
+    mask.position.set(15,20);
+    masked_d.mask = mask;
+    masked_n.mask = mask;
+
+    this.initialize_background (masked_d,masked_n);
+    this.initialize_items      (masked_d,masked_n);
+    this.initialize_filters    (masked_d,masked_n);
+    this.initialize_sorter   (masked_d,masked_n);
+    this.addChild(masked_d,masked_n,mask,...this.filtersGems,frames,this.sortBox);
+
+    this.pivot.set(frames.width/2,frames.height/2);
+    this.position.set(1050,680);
+    
+
+};
+// ini background and add to mask
+_menu_items.prototype.initialize_items = function(masked_d,masked_n) {
+    const dataBase = $Loader.Data2.menueItems;
+    // build items
+    for (let i=0, l=this.slots.length; i<l; i++) {
+        // items frames containers
+        const itemFrame_d = new PIXI.Sprite(dataBase.textures.itemsFrame);
+        const itemFrame_n = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
+            masked_d.addChild(itemFrame_d);
+            masked_n.addChild(itemFrame_n);
+        this.slots[i].frames = {d:itemFrame_d, n:itemFrame_n};
+        // text Background FX
+        const txtFx_d = new PIXI.Sprite(dataBase.textures.bgTxtFocus);
+        const txtFx_n = new PIXI.Sprite(dataBase.textures_n.bgTxtFocus_n);
+            txtFx_d.blendMode = 1;
+            txtFx_n.blendMode = 2;
+            txtFx_n.alpha = 0.5;
+            masked_d.addChild(txtFx_d);
+            masked_n.addChild(txtFx_n);
+        this.slots[i].txtFx = {d:txtFx_d, n:txtFx_n};
+        const txt = `iron gearing\n *:6(2)\n [12]`;
+        const spriteTxt = new PIXI.Text(txt,{fontSize:16,fill:0x000000,strokeThickness:2,stroke:0xffffff, fontFamily: "ArchitectsDaughter", letterSpacing: -1,fontWeight: "bold",lineHeight: 20});
+        masked_d.addChild(spriteTxt);
+        this.slots[i].txt = {d:spriteTxt, n:spriteTxt};
+        spriteTxt.pivot.x = -74;
+        // add items 
+        masked_d.addChild(this.slots[i].items.d);
+        masked_n.addChild(this.slots[i].items.n);
+    };
+};
+// ini background and add to mask
+_menu_items.prototype.initialize_background = function(masked_d,masked_n) {
     // create x2 BGFX
-    var d = new PIXI.Sprite(dataBase.textures.bgMaster);
-    var n = new PIXI.Sprite(dataBase.textures_n.bgMaster_n);
-        masked_d.addChild(d);
-        masked_n.addChild(n);
-    this.bgFX1 = {d,n}; // store for scope mouse FX deformation
-    var d = new PIXI.Sprite(dataBase.textures.bgDiag);
-    var n = new PIXI.Sprite(dataBase.textures_n.bgDiag_n);
-        d.alpha = 0.2; n.alpha = 0.8;
-        masked_d.addChild(d);
-        masked_n.addChild(n);
-    this.bgFX2 = {d,n}; // store for scope mouse FX deformation
-    masked_d.pivot.set(d.width/2,d.height/2);
-    masked_n.pivot.set(n.width/2,n.height/2);
-        
+    const dataBase = $Loader.Data2.menueItems;
+    const bg1_d = new PIXI.Sprite(dataBase.textures.bgMaster);
+    const bg1_n = new PIXI.Sprite(dataBase.textures_n.bgMaster_n);
+        masked_d.addChild(bg1_d);
+        masked_n.addChild(bg1_n);
+    var bg2_d = new PIXI.Sprite(dataBase.textures.bgDiag);
+    var bg2_n = new PIXI.Sprite(dataBase.textures_n.bgDiag_n);
+        bg2_d.alpha = 0.2; bg2_n.alpha = 0.8;
+        masked_d.addChild(bg2_d);
+        masked_n.addChild(bg2_n);
+    this.bgFX2 = {bg2_d,bg2_n}; // store for scope mouse FX deformation
+    this.bgFX1 = {bg1_d, bg1_n}; // store for scope mouse FX deformation
+    
+};
+// ini background and add to mask
+_menu_items.prototype.initialize_filters = function(masked_d,masked_n) {
     // build filters gemPins
+    const dataBase = $Loader.Data2.menueItems;
     const filtersGems = [];
-    for (let i=0, x = -700, y = -190, l=this.gemPinsNames.length; i<l; i++,y+=48) {
+    for (let i=0, x = 100, y = 55, l=this.gemPinsNames.length; i<l; i++,y+=48) {
         const filterFrame = new PIXI.Container();
         var d = new PIXI.Sprite(dataBase.textures.filters_frame);
         var n = new PIXI.Sprite(dataBase.textures_n.filters_frame_n);
@@ -703,6 +771,7 @@ _menu_items.prototype.initialize = function() {
         filterFrame.scale.set(0.9,0.9)
         filterFrame.pivot.set(d.width/2,d.height/2);
         filterFrame.position.set(x,y);
+        filterFrame.type = this.gemPinsNames[i];
         filtersGems.push(filterFrame);
         // Colored Gem inside frame
         const filters_button = new PIXI.Container(); 
@@ -723,58 +792,21 @@ _menu_items.prototype.initialize = function() {
         gemTxt.scale.set(0.9,0.9);
         filterFrame.addChild(gemTxt);
         filterFrame.gemTxt = gemTxt;
+        // gem txt quantity
+        const qty = $items.pinGemsPossed[this.gemPinsNames[i]] ;
+        const gemTxtQty = new PIXI.Text('*'+qty,{fontSize:18,fill:0xffffff,strokeThickness:4,stroke:0x000000, fontFamily: "ArchitectsDaughter", fontWeight: "bold"});
+        gemTxtQty.pivot.set(0,gemTxt.height/2);
+        gemTxtQty.position.set(130,23);
+        gemTxtQty.scale.set(0.9,0.9);
+        filterFrame.addChild(gemTxtQty);
+        filterFrame.gemTxtQty = gemTxtQty;
+
     };
     this.filtersGems = filtersGems;
-    
-    // build items
-    let maxGameItemsType = 120; //FIXME: add a game items limits
-    let itemsFrames = []; // empty item frame avaible
-    let bgTxtFocus = []; // empty item frame avaible
-    for (let i=0, x = 250, y = 75, xx=0, l=maxGameItemsType; i<l; i++,x+=250) {
-        // items frames containers
-        var d = new PIXI.Sprite(dataBase.textures.itemsFrame);
-        var n = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
-            d.position.set(x,y);
-            n.position.set(x,y);
-            masked_d.addChild(d);
-            masked_n.addChild(n);
-    
-        itemsFrames.push({d,n});
-
-        // text Background FX
-        var d = new PIXI.Sprite(dataBase.textures.bgTxtFocus);
-        var n = new PIXI.Sprite(dataBase.textures_n.bgTxtFocus_n);
-            d.blendMode = 1;
-            n.blendMode = 2;
-            d.position.set(x,y);
-            n.position.set(x,y);
-            masked_d.addChild(d);
-            masked_n.addChild(n);
-            bgTxtFocus.push({d,n});
-        xx++;
-        if(xx===5){
-            xx=0;
-            x = 0;
-            y+=87;
-        }
-    };
-    //TODO: DELETE ME
-    function testingwheel(e) {
-        itemsFrames.forEach(item => {
-            const yy = item.d.position.y+e.deltaY;
-            const speed = ~~((Math.random() * 10) + 1)/100;
-            TweenLite.to(item.d.position, 1+speed, {y:yy, ease:Power4.easeOut});
-            TweenLite.to(item.n.position, 1+speed, {y:yy, ease:Power4.easeOut});
-        });
-        bgTxtFocus.forEach(item => {
-            const yy = item.d.position.y+e.deltaY;
-            TweenLite.to(item.d.position, 1.5, {y:yy, ease:Power4.easeOut});
-            TweenLite.to(item.n.position, 1.2, {y:yy, ease:Power4.easeOut});
-        });
-    }
-    document.addEventListener('wheel', testingwheel.bind(this));
-
-    // build filterBy
+};
+// ini background and add to mask
+_menu_items.prototype.initialize_sorter = function(masked_d,masked_n) {
+    const dataBase = $Loader.Data2.menueItems;
     const sortBy_box = new PIXI.Container();
     var d = new PIXI.Sprite(dataBase.textures.buttonFilterBy);
     var n = new PIXI.Sprite(dataBase.textures_n.buttonFilterBy_n);
@@ -782,7 +814,7 @@ _menu_items.prototype.initialize = function() {
         n.parentGroup = PIXI.lights.normalGroup;
         sortBy_box.addChild(d,n);
         sortBy_box.pivot.set(d.width/2,d.height/2);
-        sortBy_box.position.set(0,-230);
+        sortBy_box.position.set(800,20);
         sortBy_box.scale.set(0.9,0.9);
     // gem text
     const sortTxt = new PIXI.Text(`Sort By: ${this._sortByLists[0].toUpperCase()}`,{fontSize:18,fill:0xffffff,strokeThickness:2,stroke:0x000000, fontFamily: "ArchitectsDaughter", fontWeight: "bold"});
@@ -791,22 +823,7 @@ _menu_items.prototype.initialize = function() {
     sortTxt.scale.set(0.9,0.9);
     sortBy_box.addChild(sortTxt);
     sortBy_box.sortTxt = sortTxt;
-    
-    this.parentGroup = $displayGroup.group[4];
-    this.addChild(masked_d,masked_n,frames,sortBy_box,...filtersGems);
-    this.position.set(1050,680);
-    //TODO: DELETE ME 
-    setInterval((function(){ 
-        this.bgFX1.d.position.set(-($mouse.x/5)+100,($mouse.y/50));
-        this.bgFX1.d.scale.x = 1+($mouse.x/10000);
-
-        this.bgFX2.d.position.set((($mouse.x/100)-40)*-1,(($mouse.y/45)));
-
-
-        //this.bgFX2.d.rotation = $mouse.x/70000;
-        
-       
-    }).bind(this), 20);
+    this.sortBox = sortBy_box;
 };
 //#endregion
 
@@ -819,17 +836,28 @@ _menu_items.prototype.initialize = function() {
 // setup and cache all thning need for easing tweens
 _menu_items.prototype.setupTweens = function() {
     this.tweens = {
-        Elastic1: Elastic.easeOut.config(1.2, 0.2),
-        Back1:Back.easeOut.config(4),
+        Elastic1: Elastic.easeOut.config(0.5, 1),
+        Elastic2: Elastic.easeInOut.config(0.5, 1),
     };
 };
 
 _menu_items.prototype.show = function(duration) {
+    this.toogleInteractive(true);
+    TweenLite.killTweensOf(this);
+    TweenLite.set(this, { renderable: true });
+    TweenLite.to(this.position, 0.4, {x:1050,y:680, ease:this.tweens.Elastic2,  });
+    TweenLite.to(this.scale, 0.4, {x:1,y:1, ease:this.tweens.Elastic2, delay:0.1 });
+    this.sortById();
     
 };
 
 _menu_items.prototype.hide = function(duration) {
-    
+    this.toogleInteractive(false);
+    let _this = this;
+    TweenLite.to(this.position, 0.3, {x:1050,y:680+400, ease:this.tweens.Elastic2, delay:0.1 });
+    TweenLite.to(this.scale, 0.4, {x:0,y:0.9, ease:Power4.easeOut, onComplete: function(){
+        TweenLite.set(_this, { renderable: false });
+      }});
 };
 
 _menu_items.prototype.scalePinGem = function(pinGem,large) {
@@ -852,64 +880,141 @@ _menu_items.prototype.scalePinGem = function(pinGem,large) {
 └------------------------------------------------------------------------------┘
 */
 _menu_items.prototype.setupInteractions = function() {
-    // rotator: controle la rotation showHide du hud
     this.filtersGems.forEach(pinGem => {
-        pinGem.interactive = true;
         pinGem.on('pointerover' , this.IN_pinGem  , this);
         pinGem.on('pointerout'  , this.OUT_pinGem , this);
         pinGem.on('pointerup'   , this.UP_pinGem  , this);
     });
+    this.sortBox.on('pointerover' , this.IN_sortBox  , this);
+    this.sortBox.on('pointerout'  , this.OUT_sortBox , this);
+    this.sortBox.on('pointerup'   , this.UP_sortBox  , this);
+};
+_menu_items.prototype.toogleInteractive = function(active) {
+    this.interactive = active;
+    this.filtersGems.forEach(pinGem => {
+        pinGem.interactive = active;
+    });
+    this.sortBox.interactive = active;
+};
+_menu_items.prototype.IN_sortBox = function(e) {
+    const sortBox  = e.currentTarget;
+    TweenLite.to(sortBox.scale, 1, {x:1,y:1, ease:this.tweens.Elastic1});
+};
+_menu_items.prototype.OUT_sortBox = function(e) {
+    const sortBox  = e.currentTarget;
+    TweenLite.to(sortBox.scale, 1, {x:0.9,y:0.9, ease:this.tweens.Elastic1});
+};
+
+_menu_items.prototype.UP_sortBox = function(e) {
+    const sortBox  = e.currentTarget;
+    this.nextSortValue();
+    TweenLite.to(sortBox.scale, 0.1, {x:1.15,y:1.05, ease:Power4.easeOut });
+    TweenLite.to(sortBox.scale, 0.4, {x:1,y:1, ease:Power4.easeOut, delay:0.1 });
+    sortBox.sortTxt.text = `Sort By: ${this._sortByLists[this._currentSort].toUpperCase()}`;
+    sortBox.sortTxt.pivot.x = sortBox.sortTxt.width/2;
+    if(this._currentSort===0){
+        this.sortById();
+    }else{
+        this.sortByName();
+    }
 };
 
 _menu_items.prototype.IN_pinGem = function(e) {
     const pinGem  = e.currentTarget;
     pinGem._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
     this.scalePinGem(pinGem,true);
-   
 };
-
 _menu_items.prototype.OUT_pinGem = function(e) {
     const pinGem  = e.currentTarget;
     pinGem._filters = null;
     this.scalePinGem(pinGem,false);
-    
 };
-
-// TODO: faire un sytem global event manager et interaction dans mouse
+// filtrer les items selon le pinGem choisi "all" == no filter
 _menu_items.prototype.UP_pinGem = function(e) {
     const pinGem  = e.currentTarget;
-    if(event.data.button === 0){ // _clickRight ==>
-
+    if(e.data.button === 0){ // clickLeft_ <==
+        const newFilter = pinGem.type!=="all" && pinGem.type || false;
+        this._currentFilter = newFilter;
+        this.refreshItemsGrid();
     }else
-    if(event.data.button === 2){ // clickLeft_ <==
-
+    if(e.data.button === 2){ // _clickRight ==>
+        // prendre le pinGem pour le palcer dans un slot
     }else
-    if(event.data.button === 1){ // click_Middle =>|<=
+    if(e.data.button === 1){ // click_Middle =>|<=
 
-    }
-};
-
-_menu_items.prototype.IN_rotator = function(e) {
-    const rotator  = e.currentTarget;
-    rotator._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
-    this.scaleRotator(rotator,true);
-};
-
-_menu_items.prototype.OUT_rotator = function(e) {
-    const rotator  = e.currentTarget;
-    rotator._filters = null;
-    this.scaleRotator(rotator,false);
-};
-
-// TODO: faire un sytem global event manager et interaction dans mouse
-_menu_items.prototype.UP_rotator = function(e) {
-    const rotator = e.currentTarget;
-    switch (this.showMode++) {
-        case 0: this.sleepingMode(); break;
-        case 1: this.hide(); break;
-        case 2: this.showMode = 0; this.show(); break;
     }
 };
 
 //#endregion
-//TODO: creer les hide show et animations, pour le menue et le pinHud 
+
+// positionner les items et les sort
+_menu_items.prototype.refreshItemsGrid = function() {
+    const x = 200, y = 75;
+    const margeX = 240;
+    const margeY = 100;
+    for (let i=0,xx=x,yy=y,ii=0, l=this.slots.length; i<l; i++) {
+        const slot = this.slots[i];
+        /*if(![1,5,6,8,7,12,24,56].contains(slot.id)){ //TODO: ajouter le system items pour players
+            slot.renderables = false;
+            continue;
+        };*/
+        if(this._currentFilter && this._currentFilter !== slot.type){
+            slot.renderables = false;
+            continue;
+        };
+        slot.renderables = true;
+        TweenLite.to([slot.frames.d.position,slot.frames.n.position], 1+Math.random(), {x:xx,y:yy, ease:Power4.easeOut});
+        TweenLite.to([slot.txtFx.d.position,slot.txtFx.n.position], 1+Math.random(), {x:xx,y:yy, ease:Power4.easeOut});
+        TweenLite.to([slot.txt.d.position,slot.txt.n.position], 1+Math.random()/1.2, {x:xx,y:yy, ease:Power4.easeOut});
+        TweenLite.to([slot.items.d.position,slot.items.n.position], 1+Math.random()*2.1, {x:xx,y:yy, ease:this.tweens.Elastic1});
+        ii++===4 ? (xx=x,yy+=margeY,ii=0)  : xx+=margeX ;
+    };
+};
+
+// positionner les items et les sort
+// $huds.menuItems.sortById()
+_menu_items.prototype.sortById = function() {
+    this.slots.sort( function(a, b){return a.id-b.id } );
+    this.refreshItemsGrid();
+};
+// $huds.menuItems.sortByName()
+_menu_items.prototype.sortByName = function() {
+    this.slots.sort( function(a, b){return ('' + a.name).localeCompare(b.name) } );
+    this.refreshItemsGrid();
+};
+
+// change sorting value
+_menu_items.prototype.nextSortValue = function(value) {
+    if(value){
+        this._currentSort = value;
+    }else{
+        if(this._currentSort++ === this._sortByLists.length-1){  this._currentSort = 0 }
+    };
+};
+
+// temp test , interaction mouse du menu
+_menu_items.prototype.makeInteractiveFX = function() {
+
+    /*//TODO: DELETE ME 
+    setInterval((function(){ 
+        this.bgFX1.d.position.set(-($mouse.x/5)+100,($mouse.y/50));
+        this.bgFX1.d.scale.x = 1+($mouse.x/10000);
+        this.bgFX2.d.position.set((($mouse.x/100)-40)*-1,(($mouse.y/45)));
+    }).bind(this), 20);
+     //TODO: DELETE ME
+    function testingwheel(e) {
+        itemsFrames.forEach(item => {
+            const yy = item.d.position.y+e.deltaY;
+            const speed = ~~((Math.random() * 10) + 1)/100;
+            TweenLite.to(item.d.position, 1+speed, {y:yy, ease:Power4.easeOut});
+            TweenLite.to(item.n.position, 1+speed, {y:yy, ease:Power4.easeOut});
+        });
+        bgTxtFocus.forEach(item => {
+            const yy = item.d.position.y+e.deltaY;
+            TweenLite.to(item.d.position, 1.5, {y:yy, ease:Power4.easeOut});
+            TweenLite.to(item.n.position, 1.2, {y:yy, ease:Power4.easeOut});
+        });
+    }
+    document.addEventListener('wheel', testingwheel.bind(this));*/
+    
+};

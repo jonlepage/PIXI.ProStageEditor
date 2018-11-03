@@ -18,7 +18,39 @@
 */
 class _items{
     constructor() {
-        
+        this.types = { // also used for menu filters
+            all     :{tint:0xffffff},
+            diceGem :{tint:0x425bd9},
+            food    :{tint:0xc42626},
+            plant   :{tint:0x40b312},
+            mineral :{tint:0xb7b7b7},
+            alchemie:{tint:0xbb42f3},
+            builder :{tint:0x8a5034},
+            tools   :{tint:0x464646},
+            keys    :{tint:0x584615},
+        };
+        this.totalGameItems = 0;
+        this.itemsPossed = []; // player items possed
+        // TODO: DELETE ME, give start items
+        this.itemsPossed[0] = 25;
+        this.itemsPossed[1] = 122;
+        this.itemsPossed[3] = 0;
+        this.itemsPossed[4] = 0;
+        this.itemsPossed[5] = 1;
+        this.itemsPossed[6] = 54;
+        this.itemsPossed[20] = 9;
+
+        this.pinGemsPossed = {
+            all     :0,
+            diceGem :1,
+            food    :1,
+            plant   :10,
+            mineral :0,
+            alchemie:0,
+            builder :0,
+            tools   :99,
+            keys    :999,
+        }
     };
     // getters,setters
     get id() { return this.list };
@@ -28,16 +60,15 @@ class _items{
 $items = new _items();
 console.log1('$items', $items);
 
-
-
 // initialise items and builds
 _items.prototype.initialize = function() {
+    this.totalGameItems = Object.keys($Loader.Data2.gameItems.textures).length;
     var $GameString = {itemsId:[[`blabla1`,`blabla2`,`blabla3`,`blabla4`]]}; //TODO: fair un core game strings , utiliser des regex au lieux de arrays?
     function addBase(id,name,type){
         return {
             _id: id, // identification arrays
             _name: name,
-            _type: name,
+            _type: type,
             _textureName:`i${id}`,
             description:$GameString.itemsId[id],
             rateFound: { //stastitiques indiquer au joueur drop sur monstre et planet ex: monster1:"5:14"35% (sur x rencontre, trouver x fois)
@@ -63,7 +94,7 @@ _items.prototype.initialize = function() {
             diceFactor: diceFactor, // %percent drop , les calculer si les monstre peuvre droper un items
         };
     };
-    /* {type}
+    /* {type}   
     all      : permet de mettre pinner n'importquel type de items
     diceGem  : oubligatoire d 'en agarder un , permet de pinner les diceGem pour naviger dans le jeux
     food     : la nourriture permet d'etre mixer a des diceGem pour revigorer la faim, la soif. En combat , elle peut deconcentrer ou empoisoner un monstre
@@ -75,14 +106,47 @@ _items.prototype.initialize = function() {
     keys     : objet collection unique permetant la progressio ndu storyboard.
     */
     this.list = [
-        // items 0 
-        {   
-            ...addBase(0,'gearing','tool'),
+        // url("data2/Objets/gameItems/SOURCE/png/1.png");
+        {
+            ...addBase(0,'iron gearing','tools'),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
         },
-    ]
+        // url("data2/Objets/gameItems/SOURCE/png/2.png");
+        {
+            ...addBase(0,'gold gearing','tools'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+    ];
+    //FIXME:  comble les vides, patientant la DB complette
+    
+    for (let i=0, l=this.totalGameItems-this.list.length; i<l; i++) {
+        const types = Object.keys(this.types);
+        types.shift();
+        this.list.push( {
+            ...addBase(0,'TODO'+(l-i),types[~~(Math.random()*types.length)]),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        })
+    };
+        
 };
 
-
+_items.prototype.getNames = function(id) {
+    if(isFinite(id)){
+        return this.list[id]._name;
+    }else{
+        return this.list.map(obj => obj._name);
+    };
+};
+_items.prototype.getTypes = function(id) {
+    if(isFinite(id)){
+        return this.list[id]._type;
+    }else{
+        return this.list.map(obj => obj._type);
+    };
+};

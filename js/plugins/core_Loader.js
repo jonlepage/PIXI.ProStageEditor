@@ -103,14 +103,8 @@ _coreLoader.prototype.preLoad_Json = function() {
 _coreLoader.prototype.checkFontsLoaded = function() {
     this.isLoading = true;
     const fonts = [
-        {name:"ShadowsIntoLight", url:"fonts/ShadowsIntoLight.ttf"},
         {name:"ArchitectsDaughter", url:"fonts/ArchitectsDaughter.ttf"},
-        {name:"Flux_Architect_Regular", url:"fonts/Flux_Architect_Regular.ttf"},
-        {name:"cartoon2", url:"fonts/cartoon2.ttf"},
-        {name:"zclear1", url:"fonts/zclear1.ttf"},
         {name:"zBirdyGame", url:"fonts/zBirdyGame.ttf"},
-
-        
     ];
     fonts.forEach(font => {
         Graphics.loadFont(font.name, font.url);
