@@ -1887,7 +1887,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // mX,mY: mouse Position
     function checkAnchor() {
-        if (this.type === "spineSheet") { return }; // spine dont have custom anchor
+        if (this.type === "spineSheet") { return }; // spine dont have custom anchor 
         if(this.mouseIn){ // if pointer_overIN
             const z = CAGE_TILESHEETS.scale.x; //zoom factor
             let b = this._boundsRect;

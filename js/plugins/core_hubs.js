@@ -46,351 +46,6 @@ _huds.prototype.getHubsList = function() {
     return list;
 };
 
-
-/*#region [rgba(255, 255, 255, 0.07)]
-┌------------------------------------------------------------------------------┐
-  GLOBAL $huds.displacement CLASS: _huds_displacement
-  hubs de stamina pour deplacement et injection des items
-└------------------------------------------------------------------------------┘
-*/
-class _huds_displacement extends PIXI.Container{
-    constructor() {
-        super();
-        this.initializeProprety();
-        this.initialize();
-        this.setupTweens();
-        this.setupInteractions();
-    };
-    // getters,setters
-    get d() { return this.Sprites.d };
-    get n() { return this.Sprites.n };
-
-};
-// add basic proprety
-_huds_displacement.prototype.initializeProprety = function() {
-    this.tweens = {};
-    this.Sprites = {};
-    this.stamina = 9999;
-};
-// create spine displacement hud
-_huds_displacement.prototype.initialize = function() {
-    const dataBase = $Loader.Data2.hud_displacement;
-    const d = new PIXI.spine.Spine(dataBase.spineData);
-    const n = d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
-    this.Sprites.d = d;
-    this.Sprites.n = n;
-
-    const idle = d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-    idle.timeScale = 0.05;
-
-    d.parentGroup = $displayGroup.group[4]; //FIXME:
-    d.stateData.defaultMix = 0.2;
-    d.skeleton.setSlotsToSetupPose();
-
-    // setup stamina texte huds
-    const slot = this.d.skeleton.findSlot("txt_stamina"); // 1px sprite slot for add text
-    const style = new PIXI.TextStyle({ dropShadow: true, dropShadowAlpha: 0.4, 
-        dropShadowAngle: 1.6, dropShadowBlur: 4, dropShadowDistance: 4, 
-        fill: ["black", "#6d6d6d"], fillGradientStops: [0.5, 0.4], fontFamily: "zBirdyGame", 
-        fontSize: 76, letterSpacing: -3, lineJoin: "round", miterLimit: 15, padding: 6,
-        fontWeight: "bold", stroke: "white", strokeThickness: 6 });
-    const txt = new PIXI.Text(this.stamina+'',style);
-    txt.pivot.set(txt.width/2,txt.height/2);
-    slot.currentSprite.addChild(txt);
-    this.stamina_txt = txt;
-   
-    this.addChild(d);
-};
-//#endregion
-
-/*#region [rgba(0, 200, 0, 0.04)]
-┌------------------------------------------------------------------------------┐
-  TWEENS EASINGS DISPLACEMENTS
-  https://greensock.com/docs/Core/Animation
-└------------------------------------------------------------------------------┘
-*/
-_huds_displacement.prototype.setupTweens = function() {
-    this.tweens.position = new TweenLite(this.position, 0, {
-        x:this.position.x,
-        y:this.position.y,
-        ease:Elastic.easeOut.config(1.2, 0.4),
-        //onComplete:myFunction, onCompleteParams:["param1","param2"]; // myAnimation.eventCallback("onComplete", myFunction, ["param1","param2"]);
-    });
-};
-
-_huds_displacement.prototype.show = function(duration) {
-    this.d.state.addEmptyAnimation(1,0.1);
-    this.move(100,995,duration);
-};
-
-_huds_displacement.prototype.hide = function(duration) {
-    this.move(-150,850,duration);
-};
-
-_huds_displacement.prototype.show_modeDice = function() {
-    this.d.state.setAnimation(1, "hover_dice", false);
-    this.move(180,890,1);
-};
-
-_huds_displacement.prototype.show_modeBigSta = function() {
-    this.move(140,940,2);
-    this.d.state.setAnimation(1, "hover_stamina", false);
-};
-
-_huds_displacement.prototype.move = function(x,y,duration) {
-    if(duration){
-        const t = this.tweens.position;
-        t.vars.x = x;
-        t.vars.y = y;
-        t._duration = duration;
-        t.invalidate(); // TODO: deep study source of this
-        t.play(0);
-    }else{ this.position.set(x,y) };
-};
-//#endregion
-
-/*#region [rgba(0, 0, 0, 0.4)]
-┌------------------------------------------------------------------------------┐
-  INTERACTIONs EVENTS LISTENERS
-  pointerIN, pointerOUT, pointerUP
-└------------------------------------------------------------------------------┘
-*/
-_huds_displacement.prototype.setupInteractions = function() {
-    const d = this.d;
-    d.interactive = true;
-    d.on('pointerover', this.pointerIN, this);
-    d.on('pointerout', this.pointerOUT, this);
-    d.on('pointerup', this.pointerUP, this);
-};
-
-_huds_displacement.prototype.pointerIN = function(e) {
-    this.show_modeBigSta();
-};
-
-_huds_displacement.prototype.pointerOUT = function(e) {
-    this.show(1);
-};
-
-// TODO: faire un sytem global event manager et interaction dans mouse
-_huds_displacement.prototype.pointerUP = function(e) {
-    this.show_modeDice();
-};
-//#endregion
-
-/*#region [rgba(0, 0, 0, 0.05)]
-┌------------------------------------------------------------------------------┐
-  METHODS
-└------------------------------------------------------------------------------┘
-*/
-_huds_displacement.prototype.addStamina = function(value) {
-    this.stamina+=value;
-    this.stamina_txt.text = this.stamina;
-    this.d.state.setAnimation(1, "changeNumber", false);
-    this.d.state.addEmptyAnimation(1,0.1);
-};
-//#endregion
-
-
-/*#region [rgba(255, 255, 255, 0.07)]
-┌------------------------------------------------------------------------------┐
-  GLOBAL $huds.pinBar CLASS: _huds_pinBar
-  hubs pour pinners les items d'interactions
-└------------------------------------------------------------------------------┘
-*/
-class _huds_pinBar extends PIXI.Container{
-    constructor() {
-       super();
-       this.initializeProprety();
-       this.initialize();
-       this.setupTweens();
-       this.setupInteractions();
-    };
-    // getters,setters
-    get d() { return this.Sprites.d };
-    get n() { return this.Sprites.n };
-
-};
-
-// add basic proprety
-_huds_pinBar.prototype.initializeProprety = function() {
-    this.tweens = {}; // store cache tween easing
-    this.Sprites = {};
-    this.startingPinBar = 11; // le player debut avec ce nombre de pinBar MAX 11
-    this.pinners = []; // store spine slots pinners for interactions
-    this.rotator = null; // store rotator for hideShow bar
-    this.showMode = 0; // mode for rotator, sleepmode, hide show.
-    this.position.set(1840,1048);
-};
-
-// create pinBar hud
-_huds_pinBar.prototype.initialize = function() {
-    const dataBase = $Loader.Data2.hudsPinBar;
-    const d = new PIXI.spine.Spine(dataBase.spineData);
-    const n = d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
-    this.Sprites.d = d;
-    this.Sprites.n = n;
-
-    const idle = d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-    idle.timeScale = 0.6;
-
-    // pinGems 
-    for (let i = 1, l = 12; i < l; i++) {
-        const pinner  = d.skeleton.findSlot("pinner" +i).currentSprite;
-        const pinGem  = d.skeleton.findSlot("pinGemL"+i).currentSprite;
-        const pinItem = d.skeleton.findSlot("pinItem"+i).currentSprite;
-        pinner  .renderable = false;
-        pinGem  .renderable = false;
-        pinItem .renderable = false;
-        this.pinners.push({pinner,pinGem,pinItem});
-    }
-    // remove pinners for initialise game
-    for (let i = 0, l = this.startingPinBar; i < l; i++) {
-        const p = this.pinners[i];
-        p.pinner .renderable = true;
-        p.pinGem .renderable = true;
-        p.pinItem.renderable = true;
-    }
-
-    d.parentGroup = $displayGroup.group[4]; //FIXME:
-    d.stateData.defaultMix = 0.2;
-    d.skeleton.setSlotsToSetupPose();
-    
-    // asign proprety
-    this.rotator = d.skeleton.findSlot("rotator").currentSprite;
-
-    this.addChild(d);
-};
-
-
-//#endregion
-
-/*#region [rgba(0, 200, 0, 0.04)]
-┌------------------------------------------------------------------------------┐
-  TWEENS EASINGS DISPLACEMENTS mix with spine2D core
-  https://greensock.com/docs/Core/Animation
-└------------------------------------------------------------------------------┘
-*/
-// setup and cache all thning need for easing tweens
-_huds_pinBar.prototype.setupTweens = function() {
-    this.tweens = {
-        Elastic1: Elastic.easeOut.config(1.2, 0.2),
-        Back1:Back.easeOut.config(4),
-    };
-};
-
-_huds_pinBar.prototype.show = function(duration) {
-    this.d.state.addEmptyAnimation(1,0.1);
-};
-
-_huds_pinBar.prototype.hide = function(duration) {
-    this.d.state.setAnimation(1, "hide", false);
-};
-
-// make the huds in sleep mode, all pinGem will lateral
-_huds_pinBar.prototype.sleepingMode = function(duration) {
-    this.d.state.setAnimation(1, "sleepingMode", false);
-};
-
-_huds_pinBar.prototype.scalePinGem = function(pinGem,large) {
-    if(large){
-        TweenLite.to(pinGem.scale, 0.3, {x:1, ease:this.tweens.Back1});
-    }else{
-        TweenLite.to(pinGem.scale, 0.2, {x:0.4, ease:this.tweens.Elastic1});
-    };
-};
-_huds_pinBar.prototype.scaleRotator = function(rotator,large) {
-    if(large){
-        TweenLite.to(rotator.scale, 0.8, {x:1.05,y:-1.05, ease:this.tweens.Back1});
-    }else{
-        TweenLite.to(rotator.scale, 0.5, {x:1,y:-1, ease:this.tweens.Back1});
-    };
-};
-//#endregion
-
-/*#region [rgba(0, 0, 0, 0.4)]
-┌------------------------------------------------------------------------------┐
-  INTERACTIONs EVENTS LISTENERS
-  pointerIN, pointerOUT, pointerUP
-└------------------------------------------------------------------------------┘
-*/
-_huds_pinBar.prototype.setupInteractions = function() {
-    // rotator: controle la rotation showHide du hud
-    this.rotator.interactive = true;
-    this.rotator.on('pointerover', this.IN_rotator , this);
-    this.rotator.on('pointerout' , this.OUT_rotator, this);
-    this.rotator.on('pointerup'  , this.UP_rotator , this);
-    // pinGem
-    this.pinners.forEach(slots => {
-        slots.pinGem.interactive = true;
-        slots.pinGem.on('pointerover', this.IN_pinGem , this);
-        slots.pinGem.on('pointerout' , this.OUT_pinGem, this);
-        slots.pinGem.on('pointerup'  , this.UP_pinGem , this);
-    });
-};
-
-_huds_pinBar.prototype.IN_pinGem = function(e) {
-    const pinGem  = e.currentTarget;
-    pinGem._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
-    this.scalePinGem(pinGem,true);
-   
-};
-
-_huds_pinBar.prototype.OUT_pinGem = function(e) {
-    const pinGem  = e.currentTarget;
-    pinGem._filters = null;
-    this.scalePinGem(pinGem,false);
-    
-};
-
-// TODO: faire un sytem global event manager et interaction dans mouse
-_huds_pinBar.prototype.UP_pinGem = function(e) {
-    const pinGem  = e.currentTarget;
-    if(e.data.button === 0){ // clickLeft_ <==
-       //FIXME: FAST menue items show
-       $huds.menuItems.hide();
-    }else
-    if(e.data.button === 2){ // _clickRight ==>
-       //FIXME: FAST menue items show
-       $huds.menuItems.show();
-    }else
-    if(e.data.button === 1){ // click_Middle =>|<=
-
-    }
-};
-
-_huds_pinBar.prototype.IN_rotator = function(e) {
-    const rotator  = e.currentTarget;
-    rotator._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
-    this.scaleRotator(rotator,true);
-};
-
-_huds_pinBar.prototype.OUT_rotator = function(e) {
-    const rotator  = e.currentTarget;
-    rotator._filters = null;
-    this.scaleRotator(rotator,false);
-};
-
-// TODO: faire un sytem global event manager et interaction dans mouse
-_huds_pinBar.prototype.UP_rotator = function(e) {
-    const rotator = e.currentTarget;
-    switch (this.showMode++) {
-        case 0: this.sleepingMode(); break;
-        case 1: this.hide(); break;
-        case 2: this.showMode = 0; this.show(); break;
-    }
-};
-
-//#endregion
-
-/*#region [rgba(0, 0, 0, 0.05)]
-┌------------------------------------------------------------------------------┐
-  METHODS
-└------------------------------------------------------------------------------┘
-*/
-
-//#endregion
-
-
 /*#region [rgba(255, 255, 255, 0.07)]
 ┌------------------------------------------------------------------------------┐
   GLOBAL $huds.stats CLASS: _huds_stats
@@ -593,6 +248,368 @@ _huds_stats.prototype.pointerUP = function(e) {
 */
 
 //#endregion
+
+
+/*#region [rgba(255, 255, 255, 0.07)]
+┌------------------------------------------------------------------------------┐
+  GLOBAL $huds.displacement CLASS: _huds_displacement
+  hubs de stamina pour deplacement et injection des items
+└------------------------------------------------------------------------------┘
+*/
+class _huds_displacement extends PIXI.Container{
+    constructor() {
+        super();
+        this.initializeProprety();
+        this.initialize();
+        this.setupTweens();
+        this.setupInteractions();
+    };
+    // getters,setters
+    get d() { return this.Sprites.d };
+    get n() { return this.Sprites.n };
+
+};
+// add basic proprety
+_huds_displacement.prototype.initializeProprety = function() {
+    this.tweens = {};
+    this.Sprites = {};
+    this.stamina = 9999;
+};
+// create spine displacement hud
+_huds_displacement.prototype.initialize = function() {
+    const dataBase = $Loader.Data2.hud_displacement;
+    const d = new PIXI.spine.Spine(dataBase.spineData);
+    const n = d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+    this.Sprites.d = d;
+    this.Sprites.n = n;
+
+    const idle = d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
+    idle.timeScale = 0.05;
+
+    d.parentGroup = $displayGroup.group[4]; //FIXME:
+    d.stateData.defaultMix = 0.2;
+    d.skeleton.setSlotsToSetupPose();
+
+    // setup stamina texte huds
+    const slot = this.d.skeleton.findSlot("txt_stamina"); // 1px sprite slot for add text
+    const style = new PIXI.TextStyle({ dropShadow: true, dropShadowAlpha: 0.4, 
+        dropShadowAngle: 1.6, dropShadowBlur: 4, dropShadowDistance: 4, 
+        fill: ["black", "#6d6d6d"], fillGradientStops: [0.5, 0.4], fontFamily: "zBirdyGame", 
+        fontSize: 76, letterSpacing: -3, lineJoin: "round", miterLimit: 15, padding: 6,
+        fontWeight: "bold", stroke: "white", strokeThickness: 6 });
+    const txt = new PIXI.Text(this.stamina+'',style);
+    txt.pivot.set(txt.width/2,txt.height/2);
+    slot.currentSprite.addChild(txt);
+    this.stamina_txt = txt;
+   
+    this.addChild(d);
+};
+//#endregion
+
+/*#region [rgba(0, 200, 0, 0.04)]
+┌------------------------------------------------------------------------------┐
+  TWEENS EASINGS DISPLACEMENTS
+  https://greensock.com/docs/Core/Animation
+└------------------------------------------------------------------------------┘
+*/
+_huds_displacement.prototype.setupTweens = function() {
+    this.tweens.position = new TweenLite(this.position, 0, {
+        x:this.position.x,
+        y:this.position.y,
+        ease:Elastic.easeOut.config(1.2, 0.4),
+        //onComplete:myFunction, onCompleteParams:["param1","param2"]; // myAnimation.eventCallback("onComplete", myFunction, ["param1","param2"]);
+    });
+};
+
+_huds_displacement.prototype.show = function(duration) {
+    this.d.state.addEmptyAnimation(1,0.1);
+    this.move(100,995,duration);
+};
+
+_huds_displacement.prototype.hide = function(duration) {
+    this.move(-150,850,duration);
+};
+
+_huds_displacement.prototype.show_modeDice = function() {
+    this.d.state.setAnimation(1, "hover_dice", false);
+    this.move(180,890,1);
+};
+
+_huds_displacement.prototype.show_modeBigSta = function() {
+    this.move(140,940,2);
+    this.d.state.setAnimation(1, "hover_stamina", false);
+};
+
+_huds_displacement.prototype.move = function(x,y,duration) {
+    if(duration){
+        const t = this.tweens.position;
+        t.vars.x = x;
+        t.vars.y = y;
+        t._duration = duration;
+        t.invalidate(); // TODO: deep study source of this
+        t.play(0);
+    }else{ this.position.set(x,y) };
+};
+//#endregion
+
+/*#region [rgba(0, 0, 0, 0.4)]
+┌------------------------------------------------------------------------------┐
+  INTERACTIONs EVENTS LISTENERS
+  pointerIN, pointerOUT, pointerUP
+└------------------------------------------------------------------------------┘
+*/
+_huds_displacement.prototype.setupInteractions = function() {
+    const d = this.d;
+    d.interactive = true;
+    d.on('pointerover', this.pointerIN, this);
+    d.on('pointerout', this.pointerOUT, this);
+    d.on('pointerup', this.pointerUP, this);
+};
+
+_huds_displacement.prototype.pointerIN = function(e) {
+    this.show_modeBigSta();
+};
+
+_huds_displacement.prototype.pointerOUT = function(e) {
+    this.show(1);
+};
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_displacement.prototype.pointerUP = function(e) {
+    this.show_modeDice();
+};
+//#endregion
+
+/*#region [rgba(0, 0, 0, 0.05)]
+┌------------------------------------------------------------------------------┐
+  METHODS
+└------------------------------------------------------------------------------┘
+*/
+_huds_displacement.prototype.addStamina = function(value) {
+    this.stamina+=value;
+    this.stamina_txt.text = this.stamina;
+    this.d.state.setAnimation(1, "changeNumber", false);
+    this.d.state.addEmptyAnimation(1,0.1);
+};
+//#endregion
+
+
+/*#region [rgba(255, 255, 255, 0.07)]
+┌------------------------------------------------------------------------------┐
+  GLOBAL $huds.pinBar CLASS: _huds_pinBar
+  hubs pour pinners les items d'interactions
+└------------------------------------------------------------------------------┘
+*/
+class _huds_pinBar extends PIXI.Container{
+    constructor() {
+       super();
+       this.initializeProprety();
+       this.initialize();
+       this.setupTweens();
+       //this.setupInteractions();
+    };
+    // getters,setters
+    get d() { return this.Sprites.d };
+    get n() { return this.Sprites.n };
+
+};
+
+// add basic proprety
+_huds_pinBar.prototype.initializeProprety = function() {
+    this.tweens = {}; // store cache tween easing
+    this.Sprites = {};
+    this.startingPinBar = 11; // le player debut avec ce nombre de pinBar MAX 11
+    this.pinGems = []; // store slots pinners for interactions
+    this.rotator = null; // store rotator for hideShow bar
+    this.showMode = 0; // mode for rotator, sleepmode, hide show.
+    this.position.set(1830,1050);
+    this.parentGroup = $displayGroup.group[4];
+};
+
+// create pinBar hud
+_huds_pinBar.prototype.initialize = function() {
+    const dataBase = $Loader.Data2.hudsPinBar;
+    const masterBar = new PIXI.Container();
+    const masterBar_d = new PIXI.Sprite(dataBase.textures.pinBar);
+    const masterBar_n = new PIXI.Sprite(dataBase.textures_n.pinBar_n);
+    masterBar_d.parentGroup = PIXI.lights.diffuseGroup;
+    masterBar_n.parentGroup = PIXI.lights.normalGroup;
+    masterBar.addChild(masterBar_d,masterBar_n);
+    masterBar.pivot.set(masterBar_d.width, masterBar_d.height/2);
+   
+
+    const rotator = new PIXI.Container();
+    const rotator_d = new PIXI.Sprite(dataBase.textures.rotator);
+    const rotator_n = new PIXI.Sprite(dataBase.textures_n.rotator_n);
+    rotator_d.parentGroup = PIXI.lights.diffuseGroup;
+    rotator_n.parentGroup = PIXI.lights.normalGroup;
+    rotator.addChild(rotator_d,rotator_n);
+    rotator.pivot.set(rotator_d.width/2, rotator_d.height/2);
+    rotator.position.set(-12, 0);
+    this.rotator = rotator;
+
+    this.initialisePinGems(masterBar);
+    this.addChild(rotator,masterBar);
+};
+
+_huds_pinBar.prototype.initialisePinGems = function(masterBar) {
+    const dataBase = $Loader.Data2.hudsPinBar;
+    for (let i=0, x=86,y=30, mx=133, l=11; i<l; i++,x+=mx) { // add 11 pinGem 
+        // bg Gem pinner
+        const pinner = new PIXI.Container();
+        const pinner_d = new PIXI.Sprite(dataBase.textures.pinner);
+        const pinner_n = new PIXI.Sprite(dataBase.textures_n.pinner_n);
+        pinner_d.parentGroup = PIXI.lights.diffuseGroup;
+        pinner_n.parentGroup = PIXI.lights.normalGroup;
+        pinner.addChild(pinner_d,pinner_n);
+        pinner.pivot.set(pinner_d.width/2,pinner_d.height-6);
+
+        // Gem
+        const pinGem = new PIXI.Container();
+        const pinGem_d = new PIXI.Sprite(dataBase.textures.pinGemL);
+        const pinGem_n = new PIXI.Sprite(dataBase.textures_n.pinGemL_n);
+        pinGem_d.parentGroup = PIXI.lights.diffuseGroup;
+        pinGem_n.parentGroup = PIXI.lights.normalGroup;
+        pinGem.addChild(pinGem_d,pinGem_n);
+        pinGem.pivot.set(pinGem_d.width/2,pinGem_d.height/2);
+        pinGem.scale.set(0.4,1)
+        pinner.addChild(pinGem);
+        pinGem.position.set(25,50);
+        
+        masterBar.addChild(pinner)
+        pinner.position.set(x,y);
+        this.pinGems[i] = {pinner,pinGem};
+    };
+        
+};
+
+//#endregion
+
+/*#region [rgba(0, 200, 0, 0.04)]
+┌------------------------------------------------------------------------------┐
+  TWEENS EASINGS DISPLACEMENTS mix with spine2D core
+  https://greensock.com/docs/Core/Animation
+└------------------------------------------------------------------------------┘
+*/
+// setup and cache all thning need for easing tweens
+_huds_pinBar.prototype.setupTweens = function() {
+    this.tweens = {
+        Elastic1: Elastic.easeOut.config(1.2, 0.2),
+        Back1:Back.easeOut.config(4),
+    };
+    // test infinite rotate FIXME: 
+    TweenLite.to(this.rotator, 90, {rotation:Math.PI*2, ease:Power0.easeNone , repeat:-1 });
+    this.pinGems.forEach(obj => {
+        var tl = new TimelineLite();
+        tl.from(obj.pinner, 6, {rotation: 1})
+        .from(obj.pinner, 6, {rotation: -1},0.5)
+    });
+};
+
+_huds_pinBar.prototype.show = function(duration) {
+    this.d.state.addEmptyAnimation(1,0.1);
+};
+
+_huds_pinBar.prototype.hide = function(duration) {
+    this.d.state.setAnimation(1, "hide", false);
+};
+
+// make the huds in sleep mode, all pinGem will lateral
+_huds_pinBar.prototype.sleepingMode = function(duration) {
+    this.d.state.setAnimation(1, "sleepingMode", false);
+};
+
+_huds_pinBar.prototype.scalePinGem = function(pinGem,large) {
+    if(large){
+        TweenLite.to(pinGem.scale, 0.3, {x:1, ease:this.tweens.Back1});
+    }else{
+        TweenLite.to(pinGem.scale, 0.2, {x:0.4, ease:this.tweens.Elastic1});
+    };
+};
+_huds_pinBar.prototype.scaleRotator = function(rotator,large) {
+    if(large){
+        TweenLite.to(rotator.scale, 0.8, {x:1.05,y:-1.05, ease:this.tweens.Back1});
+    }else{
+        TweenLite.to(rotator.scale, 0.5, {x:1,y:-1, ease:this.tweens.Back1});
+    };
+};
+//#endregion
+
+/*#region [rgba(0, 0, 0, 0.4)]
+┌------------------------------------------------------------------------------┐
+  INTERACTIONs EVENTS LISTENERS
+  pointerIN, pointerOUT, pointerUP
+└------------------------------------------------------------------------------┘
+*/
+_huds_pinBar.prototype.setupInteractions = function() {
+    // rotator: controle la rotation showHide du hud
+    this.rotator.interactive = true;
+    this.rotator.on('pointerover', this.IN_rotator , this);
+    this.rotator.on('pointerout' , this.OUT_rotator, this);
+    this.rotator.on('pointerup'  , this.UP_rotator , this);
+    // pinGem
+    this.pinners.forEach(slots => {
+        slots.pinGem.interactive = true;
+        slots.pinGem.on('pointerover', this.IN_pinGem , this);
+        slots.pinGem.on('pointerout' , this.OUT_pinGem, this);
+        slots.pinGem.on('pointerup'  , this.UP_pinGem , this);
+    });
+};
+
+_huds_pinBar.prototype.IN_pinGem = function(e) {
+    const pinGem  = e.currentTarget;
+    pinGem._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
+    this.scalePinGem(pinGem,true);
+   
+};
+
+_huds_pinBar.prototype.OUT_pinGem = function(e) {
+    const pinGem  = e.currentTarget;
+    pinGem._filters = null;
+    this.scalePinGem(pinGem,false);
+    
+};
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_pinBar.prototype.UP_pinGem = function(e) {
+    const pinGem  = e.currentTarget;
+    if(e.data.button === 0){ // clickLeft_ <==
+       //FIXME: FAST menue items show
+       $huds.menuItems.hide();
+    }else
+    if(e.data.button === 2){ // _clickRight ==>
+       //FIXME: FAST menue items show
+       $huds.menuItems.show();
+    }else
+    if(e.data.button === 1){ // click_Middle =>|<=
+
+    }
+};
+
+_huds_pinBar.prototype.IN_rotator = function(e) {
+    const rotator  = e.currentTarget;
+    rotator._filters = [new PIXI.filters.OutlineFilter (2, 0x000000, 1)]; // TODO:  make a filters managers cache
+    this.scaleRotator(rotator,true);
+};
+
+_huds_pinBar.prototype.OUT_rotator = function(e) {
+    const rotator  = e.currentTarget;
+    rotator._filters = null;
+    this.scaleRotator(rotator,false);
+};
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_pinBar.prototype.UP_rotator = function(e) {
+    const rotator = e.currentTarget;
+    switch (this.showMode++) {
+        case 0: this.sleepingMode(); break;
+        case 1: this.hide(); break;
+        case 2: this.showMode = 0; this.show(); break;
+    }
+};
+
+//#endregion
+
 
 
 
