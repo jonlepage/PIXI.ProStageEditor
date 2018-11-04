@@ -406,7 +406,7 @@ class _huds_pinBar extends PIXI.Container{
        this.initializeProprety();
        this.initialize();
        this.setupTweens();
-       //this.setupInteractions();
+       this.setupInteractions();
     };
     // getters,setters
     get d() { return this.Sprites.d };
@@ -436,6 +436,7 @@ _huds_pinBar.prototype.initialize = function() {
     masterBar_n.parentGroup = PIXI.lights.normalGroup;
     masterBar.addChild(masterBar_d,masterBar_n);
     masterBar.pivot.set(masterBar_d.width, masterBar_d.height/2);
+    this.masterBar = masterBar;
    
 
     const rotator = new PIXI.Container();
@@ -497,26 +498,77 @@ _huds_pinBar.prototype.setupTweens = function() {
         Elastic1: Elastic.easeOut.config(1.2, 0.2),
         Back1:Back.easeOut.config(4),
     };
-    // test infinite rotate FIXME: 
-    TweenLite.to(this.rotator, 90, {rotation:Math.PI*2, ease:Power0.easeNone , repeat:-1 });
-    this.pinGems.forEach(obj => {
-        var tl = new TimelineLite();
-        tl.from(obj.pinner, 6, {rotation: 1})
-        .from(obj.pinner, 6, {rotation: -1},0.5)
+    TweenLite.to(this.rotator, 90, {
+        rotation:Math.PI*2, ease:Power0.easeNone , repeat:-1 
     });
+    let pinners_swing = 0.04;
+    this.pinGems.forEach(obj => {
+        obj.pinner.rotation = pinners_swing;
+        const ani = TweenMax.to(obj.pinner, 8, {
+            rotation: -pinners_swing,
+            ease: Power2.easeInOut,
+            repeat: -1,
+            yoyoEase: true,
+          });
+          ani.seek( ~~(Math.random(8)*8) );
+    });
+    let bar_swing = 0.005;
+    this.masterBar.rotation = bar_swing;
+    TweenMax.to(this.masterBar, 6, {
+        rotation: -bar_swing,
+        ease: Power1.easeInOut,
+        repeat: -1,
+        yoyoEase: true,
+      });
 };
 
 _huds_pinBar.prototype.show = function(duration) {
-    this.d.state.addEmptyAnimation(1,0.1);
+    // rotator masterBar swing
+    const masterBar = new TimelineLite()
+    .to( this.masterBar, 0.4, { rotation:-0.005, ease:Back.easeOut.config(1.2) } )
+    .to( this.masterBar, 6, { rotation:0.005, ease:Power1.easeInOut , repeat: -1, yoyoEase: true } );
+    let pinners_swing = 0.04;
+    this.pinGems.forEach(obj => {
+        obj.pinner.rotation = pinners_swing;
+        const ani = TweenMax.to(obj.pinner, 8, {
+            rotation: -pinners_swing,
+            ease: Power2.easeInOut,
+            repeat: -1,
+            yoyoEase: true,
+          });
+          ani.seek( ~~(Math.random(8)*8) );
+    });
 };
 
 _huds_pinBar.prototype.hide = function(duration) {
-    this.d.state.setAnimation(1, "hide", false);
+    // rotator swing
+    const rotator = new TimelineLite()
+    .to( this.rotator, 0.3, { rotation:-this.rotator.rotation*10, ease:Power2.easeIn } )
+    .to( this.rotator, 0.4, { rotation:0, ease:Power2.easeOut } )
+    .to( this.rotator, 90, { rotation:Math.PI*2, ease:Power0.easeNone , repeat: -1 } );
+    // rotator masterBar swing
+    TweenLite.killTweensOf(this.masterBar);
+    TweenLite.to(this.masterBar, 0.5, {
+        rotation:-Math.PI/2, ease:Back.easeIn.config(1.2),
+    });
 };
 
 // make the huds in sleep mode, all pinGem will lateral
 _huds_pinBar.prototype.sleepingMode = function(duration) {
-    this.d.state.setAnimation(1, "sleepingMode", false);
+    // rotator swing
+    const rotator = new TimelineLite()
+    .to( this.rotator, 0.7, { rotation:-this.rotator.rotation*10, ease:Power2.easeInOut } )
+    .to( this.rotator, 90, { rotation:Math.PI*2, ease:Power0.easeNone , repeat: -1 } );
+    // rotator masterBar swing
+    const masterBar = new TimelineLite()
+    .to( this.masterBar, 0.2, { rotation:0.02, ease:Power4.easeIn } )
+    .to( this.masterBar, 0.7, { rotation:-0.005, ease:Back.easeOut.config(1.7) } )
+    .to( this.masterBar, 6, { rotation:0.005, ease:Power1.easeInOut , repeat: -1, yoyoEase: true } );
+    // pinGems
+    this.pinGems.forEach(obj => {
+        const masterBar = new TimelineLite()
+        .to( obj.pinner, 1, { rotation:-Math.PI/2, ease:Bounce.easeOut } )
+    });
 };
 
 _huds_pinBar.prototype.scalePinGem = function(pinGem,large) {
@@ -548,11 +600,11 @@ _huds_pinBar.prototype.setupInteractions = function() {
     this.rotator.on('pointerout' , this.OUT_rotator, this);
     this.rotator.on('pointerup'  , this.UP_rotator , this);
     // pinGem
-    this.pinners.forEach(slots => {
-        slots.pinGem.interactive = true;
-        slots.pinGem.on('pointerover', this.IN_pinGem , this);
-        slots.pinGem.on('pointerout' , this.OUT_pinGem, this);
-        slots.pinGem.on('pointerup'  , this.UP_pinGem , this);
+    this.pinGems.forEach(obj => {
+        obj.pinGem.interactive = true;
+        obj.pinGem.on('pointerover', this.IN_pinGem , this);
+        obj.pinGem.on('pointerout' , this.OUT_pinGem, this);
+        obj.pinGem.on('pointerup'  , this.UP_pinGem , this);
     });
 };
 
