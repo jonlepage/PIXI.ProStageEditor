@@ -407,6 +407,7 @@ class _huds_pinBar extends PIXI.Container{
        this.initialize();
        this.setupTweens();
        this.setupInteractions();
+       this.setPinSlotsAvaible(); // render only player start value slots avaible
     };
     // getters,setters
     get d() { return this.Sprites.d };
@@ -435,7 +436,7 @@ _huds_pinBar.prototype.initialize = function() {
     masterBar_d.parentGroup = PIXI.lights.diffuseGroup;
     masterBar_n.parentGroup = PIXI.lights.normalGroup;
     masterBar.addChild(masterBar_d,masterBar_n);
-    masterBar.pivot.set(masterBar_d.width, masterBar_d.height/2);
+    masterBar.pivot.set(masterBar_d.width-10,( masterBar_d.height/2)+8);
     this.masterBar = masterBar;
    
 
@@ -455,7 +456,7 @@ _huds_pinBar.prototype.initialize = function() {
 
 _huds_pinBar.prototype.initialisePinGems = function(masterBar) {
     const dataBase = $Loader.Data2.hudsPinBar;
-    for (let i=0, x=86,y=30, mx=133, l=11; i<l; i++,x+=mx) { // add 11 pinGem 
+    for (let i=0, x=87,y=27, mx=133, l=11; i<l; i++,x+=mx) { // add 11 pinGem 
         // bg Gem pinner
         const pinner = new PIXI.Container();
         const pinner_d = new PIXI.Sprite(dataBase.textures.pinner);
@@ -463,7 +464,7 @@ _huds_pinBar.prototype.initialisePinGems = function(masterBar) {
         pinner_d.parentGroup = PIXI.lights.diffuseGroup;
         pinner_n.parentGroup = PIXI.lights.normalGroup;
         pinner.addChild(pinner_d,pinner_n);
-        pinner.pivot.set(pinner_d.width/2,pinner_d.height-6);
+        pinner.pivot.set(pinner_d.width/2,pinner_d.height-8);
 
         // Gem
         const pinGem = new PIXI.Container();
@@ -480,6 +481,9 @@ _huds_pinBar.prototype.initialisePinGems = function(masterBar) {
         masterBar.addChild(pinner)
         pinner.position.set(x,y);
         this.pinGems[i] = {pinner,pinGem};
+        // TODO: MAKE class for change type or setter ?
+        this.pinGems[i].type = 'diceGem';
+        pinGem_d.tint = $items.types['diceGem'].tint;
     };
         
 };
@@ -662,7 +666,15 @@ _huds_pinBar.prototype.UP_rotator = function(e) {
 
 //#endregion
 
-
+// rendering player posseded pinSlots 
+_huds_pinBar.prototype.setPinSlotsAvaible = function() {
+    const posseded = $items.pinSlotPossed;
+    const slots = this.pinGems
+    for (let i=0, l= slots.length; i<l; i++) {
+        const pinSlot = slots[i].pinner.renderable = i<posseded;
+    };
+        
+};
 
 
 
@@ -785,24 +797,31 @@ _menu_items.prototype.initialize_items = function(masked_d,masked_n) {
         // items frames containers
         const itemFrame_d = new PIXI.Sprite(dataBase.textures.itemsFrame);
         const itemFrame_n = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
+            itemFrame_d.pivot.set(itemFrame_d.width/2,itemFrame_d.height/2);
+            itemFrame_n.pivot.set(itemFrame_n.width/2,itemFrame_n.height/2);
             masked_d.addChild(itemFrame_d);
             masked_n.addChild(itemFrame_n);
         this.slots[i].frames = {d:itemFrame_d, n:itemFrame_n};
+        itemFrame_d.id = i; // permet de retoruver le slot pour easing animation TODO: FIXME:
         // text Background FX
         const txtFx_d = new PIXI.Sprite(dataBase.textures.bgTxtFocus);
         const txtFx_n = new PIXI.Sprite(dataBase.textures_n.bgTxtFocus_n);
             txtFx_d.blendMode = 1;
             txtFx_n.blendMode = 2;
-            txtFx_n.alpha = 0.5;
+            txtFx_d.alpha = 0.3;
             masked_d.addChild(txtFx_d);
             masked_n.addChild(txtFx_n);
         this.slots[i].txtFx = {d:txtFx_d, n:txtFx_n};
-        const txt = `iron gearing\n *:6(2)\n [12]`;
+        const txt = `${$items.list[i]._name}\n *:6(2)\n [12]`;
         const spriteTxt = new PIXI.Text(txt,{fontSize:16,fill:0x000000,strokeThickness:2,stroke:0xffffff, fontFamily: "ArchitectsDaughter", letterSpacing: -1,fontWeight: "bold",lineHeight: 20});
         masked_d.addChild(spriteTxt);
         this.slots[i].txt = {d:spriteTxt, n:spriteTxt};
-        spriteTxt.pivot.x = -74;
-        // add items 
+        spriteTxt.pivot.set(-45,40);
+        // add items
+        const item_d = this.slots[i].items.d;
+        const item_n = this.slots[i].items.n;
+        item_d.pivot.set(item_d.width/2,item_d.height/2);
+        item_n.pivot.set(item_n.width/2,item_n.height/2);
         masked_d.addChild(this.slots[i].items.d);
         masked_n.addChild(this.slots[i].items.n);
     };
@@ -954,17 +973,59 @@ _menu_items.prototype.setupInteractions = function() {
         pinGem.on('pointerout'  , this.OUT_pinGem , this);
         pinGem.on('pointerup'   , this.UP_pinGem  , this);
     });
+    this.slots.forEach(slot => {
+        slot.frames.d.interactive = true;
+        slot.frames.d.on('pointerover' , this.IN_itemSlot  , this);
+        slot.frames.d.on('pointerout'  , this.OUT_itemSlot , this);
+        slot.frames.d.on('pointerup'   , this.UP_itemSlot  , this);
+    });
     this.sortBox.on('pointerover' , this.IN_sortBox  , this);
     this.sortBox.on('pointerout'  , this.OUT_sortBox , this);
     this.sortBox.on('pointerup'   , this.UP_sortBox  , this);
 };
 _menu_items.prototype.toogleInteractive = function(active) {
-    this.interactive = active;
+    //this.interactive = active;
     this.filtersGems.forEach(pinGem => {
         pinGem.interactive = active;
     });
     this.sortBox.interactive = active;
 };
+
+_menu_items.prototype.IN_itemSlot = function(e) {
+    const slot  = e.currentTarget;
+    const parentSlot = this.slots[slot.id]; //FIXME:  on peut pas utiliser sa , car quand on sort, la list array change
+    slot.blendMode = 1;
+    parentSlot.frames.n.blendMode = 1;
+    const tl = new TimelineLite()
+    .to( slot.scale, 0.4, { x:1.6,y:1.6, ease:Power4.easeOut } )
+    .to( slot, 0.5, { rotation:-0.15, ease:Back.easeOut.config(1.7) } )
+    .to( slot, 0.5, { rotation:0.15, ease:Power1.easeInOut , repeat: -1, yoyoEase: true } );
+    // item
+    TweenLite.to(parentSlot.items.d.scale, 0.8, {x:1.4,y:1.4, ease:Expo.easeOut});
+    TweenLite.to(parentSlot.items.n.scale, 0.9, {x:1.4,y:1.4, ease:Expo.easeOut});
+    // txt FX diffuse
+    TweenLite.to(parentSlot.txtFx.d, 3, {alpha:0.8, ease:Expo.easeOut});
+   
+};
+_menu_items.prototype.OUT_itemSlot = function(e) {
+    const slot  = e.currentTarget;
+    const parentSlot = this.slots[slot.id];
+    slot.blendMode = 0;
+    parentSlot.frames.n.blendMode = 0;
+    TweenLite.killTweensOf(slot.scale);
+    TweenLite.killTweensOf(slot);
+    TweenLite.to(slot, 1, {rotation:0, ease:Elastic.easeOut.config(1.5, 0.3)});
+    TweenLite.to(slot.scale, 0.3, {x:1,y:1, ease:Expo.easeOut});
+    TweenLite.to(parentSlot.items.d.scale, 0.4, {x:1,y:1, ease:Expo.easeOut});
+    TweenLite.to(parentSlot.items.n.scale, 0.4, {x:1,y:1, ease:Expo.easeOut});
+    // txt FX diffuse
+    TweenLite.to(parentSlot.txtFx.d, 2, {alpha:0.2, ease:Expo.easeOut});
+};
+
+_menu_items.prototype.UP_itemSlot = function(e) {
+    const slot  = e.currentTarget;
+};
+
 _menu_items.prototype.IN_sortBox = function(e) {
     const sortBox  = e.currentTarget;
     TweenLite.to(sortBox.scale, 1, {x:1,y:1, ease:this.tweens.Elastic1});
@@ -1016,9 +1077,9 @@ _menu_items.prototype.UP_pinGem = function(e) {
 
 //#endregion
 
-// positionner les items et les sort
+// positionne les items et les sort
 _menu_items.prototype.refreshItemsGrid = function() {
-    const x = 200, y = 75;
+    const x = 260, y = 110;
     const margeX = 240;
     const margeY = 100;
     for (let i=0,xx=x,yy=y,ii=0, l=this.slots.length; i<l; i++) {
@@ -1033,7 +1094,7 @@ _menu_items.prototype.refreshItemsGrid = function() {
         };
         slot.renderables = true;
         TweenLite.to([slot.frames.d.position,slot.frames.n.position], 1+Math.random(), {x:xx,y:yy, ease:Power4.easeOut});
-        TweenLite.to([slot.txtFx.d.position,slot.txtFx.n.position], 1+Math.random(), {x:xx,y:yy, ease:Power4.easeOut});
+        TweenLite.to([slot.txtFx.d.position,slot.txtFx.n.position], 1+Math.random(), {x:xx,y:yy-40, ease:Power4.easeOut});
         TweenLite.to([slot.txt.d.position,slot.txt.n.position], 1+Math.random()/1.2, {x:xx,y:yy, ease:Power4.easeOut});
         TweenLite.to([slot.items.d.position,slot.items.n.position], 1+Math.random()*2.1, {x:xx,y:yy, ease:this.tweens.Elastic1});
         ii++===4 ? (xx=x,yy+=margeY,ii=0)  : xx+=margeX ;

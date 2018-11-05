@@ -51,6 +51,7 @@ class _items{
             tools   :99,
             keys    :999,
         }
+        this.pinSlotPossed = 4;
     };
     // getters,setters
     get id() { return this.list };
@@ -105,29 +106,30 @@ _items.prototype.initialize = function() {
     tools    : outils pour les interaction et les action dans l'environements, certain outils seron limiter par leur nombre
     keys     : objet collection unique permetant la progressio ndu storyboard.
     */
+   // note: localisation translate: les noms seront appeller grace a la DB $local.items(id).name
     this.list = [
-        // url("data2/Objets/gameItems/SOURCE/png/1.png");
+        // url("data2/Objets/gameItems/SOURCE/png/0.png");
         {
             ...addBase(0,'iron gearing','tools'),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
         },
-        // url("data2/Objets/gameItems/SOURCE/png/2.png");
+        // url("data2/Objets/gameItems/SOURCE/png/1.png");
         {
-            ...addBase(0,'gold gearing','tools'),
+            ...addBase(1,'gold gearing','tools'),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
         },
     ];
-    //FIXME:  comble les vides, patientant la DB complette
-    
-    for (let i=0, l=this.totalGameItems-this.list.length; i<l; i++) {
+    //FIXME:  comble les vides, patientant la DB complette  DELETTE ME
+    for (let i=0, l=this.totalGameItems; i<l; i++) {
+        if(this.list[i]){ continue; };
         const types = Object.keys(this.types);
         types.shift();
         this.list.push( {
-            ...addBase(0,'TODO'+(l-i),types[~~(Math.random()*types.length)]),
+            ...addBase(i,'TODO'+(l-i),types[~~(Math.random()*types.length)]),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
