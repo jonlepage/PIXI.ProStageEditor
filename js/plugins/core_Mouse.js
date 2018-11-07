@@ -163,6 +163,25 @@ _mouse.prototype.startTrail = function(e) {
 
 }
 
+// add items or other to the mouse pointer
+_mouse.prototype.addItems = function(obj) {
+    // si ces un items, ajouter a la sourits
+    if(!!obj.items){
+        const newItem = $items.createItemsSpriteByID(obj.id);
+        newItem.cage.parentGroup = $displayGroup.group[4];
+        newItem.cage.pivot.set(newItem.cage.width/2,newItem.cage.height/2);
+        this.addChild(newItem.cage);
+        this.holdingItem = {sprite:newItem.cage,data:obj};
+    };
+}
+// add items or other to the mouse pointer
+_mouse.prototype.removeItems = function(obj) {
+    // si ces un items, ajouter a la sourits
+    if(!this.holdingItem){
+        throw console.error("mouse removeItems ERREUR, check this.holdingItem");
+    }
+}
+
 //┌-----------------------------------------------------------------------------┐
 // HACK RMMV GRAFIC LISTENER
 // because removed video canvas, and f4 screen scale

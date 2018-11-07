@@ -61,6 +61,18 @@ class _items{
 $items = new _items();
 console.log1('$items', $items);
 
+// initialise items and builds //TODO: verifier si la memoire ce vide , les parentGroup pourrait empecher le garbage collector
+_items.prototype.createItemsSpriteByID = function(id) {
+    const cage = new PIXI.Container();
+    const d = new PIXI.Sprite($Loader.Data2.gameItems.textures[id]);
+    const n = new PIXI.Sprite($Loader.Data2.gameItems.textures[id+'_n']);
+    d.parentGroup = PIXI.lights.diffuseGroup;
+    n.parentGroup = PIXI.lights.normalGroup;
+    cage.parentGroup = $displayGroup.group[4];
+    cage.addChild(d,n);
+    return {cage,d,n};
+};
+
 // initialise items and builds
 _items.prototype.initialize = function() {
     this.totalGameItems = Object.keys($Loader.Data2.gameItems.textures).length;
@@ -108,22 +120,64 @@ _items.prototype.initialize = function() {
     */
    // note: localisation translate: les noms seront appeller grace a la DB $local.items(id).name
     this.list = [
-        // url("data2/Objets/gameItems/SOURCE/png/0.png");
+        // url("data2/Objets/gameItems/SOURCE/images/0.png");
         {
-            ...addBase(0,'iron gearing','tools'),
+            ...addBase(0,'topaze DiceGem','diceGem'),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
         },
-        // url("data2/Objets/gameItems/SOURCE/png/1.png");
+        // url("data2/Objets/gameItems/SOURCE/images/1.png");
         {
-            ...addBase(1,'gold gearing','tools'),
+            ...addBase(1,'zircon DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/2.png");
+        {
+            ...addBase(2,'ambre DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/3.png");
+        {
+            ...addBase(3,'marquiz DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/4.png");
+        {
+            ...addBase(4,'marquiz DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/5.png");
+        {
+            ...addBase(5,'Grenat DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/6.png");
+        {
+            ...addBase(6,'sugilite, DiceGem','diceGem'),
+            ...addValues(50,2,100),
+            ...addRate(100),
+            ...addDiceData([1,4]),
+        },
+        // url("data2/Objets/gameItems/SOURCE/images/7.png");
+        {
+            ...addBase(7,'citrine DiceGem','diceGem'),
             ...addValues(50,2,100),
             ...addRate(100),
             ...addDiceData([1,4]),
         },
     ];
-    //FIXME:  comble les vides, patientant la DB complette  DELETTE ME
+    //FIXME:DELETTEME : comble les vides, patientant la DB complette  
     for (let i=0, l=this.totalGameItems; i<l; i++) {
         if(this.list[i]){ continue; };
         const types = Object.keys(this.types);
@@ -135,7 +189,6 @@ _items.prototype.initialize = function() {
             ...addDiceData([1,4]),
         })
     };
-        
 };
 
 _items.prototype.getNames = function(id) {

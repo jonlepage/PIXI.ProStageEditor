@@ -90,6 +90,7 @@ _huds_pinBar.prototype.initialisePinGems = function(masterBar) {
       pinGem.scale.set(0.4,1)
       pinner.addChild(pinGem);
       pinGem.position.set(25,50);
+      pinGem.id = i;
       
       masterBar.addChild(pinner)
       pinner.position.set(x,y);
@@ -242,6 +243,10 @@ _huds_pinBar.prototype.OUT_pinGem = function(e) {
 // TODO: faire un sytem global event manager et interaction dans mouse
 _huds_pinBar.prototype.UP_pinGem = function(e) {
   const pinGem  = e.currentTarget;
+  // si un items est dans la mouse, verifier si possible et ajouter a la pinGem
+  if($mouse.holdingItem){
+    this.tryAddItemToPinGem(pinGem,$mouse.holdingItem);
+  }else
   if(e.data.button === 0){ // clickLeft_ <==
      //FIXME: FAST menue items show
      $huds.menuItems.hide();
@@ -289,3 +294,15 @@ _huds_pinBar.prototype.setPinSlotsAvaible = function() {
       
 };
 
+
+// TODO: faire un sytem global event manager et interaction dans mouse
+_huds_pinBar.prototype.tryAddItemToPinGem = function(pinGem,items) {
+  console.log('items: ', items);
+  
+  const data = this.pinGems[pinGem.id];
+  if(items.data.type === data.type){
+    data.pinGem.parent.addChild(items.sprite); //TODO:
+  }
+
+  
+};
