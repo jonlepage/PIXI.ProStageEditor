@@ -17,6 +17,7 @@ class _player extends PIXI.ContainerSpine {
         super(dataBase, textureName, dataValues);
         this._planetID = null; // player current planet id
         this._dirX = 6; //player direction
+        this.radius = null; // radius player range interactions
         this.setupOnce(); // one time setup player1
     };
 };
@@ -34,13 +35,32 @@ _player.prototype.setupOnce = function() {
     }, 1250);
     // player transform
     this.scale.set(0.45,0.45);
-    this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING 
+    this.position.set(1555,1150); //FIXME:  MAKE DYNAMIQUE POSITIONNING
+    this._scaleXY = 0.45;
     // player layers
     this.asignParentGroups();
     this.parentGroup = $displayGroup.group[1];
     this.zIndex = this.position._y;
 
     spine.skeleton.setSlotsToSetupPose();
+    // radius range 
+    const dataBase = $Loader.Data2.playerRadius;
+    // url("data2/Hubs/menueItems/SOURCE/images/menueItemFrame.png"); 
+    //contour frame du menue.
+    /*const radius = new PIXI.Container();
+    const radius_d = new PIXI.Sprite(dataBase.textures.playerRadiusLarge);
+    const radius_n = new PIXI.Sprite(dataBase.textures_n.playerRadiusLarge_n);
+    radius_d.parentGroup = PIXI.lights.diffuseGroup;
+    radius_n.parentGroup = PIXI.lights.normalGroup;
+    radius.addChild(radius_d, radius_n);
+    radius.pivot.set(radius.width/2,radius.height/2);
+    radius_d.blendMode = 0;
+    radius_n.blendMode = 0;
+    radius_d.alpha = 0.2;
+    radius.scale.set(2)
+    this.addChild(radius);*/
+
+
     this.setupListeners();
     this.setupTweens();
 };
@@ -48,21 +68,20 @@ _player.prototype.setupOnce = function() {
 // setup all spine events for player1
 // https://github.com/pixijs/pixi-spine/blob/master/examples/index.md
 _player.prototype.setupListeners= function() {
+    const checkEvent = (entry, event) => {
+        if(event.data.name === "startMove"){
+            this.moveToNextCaseID(entry);
+        }else
+        if(event.data.name === "nextMove"){
+            this.updateNextPath(true,entry);
+        }else
+        if(event.data.name === "reversX"){
+            this.reversX();
+        }
+    };
+
     this.d.state.addListener({
-        event: (function(entry, event) {
-            if(event.data.name === "jumpStart"){
-               this.moveToNextPath(entry);
-            }else   
-            if(event.data.name === "reverse"){
-               this.reversePlayer(entry);
-            }else
-            if(event.data.name === "jumpEnd"){
-                this.d.state.addAnimation(4, "hair_jump1", false);
-                this.d.state.addEmptyAnimation(4,1);
-                this.checkCaseInteraction();
-            }
-        }).bind(this),
-        start: function(entry) { console.log0('animation is set at '+entry.trackIndex) },
+        event: checkEvent,
     });
 };
 
@@ -87,61 +106,63 @@ _player.prototype.setupTweens = function() {
 _player.prototype.initialisePath = function(pathBuffer) {
     this._isMoving = true;
     this.pathBuffer = pathBuffer;
-    this.sequenceBuffer = 0;
-    let dirBuffer = +this._dirX; // track direction path, (2,4,8,6 base:10)
-    this.d.state.timeScale = 1.4; //TODO: MATH speed player dexterity
-    for (let i=0, started = false, l=pathBuffer.length; i<l; i++) {
-        const id = pathBuffer[i];
-        const id_next = pathBuffer[i+1];
-        const dir_next =  $Objs.getDirXFromId(id, id_next);
-        // compute sequence need
-        const ani_jump = Number.isFinite(id_next);
-        const ani_reverse = this.needReverse(dirBuffer, dir_next);
-        // add sequence aniamtions
-         ani_reverse && this.d.state.addAnimation     (3, "reverse6to4", false);
-         ani_jump    && this.d.state.addAnimation     (3, "jump1", false);
-        !ani_jump    && this.d.state.addEmptyAnimation(3,0.1); // (trackIndex, mixDuration, delay)
-        // update buffers
-        ani_reverse && (dirBuffer = dir_next);
+    this._currentPath = 0;
+    this._startCaseID = pathBuffer[this._currentPath];
+    this._currentCaseID = pathBuffer[this._currentPath];
+    this._nextCaseID = pathBuffer[this._currentPath+1];
+    if(Number.isFinite(this._nextCaseID)){
+        this.updateNextPath(false); // checkCaseEvents: false car on start
+    }else{
+        // a click sur la case du player donc pas de move!
+    }
+
+};
+
+
+_player.prototype.updateNextPath = function(checkCaseEvents) {
+    this.inCase = $Objs.list_cases[this._nextCaseID];
+    this._currentCaseID = this.pathBuffer[this._currentPath];
+    this._nextCaseID = this.pathBuffer[++this._currentPath];
+    const state = this.d.state;
+    if(checkCaseEvents){
+        this.checkCaseEvents();
+    }
+    state.timeScale = 1.2; //TODO: MATH speed player dexterity with easing
+    if($huds.displacement._stamina && Number.isFinite(this._nextCaseID)){
+
+        const nextDirection =  $Objs.getDirXFromId(this._currentCaseID, this._nextCaseID); // get dir base 10
+        this.needReversX(nextDirection) && state.addAnimation(3, "reversX", false);
+        state.addAnimation(3, "jump1", false);
+    }else{
+        state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
+        this._isMoving = false;
+        if(!$huds.displacement._stamina){ // plus de stamina, END TURN
+            $huds.displacement.clearRoll();
+        }
+        $Objs.activeInteractive();
     };
 };
 
-_player.prototype.needReverse = function(dirBuffer=this._dirX, dir_next) {
-    if(dir_next){
-        return (10-dirBuffer) === dir_next;
-    };
-    return false;
+_player.prototype.needReversX = function(nextDirection) {
+    return nextDirection !== this._dirX;
+};
+_player.prototype.reversX = function() {
+    this._dirX = 10-this._dirX;
+    const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
+    TweenLite.to(this.scale, 1, { x:xx, ease: Power3.easeOut });
 };
 
-_player.prototype.moveToNextPath = function(entry) {
-    const id = this.pathBuffer[0];
-    const id_next = this.pathBuffer[1];
-    const toCase = Number.isFinite(id_next) && $Objs.list_cases[id_next];
-    this.pathBuffer.shift(); // remove first id
+// easing update x,y to this._nextCaseID
+_player.prototype.moveToNextCaseID = function(entry) {
+    const toCase = $Objs.list_cases[this._nextCaseID];
     // tween
-    this.tweenPosition.vars.x = toCase.x;
-    this.tweenPosition.vars.y = toCase.y+toCase.height/3;
-    this.tweenPosition._duration = 1;
-    this.tweenPosition.invalidate(); // TODO: deep study source of this
-    this.tweenPosition.play(0);
+    TweenLite.to(this.position, 1, { x:toCase.x, y:toCase.y+30, ease: Power3.easeOut });
     // update setup
     this.zIndex = toCase.y;
-    this.inCase = toCase;
 };
-
-_player.prototype.reversePlayer = function() {
-        // tween
-        this.tweenScale.vars.x = this.tweenScale.vars.x*-1;
-        this.tweenScale._duration = 1;
-        this.tweenScale.invalidate(); // TODO: deep study source of this
-        this.tweenScale.play(0);
-        // update setup
-        this._dirX = 10-this._dirX; // reverse dir 
-};
-
 
 // when player jump to a case, do all stuff here
-_player.prototype.checkCaseInteraction = function() {
+_player.prototype.checkCaseEvents = function() {
    // stamina, sfx,fx , check auto-break cases .... 
    $Objs.newHitFX.call(this.inCase); // fx hit case
    $huds.displacement.addStamina(-1);

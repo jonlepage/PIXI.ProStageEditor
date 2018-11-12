@@ -66,10 +66,14 @@ Scene_MapID1.prototype.isReady = function() {
 // start after PIXI Loader
 Scene_MapID1.prototype.start = function() {
        // TODO: DELETEME  and find where add player 2 mosue following
+       let ranY = () => {return ~~(Math.random()*100)}
+       let count = 0;
+       let yy = 0;
        const p2Mouseticks = new PIXI.ticker.Ticker().add((delta) => {
-        const difX = $mouse.x-$player2.x;
-        const difY = $mouse.y-$player2.y;
-
+        count > 100 ? (yy = ranY(), count = 0) : count++;
+        const difX = $player.x-$player2.x-100;
+        const difY = $player.y-$player2.y-100+yy;
+        
         $player2.position.x+=difX/100;
         $player2.position.y+=difY/100;
         $player2.zIndex = $player2.y;

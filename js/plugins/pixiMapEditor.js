@@ -533,7 +533,7 @@ const CAGE_MOUSE = STAGE.CAGE_MOUSE // Store all avaibles libary
     fastModes.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
     fastModes.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
     fastModes.renderable = false; // render only when mouse hold.
-    $mouse.addChild(fastModes);
+    $mouse.pointer.addChild(fastModes);
     fastModes.x = 80;
 
 // CAGE_MAP ________________
@@ -2686,7 +2686,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         const holding = new PIXI.Text("",{fontSize:16,fill:0xff0000,strokeThickness:4,stroke:0xffffff});
         coor.y = 60;
         coor.x = -30;
-        $mouse.addChild(coor,holding); 
+        $mouse.pointer.addChild(coor,holding); 
         setInterval(function(){ 
             coor.text = `x:${~~mMX}, y:${~~mMY}`;
             ObjMouse? holding.text = ObjMouse.name : holding.text = '';

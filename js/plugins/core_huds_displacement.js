@@ -32,7 +32,6 @@ class _huds_displacement extends PIXI.Container{
     this.position.set(100,995);
     this.parentGroup = $displayGroup.group[4];
     this.slots = [];
-    this._timeoutHoldRoll = null; // when hold click on roll dice
 
       
     
@@ -238,14 +237,12 @@ class _huds_displacement extends PIXI.Container{
   };
 
   pointerOUT(e) {
-      clearTimeout(this._timeoutHoldRoll);
       this.centerBG.blendMode = 0;
       TweenLite.to(this.scale, 0.6, { x: 1, y: 1, ease: Back.easeOut.config(1.7) });
       TweenLite.to(this.position, 0.8, { x: 100, y: 995, ease: Elastic.easeOut.config(1, 0.3) });
   };
 
   pointerDW(e) {
-    clearTimeout(this._timeoutHoldRoll);
     //TODO: utiliser https://greensock.com/forums/topic/18496-synchronize-progress-with-mousedown/?tab=comments#comment-85641
     // mais faire quand meme un time out pour activer le holdMode, et desactiver les interactive items ou autre pendant le progress.
     if(!this._stamina && (this.slots[0].item || this.slots[1].item || this.slots[2].item)){ // need a item TODO: voir si mieux utiliser onComplette ? 
@@ -255,7 +252,6 @@ class _huds_displacement extends PIXI.Container{
     }; 
   };
   pointerUP(e) {
-    //clearTimeout(this._timeoutHoldRoll);
     //TweenLite.to(this.shadow_top.scale, 0.4, {y: 1, ease: Power4.easeOut });
     if(!this._stamina){
       this.timeLileRoll._active && this.timeLileRoll.timeScale(4).reverse();
@@ -263,7 +259,6 @@ class _huds_displacement extends PIXI.Container{
     
   };
   pointerUPOUT(e) {
-    clearTimeout(this._timeoutHoldRoll);
   
   };
 
@@ -321,7 +316,19 @@ class _huds_displacement extends PIXI.Container{
     this.staminaTxt.pivot.set(this.staminaTxt.width/2,this.staminaTxt.height/2);
     this.staminaTxt.renderable = true;
     this.staminaTxt.visible = true;
-   
+  };
+
+  // reset en mode pinGem, et clear les slots (fin du tour)
+  clearRoll() {
+    this.slots.forEach(slot => {
+      slot.item = null;
+      const y = slot.itemSlot._y;
+      TweenLite.to(slot.itemSlot.scale, 1.2, { x: 0.5, y: 0.5, ease: Elastic.easeOut.config(1, 0.3) });
+      TweenLite.to(slot.itemSlot.position, 1, { y: y, ease: Elastic.easeOut.config(1, 0.3) });
+    });
+    this.staminaTxt.renderable = false;
+    this.staminaTxt.visible = false;
+    this.timeLileRoll.timeScale(1).restart().pause(); // reset the timeline animation
   };
 
   //Calcul les combinaisons et les valeur de chaque dice ou obj
