@@ -66,6 +66,22 @@ _objs.prototype.create_list_cases = function() {
 };
 
 
+// TODO: $Objs.disableInteractive();
+_objs.prototype.activeInteractive = function() {
+    this.list_cases.forEach(c => {
+        c.interactive = true;
+    });
+};
+
+
+// TODO: $Objs.disableInteractive();
+_objs.prototype.disableInteractive = function() {
+    this.list_cases.forEach(c => {
+        c.interactive = false;
+    });
+};
+
+
 
 
 // TODO:  need buffers cache
@@ -86,17 +102,26 @@ _objs.prototype.newHitFX = function() {
 _objs.prototype.pointer_overIN = function(e) {
     e.currentTarget.alpha = 1;
     this.newHitFX.call(e.currentTarget);
-    this.computePathTo(e.currentTarget);
+    $huds.displacement._stamina && this.computePathTo(e.currentTarget); // si on a stamina, on peut ce deplacer
 };
 
 _objs.prototype.pointer_overOUT = function(e) {
-    e.currentTarget.alpha = 0.7;
+    e.currentTarget.alpha = 1;
+    // clearn pattern cases
+    if(this.pathBuffer){
+        this.pathBuffer = null;
+        for (let i = this.list_cases.length; i--;) {
+            this.list_cases[i].d.tint = 0xffffff;
+         };
+    };
+
 };
 
 // TODO: faire un sytem global event manager et interaction dans mouse
 _objs.prototype.pointer_UP = function(e) {
     if(this.pathBuffer){
         //TODO: MOVE PLAYER
+        this.disableInteractive();
         $player.initialisePath(this.pathBuffer);
     }
 };
@@ -113,17 +138,18 @@ _objs.prototype.computePathTo = function(target) {
     });
     const pattern = findShortestPath(nodes, this.list_cases.indexOf(playerCase), this.list_cases.indexOf(target));
     //const pattern = this.dfs(this.list_cases, 0, );
-    this.list_cases.forEach(cases => {
-        cases.d.tint = 0xffffff;
-    });
-    pattern && pattern.forEach(id => {
-        this.list_cases[id].d.tint = 0x42f465;
-    });
-    if(pattern){
-        this.pathBuffer = pattern;
-    }else{
-        this.pathBuffer = null;
-    }
+
+    const allowed = $huds.displacement._stamina;
+    for (let i = pattern.length; i--;) {
+        const id = pattern[i];
+        if(i>allowed){
+            this.list_cases[id].d.tint = 0xa03d21;
+        }else{
+            this.list_cases[id].d.tint = 0x42f465;
+        }
+        
+    };
+    this.pathBuffer = pattern || null;
 };
 
 // TODO: reprend le system unique ID

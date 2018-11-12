@@ -40,6 +40,8 @@ class _huds{
         this.menuItems    && list.push(this.menuItems   );
         return list;
     };
+
+
 };
 
 $huds = new _huds();

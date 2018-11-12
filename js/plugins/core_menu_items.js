@@ -35,11 +35,12 @@ class _menu_items extends PIXI.Container {
         this.initialize();
         this.setupTweens();
         this.setupInteractions();
-        this.show();
+        this.renderable = false;
     };
 //#region [rgba(255, 255, 255, 0.07)]
     // add basic proprety
     initializeProprety() {
+
         this.sortList = ["id", "name", "recent", "weigth", "quantity", "value", "rarity"]; // Liste des sort
         this._currentSort = 0; // Le sort Actif
         this.sortBox = null; // ref to sortBox
@@ -49,6 +50,7 @@ class _menu_items extends PIXI.Container {
         this.slots = []; // sortable buffer for items slots
         this.sortIndexBuffer = [...Array($items.totalGameItems).keys()]; // buffer pour les id slots a sortir
 
+        this.position.set(1050, 680);
         this.parentGroup = $displayGroup.group[4];
     };
 
@@ -73,6 +75,7 @@ class _menu_items extends PIXI.Container {
         masked_n.parentGroup = PIXI.lights.normalGroup;
         mask.width = w - 42;
         mask.height = h - 45;
+        
         mask.position.set(15, 20);
         masked_d.mask = mask;
         masked_n.mask = mask;
@@ -186,11 +189,11 @@ class _menu_items extends PIXI.Container {
         sortCage.sortTxt = sortTxt;
         this.sortBox = sortCage;
 
-
         //slots and items
         for (let i = 0, l = $items.totalGameItems; i < l; i++) {
             // items frames containers
             //url("data2/Hubs/menueItems/SOURCE/images/itemsFrame.png");
+
             const itemsFrame_d = new PIXI.Sprite(dataBase.textures.itemsFrame);
             const itemsFrame_n = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
             setPivotCenter(itemsFrame_d, itemsFrame_n);
@@ -212,7 +215,7 @@ class _menu_items extends PIXI.Container {
             txtFx_d.pivot.set(40);
             txtFx_n.pivot.set(40);
 
-            // add text item informations
+            // add text item informations TODO: 
             const itemTxt = new PIXI.Text(`${$items.list[i]._name}\n *:6(2)\n [12]`, //TODO:
                 {
                     fontSize: 16,
@@ -247,13 +250,13 @@ class _menu_items extends PIXI.Container {
                         for (const key in this) {
                             const ref = this[key];
                             ref.d ? (ref.d.renderable = b, ref.n.renderable = b) : ref.renderable = b;
-                        }
+                        };
                         this.renderStatus = b;
                     },
                     enumerable: false,
                 },
                 // cache information
-                id: {value: i},
+                _id: {value: i},
                 renderStatus: {value: true, writable: true},
                 name: {value: $items.getNames(i)},
                 type: {value: $items.getTypes(i)},
@@ -261,9 +264,9 @@ class _menu_items extends PIXI.Container {
             masked_d.addChild(txtFx_d, itemsFrame_d, items_d, itemTxt);
             masked_n.addChild(txtFx_n, itemsFrame_n, items_n);
         };
+
         this.addChild(mask, masked_d, masked_n, frames, ...this.filtersSlots, sortCage);
         this.pivot.set(frames.width / 2, frames.height / 2);
-        this.position.set(1050, 680);
     };
 //#endregion
 
@@ -282,44 +285,14 @@ https://greensock.com/docs/Core/Animation
     };
 
     show(duration) {
-        TweenLite.killTweensOf(this);
-        TweenLite.set(this, {
-            renderable: true
-        });
-        TweenLite.to(this.position, 0.4, {
-            x: 1050,
-            y: 680,
-            ease: this.tweens.Elastic2,
-        });
-        TweenLite.to(this.scale, 0.4, {
-            x: 1,
-            y: 1,
-            ease: this.tweens.Elastic2,
-            delay: 0.1
-        });
+        this.renderable = true;
+        this.visible = true;
         this.sortById();
-
     };
 
     hide(duration) {
-        this.toogleInteractive(false);
-        let _this = this;
-        TweenLite.to(this.position, 0.3, {
-            x: 1050,
-            y: 680 + 400,
-            ease: this.tweens.Elastic2,
-            delay: 0.1
-        });
-        TweenLite.to(this.scale, 0.4, {
-            x: 0,
-            y: 0.9,
-            ease: Power4.easeOut,
-            onComplete: function () {
-                TweenLite.set(_this, {
-                    renderable: false
-                });
-            }
-        });
+        this.renderable = false;
+        this.visible = false;
     };
     //#endregion
 
@@ -349,7 +322,7 @@ pointerIN, pointerOUT, pointerUP
     };
 
     IN_itemSlot(e) {
-        const id = this.id;
+        this.itemsFrame.d.displayOrder = 9999999;
         const itemsFrame = this.itemsFrame;
         const items = this.items;
         const itemTxt = this.itemTxt;
@@ -431,7 +404,19 @@ pointerIN, pointerOUT, pointerUP
     };
 
     UP_itemSlot(e) {
-        $mouse.addItems(this);
+        $mouse.holdingItem = this._id; // setter
+        const newItem = $mouse.holdingItem;
+        newItem.scale.set(0.1);
+        newItem.rotation = (Math.PI/2)+Math.random();
+        TweenLite.to(newItem.scale, 2, {
+            x: 1,
+            y: 1,
+            ease: Elastic.easeOut.config(1.2, 0.4)
+        });
+        TweenLite.to(newItem, 3, { 
+            rotation: 0,
+            ease: Elastic.easeOut.config(1.2, 0.4)
+        });
     };
 
     IN_sortBox(e) {
@@ -622,7 +607,7 @@ pointerIN, pointerOUT, pointerUP
     // $huds.menuItems.sortById()
     sortById() {
         this.slots.sort(function (a, b) {
-            return a.id - b.id
+            return a._id - b._id;
         });
         this.refreshItemsGrid();
     };

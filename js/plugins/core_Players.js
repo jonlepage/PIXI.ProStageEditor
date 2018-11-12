@@ -85,6 +85,7 @@ _player.prototype.setupTweens = function() {
 //$player.initialisePath(); matrix 
 // store path matrix for players TODO: refaire le system pour mieux utiliser le mixing et empecher les bug events, 
 _player.prototype.initialisePath = function(pathBuffer) {
+    this._isMoving = true;
     this.pathBuffer = pathBuffer;
     this.sequenceBuffer = 0;
     let dirBuffer = +this._dirX; // track direction path, (2,4,8,6 base:10)

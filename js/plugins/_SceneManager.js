@@ -172,7 +172,9 @@ Scene_Base.prototype.initialize = function(set) {
         this.create_ObjFromJson();
 
         $camera.initialise(this.CAGE_MAP, [1920/2,1080/2]); // initialise the cam with current scene
-        this.CAGE_MOUSE.addChild($mouse);//add the mouse to current scene
+        this.CAGE_MOUSE.addChild($mouse.pointer);//add the mouse to current scene TODO: fair un setupMouse dans Scene_Base
+        this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
+        
         console.log9('this: ', this);
     };
 };

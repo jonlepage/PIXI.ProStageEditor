@@ -68,9 +68,12 @@ _items.prototype.createItemsSpriteByID = function(id) {
     const n = new PIXI.Sprite($Loader.Data2.gameItems.textures[id+'_n']);
     d.parentGroup = PIXI.lights.diffuseGroup;
     n.parentGroup = PIXI.lights.normalGroup;
+    cage.d = d; cage.n = n;
+    cage._id = id;
     cage.parentGroup = $displayGroup.group[4];
     cage.addChild(d,n);
-    return {cage,d,n};
+    cage.pivot.set(cage.width/2,cage.height/2);
+    return cage;
 };
 
 // initialise items and builds

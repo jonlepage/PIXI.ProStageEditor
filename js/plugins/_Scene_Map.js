@@ -48,10 +48,10 @@ Scene_MapID1.prototype.create = function() {
         $camera.setTarget($player,4);
     };
 
-    this.CAGE_MOUSE.addChild($mouse.mouseTrails); // add the tail
+    
     // huds
     this.CAGE_GUI.addChild(...$huds.getHubsList()); // add huds list
-    $huds.displacement.show(1);
+   // $huds.displacement.show(1);
    
      
 };
