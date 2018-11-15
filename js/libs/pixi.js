@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Mon, 03 Sep 2018 16:07:33 UTC
+ * Compiled Thu, 15 Nov 2018 09:24:26 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -12417,10 +12417,52 @@ var CanvasGraphicsRenderer = function () {
             if (data.type === _const.SHAPES.POLY) {
                 context.beginPath();
 
-                this.renderPolygon(shape.points, shape.closed, context);
+                var points = shape.points;
+                var holes = data.holes;
+                var outerArea = void 0;
+                var innerArea = void 0;
 
-                for (var j = 0; j < data.holes.length; j++) {
-                    this.renderPolygon(data.holes[j].points, true, context);
+                context.moveTo(points[0], points[1]);
+
+                for (var j = 2; j < points.length; j += 2) {
+                    context.lineTo(points[j], points[j + 1]);
+                }
+
+                // if the first and last point are the same close the path - much neater :)
+                if (shape.closed) {
+                    context.closePath();
+                }
+
+                if (holes.length > 0) {
+                    outerArea = 0;
+                    for (var _j = 0; _j < points.length; _j += 2) {
+                        outerArea += points[_j] * points[_j + 3] - points[_j + 1] * points[_j + 2];
+                    }
+
+                    for (var k = 0; k < holes.length; k++) {
+                        points = holes[k].points;
+
+                        innerArea = 0;
+                        for (var _j2 = 0; _j2 < points.length; _j2 += 2) {
+                            innerArea += points[_j2] * points[_j2 + 3] - points[_j2 + 1] * points[_j2 + 2];
+                        }
+
+                        context.moveTo(points[0], points[1]);
+
+                        if (innerArea * outerArea < 0) {
+                            for (var _j3 = 2; _j3 < points.length; _j3 += 2) {
+                                context.lineTo(points[_j3], points[_j3 + 1]);
+                            }
+                        } else {
+                            for (var _j4 = points.length - 2; _j4 >= 2; _j4 -= 2) {
+                                context.lineTo(points[_j4], points[_j4 + 1]);
+                            }
+                        }
+
+                        if (holes[k].closed) {
+                            context.closePath();
+                        }
+                    }
                 }
 
                 if (data.fill) {
@@ -16793,16 +16835,47 @@ var CanvasMaskManager = function () {
 
             if (data.type === _const.SHAPES.POLY) {
                 var points = shape.points;
+                var holes = data.holes;
+                var outerArea = void 0;
+                var innerArea = void 0;
 
                 context.moveTo(points[0], points[1]);
 
-                for (var j = 1; j < points.length / 2; j++) {
-                    context.lineTo(points[j * 2], points[j * 2 + 1]);
+                for (var j = 2; j < points.length; j += 2) {
+                    context.lineTo(points[j], points[j + 1]);
                 }
 
                 // if the first and last point are the same close the path - much neater :)
                 if (points[0] === points[points.length - 2] && points[1] === points[points.length - 1]) {
                     context.closePath();
+                }
+
+                if (holes.length > 0) {
+                    outerArea = 0;
+                    for (var _j = 0; _j < points.length; _j += 2) {
+                        outerArea += points[_j] * points[_j + 3] - points[_j + 1] * points[_j + 2];
+                    }
+
+                    for (var k = 0; k < holes.length; k++) {
+                        points = holes[k].points;
+
+                        innerArea = 0;
+                        for (var _j2 = 0; _j2 < points.length; _j2 += 2) {
+                            innerArea += points[_j2] * points[_j2 + 3] - points[_j2 + 1] * points[_j2 + 2];
+                        }
+
+                        context.moveTo(points[0], points[1]);
+
+                        if (innerArea * outerArea < 0) {
+                            for (var _j3 = 2; _j3 < points.length; _j3 += 2) {
+                                context.lineTo(points[_j3], points[_j3 + 1]);
+                            }
+                        } else {
+                            for (var _j4 = points.length - 2; _j4 >= 2; _j4 -= 2) {
+                                context.lineTo(points[_j4], points[_j4 + 1]);
+                            }
+                        }
+                    }
                 }
             } else if (data.type === _const.SHAPES.RECT) {
                 context.rect(shape.x, shape.y, shape.width, shape.height);
@@ -18977,7 +19050,7 @@ var SpriteMaskFilter = function (_Filter) {
 
         var maskMatrix = new _math.Matrix();
 
-        var _this = _possibleConstructorReturn(this, _Filter.call(this, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 otherMatrix;\n\nvarying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = aTextureCoord;\n    vMaskCoord = ( otherMatrix * vec3( aTextureCoord, 1.0)  ).xy;\n}\n', 'varying vec2 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform sampler2D mask;\nuniform float alpha;\nuniform vec4 maskClamp;\n\nvoid main(void)\n{\n    float clip = step(3.5,\n        step(maskClamp.x, vMaskCoord.x) +\n        step(maskClamp.y, vMaskCoord.y) +\n        step(vMaskCoord.x, maskClamp.z) +\n        step(vMaskCoord.y, maskClamp.w));\n\n    vec4 original = texture2D(uSampler, vTextureCoord);\n    vec4 masky = texture2D(mask, vMaskCoord);\n\n    original *= (masky.r * masky.a * alpha * clip);\n\n    gl_FragColor = original;\n}\n'));
+        var _this = _possibleConstructorReturn(this, _Filter.call(this, 'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\nuniform mat3 otherMatrix;\r\n\r\nvarying vec2 vMaskCoord;\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vTextureCoord = aTextureCoord;\r\n    vMaskCoord = ( otherMatrix * vec3( aTextureCoord, 1.0)  ).xy;\r\n}\r\n', 'varying vec2 vMaskCoord;\r\nvarying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D mask;\r\nuniform float alpha;\r\nuniform vec4 maskClamp;\r\n\r\nvoid main(void)\r\n{\r\n    float clip = step(3.5,\r\n        step(maskClamp.x, vMaskCoord.x) +\r\n        step(maskClamp.y, vMaskCoord.y) +\r\n        step(vMaskCoord.x, maskClamp.z) +\r\n        step(vMaskCoord.y, maskClamp.w));\r\n\r\n    vec4 original = texture2D(uSampler, vTextureCoord);\r\n    vec4 masky = texture2D(mask, vMaskCoord);\r\n\r\n    original *= (masky.r * masky.a * alpha * clip);\r\n\r\n    gl_FragColor = original;\r\n}\r\n'));
 
         sprite.renderable = false;
 
@@ -19400,6 +19473,10 @@ var FilterManager = function (_WebGLManager) {
 
         // TODO Caching layer..
         for (var i in uniformData) {
+            if (!shader.uniforms.data[i]) {
+                continue;
+            }
+
             var type = uniformData[i].type;
 
             if (type === 'sampler2d' && uniforms[i] !== 0) {
@@ -22766,7 +22843,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var fragTemplate = ['varying vec2 vTextureCoord;', 'varying vec4 vColor;', 'varying float vTextureId;', 'uniform sampler2D uSamplers[%count%];', 'void main(void){', 'vec4 color;', 'float textureId = floor(vTextureId+0.5);', '%forloop%', 'gl_FragColor = color * vColor;', '}'].join('\n');
 
 function generateMultiTextureShader(gl, maxTextures) {
-    var vertexSrc = 'precision highp float;\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nattribute vec4 aColor;\nattribute float aTextureId;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\nvarying float vTextureId;\n\nvoid main(void){\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = aTextureCoord;\n    vTextureId = aTextureId;\n    vColor = aColor;\n}\n';
+    var vertexSrc = 'precision highp float;\r\nattribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\nattribute vec4 aColor;\r\nattribute float aTextureId;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec2 vTextureCoord;\r\nvarying vec4 vColor;\r\nvarying float vTextureId;\r\n\r\nvoid main(void){\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vTextureCoord = aTextureCoord;\r\n    vTextureId = aTextureId;\r\n    vColor = aColor;\r\n}\r\n';
     var fragmentSrc = fragTemplate;
 
     fragmentSrc = fragmentSrc.replace(/%count%/gi, maxTextures);
@@ -26878,16 +26955,18 @@ var Texture = function (_EventEmitter) {
      * @static
      * @param {HTMLVideoElement|string} video - The URL or actual element of the video
      * @param {number} [scaleMode=PIXI.settings.SCALE_MODE] - See {@link PIXI.SCALE_MODES} for possible values
+     * @param {boolean} [crossorigin=(auto)] - Should use anonymous CORS? Defaults to true if the URL is not a data-URI.
+     * @param {boolean} [autoPlay=true] - Start playing video as soon as it is loaded
      * @return {PIXI.Texture} The newly created texture
      */
 
 
-    Texture.fromVideo = function fromVideo(video, scaleMode) {
+    Texture.fromVideo = function fromVideo(video, scaleMode, crossorigin, autoPlay) {
         if (typeof video === 'string') {
-            return Texture.fromVideoUrl(video, scaleMode);
+            return Texture.fromVideoUrl(video, scaleMode, crossorigin, autoPlay);
         }
 
-        return new Texture(_VideoBaseTexture2.default.fromVideo(video, scaleMode));
+        return new Texture(_VideoBaseTexture2.default.fromVideo(video, scaleMode, autoPlay));
     };
 
     /**
@@ -26896,12 +26975,14 @@ var Texture = function (_EventEmitter) {
      * @static
      * @param {string} videoUrl - URL of the video
      * @param {number} [scaleMode=PIXI.settings.SCALE_MODE] - See {@link PIXI.SCALE_MODES} for possible values
+     * @param {boolean} [crossorigin=(auto)] - Should use anonymous CORS? Defaults to true if the URL is not a data-URI.
+     * @param {boolean} [autoPlay=true] - Start playing video as soon as it is loaded
      * @return {PIXI.Texture} The newly created texture
      */
 
 
-    Texture.fromVideoUrl = function fromVideoUrl(videoUrl, scaleMode) {
-        return new Texture(_VideoBaseTexture2.default.fromUrl(videoUrl, scaleMode));
+    Texture.fromVideoUrl = function fromVideoUrl(videoUrl, scaleMode, crossorigin, autoPlay) {
+        return new Texture(_VideoBaseTexture2.default.fromUrl(videoUrl, scaleMode, crossorigin, autoPlay));
     };
 
     /**
@@ -27450,10 +27531,10 @@ var TextureUvs = function () {
             this.y3 = (frame.y + frame.height) / th;
         }
 
-        this.uvsUint32[0] = (this.y0 * 65535 & 0xFFFF) << 16 | this.x0 * 65535 & 0xFFFF;
-        this.uvsUint32[1] = (this.y1 * 65535 & 0xFFFF) << 16 | this.x1 * 65535 & 0xFFFF;
-        this.uvsUint32[2] = (this.y2 * 65535 & 0xFFFF) << 16 | this.x2 * 65535 & 0xFFFF;
-        this.uvsUint32[3] = (this.y3 * 65535 & 0xFFFF) << 16 | this.x3 * 65535 & 0xFFFF;
+        this.uvsUint32[0] = (Math.round(this.y0 * 65535) & 0xFFFF) << 16 | Math.round(this.x0 * 65535) & 0xFFFF;
+        this.uvsUint32[1] = (Math.round(this.y1 * 65535) & 0xFFFF) << 16 | Math.round(this.x1 * 65535) & 0xFFFF;
+        this.uvsUint32[2] = (Math.round(this.y2 * 65535) & 0xFFFF) << 16 | Math.round(this.x2 * 65535) & 0xFFFF;
+        this.uvsUint32[3] = (Math.round(this.y3 * 65535) & 0xFFFF) << 16 | Math.round(this.x3 * 65535) & 0xFFFF;
     };
 
     return TextureUvs;
@@ -27522,8 +27603,11 @@ var VideoBaseTexture = function (_BaseTexture) {
     /**
      * @param {HTMLVideoElement} source - Video source
      * @param {number} [scaleMode=PIXI.settings.SCALE_MODE] - See {@link PIXI.SCALE_MODES} for possible values
+     * @param {boolean} [autoPlay=true] - Start playing video as soon as it is loaded
      */
     function VideoBaseTexture(source, scaleMode) {
+        var autoPlay = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+
         _classCallCheck(this, VideoBaseTexture);
 
         if (!source) {
@@ -27552,7 +27636,7 @@ var VideoBaseTexture = function (_BaseTexture) {
          * @member {boolean}
          * @default true
          */
-        _this.autoPlay = source.autoPlay;
+        _this.autoPlay = autoPlay;
 
         _this.update = _this.update.bind(_this);
         _this._onCanPlay = _this._onCanPlay.bind(_this);
@@ -27690,11 +27774,12 @@ var VideoBaseTexture = function (_BaseTexture) {
      * @static
      * @param {HTMLVideoElement} video - Video to create texture from
      * @param {number} [scaleMode=PIXI.settings.SCALE_MODE] - See {@link PIXI.SCALE_MODES} for possible values
+     * @param {boolean} [autoPlay=true] - Start playing video as soon as it is loaded
      * @return {PIXI.VideoBaseTexture} Newly created VideoBaseTexture
      */
 
 
-    VideoBaseTexture.fromVideo = function fromVideo(video, scaleMode) {
+    VideoBaseTexture.fromVideo = function fromVideo(video, scaleMode, autoPlay) {
         if (!video._pixiId) {
             video._pixiId = 'video_' + (0, _utils.uid)();
         }
@@ -27702,7 +27787,7 @@ var VideoBaseTexture = function (_BaseTexture) {
         var baseTexture = _utils.BaseTextureCache[video._pixiId];
 
         if (!baseTexture) {
-            baseTexture = new VideoBaseTexture(video, scaleMode);
+            baseTexture = new VideoBaseTexture(video, scaleMode, autoPlay);
             _BaseTexture3.default.addToCache(baseTexture, video._pixiId);
         }
 
@@ -27720,11 +27805,12 @@ var VideoBaseTexture = function (_BaseTexture) {
      *  the url's extension will be used as the second part of the mime type.
      * @param {number} scaleMode - See {@link PIXI.SCALE_MODES} for possible values
      * @param {boolean} [crossorigin=(auto)] - Should use anonymous CORS? Defaults to true if the URL is not a data-URI.
+     * @param {boolean} [autoPlay=true] - Start playing video as soon as it is loaded
      * @return {PIXI.VideoBaseTexture} Newly created VideoBaseTexture
      */
 
 
-    VideoBaseTexture.fromUrl = function fromUrl(videoSrc, scaleMode, crossorigin) {
+    VideoBaseTexture.fromUrl = function fromUrl(videoSrc, scaleMode, crossorigin, autoPlay) {
         var video = document.createElement('video');
 
         video.setAttribute('webkit-playsinline', '');
@@ -27751,7 +27837,7 @@ var VideoBaseTexture = function (_BaseTexture) {
 
         video.load();
 
-        return VideoBaseTexture.fromVideo(video, scaleMode);
+        return VideoBaseTexture.fromVideo(video, scaleMode, autoPlay);
     };
 
     /**
@@ -27792,8 +27878,9 @@ VideoBaseTexture.fromUrls = VideoBaseTexture.fromUrl;
 
 function createSource(path, type) {
     if (!type) {
-        path = path.split('?').shift().toLowerCase();
-        type = 'video/' + path.substr(path.lastIndexOf('.') + 1);
+        var purePath = path.split('?').shift().toLowerCase();
+
+        type = 'video/' + purePath.substr(purePath.lastIndexOf('.') + 1);
     }
 
     var source = document.createElement('source');
@@ -32679,7 +32766,7 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     var bounds = this.getLocalBounds().clone();
 
     // add some padding!
-    if (this._filters) {
+    if (this._filters && this._filters.length) {
         var padding = this._filters[0].padding;
 
         bounds.pad(padding);
@@ -33083,8 +33170,8 @@ var TilingSpriteRenderer = function (_core$ObjectRenderer) {
     TilingSpriteRenderer.prototype.onContextChange = function onContextChange() {
         var gl = this.renderer.gl;
 
-        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', 'varying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform vec4 uColor;\nuniform mat3 uMapCoord;\nuniform vec4 uClampFrame;\nuniform vec2 uClampOffset;\n\nvoid main(void)\n{\n    vec2 coord = mod(vTextureCoord - uClampOffset, vec2(1.0, 1.0)) + uClampOffset;\n    coord = (uMapCoord * vec3(coord, 1.0)).xy;\n    coord = clamp(coord, uClampFrame.xy, uClampFrame.zw);\n\n    vec4 sample = texture2D(uSampler, coord);\n    gl_FragColor = sample * uColor;\n}\n');
-        this.simpleShader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', 'varying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform vec4 uColor;\n\nvoid main(void)\n{\n    vec4 sample = texture2D(uSampler, vTextureCoord);\n    gl_FragColor = sample * uColor;\n}\n');
+        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\nuniform mat3 translationMatrix;\r\nuniform mat3 uTransform;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\r\n}\r\n', 'varying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform vec4 uColor;\r\nuniform mat3 uMapCoord;\r\nuniform vec4 uClampFrame;\r\nuniform vec2 uClampOffset;\r\n\r\nvoid main(void)\r\n{\r\n    vec2 coord = mod(vTextureCoord - uClampOffset, vec2(1.0, 1.0)) + uClampOffset;\r\n    coord = (uMapCoord * vec3(coord, 1.0)).xy;\r\n    coord = clamp(coord, uClampFrame.xy, uClampFrame.zw);\r\n\r\n    vec4 sample = texture2D(uSampler, coord);\r\n    gl_FragColor = sample * uColor;\r\n}\r\n');
+        this.simpleShader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\nuniform mat3 translationMatrix;\r\nuniform mat3 uTransform;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\r\n}\r\n', 'varying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform vec4 uColor;\r\n\r\nvoid main(void)\r\n{\r\n    vec4 sample = texture2D(uSampler, vTextureCoord);\r\n    gl_FragColor = sample * uColor;\r\n}\r\n');
 
         this.renderer.bindVao(null);
         this.quad = new core.Quad(gl, this.renderer.state.attribState);
@@ -33236,9 +33323,9 @@ var AlphaFilter = function (_core$Filter) {
 
         var _this = _possibleConstructorReturn(this, _core$Filter.call(this,
         // vertex shader
-        'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}',
+        'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    vTextureCoord = aTextureCoord;\r\n}',
         // fragment shader
-        'varying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float uAlpha;\n\nvoid main(void)\n{\n   gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;\n}\n'));
+        'varying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform float uAlpha;\r\n\r\nvoid main(void)\r\n{\r\n   gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;\r\n}\r\n'));
 
         _this.alpha = alpha;
         _this.glShaderKey = 'alpha';
@@ -33928,9 +34015,9 @@ var ColorMatrixFilter = function (_core$Filter) {
 
         var _this = _possibleConstructorReturn(this, _core$Filter.call(this,
         // vertex shader
-        'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}',
+        'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    vTextureCoord = aTextureCoord;\r\n}',
         // fragment shader
-        'varying vec2 vTextureCoord;\nuniform sampler2D uSampler;\nuniform float m[20];\nuniform float uAlpha;\n\nvoid main(void)\n{\n    vec4 c = texture2D(uSampler, vTextureCoord);\n\n    if (uAlpha == 0.0) {\n        gl_FragColor = c;\n        return;\n    }\n\n    // Un-premultiply alpha before applying the color matrix. See issue #3539.\n    if (c.a > 0.0) {\n      c.rgb /= c.a;\n    }\n\n    vec4 result;\n\n    result.r = (m[0] * c.r);\n        result.r += (m[1] * c.g);\n        result.r += (m[2] * c.b);\n        result.r += (m[3] * c.a);\n        result.r += m[4];\n\n    result.g = (m[5] * c.r);\n        result.g += (m[6] * c.g);\n        result.g += (m[7] * c.b);\n        result.g += (m[8] * c.a);\n        result.g += m[9];\n\n    result.b = (m[10] * c.r);\n       result.b += (m[11] * c.g);\n       result.b += (m[12] * c.b);\n       result.b += (m[13] * c.a);\n       result.b += m[14];\n\n    result.a = (m[15] * c.r);\n       result.a += (m[16] * c.g);\n       result.a += (m[17] * c.b);\n       result.a += (m[18] * c.a);\n       result.a += m[19];\n\n    vec3 rgb = mix(c.rgb, result.rgb, uAlpha);\n\n    // Premultiply alpha again.\n    rgb *= result.a;\n\n    gl_FragColor = vec4(rgb, result.a);\n}\n'));
+        'varying vec2 vTextureCoord;\r\nuniform sampler2D uSampler;\r\nuniform float m[20];\r\nuniform float uAlpha;\r\n\r\nvoid main(void)\r\n{\r\n    vec4 c = texture2D(uSampler, vTextureCoord);\r\n\r\n    if (uAlpha == 0.0) {\r\n        gl_FragColor = c;\r\n        return;\r\n    }\r\n\r\n    // Un-premultiply alpha before applying the color matrix. See issue #3539.\r\n    if (c.a > 0.0) {\r\n      c.rgb /= c.a;\r\n    }\r\n\r\n    vec4 result;\r\n\r\n    result.r = (m[0] * c.r);\r\n        result.r += (m[1] * c.g);\r\n        result.r += (m[2] * c.b);\r\n        result.r += (m[3] * c.a);\r\n        result.r += m[4];\r\n\r\n    result.g = (m[5] * c.r);\r\n        result.g += (m[6] * c.g);\r\n        result.g += (m[7] * c.b);\r\n        result.g += (m[8] * c.a);\r\n        result.g += m[9];\r\n\r\n    result.b = (m[10] * c.r);\r\n       result.b += (m[11] * c.g);\r\n       result.b += (m[12] * c.b);\r\n       result.b += (m[13] * c.a);\r\n       result.b += m[14];\r\n\r\n    result.a = (m[15] * c.r);\r\n       result.a += (m[16] * c.g);\r\n       result.a += (m[17] * c.b);\r\n       result.a += (m[18] * c.a);\r\n       result.a += m[19];\r\n\r\n    vec3 rgb = mix(c.rgb, result.rgb, uAlpha);\r\n\r\n    // Premultiply alpha again.\r\n    rgb *= result.a;\r\n\r\n    gl_FragColor = vec4(rgb, result.a);\r\n}\r\n'));
 
         _this.uniforms.m = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
 
@@ -34480,9 +34567,9 @@ var DisplacementFilter = function (_core$Filter) {
 
         var _this = _possibleConstructorReturn(this, _core$Filter.call(this,
         // vertex shader
-        'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 filterMatrix;\n\nvarying vec2 vTextureCoord;\nvarying vec2 vFilterCoord;\n\nvoid main(void)\n{\n   gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n   vFilterCoord = ( filterMatrix * vec3( aTextureCoord, 1.0)  ).xy;\n   vTextureCoord = aTextureCoord;\n}',
+        'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\nuniform mat3 filterMatrix;\r\n\r\nvarying vec2 vTextureCoord;\r\nvarying vec2 vFilterCoord;\r\n\r\nvoid main(void)\r\n{\r\n   gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n   vFilterCoord = ( filterMatrix * vec3( aTextureCoord, 1.0)  ).xy;\r\n   vTextureCoord = aTextureCoord;\r\n}',
         // fragment shader
-        'varying vec2 vFilterCoord;\nvarying vec2 vTextureCoord;\n\nuniform vec2 scale;\n\nuniform sampler2D uSampler;\nuniform sampler2D mapSampler;\n\nuniform vec4 filterArea;\nuniform vec4 filterClamp;\n\nvoid main(void)\n{\n  vec4 map =  texture2D(mapSampler, vFilterCoord);\n\n  map -= 0.5;\n  map.xy *= scale / filterArea.xy;\n\n  gl_FragColor = texture2D(uSampler, clamp(vec2(vTextureCoord.x + map.x, vTextureCoord.y + map.y), filterClamp.xy, filterClamp.zw));\n}\n'));
+        'varying vec2 vFilterCoord;\r\nvarying vec2 vTextureCoord;\r\n\r\nuniform vec2 scale;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D mapSampler;\r\n\r\nuniform vec4 filterArea;\r\nuniform vec4 filterClamp;\r\n\r\nvoid main(void)\r\n{\r\n  vec4 map =  texture2D(mapSampler, vFilterCoord);\r\n\r\n  map -= 0.5;\r\n  map.xy *= scale / filterArea.xy;\r\n\r\n  gl_FragColor = texture2D(uSampler, clamp(vec2(vTextureCoord.x + map.x, vTextureCoord.y + map.y), filterClamp.xy, filterClamp.zw));\r\n}\r\n'));
 
         _this.maskSprite = sprite;
         _this.maskMatrix = maskMatrix;
@@ -34584,9 +34671,9 @@ var FXAAFilter = function (_core$Filter) {
         // TODO - needs work
         return _possibleConstructorReturn(this, _core$Filter.call(this,
         // vertex shader
-        '\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 v_rgbNW;\nvarying vec2 v_rgbNE;\nvarying vec2 v_rgbSW;\nvarying vec2 v_rgbSE;\nvarying vec2 v_rgbM;\n\nuniform vec4 filterArea;\n\nvarying vec2 vTextureCoord;\n\nvec2 mapCoord( vec2 coord )\n{\n    coord *= filterArea.xy;\n    coord += filterArea.zw;\n\n    return coord;\n}\n\nvec2 unmapCoord( vec2 coord )\n{\n    coord -= filterArea.zw;\n    coord /= filterArea.xy;\n\n    return coord;\n}\n\nvoid texcoords(vec2 fragCoord, vec2 resolution,\n               out vec2 v_rgbNW, out vec2 v_rgbNE,\n               out vec2 v_rgbSW, out vec2 v_rgbSE,\n               out vec2 v_rgbM) {\n    vec2 inverseVP = 1.0 / resolution.xy;\n    v_rgbNW = (fragCoord + vec2(-1.0, -1.0)) * inverseVP;\n    v_rgbNE = (fragCoord + vec2(1.0, -1.0)) * inverseVP;\n    v_rgbSW = (fragCoord + vec2(-1.0, 1.0)) * inverseVP;\n    v_rgbSE = (fragCoord + vec2(1.0, 1.0)) * inverseVP;\n    v_rgbM = vec2(fragCoord * inverseVP);\n}\n\nvoid main(void) {\n\n   gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n   vTextureCoord = aTextureCoord;\n\n   vec2 fragCoord = vTextureCoord * filterArea.xy;\n\n   texcoords(fragCoord, filterArea.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);\n}',
+        '\r\nattribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec2 v_rgbNW;\r\nvarying vec2 v_rgbNE;\r\nvarying vec2 v_rgbSW;\r\nvarying vec2 v_rgbSE;\r\nvarying vec2 v_rgbM;\r\n\r\nuniform vec4 filterArea;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvec2 mapCoord( vec2 coord )\r\n{\r\n    coord *= filterArea.xy;\r\n    coord += filterArea.zw;\r\n\r\n    return coord;\r\n}\r\n\r\nvec2 unmapCoord( vec2 coord )\r\n{\r\n    coord -= filterArea.zw;\r\n    coord /= filterArea.xy;\r\n\r\n    return coord;\r\n}\r\n\r\nvoid texcoords(vec2 fragCoord, vec2 resolution,\r\n               out vec2 v_rgbNW, out vec2 v_rgbNE,\r\n               out vec2 v_rgbSW, out vec2 v_rgbSE,\r\n               out vec2 v_rgbM) {\r\n    vec2 inverseVP = 1.0 / resolution.xy;\r\n    v_rgbNW = (fragCoord + vec2(-1.0, -1.0)) * inverseVP;\r\n    v_rgbNE = (fragCoord + vec2(1.0, -1.0)) * inverseVP;\r\n    v_rgbSW = (fragCoord + vec2(-1.0, 1.0)) * inverseVP;\r\n    v_rgbSE = (fragCoord + vec2(1.0, 1.0)) * inverseVP;\r\n    v_rgbM = vec2(fragCoord * inverseVP);\r\n}\r\n\r\nvoid main(void) {\r\n\r\n   gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n   vTextureCoord = aTextureCoord;\r\n\r\n   vec2 fragCoord = vTextureCoord * filterArea.xy;\r\n\r\n   texcoords(fragCoord, filterArea.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);\r\n}',
         // fragment shader
-        'varying vec2 v_rgbNW;\nvarying vec2 v_rgbNE;\nvarying vec2 v_rgbSW;\nvarying vec2 v_rgbSE;\nvarying vec2 v_rgbM;\n\nvarying vec2 vTextureCoord;\nuniform sampler2D uSampler;\nuniform vec4 filterArea;\n\n/**\n Basic FXAA implementation based on the code on geeks3d.com with the\n modification that the texture2DLod stuff was removed since it\'s\n unsupported by WebGL.\n \n --\n \n From:\n https://github.com/mitsuhiko/webgl-meincraft\n \n Copyright (c) 2011 by Armin Ronacher.\n \n Some rights reserved.\n \n Redistribution and use in source and binary forms, with or without\n modification, are permitted provided that the following conditions are\n met:\n \n * Redistributions of source code must retain the above copyright\n notice, this list of conditions and the following disclaimer.\n \n * Redistributions in binary form must reproduce the above\n copyright notice, this list of conditions and the following\n disclaimer in the documentation and/or other materials provided\n with the distribution.\n \n * The names of the contributors may not be used to endorse or\n promote products derived from this software without specific\n prior written permission.\n \n THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n */\n\n#ifndef FXAA_REDUCE_MIN\n#define FXAA_REDUCE_MIN   (1.0/ 128.0)\n#endif\n#ifndef FXAA_REDUCE_MUL\n#define FXAA_REDUCE_MUL   (1.0 / 8.0)\n#endif\n#ifndef FXAA_SPAN_MAX\n#define FXAA_SPAN_MAX     8.0\n#endif\n\n//optimized version for mobile, where dependent\n//texture reads can be a bottleneck\nvec4 fxaa(sampler2D tex, vec2 fragCoord, vec2 resolution,\n          vec2 v_rgbNW, vec2 v_rgbNE,\n          vec2 v_rgbSW, vec2 v_rgbSE,\n          vec2 v_rgbM) {\n    vec4 color;\n    mediump vec2 inverseVP = vec2(1.0 / resolution.x, 1.0 / resolution.y);\n    vec3 rgbNW = texture2D(tex, v_rgbNW).xyz;\n    vec3 rgbNE = texture2D(tex, v_rgbNE).xyz;\n    vec3 rgbSW = texture2D(tex, v_rgbSW).xyz;\n    vec3 rgbSE = texture2D(tex, v_rgbSE).xyz;\n    vec4 texColor = texture2D(tex, v_rgbM);\n    vec3 rgbM  = texColor.xyz;\n    vec3 luma = vec3(0.299, 0.587, 0.114);\n    float lumaNW = dot(rgbNW, luma);\n    float lumaNE = dot(rgbNE, luma);\n    float lumaSW = dot(rgbSW, luma);\n    float lumaSE = dot(rgbSE, luma);\n    float lumaM  = dot(rgbM,  luma);\n    float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));\n    float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));\n    \n    mediump vec2 dir;\n    dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));\n    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));\n    \n    float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *\n                          (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);\n    \n    float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);\n    dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),\n              max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),\n                  dir * rcpDirMin)) * inverseVP;\n    \n    vec3 rgbA = 0.5 * (\n                       texture2D(tex, fragCoord * inverseVP + dir * (1.0 / 3.0 - 0.5)).xyz +\n                       texture2D(tex, fragCoord * inverseVP + dir * (2.0 / 3.0 - 0.5)).xyz);\n    vec3 rgbB = rgbA * 0.5 + 0.25 * (\n                                     texture2D(tex, fragCoord * inverseVP + dir * -0.5).xyz +\n                                     texture2D(tex, fragCoord * inverseVP + dir * 0.5).xyz);\n    \n    float lumaB = dot(rgbB, luma);\n    if ((lumaB < lumaMin) || (lumaB > lumaMax))\n        color = vec4(rgbA, texColor.a);\n    else\n        color = vec4(rgbB, texColor.a);\n    return color;\n}\n\nvoid main() {\n\n      vec2 fragCoord = vTextureCoord * filterArea.xy;\n\n      vec4 color;\n\n    color = fxaa(uSampler, fragCoord, filterArea.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);\n\n      gl_FragColor = color;\n}\n'));
+        'varying vec2 v_rgbNW;\r\nvarying vec2 v_rgbNE;\r\nvarying vec2 v_rgbSW;\r\nvarying vec2 v_rgbSE;\r\nvarying vec2 v_rgbM;\r\n\r\nvarying vec2 vTextureCoord;\r\nuniform sampler2D uSampler;\r\nuniform vec4 filterArea;\r\n\r\n/**\r\n Basic FXAA implementation based on the code on geeks3d.com with the\r\n modification that the texture2DLod stuff was removed since it\'s\r\n unsupported by WebGL.\r\n \r\n --\r\n \r\n From:\r\n https://github.com/mitsuhiko/webgl-meincraft\r\n \r\n Copyright (c) 2011 by Armin Ronacher.\r\n \r\n Some rights reserved.\r\n \r\n Redistribution and use in source and binary forms, with or without\r\n modification, are permitted provided that the following conditions are\r\n met:\r\n \r\n * Redistributions of source code must retain the above copyright\r\n notice, this list of conditions and the following disclaimer.\r\n \r\n * Redistributions in binary form must reproduce the above\r\n copyright notice, this list of conditions and the following\r\n disclaimer in the documentation and/or other materials provided\r\n with the distribution.\r\n \r\n * The names of the contributors may not be used to endorse or\r\n promote products derived from this software without specific\r\n prior written permission.\r\n \r\n THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\r\n "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\r\n LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\r\n A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\r\n OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\r\n SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\r\n LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\r\n DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\r\n THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\r\n (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\r\n OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\r\n */\r\n\r\n#ifndef FXAA_REDUCE_MIN\r\n#define FXAA_REDUCE_MIN   (1.0/ 128.0)\r\n#endif\r\n#ifndef FXAA_REDUCE_MUL\r\n#define FXAA_REDUCE_MUL   (1.0 / 8.0)\r\n#endif\r\n#ifndef FXAA_SPAN_MAX\r\n#define FXAA_SPAN_MAX     8.0\r\n#endif\r\n\r\n//optimized version for mobile, where dependent\r\n//texture reads can be a bottleneck\r\nvec4 fxaa(sampler2D tex, vec2 fragCoord, vec2 resolution,\r\n          vec2 v_rgbNW, vec2 v_rgbNE,\r\n          vec2 v_rgbSW, vec2 v_rgbSE,\r\n          vec2 v_rgbM) {\r\n    vec4 color;\r\n    mediump vec2 inverseVP = vec2(1.0 / resolution.x, 1.0 / resolution.y);\r\n    vec3 rgbNW = texture2D(tex, v_rgbNW).xyz;\r\n    vec3 rgbNE = texture2D(tex, v_rgbNE).xyz;\r\n    vec3 rgbSW = texture2D(tex, v_rgbSW).xyz;\r\n    vec3 rgbSE = texture2D(tex, v_rgbSE).xyz;\r\n    vec4 texColor = texture2D(tex, v_rgbM);\r\n    vec3 rgbM  = texColor.xyz;\r\n    vec3 luma = vec3(0.299, 0.587, 0.114);\r\n    float lumaNW = dot(rgbNW, luma);\r\n    float lumaNE = dot(rgbNE, luma);\r\n    float lumaSW = dot(rgbSW, luma);\r\n    float lumaSE = dot(rgbSE, luma);\r\n    float lumaM  = dot(rgbM,  luma);\r\n    float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));\r\n    float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));\r\n    \r\n    mediump vec2 dir;\r\n    dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));\r\n    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));\r\n    \r\n    float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) *\r\n                          (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);\r\n    \r\n    float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);\r\n    dir = min(vec2(FXAA_SPAN_MAX, FXAA_SPAN_MAX),\r\n              max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),\r\n                  dir * rcpDirMin)) * inverseVP;\r\n    \r\n    vec3 rgbA = 0.5 * (\r\n                       texture2D(tex, fragCoord * inverseVP + dir * (1.0 / 3.0 - 0.5)).xyz +\r\n                       texture2D(tex, fragCoord * inverseVP + dir * (2.0 / 3.0 - 0.5)).xyz);\r\n    vec3 rgbB = rgbA * 0.5 + 0.25 * (\r\n                                     texture2D(tex, fragCoord * inverseVP + dir * -0.5).xyz +\r\n                                     texture2D(tex, fragCoord * inverseVP + dir * 0.5).xyz);\r\n    \r\n    float lumaB = dot(rgbB, luma);\r\n    if ((lumaB < lumaMin) || (lumaB > lumaMax))\r\n        color = vec4(rgbA, texColor.a);\r\n    else\r\n        color = vec4(rgbB, texColor.a);\r\n    return color;\r\n}\r\n\r\nvoid main() {\r\n\r\n      vec2 fragCoord = vTextureCoord * filterArea.xy;\r\n\r\n      vec4 color;\r\n\r\n    color = fxaa(uSampler, fragCoord, filterArea.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);\r\n\r\n      gl_FragColor = color;\r\n}\r\n'));
     }
 
     return FXAAFilter;
@@ -34721,9 +34808,9 @@ var NoiseFilter = function (_core$Filter) {
 
         var _this = _possibleConstructorReturn(this, _core$Filter.call(this,
         // vertex shader
-        'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}',
+        'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    vTextureCoord = aTextureCoord;\r\n}',
         // fragment shader
-        'precision highp float;\n\nvarying vec2 vTextureCoord;\nvarying vec4 vColor;\n\nuniform float uNoise;\nuniform float uSeed;\nuniform sampler2D uSampler;\n\nfloat rand(vec2 co)\n{\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n}\n\nvoid main()\n{\n    vec4 color = texture2D(uSampler, vTextureCoord);\n    float randomValue = rand(gl_FragCoord.xy * uSeed);\n    float diff = (randomValue - 0.5) * uNoise;\n\n    // Un-premultiply alpha before applying the color matrix. See issue #3539.\n    if (color.a > 0.0) {\n        color.rgb /= color.a;\n    }\n\n    color.r += diff;\n    color.g += diff;\n    color.b += diff;\n\n    // Premultiply alpha again.\n    color.rgb *= color.a;\n\n    gl_FragColor = color;\n}\n'));
+        'precision highp float;\r\n\r\nvarying vec2 vTextureCoord;\r\nvarying vec4 vColor;\r\n\r\nuniform float uNoise;\r\nuniform float uSeed;\r\nuniform sampler2D uSampler;\r\n\r\nfloat rand(vec2 co)\r\n{\r\n    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\r\n}\r\n\r\nvoid main()\r\n{\r\n    vec4 color = texture2D(uSampler, vTextureCoord);\r\n    float randomValue = rand(gl_FragCoord.xy * uSeed);\r\n    float diff = (randomValue - 0.5) * uNoise;\r\n\r\n    // Un-premultiply alpha before applying the color matrix. See issue #3539.\r\n    if (color.a > 0.0) {\r\n        color.rgb /= color.a;\r\n    }\r\n\r\n    color.r += diff;\r\n    color.g += diff;\r\n    color.b += diff;\r\n\r\n    // Premultiply alpha again.\r\n    color.rgb *= color.a;\r\n\r\n    gl_FragColor = color;\r\n}\r\n'));
 
         _this.noise = noise;
         _this.seed = seed;
@@ -39323,7 +39410,7 @@ var MeshRenderer = function (_core$ObjectRenderer) {
     MeshRenderer.prototype.onContextChange = function onContextChange() {
         var gl = this.renderer.gl;
 
-        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', 'varying vec2 vTextureCoord;\nuniform vec4 uColor;\n\nuniform sampler2D uSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(uSampler, vTextureCoord) * uColor;\n}\n');
+        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat3 projectionMatrix;\r\nuniform mat3 translationMatrix;\r\nuniform mat3 uTransform;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void)\r\n{\r\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\r\n}\r\n', 'varying vec2 vTextureCoord;\r\nuniform vec4 uColor;\r\n\r\nuniform sampler2D uSampler;\r\n\r\nvoid main(void)\r\n{\r\n    gl_FragColor = texture2D(uSampler, vTextureCoord) * uColor;\r\n}\r\n');
     };
 
     /**

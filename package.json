@@ -6,8 +6,8 @@
     "window": {
         "title": "",
         "toolbar": false,
-        "width": 816,
-        "height": 624,
+        "width": 1920,
+        "height": 1080,
         "icon": "icon/icon.png",
         "position": "mouse"
     },

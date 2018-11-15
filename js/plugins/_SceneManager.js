@@ -30,17 +30,6 @@ SceneManager.initNwjs = function() {
     };
 };
 
-SceneManager.run = function() {
-    try {
-        //start
-        this.initialize();
-        this.goto(Scene_Loader,"Perma",Scene_Boot);
-        this.requestUpdate();
-    } catch (e) {
-        this.catchException(e);
-    }
-};
-
 
 SceneManager.goto = function(sceneClass, loaderSets, callBackScene) {
     console.log0('SceneManager.goto: ', sceneClass.name, loaderSets, callBackScene&&callBackScene.name);

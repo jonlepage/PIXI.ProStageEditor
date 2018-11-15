@@ -5,5 +5,5 @@
 //PluginManager.setup($plugins);
 
 window.onload = function() {
-    SceneManager.run();
+    $stage.run();
 };
