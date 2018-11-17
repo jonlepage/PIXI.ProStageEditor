@@ -27,6 +27,7 @@ class _coreLoader {
         this.Data2 = {}; //{} store textures game by pack name,
         this.DataScenes = {} //{} info sur tous les pack utliser par scene et leur dir, lier a la phase loaderKit
         this.Scenes = {}; // store full scenes cache
+        this.options = {};
         this.fonts = null;
         this.loaderBuffers = [];
         this._isLoading = false;
@@ -71,7 +72,23 @@ class _coreLoader {
         // load and store a cache of each scenes class in the kits
         if(this.sceneKits.length){
             this.loadSceneClass(this.sceneKits.shift());
-        }else{ this._isLoading = false };
+        }else{ this.options = {}; this._isLoading = false };
+    };
+
+    loadFromEditor (className,dataFromNwjs) {
+        this._isLoading = true;
+        this.options.fromEditor = true;
+        this.DataScenes[className] = {};
+        this.DataScenes[className]._sheets = dataFromNwjs;
+        this.DataScenes[className];
+        this.buffers = {
+            className  :className,
+            base       : {} , // this is the final compute data
+            ressources  : {} ,
+            multiPacks : {} ,
+            normals    : {} ,
+        };
+        this.loadSheets(className, true);
     };
 
     load_fonts(){
@@ -83,20 +100,8 @@ class _coreLoader {
         return this.load();
     };
 
-    load_dataScenes(){
-        this.DataScenes = {};
-        const classScenes = { // key: nom des class scenes + path
-            Scene_Local_data:"data/Scene_Local_data.json",
-            Scene_Title_data:"data/Scene_Title_data.json",
-        };
-        const loader = new PIXI.loaders.Loader();
-        for (const key in classScenes) { loader.add(key, classScenes[key]) };
-        loader.load();
-        loader.onProgress.add((loader, res) => { this.DataScenes[res.name] = res.data });
-        loader.onComplete.add((loader, res) => { this.load() });
-    };
 
-    load_perma(options){
+    /*load_perma(options){
         this.Data2 = {};
         const perma = { // key: nom des class scenes + path (.png pour les images, mais redefeni l'extentions ensuite)
             gloves:"data2/Miscs/gloves/gloves.png",
@@ -121,10 +126,10 @@ class _coreLoader {
             };
         });
         loader.onComplete.add((loader, res) => { this.load(options) });
-    };
+    };*/
 
     //STEP:1 load dataScenes scenes?.json
-    loadSceneClass(className){
+    loadSceneClass(className, fromEditor){
         if(this.DataScenes[className]){
             throw console.error(`${className} alrealy loaded WTF! check json and loadSceneClass`);
         };
@@ -193,14 +198,17 @@ class _coreLoader {
 
     computeBuffers(className) {
         const data2 = {};
-        for (const key in this.buffers.ressources) {
+        for ( const key in this.buffers.ressources ) {
             const res = this.buffers.ressources[key];
             const data = data2[key] = this.createBaseFrom(res);
             const key_n = data.meta && data.meta.normal_map && key+'_n';
-            const isSpine = !!data.spineData;
-            const isVideo = !!data.dataVideo;
-            isSpine? Object.assign(data.spineData,res.spineData) : Object.assign(data.textures,res.textures);
+            const isSpine = !!data.spineData ;
+            const isVideo = !!data.dataVideo ;
+            const isAni   = data.type === 'animationSheet';
+            //FIXME: TODO: WARNING, objAsign spineData remove proto__ SkeletonData are not allowed, will not herit context
+            isSpine? data.spineData = res.spineData : Object.assign(data.textures,res.textures);
             key_n && Object.assign(data.textures_n, this.createNormals(data, res.textures, this.buffers.normals[key_n].texture));
+            //multiPacks
             (!isSpine && !isVideo) && data.meta.related_multi_packs && data.meta.related_multi_packs.forEach(keyLink => {
                 keyLink = keyLink.replace('.json','');
                 const keyLink_n = keyLink+'_n';
@@ -212,22 +220,39 @@ class _coreLoader {
                         data.animations[keys[0]].push(...keys[1]);
                         data.animations[keys[0]].sort();
                     });
-                }
+                };
                 key_n && Object.assign(data.textures_n, this.createNormals(resLink.data, resLink.textures, this.buffers.normals[keyLink_n].texture));
             });
-            
+            if(isAni){ // cache a map of bach textures animations by name
+                let _textures = {};
+                let _textures_n = {};
+                for (const key in data.animations) {
+                    _textures   [key ] = data.animations[key].map(a => data.textures   [a     ]);
+                    _textures_n [key ] = data.animations[key].map(a => data.textures_n [a+'_n']);
+                }
+                data.textures = _textures;
+                data.textures_n = _textures_n;
+            };
+            data.dirArray = this.DataScenes[className]._sheets[key].dirArray;
+            // add only if need
             !this.Data2[key] && Object.defineProperty(this.Data2, key, { value: data, enumerable: !(this.buffers.className === 'Scene_Boot') });
         };
-        this.createScene();
-        this.buffers = null;
-        this.utils.clearTextureCache();
-        this.load(); // next scene load =>=>=>
+
+        if(this.options.fromEditor){
+            Object.keys(data2).forEach(key => { Object.assign(data2[key],this.DataScenes[className]._sheets[key]) }); // path data for editor only
+            $PME.startGui(data2);
+        }else{
+            this.createScene();
+            this.buffers = null;
+            this.utils.clearTextureCache();
+            this.load(); // next scene load =>=>=>
+        };
     };
 
     // create scene Cache
     createScene(){
         const className = this.buffers.className;
-        const scene = new (this.getClassScene(className))();
+        const scene = new (this.getClassScene(className))(this.DataScenes[className]);
         this.Scenes[className] = scene;
     };
 
@@ -260,6 +285,20 @@ class _coreLoader {
                 res.isVideo?          { type:'video'}:
                                       { type:'tileSheet'} ),
             ...(!res.spineData ? {textures: {}, textures_n: {}} : void 0 ),
+        };
+        if(this.options.fromEditor){
+            Object.defineProperty(base, "baseTextures", { value: [], writable:true });
+            //base.baseTextures.push(res.children[res.children.length-1].texture.baseTexture); FIXME: broken in pixi
+            const texture = this.utils.TextureCache[`${res.name}_image`] || this.utils.TextureCache[`${res.name}_atlas_page_${res.name}.png`];
+            base.baseTextures.push( texture );
+            if(base.meta.related_multi_packs){
+                base.meta.related_multi_packs.forEach(keyLink => {
+                    keyLink = keyLink.replace('.json','');
+                    const resLink = this.buffers.multiPacks[keyLink];
+                    //base.baseTextures.push(resLink.spritesheet.baseTexture);
+                    base.baseTextures.push( this.utils.TextureCache[`${resLink.name}_image`] );
+                });
+            };
         };
         return base;
     };

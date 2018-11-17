@@ -7,11 +7,12 @@
 
 └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 NOTE AND HELP:
-
+when all initial data are loaded
+Boot
 */
 
 class Scene_Boot extends PIXI.Container {
-    constructor(nextSceneClass, options) {
+    constructor() {
         super();
         this.visible = false;
         this.renderable = false;
@@ -19,8 +20,8 @@ class Scene_Boot extends PIXI.Container {
 
     start(){
         //$Loader.setPermaCurrentData(); // all loaded from SceneBoot are Perma ressource, protect perma ressource once for avoid destoyed
-        //$mouse.initialize(); // initialise mouse core
-        //$player = new _player($Loader.Data2.heroe1_rendered); // create game player
+        $mouse.initialize(); // initialise mouse core
+        $player.initialize(); // create game player
         //$player2.initialize();
         //$items.initialize();
         //$huds.initialize(); // initialise all hubs

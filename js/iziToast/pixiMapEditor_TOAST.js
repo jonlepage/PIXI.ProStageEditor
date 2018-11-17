@@ -51,8 +51,8 @@ _PME.prototype.izitGlobalLightEditor = function(scene){
 };
 
 // open the tileEditor
-_PME.prototype.izitBackgroundEditor = function(bg){
-    let message = HTML_BG_UI();
+_PME.prototype.izitBackgroundEditor = function(bgList){
+    let message = HTML_BG_UI(bgList);
     return{
         title: 'BACKGROUND MAP',
         message: message,

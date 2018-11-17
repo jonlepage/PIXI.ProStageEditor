@@ -2,16 +2,10 @@
 // PLUGIN □────────────────────────────────□PIXI MAP EDITOR□─────────────────────────────────────────┐
 * @author □ Jonathan Lepage (dimisterjon),(jonforum) 
 * @plugindesc EDITOR GUI for create map with object sprine JSON (texture packer, spine)
-* V.1.1.5A
+* V.1.2B
 * License:© M.I.T
 └────────────────────────────────────────────────────────────────────────────────────────────────────┘
-NOTE AND HELP:
-    this.CAGE_MOUSE.name = "CAGE_MOUSE";
-    this.CAGE_MAP.name = "CAGE_MAP";
-    this.CAGE_GUI.name = "CAGE_GUI";
-
 */
-
  // START INITIALISE EDITOR (FROM RMMV PLUGIN MANAGER)
 document.addEventListener('keydown', initializeEditor);
 function initializeEditor(event){
@@ -20,8 +14,7 @@ function initializeEditor(event){
         console.log1('__________________initializeEditor:__________________ ');
         (function() {
             $PME.started = true;
-            $PME.stage = SceneManager._scene;
-            $gameSystem && ($gameSystem._menuEnabled = false); // disable rmmv menu
+            $PME.stage = $stage;
             
             const javascript = [
                 "js/iziToast/iziToast.js",
@@ -69,12 +62,6 @@ function initializeEditor(event){
             }
             
         })();
-        // hack mouse interaction from scene
-        // we dont whant the scene interaction
-        $mouse.__proto__._mousedown = function(){};
-        $mouse.__proto__._mouseup = function(){};
-        document.onwheel = null;
-
     };
 };
 
@@ -102,33 +89,26 @@ class _PME{
 
 
 _PME.prototype.startEditorLoader = function() {
-    iziToast.warning( this.izit_loading1(SceneManager._scene) );
+    iziToast.warning( this.izit_loading1($stage) );
     const loader = new PIXI.loaders.Loader();
-    loader.add('editorGui', `editor/pixiMapEditor1.json`);
-    loader.load();
+    loader.add('editorGui', `editor/pixiMapEditor1.json`).load();
     loader.onProgress.add((loader, res) => {
         if (res.extension === "png") { this.editor[res.name] = res.texture};
         if (res.spineData) { this.editor[res.name] = res.spineData};
     });
-    loader.onComplete.add(() => {
-        this.load_nwJSFolderLibs();
-    });
+    loader.onComplete.add(() => { this.load_nwJSFolderLibs() });
  };
 
  _PME.prototype.load_nwJSFolderLibs = function() {
     const loadingStatus =  document.getElementById('izit_loading1');
     const path = require('path'), fs=require('fs');
-    var fromDir = function(startPath,filter){
-        if (!fs.existsSync(startPath)){
-            return; console.log("no dir ",startPath);
-        };
+    let fromDir = function(startPath,filter){
+        if (!fs.existsSync(startPath)){ return console.log("no dir ",startPath) };
         let files=fs.readdirSync(startPath);
         for(let i=0;i<files.length;i++){
             let filename=path.join(startPath,files[i]);
             let stat = fs.lstatSync(filename);
-            if (stat.isDirectory()){
-                fromDir(filename,filter); //recurse
-            }
+            if (stat.isDirectory()){ fromDir(filename,filter) } //recurse
             else if (filename.indexOf(filter)>=0) {
                 let filenameFormated =  filename.replace(/\\/g, "/");
                 let dirArray = filenameFormated.split("/"); // repertoire path formated for array [,,,]
@@ -140,243 +120,31 @@ _PME.prototype.startEditorLoader = function() {
 
                 fileData.root = `${fileData.dir}/${fileData.base}`
                 this._tmpData[fileData.name] = fileData;
-                //const loadProgressTxt = document.createElement("div");
-                //loadProgressTxt.innerHTML = `<p><span style="color:#fff">${fileData.name}</span> ==><span style="color:#989898">"${filename}"</span></p>`;
-                //loadingStatus.appendChild(loadProgressTxt);
             };
         };
     }.bind(this);
-    fromDir('data2','.json'); //START
+    fromDir('data2','.json'); //START: startPath, extention.Filter
     this.loadDataJson();
  };
 
 
  //#1 start load all json data
  _PME.prototype.loadDataJson = function() {
-    const loader = new PIXI.loaders.Loader();
-    for (const key in this._tmpData) {
-        const dataJ = this._tmpData[key];
-        loader.add(key, `${dataJ.dir}/${dataJ.base}`);
-    };
-    loader.load();
-
-    loader.onProgress.add((loader, res) => {
-        if(res.extension.contains("json")){
-            this.asignBase(res);
-            this._tmpRes[res.name] = res;
-        };
-    });
-    loader.onComplete.add((loader, res) => {
-       this.loadMultiPack();
-    });
+    const _Loader2 = new _coreLoader();
+    _Loader2.loadFromEditor( $stage.scene.constructor.name ,this._tmpData);
+    // return startGui() from core loader
  };
 
-
-//#2 load all multiPack reference
-_PME.prototype.loadMultiPack = function() {
-    const loader = new PIXI.loaders.Loader();
-    for (const key in this._tmpData) {
-        const isMulti = key.contains("-0");
-        if(isMulti){
-            const list =  this._tmpRes[key].data.meta.related_multi_packs;
-            list.forEach(fileName => {
-                const dir = `${this._tmpData[key].dir}/${fileName}`
-                loader.add(fileName, dir);
-                loader.resources[fileName].FROM = this._tmpRes[key];
-            });
-        }
-    };
-    loader.load();
-
-    loader.onProgress.add((loader, res) => {
-        res.extension.contains("json") && (this._tmpRes_multiPack[res.name] = res);
-    });
-    loader.onComplete.add((loader, res) => {
-        this.loadNormal();
-     });
-};
-
-  //#3 load normal png
-_PME.prototype.loadNormal = function() {
-    const loader = new PIXI.loaders.Loader();
-    for (const key in this._tmpRes) {
-        const meta = this._tmpRes[key].data.meta;
-        if(meta && meta.normal_map){
-            const path = this._tmpRes[key].url.split("/");
-            const dir = `${path[0]}/${path[1]}/${path[2]}/${meta.normal_map}`;
-            loader.add(meta.normal_map, dir);
-            loader.resources[meta.normal_map].FROM = this._tmpRes[key];
-        }
-    };
-    for (const key in this._tmpRes_multiPack) {
-        const meta = this._tmpRes_multiPack[key].data.meta;
-        if(meta && meta.normal_map){
-            const path = this._tmpRes_multiPack[key].url.split("/");
-            const dir = `${path[0]}/${path[1]}/${path[2]}/${meta.normal_map}`;
-            loader.add(meta.normal_map, dir);
-            loader.resources[meta.normal_map].FROM = this._tmpRes_multiPack[key];
-        }
-    };
-    loader.load();
-
-    loader.onProgress.add((loader, res) => {
-        this._tmpRes_normal[res.name] = res;
-    });
-    loader.onComplete.add((loader, res) => {
-        this.computeRessources();
-    });
-};
-
-// we have data, multipack, normal, now merging
-_PME.prototype.computeRessources = function() {
-    this.computeNormal();
-    this.computeMultiPack();
-    this.computeData();
-
-    this.startGui();
- };
-
-    // asign base type data and normalise structures
-_PME.prototype.asignBase = function(res) {
-    const type = res.spineData && "spineSheet" || res.data.animations && "animationSheet" || "tileSheet";
-    const tmpData = this._tmpData[res.name];
-    if(type==="spineSheet"){ // type spineSheet;
-        Object.defineProperty(tmpData, "baseTextures", { value: [], writable:true }); // only for editor
-        Object.defineProperty(tmpData, "spineData", { value: {}, writable:true });
-        Object.defineProperty(tmpData, "data", { value: {}, writable:true });
-        Object.defineProperty(tmpData, "perma", { value: $Loader._permaName.contains(res.name) });
-        Object.defineProperty(tmpData, "type", { value: "spineSheet"});
-        Object.defineProperty(tmpData, "normal", { value: false, writable:true}); // TODO: need scan skin
-
-        return type;
-    };
-    if(type==="animationSheet" || type==="tileSheet"){
-        Object.defineProperty(tmpData, "baseTextures", {value: [], writable:true }); // only for editor
-        Object.defineProperty(tmpData, "textures", { value: {} ,writable:true });
-        Object.defineProperty(tmpData, "textures_n", { value: {} ,writable:true });
-        Object.defineProperty(tmpData, "data", { value: {}, writable:true });
-        Object.defineProperty(tmpData, "perma", { value: $Loader._permaName.contains(res.name) });
-        Object.defineProperty(tmpData, "type", { value: type});
-        Object.defineProperty(tmpData, "normal", { value: false, writable:true});
-        return type;
-    };
-    return console.error("WARNING, can not find type of packages sheets! Missing meta:",res)
-};
-
-// create Normal Textures
-_PME.prototype.computeNormal = function() {
-    for (const key in this._tmpRes_normal) {
-        const res = this._tmpRes_normal[key];
-        const baseTexture = res.texture.baseTexture;
-        const textures_n = {};
-        for (const texName in  res.FROM.textures) {
-            const tex = res.FROM.textures[texName];
-            const orig = tex.orig.clone();
-            const frame = tex._frame.clone();
-            const trim = tex.trim && tex.trim.clone();
-            const rot = tex._rotate;
-            const texture = new PIXI.Texture(baseTexture, frame, orig, trim, rot); // (this.baseTexture, this.frame, this.orig, this.trim, this.rotate
-            texture.textureCacheIds = [texName];
-            textures_n[`${texName}_n`] = texture;
-        }
-        res.FROM.textures_n = textures_n;
-    };
-    delete this._tmpRes_normal;
-};
-
-// assign multiPack data to FROM original data
-_PME.prototype.computeMultiPack = function() {
-    for (const key in this._tmpRes_multiPack) {
-        const ress = this._tmpRes_multiPack[key];
-
-        const textures = ress.textures;
-        const origin_textures = ress.FROM.textures;
-        Object.assign(origin_textures, textures);
-
-        const textures_n = ress.textures_n;
-        const origin_textures_n = ress.FROM.textures_n;
-        Object.assign(origin_textures_n, textures_n);
-
-        // DATA
-        const frames = ress.data.frames;
-        const origin_frames = ress.FROM.data.frames;
-        Object.assign(origin_frames, frames);
-
-        const animations = ress.data.animations;
-        const origin_animations = ress.FROM.data.animations;
-        for (const key in animations) {
-            const ani = animations[key];
-            origin_animations[key].push(...ani);
-        };
-
-        ress.FROM.children.push(ress.children[0]) // add baseTexture for editor only
-    };
-    delete this._tmpRes_multiPack;
-};
-
-_PME.prototype.computeData = function() {
-    for (const key in this._tmpData) {
-        const tmpData = this._tmpData[key];
-        const tmpRes = this._tmpRes[key];
-
-        if(tmpData.type === "spineSheet"){
-            tmpData.data = tmpRes.data;
-            tmpData.spineData = tmpRes.spineData;
-        };
-
-        if(tmpData.type ==="tileSheet"){
-            Object.assign(tmpData.data, tmpRes.data);
-            if( tmpData.dirArray.contains("BG") ){
-                const texName = Object.keys(tmpRes.textures)[0];
-                Object.assign(tmpData.textures, tmpRes.textures[texName]);
-                Object.assign(tmpData.textures_n, tmpRes.textures_n[texName+"_n"]);
-                tmpData.isBG = true;
-            }else{
-                Object.assign(tmpData.textures, tmpRes.textures);
-                Object.assign(tmpData.textures_n, tmpRes.textures_n);
-            };
-            tmpData.normal = !!tmpData.data.meta.normal_map; 
-
-        };
-
-        if(tmpData.type ==="animationSheet"){
-            Object.assign(tmpData.data, tmpRes.data);
-            tmpData.normal = !!tmpData.data.meta.normal_map;
-            for (const key in tmpRes.data.animations) {
-                tmpData.textures[key] = [];
-                tmpData.textures_n[key] = [];
-                const keyList = tmpRes.data.animations[key];
-                keyList.sort().forEach(keyAni => {
-                    const ani = tmpRes.textures[keyAni];
-                    const ani_n = tmpRes.textures_n && tmpRes.textures_n[keyAni+"_n"];
-                    tmpData.textures[key].push(ani);
-                    tmpData.textures_n[key].push(ani_n);
-                });
-            };
-        };
-
-        // for editor only: create thumbs baseTextures sheets preview
-        tmpRes.children.forEach(ressource => {
-            if(ressource.extension.contains("png")){
-                tmpData.baseTextures.push(PIXI.Texture.from(ressource.data));
-            };
-        });
-    };
-    this.Data2 = Object.assign({}, this._tmpData);
-    delete this._tmpData;
-    delete this._tmpRes;
-};
-
- _PME.prototype.startGui = function() {
+ _PME.prototype.startGui = function(data2) {
+     this.Data2 = data2;
     // scene hack
-    const scene = SceneManager._scene;
-    scene.CAGE_EDITOR = new PIXI.Container();
-    scene.CAGE_EDITOR.name = "CAGE_EDITOR";
-    scene.addChildAt(scene.CAGE_EDITOR, scene.children.length-1);
-
+    $stage.CAGE_EDITOR = new PIXI.Container();
+    $stage.CAGE_EDITOR.name = "CAGE_EDITOR";
+    const index = $stage.children.indexOf($stage.CAGE_MOUSE);
+    $stage.addChildAt($stage.CAGE_EDITOR, index); // -1 befor mouse
     const cage = new PIXI.Container();
     const spine = new PIXI.spine.Spine(this.editor.editorGui);
-    scene.CAGE_EDITOR.addChild(spine);
+    $stage.CAGE_EDITOR.addChild(spine);
     this.editorGui = spine;
 
     spine.autoUpdate = true;
@@ -398,14 +166,16 @@ _PME.prototype.computeData = function() {
 
  // Start The Editor initialisation SCOPE
 _PME.prototype.startEditor = function() {
-    console.log1('__________________startEditor:__________________ ');
-    //#region [rgba(200, 0, 0,0.1)]
-    // ┌------------------------------------------------------------------------------┐
-    // Start The Editor initialisation SCOPE
-    // └------------------------------------------------------------------------------┘
-    const SCENEJSONSETUP = {bg:null}; // base configuration for the scene.ambiant, BG ....
-    const CACHETILESSORT = {}; //CACHE FOR PATHFINDING ONCE
-    const FILTERS = { // buffer filter
+//#region [rgba(200, 0, 0,0.1)]
+// ┌------------------------------------------------------------------------------┐
+// Start The Editor initialisation SCOPE
+// └------------------------------------------------------------------------------┘
+// CAGE_MAP ________________
+    const CAGE_EDITOR = $stage.CAGE_EDITOR; // the overScreen editors Elements
+    const CAGE_MAP = $stage.scene; // Ref to scene Cage Map
+    const CAGE_MOUSE = $stage.CAGE_MOUSE // ref to cage Mouse
+    const CACHETILESSORT = {}; // cache buffer for fast tiles sorting 
+    const FILTERS = { // cache filters
         OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
         OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
         OutlineFilterx6White: new PIXI.filters.OutlineFilter (4, 0xffffff, 1),
@@ -418,31 +188,24 @@ _PME.prototype.startEditor = function() {
     }
     FILTERS.ColorMatrixFilter.desaturate();
 
-    const STAGE = SceneManager._scene; 
-    console.log2('STAGE: ', STAGE);
-    const DATA = this.Data2;
-    const EDITOR = this.editorGui;
-    const Renderer = Graphics._renderer; // ref to current renderer RMMV Graphics
-    let ButtonsSlots = []; // store spine buttons
-    let InMask = null;
-    let InLibs = null;
-    let InTiles = null;
-    let InButtons = null;
-    let InMapObj = null;
-    let mX = 100, mY = 100; // mosue screen
-    let mMX = 0, mMY = 0; // mouse map
-    let MovementX = 0;
-    let MovementY = 0;
-    let HoldX = 0, HoldY = 0; // mouse map
-    let FreezeMY = null;
+    const DATA2    = this.Data2    ; // ref of database folders
+    const EDITOR   = this.editorGui; // spine
+    const Renderer = $app.renderer ; // ref pixi webGL renderer
+    let ButtonsSlots = []; // store editor Spine2d buttons
+    let InMapObj = null; // Store the current map Objets
+    let mX  = 100, mY  = 100; // mouse Screen Global position info
+    let mMX = 0  , mMY = 0  ; // mouse Map local position info
+    let MovementX = 0   ; // mouseX screen accelerations
+    let MovementY = 0   ; // mouseY screen accelerations
+    let FreezeMY  = null; // pixi.Point freeze mouse coor
     // scoller 
-    let scrollAllowed = true;
-    let ScrollX = STAGE.CAGE_MAP.pivot.x;
-    let ScrollY = STAGE.CAGE_MAP.pivot.y;
+    let scrollAllowed = true; // freeze or allow scroll screen
+    let ScrollX = CAGE_MAP.pivot.x;
+    let ScrollY = CAGE_MAP.pivot.y;
     let ScrollF = 0.1; // _displayXY power for scroll map
     let scrollSpeed = 20;
     // zoom 
-    const Zoom = STAGE.CAGE_MAP.scale;
+    const Zoom = CAGE_MAP.scale;
     const MemCoorZoom1 = new PIXI.Point(), MemCoorZoom2 = new PIXI.Point(); // for control zoom memory
     let MouseTimeOut = null; // store mouse hold timeOut when hold click
     let MouseHold = null; // click mouse is held ?
@@ -454,90 +217,90 @@ _PME.prototype.startEditor = function() {
     let FastModesObj = null; // store Obj fast mode
     let CurrentDisplayGroup = 1;
     FreezeMouse = null; // freeze mouse when place a obj from mouse, with fast mode
-
- 
-// TODO: ENLEVER LES JAMBRE ET LES PIED DES PERSONNAGTE. POUR FAIRE DES BOULE SAUTILLANTE.
-// SEULEMENT CHEZ LES ANIMAUX SEULEMENT , IL SEMBLERAI AVOIR 2 ESPECE DIFERENTE.
-// DES ANIMAUX A BOULE
-// DES ANIMAUX A BOULE COMME LE CHAT, SUR LA TETE.
-
-    //#endregion
+//#endregion
 
 //#region [rgba(250, 0, 0,0.03)]
 // ┌------------------------------------------------------------------------------┐
-// SETUP VARIABLE AND AUTO FUNCTION SCOPED (ONCE)
+// SETUP Container for editor gui
 // └------------------------------------------------------------------------------┘
-// CAGE_LIBRARY ________________
-const CAGE_LIBRARY = new PIXI.Container(); // Store all avaibles libary
-    CAGE_LIBRARY.mask = new PIXI.Sprite(PIXI.Texture.WHITE); //Mask for scroll bottom libs
-    CAGE_LIBRARY.addChild(CAGE_LIBRARY.mask);
-    CAGE_LIBRARY.list = []; // store liste of current obj cages elements
-    // setup && hack
-    CAGE_LIBRARY.position.set(115,950);
-    CAGE_LIBRARY.mask.position.set(-8,-8); // marge outline filters
-    CAGE_LIBRARY.mask.width = 1740, CAGE_LIBRARY.mask.height = 105;
-    CAGE_LIBRARY.mask.getBounds();
-    // reference
-    CAGE_LIBRARY.name = "library";
-    CAGE_LIBRARY.interactive = true;
-    CAGE_LIBRARY.hitArea = new PIXI.Rectangle(0,0,1740,220);
-    CAGE_LIBRARY.buttonType = "CAGE_LIBRARY";
-    CAGE_LIBRARY.on('pointerover', pointer_overIN);
-    CAGE_LIBRARY.on('pointerout', pointer_overOUT);
-    CAGE_LIBRARY.on('pointerdown', pointer_DW);
-    STAGE.CAGE_EDITOR.addChild(CAGE_LIBRARY);
-// CAGE_TILESHEETS ________________
-const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
-    CAGE_TILESHEETS.mask = new PIXI.Sprite(PIXI.Texture.WHITE); //Mask for scroll bottom libs
-    //CAGE_TILESHEETS.addChild(CAGE_TILESHEETS.mask);
-    // setup && hack
-    CAGE_TILESHEETS.position.set(1280,50);
-    CAGE_TILESHEETS.mask.position.set(1280, 50);
-    CAGE_TILESHEETS.mask.width = 640;
-    CAGE_TILESHEETS.mask.height = 880;
-    CAGE_TILESHEETS.mask.getBounds();
-    CAGE_TILESHEETS.opened = false;
-    CAGE_TILESHEETS.list = []; // store list of tile
-    CAGE_TILESHEETS.renderable = false;
-    CAGE_TILESHEETS.visible = false; 
-    CAGE_TILESHEETS.interactive = true;
-    CAGE_TILESHEETS.hitArea = new PIXI.Rectangle(0,0,3600,3600); // compense le scale zoom
-    CAGE_TILESHEETS.buttonType = "CAGE_TILESHEETS";
+    // CAGE_LIBRARY ________________
+    // Store Available library spriteSheets with baseTextures
+    const CAGE_LIBRARY = new PIXI.Container(); 
+        (function() {
+            this.mask = new PIXI.Sprite(PIXI.Texture.WHITE); //Mask for scroll bottom libs
+            this.addChild(CAGE_LIBRARY.mask);
+            this.list = []; // store liste of current obj cages elements
+            // setup && hack
+            this.position.set(115,950);
+            this.mask.position.set(-8,-8); // marge outline filters
+            this.mask.width = 1740, CAGE_LIBRARY.mask.height = 105;
+            this.mask.getBounds();
+            // reference
+            this.name = "library";
+            this.interactive = true;
+            this.hitArea = new PIXI.Rectangle(0,0,1740,220);
+            this.buttonType = "CAGE_LIBRARY";
+            this.on('pointerover', pointer_overIN);
+            this.on('pointerout', pointer_overOUT);
+            this.on('pointerdown', pointer_DW);
+            CAGE_EDITOR.addChild(CAGE_LIBRARY);
+        }).call(CAGE_LIBRARY);
 
-    CAGE_TILESHEETS.on('pointerover', pointer_overIN);
-    CAGE_TILESHEETS.on('pointerout', pointer_overOUT);
-    CAGE_TILESHEETS.on('pointerdown', pointer_DW);
-    CAGE_TILESHEETS.on('pointerup', pointer_UP);
-    CAGE_TILESHEETS.on('zoomTileLibs', wheelInLibs);
-    
+    // CAGE_TILESHEETS ________________
+    const CAGE_TILESHEETS = new PIXI.Container(); // Store all avaibles libary
+        (function() {
+            this.mask = new PIXI.Sprite(PIXI.Texture.WHITE); //Mask for scroll bottom libs
+            // setup && hack
+            this.position.set(1280,50);
+            this.mask.position.set(1280, 50);
+            this.mask.width = 640;
+            this.mask.height = 880;
+            this.mask.getBounds();
+            this.list        = []   ; // store list of tile
+            this.opened      = false;
+            this.renderable  = false;
+            this.visible     = false;
+            this.interactive = true ;
+            this.hitArea = new PIXI.Rectangle(0,0,3600,3600); // compense le scale zoom
+            this.buttonType = "CAGE_TILESHEETS";
+            this.on('pointerover' , pointer_overIN );
+            this.on('pointerout'  , pointer_overOUT);
+            this.on('pointerdown' , pointer_DW     );
+            this.on('pointerup'   , pointer_UP     );
+            this.on('zoomTileLibs', wheelInLibs    );
+            CAGE_EDITOR.addChild(CAGE_TILESHEETS);
+        }).call(CAGE_TILESHEETS);
 
-    // reference
-    STAGE.CAGE_EDITOR.addChild(CAGE_TILESHEETS);
-// CAGE_MOUSE ________________
-const CAGE_MOUSE = STAGE.CAGE_MOUSE // Store all avaibles libary
-    CAGE_MOUSE.previews = new PIXI.Container(); // store preview list
-    CAGE_MOUSE.previewsShowed = false;
-    CAGE_MOUSE.currentSprite = null;
-    CAGE_MOUSE.list = false; // store list array of current objs hold by the mouse
-    CAGE_MOUSE.addChild(CAGE_MOUSE.previews);
+    // CAGE_MOUSE ________________
+        (function() {
+            this.previews = new PIXI.Container(); // store preview list
+            this.previewsShowed = false;
+            this.currentSprite = null;
+            this.list = false; // store list array of current objs hold by the mouse
+            this.addChild(CAGE_MOUSE.previews);
+        }).call(CAGE_MOUSE);
+
     // fast mode indicator 
     const fastModes = new PIXI.Container();
-    var txt0 = new PIXI.Text("P: pivot from position",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    var txt1 = new PIXI.Text("Y: position from pivot",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    var txt2 = new PIXI.Text("W: skew mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    var txt3 = new PIXI.Text("S: Scale mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    var txt4 = new PIXI.Text("R: Rotation mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    var txt5 = new PIXI.Text("U: Rotate Textures Anchor",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
-    let txtH = txt0.height;
-    txt1.y = txt0.y+txtH, txt2.y = txt1.y+txtH, txt3.y = txt2.y+txtH, txt4.y = txt3.y+txtH, txt5.y = txt4.y+txtH;
-    fastModes.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
-    fastModes.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
-    fastModes.renderable = false; // render only when mouse hold.
-    $mouse.pointer.addChild(fastModes);
-    fastModes.x = 80;
+        (function() {
+            const txt0 = new PIXI.Text("P: pivot from position",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txt1 = new PIXI.Text("Y: position from pivot",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txt2 = new PIXI.Text("W: skew mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txt3 = new PIXI.Text("S: Scale mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txt4 = new PIXI.Text("R: Rotation mode",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txt5 = new PIXI.Text("U: Rotate Textures Anchor",{fontSize:14,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            const txtH = txt0.height;
+            this.x = 80;
+            txt1.y = txt0.y+txtH, txt2.y = txt1.y+txtH, txt3.y = txt2.y+txtH, txt4.y = txt3.y+txtH, txt5.y = txt4.y+txtH;
+            this.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
+            this.renderable = false; // render only when mouse hold.
+            this.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
+            CAGE_MOUSE.addChild(fastModes);
+        }).call(fastModes);
 
-// CAGE_MAP ________________
-const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
+
+
+
 
 
 //#endregion
@@ -548,9 +311,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
      // createLibraryObj sheets for thumbails libs
      (function(){
         let x = 100;
-        for (const key in DATA) { // this._avaibleData === DATA
-            if(!DATA[key].isBG){ // dont add BG inside library
-                const cage = build_ThumbsGUI(DATA[key]); // create from Data ""
+        for (const key in DATA2) { // this._avaibleData === DATA2
+            if(DATA2[key].dirArray[1] !== 'BG'){ // dont add BG inside library
+                const cage = build_ThumbsGUI(DATA2[key]); // create from Data ""
                 CAGE_LIBRARY.list.push(cage);
             };
         };
@@ -593,7 +356,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // convert current objs to editor format
     (function() {
         $Objs.list_master.forEach(cage => {
-            const dataBase = DATA[cage.dataName];
+            const dataBase = DATA2[cage.dataName];
             create_DebugElements.call(cage, dataBase);
             
             cage._events = {}; // remove event
@@ -619,17 +382,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return ('0x' + Math.floor(Math.random() * 16777215).toString(16) || 0xffffff);
     };
 
-    // remove specific element in array by filters
-    Array.prototype.remove = function() {
-        var what, a = arguments, L = a.length, ax;
-        while (L && this.length) {
-            what = a[--L];
-            while ((ax = this.indexOf(what)) !== -1) {
-                this.splice(ax, 1);
-            }
-        }
-        return this;
-    };
 
     // draw a grafics lines sXY[x,eX]
     function drawLine(sXY,eXY,l,c,a){
@@ -661,11 +413,11 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function drawGrids(){
         if(GRID && GRID._texture){
-            STAGE.CAGE_MAP.removeChild(GRID);
+            CAGE_MAP.removeChild(GRID);
             return GRID.destroy();
         }
-        const eX = STAGE.width; // map width + zoom
-        const eY = STAGE.height; // map width + zoom
+        const eX = $stage.width; // map width + zoom
+        const eY = $stage.height; // map width + zoom
         const maxLineH = eX/48, maxLineV = eY/48;
         const fWH = 48; // factor squares width heigth
         const color = [0xffffff,0x000000,0xff0000,0x0000ff][~~(Math.random()*4)];
@@ -686,7 +438,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         Renderer.render(rc_grid, rt);
         const sprite = PIXI.Sprite.from(rt);
         sprite.alpha = 0.5;
-        STAGE.CAGE_MAP.addChild(sprite);
+        CAGE_MAP.addChild(sprite);
         GRID = sprite;
     };
 
@@ -700,7 +452,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
            };
            return LineDraw.rotation+=rad;
         }
-        const renderer = Graphics._renderer
+        const renderer = $app.renderer
         const texture = renderer.generateTexture( drawLine([0,0],[1920*2,0],8,"0xff0000") );
         LineDraw = new PIXI.Sprite(texture);
         LineDraw.position.set(mX,mY);
@@ -708,7 +460,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         LineDraw.change = 0;
         LineDraw.pinable = true;
         LineDraw.horizon = true; // is lock on x or y
-        STAGE.addChild(LineDraw);
+        $stage.addChild(LineDraw);
         LineDraw.interactive = true;
         LineDraw.name = "DEBUGLINE";
         LineDraw.on('pointerup', pointer_UP);
@@ -800,7 +552,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     //#region [rgba(219, 182, 2, 0.05)]
     // ┌------------------------------------------------------------------------------┐
-    // IZITOAST DATA EDITOR 
+    // IZITOAST DATA2 EDITOR 
     // └------------------------------------------------------------------------------┘
     // create data id for HTML JSON, if existe , return Data_Values
     function computeDataForJson(OBJ){
@@ -841,7 +593,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 PIXI.utils.hex2rgb(OBJ.Sprites.n.color.lightRgba).reverse()
             ];
         };
-        console.log('data: ', data);
         return data;
         
     };
@@ -1051,14 +802,19 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         // compute all BG folder
         iniSetupIzit();
         const dataValues = cage.getDataValues();
-        iziToast.info( $PME.izitBackgroundEditor(cage) );
+        // get BG list for options html
+        let bgList = Object.keys(DATA2).filter(word => DATA2[word].dirArray.contains("BG") );
+        bgList.unshift(false);
+        bgList = bgList.map(v => [v,v]); 
+        //[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]
+        iziToast.info( $PME.izitBackgroundEditor(bgList) );
         // create select for change BG
         const HTMLSelectBG = document.getElementById('p_dataName');
-        let result = Object.keys(DATA).filter(s =>  {
-            if (DATA[s].isBG) {
+        let result = Object.keys(DATA2).filter(s =>  {
+            if (DATA2[s].isBG) {
                 const opt = document.createElement("option");
-                opt.text = DATA[s].name;
-                opt.selected = (dataValues.p.dataName === DATA[s].name);
+                opt.text = DATA2[s].name;
+                opt.selected = (dataValues.p.dataName === DATA2[s].name);
                 HTMLSelectBG.add(opt);
             };
         });  
@@ -1249,8 +1005,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                     dataValues[id[0]][id[1]] = e.value;
                     // if is BG, create new base
                     if(id[1] === "dataName"){
-                        const dataBase = DATA[e.value];
-                        this.clearBackground();
+                        const dataBase = DATA2[e.value];
+                        $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
                         dataValues = this.getDataValues(dataBase);
                         dataBase && this.createBases(dataBase);
                         setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
@@ -1282,7 +1038,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         }).bind(this);
     };
 
-    // LIGHT DATA INSPECTOR listener
+    // LIGHT DATA2 INSPECTOR listener
     function create_dataLightIntepretor(dataValues){
         const dataIntepretor = document.getElementById("dataIntepretor");
         dataIntepretor.oninput = (function(event){
@@ -1444,69 +1200,6 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         return cage;
     };
 
-
-    function setup_Propretys(fromCage){
-        if(this.type === "tileSheet" || this.type === "animationSheet" || this.type === "spineSheet"){
-            this.Data_Values = getDataJson(fromCage);
-            this.Data_CheckBox = getDataCheckBoxWith(fromCage, this.Data_Values);
-            //setObjWithData.call(this, this.Data_Values, this.Data_CheckBox);
-            //TODO: ADD rotation textures to datavalue
-            fromCage.Sprites.d? this.Sprites.d.rotation = fromCage.Sprites.d.rotation : void 0;
-            fromCage.Sprites.n? this.Sprites.n.rotation = fromCage.Sprites.n.rotation : void 0;
-
-            if(fromCage.buttonType==="tileLibs" && this.type !== "spineSheet"){ // if it from libs, ajust anchor because it compute by another ways
-                let anX = fromCage.Debug.an.position.x/fromCage.Debug.bg.width;
-                let anY = fromCage.Debug.an.position.y/fromCage.Debug.bg.height;
-                this.Sprites.d.anchor.set(anX, anY);
-                this.Sprites.n && this.Sprites.n.anchor.set(anX, anY);
-                this.Debug.bg.anchor.set(anX, anY);
-            };
-            if(fromCage.buttonType==="tileMouse"){
-                // update debug skew
-                this.Debug.piv.scale.x = fromCage.Debug.piv.scale.x;
-                this.Debug.piv.pivLine.skew.y = fromCage.Debug.piv.pivLine.skew.y;
-                this.Debug.piv.scale.y = fromCage.Debug.piv.scale.y;
-                this.Debug.piv.pivLine.skew.x = fromCage.Debug.piv.pivLine.skew.x;
-            }
-        };
-    };
-
-    function setup_LayerGroup(){
-        if(this.type === "tileSheet" || this.type === "animationSheet"){
-            this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
-            this.Sprites.n.parentGroup = PIXI.lights.normalGroup;
-            this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
-
-            this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
-            this.zIndex = this.zIndex || mMY; //TODO:
-        };
-        if(this.type === "spineSheet"){
-            this.Sprites.d.parentGroup = PIXI.lights.diffuseGroup;
-            this.Sprites.n? this.Sprites.n.parentGroup = PIXI.lights.normalGroup : void 0;
-            this.Debug.bg.parentGroup = PIXI.lights.diffuseGroup;
-            this.parentGroup = $displayGroup.group[CurrentDisplayGroup]; //TODO: CURRENT
-            this.zIndex = this.zIndex || mMY; //TODO:
-        };
-    };
-
-    function setup_Parenting(){
-        if(!this.type){ // "thumbs"
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.ico);
-            this.getBounds();
-            this.Debug.bg.getBounds();
-        };
-        if(this.type === "tileSheet" || this.type === "animationSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Sprites.n, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
-            this.getBounds();
-            this.Debug.bg.getBounds();
-        };
-        if(this.type === "spineSheet"){
-            this.addChild(this.Debug.bg, this.Sprites.d, this.Debug.an, this.Debug.piv, this.Debug.hitZone);
-            this.getBounds();
-            this.Debug.bg.getBounds();
-        };
-    };
-
     function create_DebugElements(dataBase){
         const Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
         if(!this.type){ // if no data type, it a "thumbs"
@@ -1532,9 +1225,9 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             let w = this.d.width;
             let h = this.d.height;
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const an = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
+            const an = new PIXI.Sprite( $app.renderer.generateTexture( drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
             const piv = new PIXI.Container(); //computeFastModes need a container for skews
-            const pivLine = new PIXI.Sprite( Graphics._renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
+            const pivLine = new PIXI.Sprite( $app.renderer.generateTexture( drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
             // BG
             bg.width = w, bg.height = h;
             bg.tint = 0xffffff;
@@ -1627,7 +1320,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     // create tiles for mouse or map
     function build_Sprites(fromCage){
-        const dataBase = DATA[fromCage.dataValues.p.dataName];
+        const dataBase = DATA2[fromCage.dataValues.p.dataName];
         const textureName = fromCage.dataValues.p.textureName;
         const dataValues = fromCage.getDataValues(); // update and clone dataValues from ref
         // hack parentGroup and also Anchors
@@ -1674,8 +1367,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         CAGE_TILESHEETS.name = InLibs.dataName;
         
         const list = [];
-        const dataBase = DATA[InLibs.dataName];
-        const textures = dataBase.textures || dataBase.data.skins;
+        const dataBase = DATA2[InLibs.dataName];
+        const textures = dataBase.textures || dataBase.skins;
         EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(textures).length}): ${dataBase.name}.json`; // update title 
         Object.keys(textures).forEach(textureName => {
             const cage = build_tilesGUI(dataBase, textureName);
@@ -1834,22 +1527,22 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             }   
         };
         if(name.contains("icon_setup")){
-             open_dataBGInspector(STAGE.background); // edit ligth brigth , and custom BG            
+             open_dataBGInspector($stage.scene.background); // edit ligth brigth , and custom BG            
         };
         if(name.contains("icon_grid")){
             drawGrids();
         };
         if(name.contains("icon_masterLight")){
-            open_stageLightInspector(STAGE.lights.ambientLight); // edit ligth brigth , and custom BG
+            open_stageLightInspector($stage.LIGHTS.ambientLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_spotLight")){
-            open_stageLightInspector(STAGE.lights.directionalLight); // edit ligth brigth , and custom BG
+            open_stageLightInspector($stage.LIGHTS.directionalLight); // edit ligth brigth , and custom BG
         };
         if(name.contains("icon_drawLine")){
             addDebugLineToMouse();
         }
         if(name.contains("icon_Save")){
-            open_SaveSetup(STAGE);
+            open_SaveSetup($stage);
         }
         if( name.contains("gb") ){ // pixi-layers buttons only
             // old gb
@@ -2003,8 +1696,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         MovementX = $mouse.x - mX;
         MovementY = $mouse.y - mY;
         mX = $mouse.x, mY = $mouse.y;
-        mMX = (mX/Zoom.x)+STAGE.CAGE_MAP.pivot.x;
-        mMY = (mY/Zoom.y)+STAGE.CAGE_MAP.pivot.y;
+        mMX = (mX/Zoom.x)+CAGE_MAP.pivot.x;
+        mMY = (mY/Zoom.y)+CAGE_MAP.pivot.y;
 
         // if mouse have sprite =>update
         if(CAGE_MOUSE.list && !MouseHold && !FreezeMouse){ // update cages list hold by mouse
@@ -2239,7 +1932,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if(DrawPathMode){return}; // avoid other buttonType if DrawPathMode
             if(LineDraw){ // TODO: MAKE add line to map
                 LineDraw.off("pointerup",pointer_UP)
-                STAGE.CAGE_MAP.addChild(LineDraw);
+                CAGE_MAP.addChild(LineDraw);
                 LineDraw.position.set(mMX,mMY);
                 LineDraw.on('pointerover', function(e){ 
                     FreezeMY = e.currentTarget;
@@ -2334,15 +2027,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         
         // zoom map
         const pos = new PIXI.Point(mX,mY);
-        STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
+        CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
         if(event.wheelDeltaY>0){
             Zoom.x+=0.1,Zoom.y+=0.1
         }else{
             if(Zoom._x>0.4){ Zoom.x-=0.1, Zoom.y-=0.1 }; 
         };
-        STAGE.CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
-        STAGE.CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
-        STAGE.CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
+        CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
+        CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
+        CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
         ScrollX -= (MemCoorZoom2.x - MemCoorZoom1.x);
         ScrollY -= (MemCoorZoom2.y - MemCoorZoom1.y);
     
@@ -2434,7 +2127,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
     // Tikers for editor update (document Title, check scroll)
     const editorTiker = new PIXI.ticker.Ticker().add((delta) => {
         updateFromTicks($mouse.interaction.mouse.originalEvent); // update move obj
-        document.title = `
+        document.title = `[${$stage.scene.constructor.name}] => 
         mX: ${~~mX}  mY: ${~~mY} ||  mMX: ${~~mMX}  mMY: ${~~mMY} || ScrollX:${~~ScrollX} ScrollY:${~~ScrollY}
         `;
         if(scrollAllowed){
@@ -2443,8 +2136,8 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             (mY<8 && (ScrollY-=ScrollF) || mY>1080-8 && (ScrollY+=ScrollF)) && (scrolled=true);
             scrolled && (ScrollF+=0.4) || (ScrollF=0.1) ;
         }
-        STAGE.CAGE_MAP.pivot.x+=(ScrollX-STAGE.CAGE_MAP.pivot.x)/(scrollSpeed*delta);
-        STAGE.CAGE_MAP.pivot.y+=(ScrollY-STAGE.CAGE_MAP.pivot.y)/(scrollSpeed*delta);
+        CAGE_MAP.pivot.x+=(ScrollX-CAGE_MAP.pivot.x)/(scrollSpeed*delta);
+        CAGE_MAP.pivot.y+=(ScrollY-CAGE_MAP.pivot.y)/(scrollSpeed*delta);
         
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
@@ -2485,26 +2178,21 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 totalLight       : +document.getElementById("totalLight"       ).innerText,
                 totalEvents      : +document.getElementById("totalEvents"      ).innerText,
                 totalSheets      : +document.getElementById("totalSheets"      ).innerText,
-                planetID : STAGE.planetID,
-                mapID    : STAGE.mapID   ,
-            }
+            };
         };
 
         create_SceneJSON(useOption);
-        //useOption ? create_RenderingOptions(useOption):void 0; TODO:
-        //close_dataInspector();
+        close_dataInspector();
         iziToast.warning( $PME.savedComplette() );
 
     };
 
     function create_SceneJSON(options) {
-        let _permaSheets = addToSave_PermaSheets () ; // perma cache from coreLoader list
         let _lights      = addToSave_Lights      () ; // scene global light
         let _background  = addToSave_BG          () ; // scene bg
         let _objs        = addToSave_OBJS        () ; // obj use in this scene
         let _sheets      = addToSave_Sheets      (_objs,_background) ; // all cheets used in this scene
-        const sceneData = { _lights , _background, _objs, _sheets, system:options.systemInfo };
-        const permaData = { _sheets :_permaSheets } ;
+        const sceneData = { system:options.systemInfo, _lights , _background, _sheets, _objs,   };
 
         const fs = require('fs');
         function writeFile(path,content){
@@ -2517,48 +2205,20 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
                 });
             });
         };      
-
-        // CREATE A PLANETS JSON
-        if(STAGE.planetID){
-            const merge = require('package-merge');
-            let i = 1;
-            let package = [JSON.stringify({_sheets:_sheets},null,'\t')]; // current Sheets
-            let classMapID = window.Scene_MapID1;
-            while (classMapID) {
-                let buffer = JSON.parse( fs.readFileSync(`data/Scene_MapID${i}_data.json`) );
-                if((buffer.system.planetID === STAGE.planetID) && (buffer.system.mapID !== STAGE.mapID)){
-                    package.push( JSON.stringify({_sheets:buffer._sheets},null,'\t') );
-                }
-                classMapID = window[`Scene_MapID${++i}`];
-            };
-            const concatedBuffer = package.length-1? merge(...package) : package[0];
-            writeFile(`data/PlanetID${STAGE.planetID}_data.json` , concatedBuffer ); // planets
-            writeFile(`data/perma.json`                          , JSON.stringify(permaData, null, '\t') );
-            writeFile(`data/${STAGE.constructor.name}_data.json` , JSON.stringify(sceneData, null, '\t') );
-        };
-    };
-
-    //save permanent sheets for game (refresh:add:remove)
-    // perma sheet are used in bootGame and cant not erase
-    function addToSave_PermaSheets() {
-        const data = {};
-        for (const key in DATA) {
-            DATA[key].perma ? data[DATA[key].name] =  DATA[key] : void 0;
-        };
-        return data;
+        writeFile(`data/${$stage.scene.constructor.name}.json` , JSON.stringify(sceneData, null, '\t') );
     };
 
     //save scene global light
     function addToSave_Lights() {
-        const ambientLight     = STAGE.lights.ambientLight    .getDataValues();
-        const directionalLight = STAGE.lights.directionalLight.getDataValues();
+        const ambientLight = $stage.LIGHTS.ambientLight    .getDataValues();
+        const directionalLight = $stage.LIGHTS.directionalLight.getDataValues();
         return {ambientLight,directionalLight};
     };
 
     //save scene background data
     function addToSave_BG() {
-        if(STAGE.background){
-            return STAGE.background.getDataValues();
+        if($stage.scene.background){
+            return $stage.background.getDataValues();
         }else{
             return null;
         }
@@ -2579,17 +2239,18 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         let dataName;
         if(_background){
             dataName = _background.p.dataName;
-            data[dataName] = DATA[dataName];
+            data[dataName] = DATA2[dataName];
         }
         _objs.forEach(obj => {
-            dataName = obj.p.dataName;
-            data[dataName] = DATA[dataName];
+            const dname = obj.p.dataName;
+            const d2 = DATA2[dname];
+            data[dname] = { base:d2.base, dir:d2.dir, dirArray:d2.dirArray, name:d2.name, root:d2.root, type:d2.type };
         });
         return data;
     };
 
 
-    /*function computeSave_PLANETS(STAGE,OBJS,SHEETS) {
+    /*function computeSave_PLANETS($stage,OBJS,SHEETS) {
         let data = Object.assign({}, SHEETS);
         const list = Object.keys($Loader.loaderSet); // get list of all Scene_MapID?_data
         let i = 1;
@@ -2605,15 +2266,15 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
 
     function snapScreenMap(options) {
         // create a snap to import in rmmv sofware
-        STAGE.CAGE_EDITOR.renderable = false;
-        const w = STAGE.CAGE_MAP.width;
-        const h = STAGE.CAGE_MAP.height;
-        STAGE.CAGE_MAP.position.set(0,h);
-        STAGE.CAGE_MAP.scale.set(1,-1);
-        STAGE.CAGE_MAP.pivot.set(0,0);
+        CAGE_EDITOR.renderable = false;
+        const w = CAGE_MAP.width;
+        const h = CAGE_MAP.height;
+        CAGE_MAP.position.set(0,h);
+        CAGE_MAP.scale.set(1,-1);
+        CAGE_MAP.pivot.set(0,0);
         const renderer = PIXI.autoDetectRenderer(w, h);
         const renderTexture = PIXI.RenderTexture.create(w, h);
-            renderer.render(STAGE, renderTexture);
+            renderer.render($stage, renderTexture);
         const canvas = renderer.extract.canvas(renderTexture);
         const urlData = canvas.toDataURL();
         const base64Data = urlData.replace(/^data:image\/png;base64,/, "");
@@ -2623,10 +2284,10 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
             if (error !== undefined && error !== null) {  console.error('An error occured while saving the screenshot', error); } 
         });
         // RESTOR
-        STAGE.CAGE_EDITOR.renderable = true;
-        STAGE.CAGE_MAP.position.set(0,0);
-        STAGE.CAGE_MAP.scale.set(1,1);
-        STAGE.CAGE_MAP.pivot.set(0,0);
+        CAGE_EDITOR.renderable = true;
+        CAGE_MAP.position.set(0,0);
+        CAGE_MAP.scale.set(1,1);
+        CAGE_MAP.pivot.set(0,0);
    };
     //#endregion
 
@@ -2649,7 +2310,7 @@ const CAGE_MAP = STAGE.CAGE_MAP; // Store all avaibles libary
         //Create the rope
         var rope = new PIXI.mesh.Rope(trailTexture, points);
         rope.blendmode = PIXI.BLEND_MODES.ADD;
-        STAGE.CAGE_MOUSE.addChild(rope);
+        CAGE_MOUSE.addChild(rope);
 
         const trailTiker = PIXI.ticker.shared.add((delta) => {
             historyX.pop();historyX.unshift(mX);

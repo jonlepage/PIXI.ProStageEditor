@@ -49,7 +49,7 @@ class _app extends PIXI.Application {
         }
     };
 
-    scaleToWindow(backgroundColor= 0x383838) {
+    scaleToWindow() {
         const canvas = this.view;
         let scaleX, scaleY, scale, center;
         scaleX = window.innerWidth / canvas.offsetWidth;

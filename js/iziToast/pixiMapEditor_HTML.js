@@ -473,8 +473,9 @@ function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
 };
 
 
-function HTML_BG_UI(resultBG){ // html_izit_sceneGlobalLight
+function HTML_BG_UI(bgList){ // html_izit_sceneGlobalLight
     // if is a sprite obj
+    
     const message1 = /*html*/ `
     <div class="container" id="dataIntepretor">
         <h6>
@@ -487,7 +488,7 @@ function HTML_BG_UI(resultBG){ // html_izit_sceneGlobalLight
                 <div class="accordion-content">
                     ${ new_HTML_table([
                         new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:[[void 0]]}), // locked
+                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:bgList}), // locked
                         new_HTML_content1D(["p"],"name","text",{largeX:true}), // locked
                         new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
                    ])}

@@ -140,3 +140,27 @@ String.prototype.contains = function(string) {
 Math.randomInt = function(max) {
     return Math.floor(max * Math.random());
 };
+
+
+
+
+/**
+ * remove specific element in array by filters
+ *
+ * @static
+ * @method Array.prototype.remove
+ * @param {Number} arguments 
+ * @return {Array}
+ */
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
+

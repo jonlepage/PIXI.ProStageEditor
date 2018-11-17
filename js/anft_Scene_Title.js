@@ -9,11 +9,12 @@
 NOTE AND HELP:
 
 */
-class Scene_Title extends PIXI.Container {
-    constructor(nextSceneClass, options) {
-        super();
+class Scene_Title extends _Scene_Base {
+    constructor(sceneData) {
+        super(sceneData);
 
     };
+
 
 
     start(){
@@ -28,10 +29,9 @@ class Scene_Title extends PIXI.Container {
         //$gui.initialize(); 
         //$avatar.initialize();
         //$monster.initialize();
-
         //SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
         //$player.transferMap(1); // HACKED FOR DEBUG// FIXME: SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
-    
+        
     };
 
     update(delta){
