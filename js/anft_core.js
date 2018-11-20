@@ -17,7 +17,7 @@ class _app extends PIXI.Application {
           document.body.onresize = () => { this.scaleToWindow() };
     };
 
-    isNwjs() { 
+    isNwjs() {
       return typeof require === 'function' && typeof process === 'object';
     };
 
@@ -33,6 +33,12 @@ class _app extends PIXI.Application {
         //win.appWindow.focus();
         window.moveBy(-dw / 2, -dh / 2);
         window.resizeBy(dw, dh);
+        if (process.platform === 'darwin' && !win.menu) {
+            var menubar = new gui.Menu({ type: 'menubar' });
+            var option = { hideEdit: true, hideWindow: true };
+            menubar.createMacBuiltin('Game', option);
+            win.menu = menubar;
+        }
         return {gui,win};
     };
 
@@ -47,7 +53,22 @@ class _app extends PIXI.Application {
         } else if (element.msRequestFullscreen) {
             element.msRequestFullscreen();
         }
+        this._fullScreen = true;
     };
+
+    cancelFullScreen() {
+        if (document.cancelFullScreen) {
+            document.cancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+            document.webkitCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        this._fullScreen = false;
+    };
+    
 
     scaleToWindow() {
         const canvas = this.view;
@@ -77,16 +98,28 @@ class _app extends PIXI.Application {
         };
         canvas.style.paddingLeft = 0 + "px";canvas.style.paddingRight = 0 + "px";
         canvas.style.paddingTop = 0 + "px";canvas.style.paddingBottom = 0 + "px";
-        canvas.style.display = "block";
+        canvas.style.display = "-webkit-inline-box";
         //Fix some quirkiness in scaling for Safari
         //5. Return the `scale` value. This is important, because you'll nee this value 
         return scale;
-      };
-
+      }; 
 }; //END CLASS
 
 const $app = new _app(); // new PIXI.Application
-
-
+console.log1('$app: ', $app);
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild($app.view);
+
+
+
+document.addEventListener('contextmenu', event => event.preventDefault()); // disable nwjs right click
+document.addEventListener('keydown', (event) => {
+    console.log('event: ', event);
+    if(event.keyCode === 115){ // F4
+        return $app._fullScreen && $app.cancelFullScreen() || $app.requestFullScreen();
+    };
+    if(event.keyCode === 116){ // F5 refresh
+        document.location.reload(true)
+    }
+    
+});

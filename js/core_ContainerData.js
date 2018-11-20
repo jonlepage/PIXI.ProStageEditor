@@ -301,7 +301,7 @@ PIXI.ContainerSpine = (function () {
         // can set false, if need keep temp old values for HTML dataEditor
         if(storeValues){ this.dataValues = dataValues };
     };
-
+    
     ContainerSpine.prototype.asignParentGroups = function() {
         this.Sprites.n = this.d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
     };
@@ -349,9 +349,10 @@ PIXI.ContainerAmbientLight = (function () {
         return AmbientLight_Data;
     };
 
-    // dispatch values asigment for spine
+
     ContainerAmbientLight.prototype.asignValues = function(dataValues, storeValues=true) {
         this.computeValue(dataValues);
+        if(storeValues){ this.dataValues = dataValues };
     };
 
     ContainerAmbientLight.prototype.computeValue = function(data) {
@@ -407,6 +408,7 @@ PIXI.ContainerDirectionalLight = (function () {
     // dispatch values asigment for spine
     ContainerDirectionalLight.prototype.asignValues = function(dataValues, storeValues=true) {
         this.computeValue(dataValues);
+        if(storeValues){ this.dataValues = dataValues };
     };
 
     ContainerDirectionalLight.prototype.computeValue = function(data) {

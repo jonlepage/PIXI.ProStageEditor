@@ -11,7 +11,7 @@
         "icon": "icon/icon.png",
         "position": "mouse"
     },
-    "_comment": "--disable-gpu-vsync --limit-fps=60",
+    "_comment": "--disable-gpu-vsync --limit-fps=60 --disable-devtools ",
     "dependencies": {
         "package-merge": "^0.1.2"
     }

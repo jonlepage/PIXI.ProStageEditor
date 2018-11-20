@@ -10,16 +10,177 @@ dans les class, . pour les objects, function deep (non Json), _ pour les props a
 */
 
 // ┌------------------------------------------------------------------------------┐
-// GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
+// GLOBAL $SLL $player: _player for player1
 //└------------------------------------------------------------------------------┘
-class _player extends PIXI.Container {
+class _player {
     constructor(dataBase, textureName, dataValues) {
-        super();
-      
+        this.inCase = null; //store the current player case ?
+        this.spine;
+        this._planetID = null; // player current planet id
+        this._dirX = 6; //player direction
+        this.radius = null; // radius player range interactions
+        this._scaleXY = 0.45; // default player scale, also help compute reverse
+        //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
+        //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
+        this.states = {
+            _level : 1    ,
+            _hp    : 100  ,//data2\Hubs\stats\SOURCE\images\hp_icon.png
+            _mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
+            _hg    : 100  ,//data2\Hubs\stats\SOURCE\images\hg_icon.png
+            _hy    : 100  ,//data2\Hubs\stats\SOURCE\images\hy_icon.png
+            _atk   : 0    ,//data2\Hubs\stats\SOURCE\images\atk_icon.png
+            _def   : 0    ,//data2\Hubs\stats\SOURCE\images\def_icon.png
+            _sta   : 0    ,//data2\Hubs\stats\SOURCE\images\sta_icon.png
+            _lck   : 0    ,//data2\Hubs\stats\SOURCE\images\lck_icon.png
+            _exp   : 0    ,//data2\Hubs\stats\SOURCE\images\exp_icon.png
+            _int   : 0    ,//data2\Hubs\stats\SOURCE\images\int_icon.png
+            _mic   : 0    ,//data2\Hubs\stats\SOURCE\images\mic_icon.png
+            _miw   : 0    ,//data2\Hubs\stats\SOURCE\images\miw_icon.png
+            _orb   : 'red',
+            _bp   : 10, // bonus point
+        };
+    };
+    get x(){ return this.spine.x }
+    get y(){ return this.spine.y }
+    set x(x){ return this.spine.x = x }
+    set y(y){ return this.spine.y = y }
+
+    initialize() {
+        this.setupSprites();
+        this.setupListeners();
+        //this.setupTweens();
+        //this.setupInteractions();
+    };
+
+    setupSprites() {
+        const database = $Loader.Data2.heroe1_rendered;
+        const cage = new PIXI.ContainerSpine(database); // (database,skin)
+        const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
+        spine.stateData.defaultMix = 0.2;
+        spine.state.setAnimation(0, "idle", true);
+        spine.state.setAnimation(1, "hair_idle", true);
+        setInterval(function(){ //TODO: wink eyes, use spine events random
+            const allowWink = Math.random() >= 0.5;
+            allowWink && spine.state.setAnimation(2, 'wink1', false); 
+        }, 1250);
+        // player transform
+        cage.scale.set(0.45,0.45);
+
+        // player layers hackAttachmentGroups set spine.n
+        cage.asignParentGroups();
+        cage.parentGroup = $displayGroup.group[1];
+        cage.zIndex = 0;
+
+        spine.skeleton.setSlotsToSetupPose();
+        // radius range 
+        //const dataBase = $Loader.Data2.playerRadius;
+        // local reference
+        this.spine = cage;
+    };
+
+    setupListeners() {
+        const checkEvent = (entry, event) => {
+            if(event.data.name === "startMove"){
+                this.moveToNextCaseID(entry);
+            }else
+            if(event.data.name === "nextMove"){
+                this.updateNextPath(true,entry);
+            }else
+            if(event.data.name === "reversX"){
+                this.reversX();
+            }
+        };
+    
+        this.spine.d.state.addListener({
+            event: checkEvent,
+        });
+    };
+
+    initialisePath(pathBuffer) {
+        this._isMoving = true;
+        this.pathBuffer = pathBuffer;
+        this._currentPath = 0;
+        this._startCaseID = pathBuffer[this._currentPath];
+        this._currentCaseID = pathBuffer[this._currentPath];
+        this._nextCaseID = pathBuffer[this._currentPath+1];
+        if(Number.isFinite(this._nextCaseID)){
+            this.updateNextPath(false); // checkCaseEvents: false car on start
+        }else{
+            // a click sur la case du player donc pas de move!
+        }
+    };
+
+    updateNextPath(checkCaseEvents) {
+        this.inCase = $Objs.list_cases[this._nextCaseID];
+        this._currentCaseID = this.pathBuffer[this._currentPath];
+        this._nextCaseID = this.pathBuffer[++this._currentPath];
+        checkCaseEvents && this.checkCaseEvents(false);
+         //si on peut bouger, add next animation
+        if (this.canMove()){
+            this.addAnimationMove();
+        }else{
+            // peut pas bouger
+            this.addAnimationMove(true);
+            this._isMoving = false;
+            this.checkCaseEvents(true);
+            $Objs.setInteractive(true);
+            // si plus stamina
+            if($huds.displacement._stamina === 0){
+                $huds.displacement.clearRoll(); //FIXME: efface le 0 trop rapidement
+            }
+
+        };
+    };
+
+    addAnimationMove(ending) {
+        const state = this.spine.d.state;
+        if(ending){
+            state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
+        }else{
+            state.timeScale = 1.2;
+            const nextDirection =  $Objs.getDirXFromId(this._currentCaseID, this._nextCaseID); // get dir base 10
+            this.needReversX(nextDirection) && state.addAnimation(3, "reversX", false);
+            state.addAnimation(3, "jump1", false);
+        }
+
+    };
+    canMove() {
+        return $huds.displacement._stamina && Number.isFinite(this._nextCaseID);
+    };
+    needReversX(nextDirection) {
+        return nextDirection !== this._dirX;
+    };
+    reversX() {
+        this._dirX = 10-this._dirX;
+        const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
+        TweenLite.to(this.spine.scale, 1, { x:xx, ease: Power3.easeOut });
     };
     
-    initialize() {
-
+    // easing update x,y to this._nextCaseID
+    moveToNextCaseID(entry) { // from jump1...
+        const toCase = $Objs.list_cases[this._nextCaseID];
+        // tween
+        TweenLite.to(this.spine.position, 1, { x:toCase.x, y:toCase.y+20, ease: Power3.easeOut });
+        // update setup
+        this.spine.zIndex = toCase.y;
+    };
+    
+    // when player jump to a case, do all stuff here, ending is the last_nextCaseID, or end stamina
+    checkCaseEvents(ending) {
+       // stamina, sfx,fx , check auto-break cases ....
+        //play audio ...
+       $camera.moveToTarget(6);
+       $Objs.newHitFX.call(this.inCase); // fx hit case
+        if(ending){
+            $Objs.executeCaseFrom(this.inCase);
+        } else {// if not endCase
+            //check if autorised color in displacement huds
+            if(this.inCase.caseColor && !$huds.displacement.diceColors.contains(this.inCase.caseColor)){
+                $huds.displacement.setStamina(0);
+            }else{
+                $huds.displacement.addStamina(-1);
+            }
+        };
     };
 };
 
@@ -28,36 +189,3 @@ console.log1('$player: ', $player);
 
 
 
-
-// ┌------------------------------------------------------------------------------┐
-// GLOBAL $SLL CLASS: _SLL for SPRITE LIBRARY LOADER
-//└------------------------------------------------------------------------------┘
-class _player2 extends PIXI.Container {
-    constructor() {
-        super();
-        this.Sprites = {d:null, n:null};
-    };
-    initialize() {
-        const spine = new PIXI.spine.Spine($Loader.Data2.heroe2.spineData);
-            //spine.skeleton.setSkinByName()//
-            spine.stateData.defaultMix = 0.1;
-            spine.state.setAnimation(0, "idle", true);
-            spine.skeleton.setSlotsToSetupPose();
-        
-        this.scale.set(0.45,0.45);
-        this.position.set(890,610);
-    
-        spine.parentGroup = PIXI.lights.diffuseGroup;
-        spine.convertToNormal();
-    
-        this.parentGroup = $displayGroup.group[1];
-        this.zIndex = this.position._y;
-        this.addChild(spine);
-    
-    
-       
-    };
-};
-
-$player2 = new _player2(); // create game player
-console.log1('$player2.', $player2);

@@ -9,7 +9,7 @@
 NOTE AND HELP:
 
 */
-class Scene_Title extends _Scene_Base {
+class Scene_Map1 extends _Scene_Base {
     constructor(sceneData,className) {
         super(sceneData,className);
         this.name = className;
@@ -19,14 +19,17 @@ class Scene_Title extends _Scene_Base {
 
 
     start(){
-        this.setupObjs();
+        this.setupObjs  ();
         this.setupLights();
+        this.setupPlayer();
+        this.setupCamera();
         this.visible = true;
         this.renderable = true;
+       //$stage.goto();
     };
 
     update(delta){
-        $stage.goto(Scene_Map1);
+    
     };
 
     end(){
@@ -46,4 +49,22 @@ class Scene_Title extends _Scene_Base {
         $stage.LIGHTS.ambientLight.asignValues(dataValues, true);
     }
 
+    setupPlayer(){
+        this.addChild($player.spine);
+        // TODO: stoker le case id de transfer dans $player
+        if( $Objs.list_cases[0]){
+            $player.x = $Objs.list_cases[0].x
+            $player.y = $Objs.list_cases[0].y
+            $player.spine.parentGroup = $displayGroup.group[1];
+            $player.spine.zIndex = $player.y;
+        };
+        $player.inCase = $Objs.list_cases[0]; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
+    }
+
+    setupCamera(){
+        $camera.attachToCurrentScene();
+        $camera.setTarget($player.spine.position);
+    }
+
+    
 };

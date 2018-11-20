@@ -573,8 +573,8 @@
 .iziToast.flipOutX {
   -webkit-backface-visibility: visible !important;
   backface-visibility: visible !important;
-  -webkit-animation: iziT-flipOutX 0.7s cubic-bezier(0.4, 0.45, 0.15, 0.91) both;
-  animation: iziT-flipOutX 0.7s cubic-bezier(0.4, 0.45, 0.15, 0.91) both;
+  -webkit-animation: iziT-flipOutX 0.4s cubic-bezier(0.4, 0.45, 0.15, 0.91) both;
+  animation: iziT-flipOutX 0.4s cubic-bezier(0.4, 0.45, 0.15, 0.91) both;
 }
 .iziToast-overlay.fadeIn {
   -webkit-animation: iziT-fadeIn 0.5s ease both;

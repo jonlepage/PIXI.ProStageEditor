@@ -47,7 +47,7 @@ class _DisplayGoup {
             this._layer_diffuseGroup.updateTransform = function updateTransform() {
                 // update filters noise
                 this._filters[0].seed = Math.random();
-     
+
                
     
                 this._boundsID++;

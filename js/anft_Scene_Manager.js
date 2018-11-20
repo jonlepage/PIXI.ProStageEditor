@@ -9,7 +9,7 @@ class _stage extends PIXI.display.Stage {
         this.CAGE_GUI   = new PIXI.Container(); // store master gui menu and huds
         this.CAGE_MESSAGE   = new PIXI.Container(); // store master game message, screen message
         this.CAGE_MOUSE = new PIXI.Container(); // store master mouse sprite and FX, toujours top
-        this.LIGHTS = { ambientLight:new PIXI.ContainerAmbientLight(0xffffff, 0.8), directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
+        this.LIGHTS = { ambientLight:new PIXI.ContainerAmbientLight()}//, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
         this.addChild( // lights groups
             $displayGroup._spriteBlack_d,
             $displayGroup._layer_diffuseGroup,
@@ -18,7 +18,9 @@ class _stage extends PIXI.display.Stage {
             ...$displayGroup.layersGroup // displayGroups
         );
         this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
-        this.addChild(this.LIGHTS.ambientLight, this.LIGHTS.directionalLight);
+        this.CAGE_MOUSE.parentGroup = $displayGroup.group[4]; 
+        this.LIGHTS.ambientLight     && this.addChild(this.LIGHTS.ambientLight    );
+        this.LIGHTS.directionalLight && this.addChild(this.LIGHTS.directionalLight);
     };
 
     run() {
@@ -32,6 +34,7 @@ class _stage extends PIXI.display.Stage {
         if(this.scene){
             this.scene.end();
             this.removeChild(this.scene);
+            this.scene = null;
         };
          // check if loaderKit asigned to class are loaded, if yes get the scene, if no , goto loader scene and load all kit and scene
         const sceneName = sceneClass.name || sceneClass;
@@ -42,7 +45,7 @@ class _stage extends PIXI.display.Stage {
         this.scene = nextScene;
         this.addChildAt(nextScene,0);
         nextScene.start();
-        document.title = document.title+` =>[${sceneName}] `; 
+        document.title = document.title+` =>[${nextScene.constructor.name}] `; 
     };
 
     masterUpdate(delta) {
@@ -62,30 +65,28 @@ class _stage extends PIXI.display.Stage {
 const $stage = new _stage();
 $app.stage = $stage;
 console.log1('$stage: ', $stage);
-
 /*
 * Les bases general des scenes
 */
 class _Scene_Base extends PIXI.Container {
-    constructor(sceneData) {
+    constructor(sceneData,className) {
         super();
         this.background = null;
-        this.prepare(sceneData);
+        this.prepare(sceneData,className);
         
     };
 
-    prepare(sceneData){
-        console.log('sceneData: ', sceneData);
-        this.createBackgroundFrom(sceneData._background);
-        
+    prepare(sceneData,className){
+        this.createBackgroundFrom (sceneData);
     };
 
 
     /*** clear and creat BG, from dataValues or dataBase editor select
-    * @param {objet} dataValues * @param {Number} dataBase
+    * @param {objet} dataValues * @param {Number} dataBase editor
     */
-    createBackgroundFrom(dataValues,dataBase) {
+    createBackgroundFrom(sceneData,dataBase) {
         this.clearBackground();
+        const dataValues = sceneData._background;
         dataBase = dataBase || dataValues && $Loader.Data2[dataValues.p.dataName] || null;
         this.background = new PIXI.ContainerBG(dataBase,dataValues);
         this.addChildAt(this.background,0);
@@ -97,4 +98,7 @@ class _Scene_Base extends PIXI.Container {
             this.background = null;
         }
     };
+
+    
+
 };

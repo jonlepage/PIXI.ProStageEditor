@@ -31,8 +31,9 @@ class _coreLoader {
         this.fonts = null;
         this.loaderBuffers = [];
         this._isLoading = false;
-        this.loaderKit = { // loaderKit by class name for get .json
+        this.loaderKit = { // batch .json in arrays, when change scene, check if need load a kits
             loaderSet_boot:['Scene_Boot','Scene_IntroVideo','Scene_Title'],
+            loaderSet_planet1:['Scene_Map1'],
         };
         this.sceneKits = []; // buffering scene kits for loader progress
         this.currentLoadedKit = []; // buffering scene kits for loader progress
@@ -49,16 +50,29 @@ class _coreLoader {
             case 'Scene_Boot'       : return Scene_Boot       ; break;
             case 'Scene_IntroVideo' : return Scene_IntroVideo ; break;
             case 'Scene_Title'      : return Scene_Title      ; break;
+            case 'Scene_Map1'      : return Scene_Map1      ; break;
         };
     };
     // defeni les classGroup du jeux pour le loader, lorsqune class appartien a un groups, loader tous les elements de chaque class.
     // lorsque goto:class, verifier a quel loaderSet elel appatien, si le loaderSet nest pas en memore, passer a la scene loading.
     needLoaderKit(className){
-        if(this.Scenes[className]){return false}; // alrealy loaded
+        if(this.currentLoadedKit.contains(className)){return false}; // alrealy loaded
+        this.currentLoadedKit = [];
         function check(arr) { return arr[1].contains(className) };
         const result = Object.entries(this.loaderKit).find(check);
-        if(!result){ throw console.error("'getClassGroups' not found, Scene do not exist!") };
+        if(!result){ throw console.error("CRITIAL ERROR:'getClassGroups' not found, Scene do not exist!") };
+        // reset for next loading
+        this.destroyData();
+        this.currentLoadedKit = result[1];
         return result[1];
+    };
+
+    // when need a new loadKit? destroy all cache elements for new loading
+    destroyData () {
+        this.currentLoadedKit = [];
+        this.DataScenes = {}; //reset data loaded TODO: voir si on peut garder , mais on doi tous precharger au sceneBoot
+        this.Scenes = {}; // store full scenes cache
+        for (const key in this.Data2) { delete this.Data2[key] };
     };
 
     load (options,loaderKit) {
@@ -100,35 +114,8 @@ class _coreLoader {
         return this.load();
     };
 
-
-    /*load_perma(options){
-        this.Data2 = {};
-        const perma = { // key: nom des class scenes + path (.png pour les images, mais redefeni l'extentions ensuite)
-            gloves:"data2/Miscs/gloves/gloves.png",
-            heroe1_rendered:"data2/Characteres/a1/heroe1_rendered.png",
-            heroe2:"data2/Characteres/a2/heroe2.png",
-            caseFXhit1:"data2/FX/caseFX1/caseFXhit1.png",
-            hud_displacement:"data2/Hubs/stamina/hud_displacement.png",
-            hudsPinBar:"data2/Hubs/pinBar/hudsPinBar.png",
-            hudStats:"data2/Hubs/stats/hudStats.png",
-            menueItems:"data2/Hubs/menueItems/menueItems.png",
-            gameItems:"data2/Objets/gameItems/gameItems.png",
-            playerRadius:"data2/FX/radiusPlayerInteraction/playerRadius.png",
-            flagsLocal:"data2/Miscs/flags/flagsLocal-0.png",
-        };
-        Object.keys(perma).forEach(key => { perma[key] = perma[key].replace('.png', '.json') });
-        const loader = new PIXI.loaders.Loader();
-        for (const key in perma) { loader.add(key, perma[key]) };
-        loader.load();
-        loader.onProgress.add((loader, res) => {
-            if(res.extension.contains("json")){
-                this.Data2[res.name] = res.data;
-            };
-        });
-        loader.onComplete.add((loader, res) => { this.load(options) });
-    };*/
-
     //STEP:1 load dataScenes scenes?.json
+    // TODO: dataScenes fait once au bootGame, ces que du string, 
     loadSceneClass(className, fromEditor){
         if(this.DataScenes[className]){
             throw console.error(`${className} alrealy loaded WTF! check json and loadSceneClass`);
@@ -147,6 +134,7 @@ class _coreLoader {
     };
 
     loadSheets(className){
+        if(!this.DataScenes[className]){throw console.error(`Critical Error: JSON donc contains Base structure: [_sheets,_objs,background,lights...]`)}
         const loader = new PIXI.loaders.Loader();
         const sheets = this.DataScenes[className]._sheets;
     if(!sheets){ console.warn('%cSCENE JSON EMPTY DATA: Use editor for create json template => %c%s', 'font-weight:bold;color:#000 ;background:#721919', 'font-weight:bold;color:#ee5000;background:#fffbe6', ` ${className}`);}
@@ -235,7 +223,7 @@ class _coreLoader {
             };
             data.dirArray = this.DataScenes[className]._sheets[key].dirArray;
             // add only if need
-            !this.Data2[key] && Object.defineProperty(this.Data2, key, { value: data, enumerable: !(this.buffers.className === 'Scene_Boot') });
+            !this.Data2[key] && Object.defineProperty(this.Data2, key, { value: data, enumerable: !(this.buffers.className === 'Scene_Boot'), configurable: true });
         };
 
         if(this.options.fromEditor){
@@ -252,7 +240,7 @@ class _coreLoader {
     // create scene Cache
     createScene(){
         const className = this.buffers.className;
-        const scene = new (this.getClassScene(className))(this.DataScenes[className]);
+        const scene = new (this.getClassScene(className))(this.DataScenes[className],className);
         this.Scenes[className] = scene;
     };
 
@@ -271,7 +259,6 @@ class _coreLoader {
     };
 
     createBaseFrom(res) {
-        this.buffers
         const base = {
             name : res.name,
             perma: this.buffers.className === 'Scene_Boot',

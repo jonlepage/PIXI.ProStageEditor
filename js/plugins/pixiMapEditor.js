@@ -9,9 +9,13 @@
  // START INITIALISE EDITOR (FROM RMMV PLUGIN MANAGER)
 document.addEventListener('keydown', initializeEditor);
 function initializeEditor(event){
-    console.log('event: ', event);
     if(event.key === "F1" && !$PME.started){
         console.log1('__________________initializeEditor:__________________ ');
+        // REMOVE CURRENT CAMERA LISTENER
+        document.onwheel = null;
+        $huds.displacement.hide();
+        $huds.pinBar.hide();
+        $huds.pinBar.hide();
         (function() {
             $PME.started = true;
             $PME.stage = $stage;
@@ -139,6 +143,7 @@ _PME.prototype.startEditorLoader = function() {
      this.Data2 = data2;
     // scene hack
     $stage.CAGE_EDITOR = new PIXI.Container();
+    $stage.CAGE_EDITOR.parentGroup = $displayGroup.group[4]; 
     $stage.CAGE_EDITOR.name = "CAGE_EDITOR";
     const index = $stage.children.indexOf($stage.CAGE_MOUSE);
     $stage.addChildAt($stage.CAGE_EDITOR, index); // -1 befor mouse
@@ -295,7 +300,8 @@ _PME.prototype.startEditor = function() {
             this.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
             this.renderable = false; // render only when mouse hold.
             this.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
-            CAGE_MOUSE.addChild(fastModes);
+            CAGE_MOUSE.fastModes = fastModes;
+            $mouse.pointer.addChild(fastModes);
         }).call(fastModes);
 
 
@@ -369,7 +375,8 @@ _PME.prototype.startEditor = function() {
             cage.buttonType = "tileMap";
         });
         // player identification
-        $player.addChild(new PIXI.Text("player1",{fontSize:24,fill:0xffffff}));
+        $player.spine.addChild(new PIXI.Text("player1",{fontSize:24,fill:0xffffff}));
+        console.log('$player.spine: ', $player.spine);
 
     }).bind(this)();
 
@@ -762,6 +769,7 @@ _PME.prototype.startEditor = function() {
     };
 
     function iniSetupIzit(){
+        if(iziToast.opened){return true};
         close_editor(true);
         setStatusInteractiveObj(false);
         iziToast.opened = true;
@@ -770,6 +778,7 @@ _PME.prototype.startEditor = function() {
     //TODO: ENDU ICI, AJOUTER UN Case Inspector, les case son des cas special pour le jeux.
     // setup for tile in map
     function open_dataInspector(cage) {
+        if(iniSetupIzit()){return console.error('please Wait izit not cleared')}
         clearFiltersFX3(cage); // clear filters
         cage.Debug.an.renderable = true;
         cage.Debug.hitZone.renderable = true;
@@ -787,7 +796,7 @@ _PME.prototype.startEditor = function() {
     };
     // setup for tile in map
     function open_stageLightInspector(cage) {
-        iniSetupIzit();
+        if(iniSetupIzit()){return console.error('please Wait izit not cleared')}
         const dataValues = cage.getDataValues();
         iziToast.info( $PME.izitGlobalLightEditor(cage) );
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
@@ -799,8 +808,7 @@ _PME.prototype.startEditor = function() {
 
     // setup for background and maps informations => CAGE_MAP
     function open_dataBGInspector(cage) {
-        // compute all BG folder
-        iniSetupIzit();
+        if(iniSetupIzit()){return console.error('please Wait izit not cleared')}
         const dataValues = cage.getDataValues();
         // get BG list for options html
         let bgList = Object.keys(DATA2).filter(word => DATA2[word].dirArray.contains("BG") );
@@ -825,12 +833,194 @@ _PME.prototype.startEditor = function() {
     
     // setup for tile in map
     function open_SaveSetup(stage) {
+        if(iniSetupIzit()){return console.error('please Wait izit not cleared')}
         iniSetupIzit();
         iziToast.info( $PME.izit_saveSetup(stage) );
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
         create_dataIntepretor.call(stage); // create the data Interpretor listener for inputs and buttons
     };
+        
+    // open data HTML inspector
+    function create_dataIntepretor(dataValues){
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        dataIntepretor.oninput = (function(event){
+            const e = event.target;
+            const type = e.type;
+            const id = e.id.split("_");
+            
+            if(type === "text"){
+                dataValues[id[0]][id[1]] = String(e.value);
+            };
+            if(type === "number"){
+                // check if locked d,n
+                const isLockedDN = ["d","n"].contains(id[0]) && document.getElementById(`${id[1]}_lockDN`).checked;
+                const index = e.attributes.index.value; // x:,y: ?
+                const is2DArray = Array.isArray(dataValues[id[0]][[id[1]]]);
+                if(isLockedDN){
+                    if( is2DArray ){
+                        const oldValue = dataValues[id[0]][[id[1]]][index];
+                        const isStepUp = (+e.value - oldValue > 0 );
+                        const id2 = (id[0]==="d") && "n" || "d";
+                        const ee = document.querySelectorAll(`#${id2}_${id[1]}`)[index];
+                        isStepUp ? ee.stepUp() : ee.stepDown();
+                        dataValues[id[0]][id[1]][index] = +e.value;
+                        dataValues[id2][id[1]][index] = +ee.value;
+                    }else{
+                        const oldValue = dataValues[id[0]][[id[1]]];
+                        const isStepUp = (+e.value - oldValue > 0 );
+                        const id2 = (id[0]==="d") && "n" || "d";
+                        const ee = document.getElementById(`${id2}_${id[1]}`);
+                        isStepUp ? ee.stepUp() : ee.stepDown();
+                        dataValues[id[0]][id[1]] = +e.value;
+                        dataValues[id2][id[1]] = +ee.value;
+                    }
+                }else{
+                    if(is2DArray){
+                        dataValues[id[0]][id[1]][index] = +e.value;
+                    }else{
+                        dataValues[id[0]][id[1]] = +e.value;
+                    }
+                };
+            };
+            if(type === "select-one"){
+                if(e.value==="true" || e.value === "false"){
+                    dataValues[id[0]][id[1]] = JSON.parse(e.value);
+                }else{
+                    dataValues[id[0]][id[1]] = e.value;
+                    // if is BG, create new base
+                    if(id[1] === "dataName"){
+                        const dataBase = DATA2[e.value];
+                        $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
+                        dataValues = this.getDataValues(dataBase);
+                        dataBase && this.createBases(dataBase);
+                        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+                    };
+                }
+                if(dataValues.p.type === "animationSheet"){
+                    this.play(0);
+                }
 
+            };
+            this.asignValues(dataValues, false);
+            this.Debug && refreshDebugValues.call(this);
+        }).bind(this);
+        // BUTTONS
+        dataIntepretor.onclick = (function(event){
+            const e = event.target; // buttons
+            if(e.type === "button"){
+                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
+                if(e.id==="save"){ startSaveDataToJson(true) };// call save json with scan options true:
+                if(e.id==="close"){ close_dataInspector(); };// call save json with scan options true:
+                if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
+                if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
+                if(e.id==="reset"){ // reset dataValues to old dataValues
+                    this.asignValues(this.dataValues, false);
+                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
+                    dataValues = getDataValues.call(this);
+                    this.Debug && refreshDebugValues.call(this);
+                };
+            };
+        }).bind(this);
+    };
+
+    // LIGHT DATA2 INSPECTOR listener
+    function create_dataLightIntepretor(dataValues){
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        dataIntepretor.oninput = (function(event){
+            const e = event.target;
+            const type = e.type;
+            const id = e.id.split("_")[1]; // no need p,d,n for light
+            if(type === "text"){ dataValues[id] = String(e.value) };
+            if(type === "number"){ dataValues[id] = +e.value };
+            if(type === "select-one"){ dataValues[id] = JSON.parse(e.value) };
+            this.asignValues(dataValues, false);
+            //refreshDebugValues.call(this);
+        }).bind(this);
+        // BUTTONS
+        dataIntepretor.onclick = (function(event){
+            const e = event.target; // buttons
+            if(e.type === "button"){
+                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
+                if(e.id==="apply"){ close_dataLightInspector.call(this, dataValues) };// apply and close
+                if(e.id==="cancel"){close_dataLightInspector.call(this)};// cancel and close
+                if(e.id==="reset"){ // reset dataValues to old dataValues
+                    this.asignValues(this.dataValues, false);
+                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
+                    dataValues = this.getDataValues();
+                    //refreshDebugValues.call(this);
+                };
+            };
+        }).bind(this);
+    };
+
+    // asign props value to HTML data Inspector
+    function setHTMLWithData(dataValues, Data_CheckBox, _jscolor, _Falloff) {
+        if(dataValues.p){ // OBJS
+            dataValues.p && computeHTMLValue("p",dataValues.p);
+            dataValues.d && computeHTMLValue("d",dataValues.d);
+            dataValues.n && computeHTMLValue("n",dataValues.n);
+        }else{
+            computeHTMLValue("p",dataValues); // LIGHT
+        }
+        function computeHTMLValue(K, data){
+            Object.keys(data).forEach(key => {
+                const value = data[key];
+                const id = `${K}_${key}`; // html id
+                const colorIndex = (K==="n") && 1 || 0; // index of jscolors array d,n //TODO: DELETE ME , 
+                let e = Array.isArray(value)? document.querySelectorAll(`#${id}`) : document.getElementById(id);
+                if(e){
+                    e.length===1? e = e[0] : void 0; // if value are array but not html array,
+                    switch (key) {
+                        case "position":case "scale":case "skew":case "pivot":case "anchor":
+                            for (let i = 0, l = e.length; i < l; i++) {
+                                e[i].value = value[i];
+                            }
+                            break;
+                            case "tint":case "setDark":case "setLight":break;
+                        default:
+                            e.value = value;
+                            break;
+                    };
+                };
+            });
+        }; 
+    };
+
+    // close the data HTML inspector
+    function close_dataInspector(dataValues){
+        // if is a gui inspectors ?
+        if(this.dataValues){
+            // if cancel, and if old value not have heaven, destroyHeaven
+            if(!dataValues && this.dataValues.d && !this.dataValues.d.setDark){
+                this.d.destroyHeaven();
+                this.n.destroyHeaven();
+            };
+            const oldDataBack = dataValues || this.dataValues; // add or back to old values
+            this.asignValues(oldDataBack, true);
+        };
+
+        iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
+    
+        setStatusInteractiveObj(true); // pull back tiles interactions
+        open_editor(true);
+    };
+
+    // close the data HTML inspector LIGHT
+    function close_dataLightInspector(dataValues){
+        const oldDataBack = dataValues || this.dataValues; // add or back to old values
+        this.asignValues(oldDataBack, true);
+        iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
+        setStatusInteractiveObj(true); // pull back tiles interactions
+        open_editor(true);
+    };
+//#endregion
+
+
+
+    //#region [rgba(0, 140, 100, 0.1)]
+    // ┌------------------------------------------------------------------------------┐
+    // PATHS EDITORS
+    // └------------------------------------------------------------------------------┘
     // Draw path mode
     let DrawPathMode = false; // flag,switch from icon buttons, DrawPathMode freeze all other interactions
     let PathsBuffers = []; // asign path by order
@@ -952,183 +1142,8 @@ _PME.prototype.startEditor = function() {
         
         refreshPath();
     };
-
-
-
-        
-    // open data HTML inspector
-    function create_dataIntepretor(dataValues){
-        const dataIntepretor = document.getElementById("dataIntepretor");
-        dataIntepretor.oninput = (function(event){
-            const e = event.target;
-            const type = e.type;
-            const id = e.id.split("_");
-            
-            if(type === "text"){
-                dataValues[id[0]][id[1]] = String(e.value);
-            };
-            if(type === "number"){
-                // check if locked d,n
-                const isLockedDN = ["d","n"].contains(id[0]) && document.getElementById(`${id[1]}_lockDN`).checked;
-                const index = e.attributes.index.value; // x:,y: ?
-                const is2DArray = Array.isArray(dataValues[id[0]][[id[1]]]);
-                if(isLockedDN){
-                    if( is2DArray ){
-                        const oldValue = dataValues[id[0]][[id[1]]][index];
-                        const isStepUp = (+e.value - oldValue > 0 );
-                        const id2 = (id[0]==="d") && "n" || "d";
-                        const ee = document.querySelectorAll(`#${id2}_${id[1]}`)[index];
-                        isStepUp ? ee.stepUp() : ee.stepDown();
-                        dataValues[id[0]][id[1]][index] = +e.value;
-                        dataValues[id2][id[1]][index] = +ee.value;
-                    }else{
-                        const oldValue = dataValues[id[0]][[id[1]]];
-                        const isStepUp = (+e.value - oldValue > 0 );
-                        const id2 = (id[0]==="d") && "n" || "d";
-                        const ee = document.getElementById(`${id2}_${id[1]}`);
-                        isStepUp ? ee.stepUp() : ee.stepDown();
-                        dataValues[id[0]][id[1]] = +e.value;
-                        dataValues[id2][id[1]] = +ee.value;
-                    }
-                }else{
-                    if(is2DArray){
-                        dataValues[id[0]][id[1]][index] = +e.value;
-                    }else{
-                        dataValues[id[0]][id[1]] = +e.value;
-                    }
-                };
-            };
-            if(type === "select-one"){
-                if(e.value==="true" || e.value === "false"){
-                    dataValues[id[0]][id[1]] = JSON.parse(e.value);
-                }else{
-                    dataValues[id[0]][id[1]] = e.value;
-                    // if is BG, create new base
-                    if(id[1] === "dataName"){
-                        const dataBase = DATA2[e.value];
-                        $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
-                        dataValues = this.getDataValues(dataBase);
-                        dataBase && this.createBases(dataBase);
-                        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
-                    };
-                }
-                if(dataValues.p.type === "animationSheet"){
-                    this.play(0);
-                }
-
-            };
-            this.asignValues(dataValues, false);
-            this.Debug && refreshDebugValues.call(this);
-        }).bind(this);
-        // BUTTONS
-        dataIntepretor.onclick = (function(event){
-            const e = event.target; // buttons
-            if(e.type === "button"){
-                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
-                if(e.id==="save"){ startSaveDataToJson(true) };// call save json with scan options true:
-                if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
-                if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
-                if(e.id==="reset"){ // reset dataValues to old dataValues
-                    this.asignValues(this.dataValues, false);
-                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
-                    dataValues = getDataValues.call(this);
-                    this.Debug && refreshDebugValues.call(this);
-                };
-            };
-        }).bind(this);
-    };
-
-    // LIGHT DATA2 INSPECTOR listener
-    function create_dataLightIntepretor(dataValues){
-        const dataIntepretor = document.getElementById("dataIntepretor");
-        dataIntepretor.oninput = (function(event){
-            const e = event.target;
-            const type = e.type;
-            const id = e.id.split("_")[1]; // no need p,d,n for light
-            if(type === "text"){ dataValues[id] = String(e.value) };
-            if(type === "number"){ dataValues[id] = +e.value };
-            if(type === "select-one"){ dataValues[id] = JSON.parse(e.value) };
-            this.asignValues(dataValues, false);
-            //refreshDebugValues.call(this);
-        }).bind(this);
-        // BUTTONS
-        dataIntepretor.onclick = (function(event){
-            const e = event.target; // buttons
-            if(e.type === "button"){
-                if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
-                if(e.id==="apply"){ close_dataLightInspector.call(this, dataValues) };// apply and close
-                if(e.id==="cancel"){close_dataLightInspector.call(this)};// cancel and close
-                if(e.id==="reset"){ // reset dataValues to old dataValues
-                    this.asignValues(this.dataValues, false);
-                    setHTMLWithData.call(this, this.dataValues); // asign dataValues to HTML inspector
-                    dataValues = this.getDataValues();
-                    //refreshDebugValues.call(this);
-                };
-            };
-        }).bind(this);
-    };
-
-    // asign props value to HTML data Inspector
-    function setHTMLWithData(dataValues, Data_CheckBox, _jscolor, _Falloff) {
-        if(dataValues.p){ // OBJS
-            dataValues.p && computeHTMLValue("p",dataValues.p);
-            dataValues.d && computeHTMLValue("d",dataValues.d);
-            dataValues.n && computeHTMLValue("n",dataValues.n);
-        }else{
-            computeHTMLValue("p",dataValues); // LIGHT
-        }
-        function computeHTMLValue(K, data){
-            Object.keys(data).forEach(key => {
-                const value = data[key];
-                const id = `${K}_${key}`; // html id
-                const colorIndex = (K==="n") && 1 || 0; // index of jscolors array d,n //TODO: DELETE ME , 
-                let e = Array.isArray(value)? document.querySelectorAll(`#${id}`) : document.getElementById(id);
-                if(e){
-                    e.length===1? e = e[0] : void 0; // if value are array but not html array,
-                    switch (key) {
-                        case "position":case "scale":case "skew":case "pivot":case "anchor":
-                            for (let i = 0, l = e.length; i < l; i++) {
-                                e[i].value = value[i];
-                            }
-                            break;
-                            case "tint":case "setDark":case "setLight":break;
-                        default:
-                            e.value = value;
-                            break;
-                    };
-                };
-            });
-        }; 
-    };
-
-    // close the data HTML inspector
-    function close_dataInspector(dataValues){
-        // if is a gui inspectors ?
-        if(this.dataValues){
-            // if cancel, and if old value not have heaven, destroyHeaven
-            if(!dataValues && !this.dataValues.d.setDark){
-                this.d.destroyHeaven();
-                this.n.destroyHeaven();
-            };
-            const oldDataBack = dataValues || this.dataValues; // add or back to old values
-            this.asignValues(oldDataBack, true);
-        };
-        iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
-        iziToast.opened = false;
-        setStatusInteractiveObj(true); // pull back tiles interactions
-        open_editor(true);
-    };
-
-    // close the data HTML inspector LIGHT
-    function close_dataLightInspector(dataValues){
-        const oldDataBack = dataValues || this.dataValues; // add or back to old values
-        this.asignValues(oldDataBack, true);
-        iziToast.hide({transitionOut: 'flipOutX'}, document.getElementById("dataEditor") ); // hide HTML data Inspector
-        iziToast.opened = false;
-        setStatusInteractiveObj(true); // pull back tiles interactions
-        open_editor(true);
-    };
 //#endregion
+
 
     //#region [rgba(40, 5, 50,0.2)]
     // ┌------------------------------------------------------------------------------┐
@@ -2138,7 +2153,6 @@ _PME.prototype.startEditor = function() {
         }
         CAGE_MAP.pivot.x+=(ScrollX-CAGE_MAP.pivot.x)/(scrollSpeed*delta);
         CAGE_MAP.pivot.y+=(ScrollY-CAGE_MAP.pivot.y)/(scrollSpeed*delta);
-        
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     editorTiker.start();
@@ -2210,15 +2224,17 @@ _PME.prototype.startEditor = function() {
 
     //save scene global light
     function addToSave_Lights() {
-        const ambientLight = $stage.LIGHTS.ambientLight    .getDataValues();
-        const directionalLight = $stage.LIGHTS.directionalLight.getDataValues();
+        const al = $stage.LIGHTS.ambientLight;
+        const dl = $stage.LIGHTS.directionalLight;
+        const ambientLight = al && al.getDataValues();
+        const directionalLight = dl && dl.getDataValues();
         return {ambientLight,directionalLight};
     };
 
     //save scene background data
     function addToSave_BG() {
         if($stage.scene.background){
-            return $stage.background.getDataValues();
+            return $stage.scene.background.getDataValues();
         }else{
             return null;
         }
@@ -2237,9 +2253,10 @@ _PME.prototype.startEditor = function() {
     function addToSave_Sheets(_objs,_background) {
         const data = {};
         let dataName;
-        if(_background){
-            dataName = _background.p.dataName;
-            data[dataName] = DATA2[dataName];
+        if(_background && _background.p.dataName){
+            const dName = _background.p.dataName;
+            const d2 = DATA2[dName];
+            data[dName] = { base:d2.base, dir:d2.dir, dirArray:d2.dirArray, name:d2.name, root:d2.root, type:d2.type };
         }
         _objs.forEach(obj => {
             const dname = obj.p.dataName;

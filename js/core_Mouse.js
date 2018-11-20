@@ -33,7 +33,7 @@ class _mouse {
     };
     get x(){ return this.interaction.mouse.global.x }
     get y(){ return this.interaction.mouse.global.y }
-    set holdingItem(id){ // add item to mouse
+    set holdingItem(id){ // add item to mouse 
         if(this.currentHoldingItem){ 
             this.pointer.removeChild(this.currentHoldingItem);
         };
@@ -51,6 +51,7 @@ class _mouse {
 
     //$mouse.initialize()
     initialize() {
+        //.preventDefault();
         this.interaction = $app.renderer.plugins.interaction;
         this.interaction.interactionFrequency = 10;
         this.interaction.cursorStyles.default = "none";
@@ -154,8 +155,7 @@ class _mouse {
             var t3 = t * t2;
             return (2 * t3 - 3 * t2 + 1) * p[0] + (t3 - 2 * t2 + t) * m[0] + ( -2 * t3 + 3 * t2) * p[1] + (t3 - t2) * m[1];
         };
-    }
-
+    };
 
 };// end class
 
