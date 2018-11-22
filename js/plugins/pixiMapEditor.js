@@ -883,23 +883,20 @@ _PME.prototype.startEditor = function() {
                 };
             };
             if(type === "select-one"){
-                if(e.value==="true" || e.value === "false"){
-                    dataValues[id[0]][id[1]] = JSON.parse(e.value);
-                }else{
-                    dataValues[id[0]][id[1]] = e.value;
-                    // if is BG, create new base
-                    if(id[1] === "dataName"){
-                        const dataBase = DATA2[e.value];
-                        $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
-                        dataValues = this.getDataValues(dataBase);
-                        dataBase && this.createBases(dataBase);
-                        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
-                    };
-                }
+                // convert to boolean.
+                e.value = (e.value==="true" || e.value === "false")? JSON.parse(e.value) : e.value;
+                dataValues[id[0]][id[1]] = e.value;
+                // if is BG, create new base
+                if(id[1] === "dataName"){
+                    const dataBase = DATA2[e.value];
+                    $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
+                    dataValues = this.getDataValues(dataBase);
+                    dataBase && this.createBases(dataBase);
+                    setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+                };
                 if(dataValues.p.type === "animationSheet"){
                     this.play(0);
                 }
-
             };
             this.asignValues(dataValues, false);
             this.Debug && refreshDebugValues.call(this);
@@ -978,7 +975,7 @@ _PME.prototype.startEditor = function() {
                             break;
                             case "tint":case "setDark":case "setLight":break;
                         default:
-                            e.value = value;
+                            e.value = value || false ; // prevent choice 'undefined'
                             break;
                     };
                 };

@@ -172,11 +172,13 @@ class _player {
        $camera.moveToTarget(6);
        $Objs.newHitFX.call(this.inCase); // fx hit case
         if(ending){
-            $Objs.executeCaseFrom(this.inCase);
+            !this.stopFromBadColorCase && $Objs.executeCaseFrom(this.inCase);
+            this.stopFromBadColorCase = false; // reset
         } else {// if not endCase
             //check if autorised color in displacement huds
-            if(this.inCase.caseColor && !$huds.displacement.diceColors.contains(this.inCase.caseColor)){
+            if(this.inCase.colorType && !$huds.displacement.diceColors.contains(this.inCase.colorType)){
                 $huds.displacement.setStamina(0);
+                this.stopFromBadColorCase = true; // when stop from bad color case, dont allow recive bonus case eventType
             }else{
                 $huds.displacement.addStamina(-1);
             }

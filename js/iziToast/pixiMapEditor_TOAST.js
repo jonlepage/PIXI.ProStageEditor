@@ -8,7 +8,7 @@
 _PME.prototype.tileSetupEditor = function(InMapObj){
     let message = HTML_DATA_UI(InMapObj);
     return{
-        title: 'ADAD',
+        title: `${InMapObj.name}`,
         message: message,
         id:'dataEditor',
         layout: 2,

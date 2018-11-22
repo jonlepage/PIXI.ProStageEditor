@@ -50,23 +50,10 @@ class _objs{
                     throw console.error(`fatal error in json, check the {'type'}!`)
                 };
                 this.list_master[i] = cage;
-                if(dataValues.p.groupID === 'case'){
+                //TODO: METTRE DANS PIXI.CageContainer CONTAINER DATA MANAGER
+                if(dataValues.p.dataName === 'cases'){
                     cage.localCaseID = this.list_cases.length;
                     this.list_cases.push(cage);
-                    const cageColor = new PIXI.Sprite(dataBase.textures.cColor);
-                    cageColor.parentGroup = PIXI.lights.diffuseGroup;
-                    cageColor.position.y = cage.pivot.y+25;
-                    cageColor.pivot.set(cageColor.width/2,cageColor.height/2);
-                    cageColor.tint = 0x3dce08 //red:0xf20202;
-                    const cageColor_n = new PIXI.Sprite(dataBase.textures_n.cColor_n);
-                    cageColor_n.parentGroup = PIXI.lights.normalGroup;
-                    cageColor_n.position.y = cage.pivot.y+25;
-                    cageColor_n.pivot.set(cageColor.width/2,cageColor.height/2);
-                    cage.addChild(cageColor,cageColor_n);
-                    cageColor_n.blendMode = 2;
-                    //TODO: creer un system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
-                    // DELETE ME, TEST DEBUGAGE
-                    cage.caseColor = dataValues.p.textureName === 'white'? false : dataValues.p.textureName;
                 };
             };
         };
@@ -121,23 +108,32 @@ class _objs{
 
     //TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
     // calcule le chemin vers un target
-    computePathTo (target) {
+    computePathTo(target) {
         const playerCase = $player.inCase;
         const pathInterval = []; //
         const patternFromInterval = []; // store path id pattern
-        const nodes = {};
+        //const nodes = {};
         const autorisedColors = $huds.displacement.diceColors;
-        Object.keys(this.list_cases).forEach(k => { // k: local id
+        /*Object.keys(this.list_cases).forEach(k => { // k: local id
             const c = this.list_cases[k];
             //TODO: creer un system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
             // DELETE ME, TEST DEBUGAGE
             nodes[k] = c.pathConnexion;
-            /*if(autorisedColors.contains(c.caseColor)){
-                nodes[k] = c.pathConnexion;
-            };*/
             
-        });
-        const pattern = this.findShortestPath(nodes, this.list_cases.indexOf(playerCase), this.list_cases.indexOf(target)) || [];
+        });*/
+        const gloabalVariable_murMaisonDetruit = false;
+        const globalEventStoryCheck_murMaisonDetruit = ()=>{return gloabalVariable_murMaisonDetruit}; // permetre d'assotion des events global qui check les variable
+        $Objs.list_cases[8].visibleIfCondition = globalEventStoryCheck_murMaisonDetruit; // asign la condition events
+
+
+        const globalPathConnextions = this.list_cases.map((c,id) => {
+            // if $globalVariable.mur = true;
+            if(!c.visibleIfCondition || c.visibleIfCondition() ){return c.pathConnexion}
+            
+        }); // nodeConnextions
+        const startCaseID = $player.inCase.localCaseID;
+        const endCaseID = target.localCaseID;
+        const pattern = this.findShortestPath(globalPathConnextions, startCaseID, endCaseID) || [];
         //const pattern = this.dfs(this.list_cases, 0, );
 
         const allowed = $huds.displacement._stamina;
@@ -153,22 +149,12 @@ class _objs{
                 //this.list_cases[id].d.tint = 0x42f465;
                 this.list_cases[id].d._filters = [greenFilter]
             }
-
-            
         };
         this.pathBuffer = pattern || null;
     };
 
 
-
-    extractKeys(obj) {
-		return Object.keys(obj);
-	};
-
-	sorter(a, b) {
-		return parseFloat (a) - parseFloat (b);
-    };
-
+    // parcour chemin invers a partir du IDcase end et trouver connext vers ID start
     extractShortest(predecessors, end) {
         const nodes = [];
         let u = end;
@@ -186,42 +172,42 @@ class _objs{
         open[key].push(+vertex);
     }
 
-    findShortestPath(map, s,e) {
-        const nodes = [s,e];
-        let start = nodes.shift(),
-            path = [],
-		    end,
-		    predecessors,
-		    shortest;
-		while (nodes.length) {
-			end = nodes.shift();
-			predecessors = this.findPaths(map, start, end);
-			if (predecessors) {
-				shortest = this.extractShortest(predecessors, end);
+    findShortestPath(globalPathConnextions, startCaseID, endCaseID) {
+        const nodes = [startCaseID,endCaseID];
+        let startID      = nodes.shift();
+        let path         = []           ;
+        let endID        = null         ;
+        let connectedIDList = null         ;
+        let shortest     = null         ;
+		while (nodes.length) { // force one pass
+			endID = nodes.shift();
+			connectedIDList = this.findPaths(globalPathConnextions, startID, endID); // 
+			if (connectedIDList) {
+				shortest = this.extractShortest(connectedIDList, endID);
 				if (nodes.length) {
 					path.push.apply(path, shortest.slice(0, -1));
 				} else {
-					return path.concat(shortest);
+					return path.concat(shortest); // finish succeed
 				}
-			} else {
-				return null;
-			}
-			start = end;
+			} else { return null }; // break
+			startID = endID;
 		}
     }
 
-	findPaths(map, start, end) {
-        const costs = {}, predecessors = {};
-        let open = {'0': [start]}, keys;
-		costs[start] = 0;
+	findPaths(globalPathConnextions, startID, endID) {
+        const costs = {};
+        const connectedIDList = {};
+        let open = {'0': [startID]}; // id:start
+        let keys = null;
+		costs[startID] = 0;
 		while (open) {
-			if(!(keys = this.extractKeys(open)).length) break;
-			keys.sort(this.sorter);
-			let key = keys[0],
-			    bucket = open[key],
-			    node = bucket.shift(),
-			    currentCost = parseFloat(key),
-			    adjacentNodes = map[node] || {};
+			if(!(keys = Object.keys(open)).length) break;
+			keys.sort((a,b)=>{return parseFloat (a) - parseFloat (b)});
+            let key = keys[0];
+            let bucket = open[key];
+            let node = bucket.shift();
+            let currentCost = parseFloat(key);
+            let adjacentNodes = globalPathConnextions[node] || {};
 			if (!bucket.length) delete open[key];
 			for (const vertex in adjacentNodes) {
                 let cost = adjacentNodes[vertex],
@@ -230,12 +216,12 @@ class _objs{
                 if ((vertexCost === void 0) || (vertexCost > totalCost)) {
                     costs[vertex] = totalCost;
                     this.addToOpen(totalCost, vertex, open);
-                    predecessors[vertex] = node;
+                    connectedIDList[vertex] = node;
                 };
 			};
 		};
-        if (costs[end] === void 0) { return null; } 
-        else { return predecessors; };
+        if (costs[endID] === void 0) { return null; } 
+        else { return connectedIDList; };
     };
     
 
@@ -263,21 +249,30 @@ class _objs{
         this.parent.addChild(fx);
     };
 
-
     executeCaseFrom(inCase){
-        //FIXME:  create a l'avance tous les id possible , un json ?
-        !this.executedCaseFromMapID[1] ? this.executedCaseFromMapID[1] = [] : void 0;
-        const localCaseID = inCase.localCaseID;
+        //FIXME:  create a l'avance tous les id possible , un json ? GLOBAL GAME
         const mapID = 1;
-        const executedCases = this.executedCaseFromMapID[mapID];
-        const isAlrealyExecuted = executedCases.contains(localCaseID);
-        if(isAlrealyExecuted){
-            // do nothing, the case are alrealy executed
+        !this.executedCaseFromMapID[mapID] ? this.executedCaseFromMapID[mapID] = [] : void 0; //TODO: create index mapScene1
+
+        const localCaseID = inCase.localCaseID;
+        if(!this.executedCaseFromMapID[mapID][localCaseID]){ // if caseEventType never executed befor?
+            this.executedCaseFromMapID[mapID][localCaseID] = true;
+            this.executeCaseEventTypeFrom(inCase);
         }else{
-            // execute the case bonus
-            executedCases.push(localCaseID);
-            console.log('executedCases: ', executedCases);
-        };
+
+        }
+       
+    };
+
+    executeCaseEventTypeFrom(inCase){
+        //TODO: fair un eventCase Managers 
+        if(inCase.caseEventType === "caseEvent_gold"){
+            console.log('recive gold:', ~~(Math.random(100)*100));
+        }
+        // set to taked
+        inCase.SpritesCageEventType.d.renderable = false;
+        inCase.SpritesCageEventType.n.renderable = false;
+        
        
     };
 

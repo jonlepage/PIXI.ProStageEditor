@@ -113,6 +113,10 @@ function newInputType(target,id,type,opt,index){
 
 function newInputTypeSelect(target,id,type,opt,index){
     // TODO: rendre dinamycs
+    if(!Array.isArray(opt.option[0])){
+        // if not array, no value passed, so map value with default
+        opt.option = opt.option.map(value => [value,value]);
+    }
     let options=``;
     opt.option.forEach(o => { options+=`<option value=${o[1]}>${o[0]}</option>` });
     return /*html*/ `
@@ -307,6 +311,7 @@ function new_HTML_contentSlidersFalloff(targets){
 
 function HTML_DATA_UI(){
     // if is a sprite obj
+    const defaultCaseEventType = [[false,false],...Object.keys($Loader.Data2.caseEvents.textures).map(n=>{return [n,n]})]
     const message1 = /*html*/ `
     <div class="container" id="dataIntepretor">
         <h6>
@@ -376,12 +381,24 @@ function HTML_DATA_UI(){
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"defaultColor","select",{option:["false","red","green","blue","pink","purple","yellow","black"]}),//loop
+                        new_HTML_content1D(["p"],"allowRandomStartColor","select",{option:["false","true"]}), // permet couleur hazard lorsque creer
+                        new_HTML_content1D(["p"],"allowRandomTurnColors","select",{option:["false","true"]}), //permet changer couleur lorsque fin de tours
+                        new_HTML_content1D(["p"],"defaultCaseEventType","select",{option:defaultCaseEventType}), //permet changer couleur lorsque fin de tours
+
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     ${ new_HTML_table([
                         new_HTML_content1D(["p"],"totalFrames","text",{step:0.1,small:true,disable:true}),// animations
                         new_HTML_content1D(["p"],"animationSpeed","number",{step:0.1,small:true}),// animations
-                        new_HTML_content1D(["p"],"loop","select",{option:["true","false"]}),//loop
+                        new_HTML_content1D(["p"],"loop","select",{option:[$Loader.Data2.cases.textures]}),//loop
                     ])}
                 </div>
             </div><!--accordion item END-->

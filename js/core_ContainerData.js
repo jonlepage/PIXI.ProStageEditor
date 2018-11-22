@@ -75,6 +75,15 @@ PIXI.CageContainer = (function () {
                 case "zIndex":
                     this.zIndex = +data.position[1];
                     break;
+                case "defaultColor": // for cases, change color
+                    this.defaultColor = value;
+                    this.setCaseColorType(value);
+                    break;
+                case "defaultCaseEventType": // for cases, change color
+                    this.defaultCaseEventType = value;
+                    this.setCaseEventType(value);
+                    break;
+                    
                 default:
                     this[key] = value;
                 break;
@@ -91,8 +100,9 @@ PIXI.CageContainer = (function () {
     // the DataValues will used for make saveGame or dataEditor manager
     CageContainer.prototype.getDataValues = function(dataBase, textureName) {
         const def = !!dataBase;
-        const isSpine      = def? (dataBase.type === "spineSheet"     ) : (this.type === "spineSheet"     );
-        const isAnimations = def? (dataBase.type === "animationSheet" ) : (this.type === "animationSheet" );
+        const isSpine      = def? (dataBase.type     === "spineSheet"     ) : (this.type     === "spineSheet"     );
+        const isAnimations = def? (dataBase.type     === "animationSheet" ) : (this.type     === "animationSheet" );
+        const isCase       = def? (dataBase.dataName === "cases"          ) : (this.dataName === "cases"          );
         // parent data value
         const p = {
             type       : def? dataBase   .type                                        : this .type       , // locked
@@ -120,6 +130,14 @@ PIXI.CageContainer = (function () {
                 totalFrames    :def? dataBase.textures[textureName].length : this.totalFrames    , // locked
                 animationSpeed :def? 1                                     : this.animationSpeed ,
                 loop           :def? false                                  : this.loop           ,
+            },
+            // animations
+            ...isCase && {
+                defaultColor          :def? false : this.defaultColor          ,
+                allowRandomStartColor :def? false : this.allowRandomStartColor ,
+                allowRandomTurnColors :def? false : this.allowRandomTurnColors , 
+                defaultCaseEventType :def? false : this.defaultCaseEventType , 
+                
             },
         };
         
@@ -185,9 +203,61 @@ PIXI.ContainerTiles = (function () {
         const n = new PIXI.Sprite(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
+        // Si cases, elle ont des sprites special dissosier par couleur tint et caseEventType.
+        //system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
+        if(dataValues.p.dataName === 'cases'){
+            //colorType linkTo defaultColor
+            const cageColor = new PIXI.Sprite(dataBase.textures.cColor);
+                cageColor.parentGroup = PIXI.lights.diffuseGroup;
+                cageColor.pivot.set((cageColor.width/2)+2,cageColor.height+20);
+            const cageColor_n = new PIXI.Sprite(dataBase.textures_n.cColor_n);
+                cageColor_n.parentGroup = PIXI.lights.normalGroup;
+                cageColor_n.pivot.copy(cageColor.pivot)
+            this.SpritesCageColor = {d:cageColor,n:cageColor_n}; // ref
+            this.addChild(cageColor,cageColor_n);
+            // caseEventType linkTo defaultCaseEventType
+            const cageEventType = new PIXI.Sprite( $Loader.Data2.caseEvents.textures.caseEvent_hide);
+                cageEventType.parentGroup = PIXI.lights.diffuseGroup;
+                cageEventType.pivot.set((cageEventType.width/2),cageEventType.height);
+                cageEventType.position.set(0,-40);
+            const cageEventType_n = new PIXI.Sprite( $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
+                cageEventType_n.parentGroup = PIXI.lights.normalGroup;
+                cageEventType_n.pivot   .copy(cageEventType.pivot   );
+                cageEventType_n.position.copy(cageEventType.position);
+            this.SpritesCageEventType = {d:cageEventType,n:cageEventType_n}; // ref
+            this.addChild(cageEventType,cageEventType_n);
+        };
     };
 
     
+    ContainerTiles.prototype.setCaseColorType = function(color){
+        // see : $huds.displacement.diceColors same group for gemDice
+        // and $Objs._colorType
+        // file:///C:\Users\jonle\Documents\Games\anft_1.6.1\js\core_items.js#L131
+        this.colorType = color;
+        let colorHex; // redraw color case
+        switch (color) {
+            case 'red'   : colorHex=0xff0000 ; break;
+            case 'green' : colorHex=0x00ff3c ; break;
+            case 'blue'  : colorHex=0x003cff ;break;
+            case 'pink'  : colorHex=0xf600ff ;break;
+            case 'purple': colorHex=0x452d95 ; break;
+            case 'yellow': colorHex=0xfcff00 ; break;
+            case 'black' : colorHex=0x000000 ; break;
+            default      : colorHex=0xffffff ;
+        }
+        this.SpritesCageColor.d.tint = colorHex;
+    };
+
+    // change set the events type, swap textures
+    ContainerTiles.prototype.setCaseEventType = function(type){
+        type = type || 'caseEvent_hide';
+        const td = $Loader.Data2.caseEvents.textures[type];
+        const tn = $Loader.Data2.caseEvents.textures_n[type+'_n'];
+        this.caseEventType = type;
+        this.SpritesCageEventType.d.texture = td;
+        this.SpritesCageEventType.n.texture = tn;
+    };
 
     
 //END
