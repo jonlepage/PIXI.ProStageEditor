@@ -388,7 +388,8 @@ function HTML_DATA_UI(){
                         new_HTML_content1D(["p"],"allowRandomStartColor","select",{option:["false","true"]}), // permet couleur hazard lorsque creer
                         new_HTML_content1D(["p"],"allowRandomTurnColors","select",{option:["false","true"]}), //permet changer couleur lorsque fin de tours
                         new_HTML_content1D(["p"],"defaultCaseEventType","select",{option:defaultCaseEventType}), //permet changer couleur lorsque fin de tours
-
+                       //TODO: new_HTML_content1D(["p"],"conditionInteractive","select",{option:defaultCaseEventType}), //permet changer couleur lorsque fin de tours
+                        //Repenjser ce system pourrit de html grrrrrrrrrrrrrrr
                     ])}
                 </div>
             </div><!--accordion item END-->

@@ -47,89 +47,79 @@ class _objs{
                     case "tileSheet":
                     cage = new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;
                     default:
-                    throw console.error(`fatal error in json, check the {'type'}!`)
+                    throw console.error(`FATAL error in json, check the {'type'}!`)
                 };
                 this.list_master[i] = cage;
-                //TODO: METTRE DANS PIXI.CageContainer CONTAINER DATA MANAGER
+                // IF IS A CASE EVENT?
                 if(dataValues.p.dataName === 'cases'){
                     cage.localCaseID = this.list_cases.length;
                     this.list_cases.push(cage);
+                    // add condition interactive
+                    if(cage.conditionInteractive){ //FIXME: CHECK IF IS OK , AFTER ADD TO EDITOR, peut etre fair plusieur
+                        cage.evalConditionInteractive = () => {
+                            return $gameVariables[this.conditionInteractive[0]] === this.conditionInteractive[1];
+                        };
+                    }
+                    // case interactions , check conditionInteractive
+                    cage.interactive = true;
+                    cage.on('pointerover' , this.pointer_inEventCase ,this);
+                    cage.on('pointerout'  , this.pointer_outEventCase,this);
+                    cage.on('pointerup'   , this.pointer_upEventCase ,this);
                 };
+
+                //TODO: Faire un sprite pour les door, et tous les portes pourront etre interactive
+                if(dataValues.p.textureName === 'doorf2cc'){
+                    cage.interactive = true;
+                    cage.on('pointerover', $Objs.pointer_inEventDoor , cage);
+                    cage.on('pointerout' , $Objs.pointer_outEventDoor, cage);
+                    cage.on('pointerup'  , $Objs.pointer_upEventDoor , cage);
+                }
             };
         };
-        this.setupTweens();
-        this.setupInteractions();
     };
 
-    setupTweens(){
 
-    }
-
-    setupInteractions(){
-        this.list_cases.forEach(c => {
-            c.on('pointerover', this.pointer_overIN, this);
-            c.on('pointerout', this.pointer_overOUT, this);
-            c.on('pointerup', this.pointer_UP, this);
-        });
-        this.setInteractive(true);
-    };
-
-    setInteractive(value) {
-        this.list_cases.forEach(c => {
-            c.interactive = value;
-        });
-    };
-
-    pointer_overIN (e) {
-        e.currentTarget.alpha = 1;
-        $huds.displacement._stamina && this.computePathTo(e.currentTarget); // si on a stamina, on peut ce deplacer
-    };
-    
-    pointer_overOUT(e) {
-        e.currentTarget.alpha = 1;
-        // clearn pattern cases
-        if(this.pathBuffer){
-            this.pathBuffer = null;
-            for (let i = this.list_cases.length; i--;) {
-                this.list_cases[i].d.tint = 0xffffff;
-                this.list_cases[i].d._filters = [];
-             };
+    pointer_inEventCase (e) {
+        const c = e.currentTarget;
+        if(!c.conditionInteractive || c.evalConditionInteractive()){
+            c.pointerIn = true;
+            c.alpha = 1;
+            $huds.displacement._stamina && this.computePathTo(c); // si on a stamina, on peut ce deplacer
         };
-    
     };
     
-    pointer_UP(e) {
-        if(this.pathBuffer){
-            //TODO: MOVE PLAYER
-            this.setInteractive(false);
-            $player.initialisePath(this.pathBuffer);
+    pointer_outEventCase(e) {
+        const c = e.currentTarget;
+        if(c.pointerIn){
+            c.pointerIn = false;
+            c.alpha = 1;
+            // clearn pattern cases
+            if(this.pathBuffer){
+                this.pathBuffer = null;
+                for (let i = this.list_cases.length; i--;) {
+                    this.list_cases[i].d.tint = 0xffffff;
+                    this.list_cases[i].d._filters = [];
+                 };
+            };
         }
+
+    };
+    
+    pointer_upEventCase(e) {
+        const c = e.currentTarget;
+        if(c.pointerIn && this.pathBuffer){
+            $player.initialisePath(this.pathBuffer);
+        };
     };
 
-    //TODO: RENDU ICI , ADD DRAW MODE PATH CONNEXTIONS in editors
+
     // calcule le chemin vers un target
     computePathTo(target) {
         const playerCase = $player.inCase;
-        const pathInterval = []; //
-        const patternFromInterval = []; // store path id pattern
-        //const nodes = {};
-        const autorisedColors = $huds.displacement.diceColors;
-        /*Object.keys(this.list_cases).forEach(k => { // k: local id
-            const c = this.list_cases[k];
-            //TODO: creer un system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
-            // DELETE ME, TEST DEBUGAGE
-            nodes[k] = c.pathConnexion;
-            
-        });*/
         const gloabalVariable_murMaisonDetruit = false;
-        const globalEventStoryCheck_murMaisonDetruit = ()=>{return gloabalVariable_murMaisonDetruit}; // permetre d'assotion des events global qui check les variable
-        $Objs.list_cases[8].visibleIfCondition = globalEventStoryCheck_murMaisonDetruit; // asign la condition events
-
-
-        const globalPathConnextions = this.list_cases.map((c,id) => {
-            // if $globalVariable.mur = true;
-            if(!c.visibleIfCondition || c.visibleIfCondition() ){return c.pathConnexion}
-            
+        // map all path connextion , only if allowed by conditionInteractive of the case
+        const globalPathConnextions = this.list_cases.map((c) => {
+            if(!c.conditionInteractive || c.evalConditionInteractive()){return c.pathConnexion};
         }); // nodeConnextions
         const startCaseID = $player.inCase.localCaseID;
         const endCaseID = target.localCaseID;
@@ -287,6 +277,30 @@ class _objs{
             return index;
         };
     };
+
+    pointer_inEventDoor(){
+        console.log('pointer_inEventDoor: ');
+        const greenFilter = new PIXI.filters.OutlineFilter (6, 0xffffff, 1);
+        this.d._filters = [greenFilter];
+
+    }
+    pointer_outEventDoor(){
+        console.log('pointer_outEventDoor: ');
+        this.d._filters = null;
+    }
+    pointer_upEventDoor(){
+        console.log(this.skew.y);
+        if(this.skew.y<0){
+            TweenLite.to(this.skew, 1, { ease: Power1.easeOut, y: 0 });
+            TweenLite.to(this.scale, 1, { ease: Power1.easeOut, x: 0.9 });
+        }else{
+            TweenLite.to(this.skew, 3, { ease: Elastic.easeOut.config(1, 0.3), y: -0.8 }) ;
+            TweenLite.to(this.scale, 0.5, { ease: Power1.easeOut, x: 1.2 });
+        }
+        
+      
+       
+    }
 
 };// END CLASS
 $Objs = new _objs();

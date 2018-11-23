@@ -137,6 +137,7 @@ PIXI.CageContainer = (function () {
                 allowRandomStartColor :def? false : this.allowRandomStartColor ,
                 allowRandomTurnColors :def? false : this.allowRandomTurnColors , 
                 defaultCaseEventType :def? false : this.defaultCaseEventType , 
+                conditionInteractive :def? false : this.conditionInteractive , // example variable:'wall1Detruit', value:true
                 
             },
         };
