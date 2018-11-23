@@ -13,16 +13,19 @@ class Scene_Map1 extends _Scene_Base {
     constructor(sceneData,className) {
         super(sceneData,className);
         this.name = className;
+        
 
     };
 
 
-
+    // prepare and set event for map 1
     start(){
+        $huds.setInteractive(true);
         this.setupObjs  ();
         this.setupLights();
         this.setupPlayer();
         this.setupCamera();
+        this.setupEventCases(); // setup interactivity for events case in map1?
         this.visible = true;
         this.renderable = true;
        //$stage.goto();
@@ -67,5 +70,15 @@ class Scene_Map1 extends _Scene_Base {
         $camera.setTarget($player.spine.position);
     }
 
-    
+    // Events initialisator and hack optimiser
+    // setup hack or change context in current map base on global variable
+    setupEventCases(){
+        // TODO: METTRE LES ID CASE UNIQUE ?
+        if(!$gameVariables._wallMaisonDroiteDetuits){
+            // empeche la case id id 8 detre selectionner
+            $Objs.getCase_FromName('caseSousMurMaison').conditionInteractive = () => { 
+                return $gameVariables._wallMaisonDroiteDetuits 
+            };
+        };
+    }
 };

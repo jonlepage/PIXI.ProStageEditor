@@ -32,6 +32,13 @@ class _huds {
         for (const key in this.hudsList) { $stage.CAGE_GUI.addChild( this.hudsList[key] ) };
         for (const key in this.menuList) { $stage.CAGE_GUI.addChild( this.menuList[key] ) };
     };
+
+
+    setInteractive(value){
+        this.displacement.setInteractive(value);
+        this.pinBar.setInteractive(value);
+        this.stats.setInteractive(value);
+    }
 };
 
 $huds = new _huds();

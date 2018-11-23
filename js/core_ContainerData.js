@@ -105,12 +105,12 @@ PIXI.CageContainer = (function () {
         const isCase       = def? (dataBase.dataName === "cases"          ) : (this.dataName === "cases"          );
         // parent data value
         const p = {
-            type       : def? dataBase   .type                                        : this .type       , // locked
-            textureName: def? textureName                                             : this .textureName, // locked
-            dataName   : def? dataBase   .name                                        : this .dataName   , // locked
-            groupID    : def? dataBase   .dirArray[dataBase.dirArray.length-1]        : this .groupID    , // asigner un groupe dapartenance ex: flags
-            name       : def? textureName+Math.random().toString(36).substring(2, 12) : this .name       , // asigner un nom unique
-            description: def? dataBase   .root                                        : this .description, // un description aide memoire
+            type       : def? dataBase    .type                                 : this .type       , // locked
+            textureName: def? textureName                                       : this .textureName, // locked
+            dataName   : def? dataBase    .name                                 : this .dataName   , // locked
+            groupID    : def? dataBase    .dirArray[dataBase.dirArray.length-1] : this .groupID    , // asigner un groupe dapartenance ex: flags
+            name       : def? dataBase    .name                                 : this .name       , // asigner un nom unique
+            description: def? dataBase    .root                                 : this .description, // un description aide memoire
             // observable point
             position : def? [0,0] : [this.position .x, this.position .y],
             scale    : def? [1,1] : [this.scale    .x, this.scale    .y],
@@ -137,8 +137,6 @@ PIXI.CageContainer = (function () {
                 allowRandomStartColor :def? false : this.allowRandomStartColor ,
                 allowRandomTurnColors :def? false : this.allowRandomTurnColors , 
                 defaultCaseEventType :def? false : this.defaultCaseEventType , 
-                conditionInteractive :def? false : this.conditionInteractive , // example variable:'wall1Detruit', value:true
-                
             },
         };
         

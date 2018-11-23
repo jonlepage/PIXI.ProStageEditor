@@ -283,6 +283,9 @@ https://greensock.com/docs/Core/Animation
     };
 
     show(duration) {
+        $Objs.setInteractive(false); // disable objs map interactivity
+        $huds.displacement.setInteractive(false);
+        this.setInteractive(true);
         this.renderable = true;
         this.visible = true;
         this.sortById();
@@ -291,6 +294,9 @@ https://greensock.com/docs/Core/Animation
     hide(duration) {
         this.renderable = false;
         this.visible = false;
+        this.setInteractive(false);
+        $Objs.setInteractive(true); // disable objs map interactivity
+        $huds.displacement.setInteractive(true);
     };
     //#endregion
 
@@ -302,21 +308,30 @@ pointerIN, pointerOUT, pointerUP
 */
     setupInteractions() {
         this.filtersSlots.forEach(filterGem => {
-            filterGem.interactive = true;
             filterGem.on('pointerover', this.IN_filterGem, this);
             filterGem.on('pointerout', this.OUT_filterGem, this);
             filterGem.on('pointerup', this.UP_filterGem, this);
         });
         this.slots.forEach(slot => {
-            slot.itemsFrame.d.interactive = true;
             slot.itemsFrame.d.on('pointerover', this.IN_itemSlot, slot);
             slot.itemsFrame.d.on('pointerout', this.OUT_itemSlot, slot);
             slot.itemsFrame.d.on('pointerup', this.UP_itemSlot, slot);
         });
-        this.sortBox.interactive = true;
         this.sortBox.on('pointerover', this.IN_sortBox, this);
         this.sortBox.on('pointerout', this.OUT_sortBox, this);
         this.sortBox.on('pointerup', this.UP_sortBox, this);
+    };
+
+    setInteractive(value) {
+        for (let i=0, l=this.filtersSlots.length; i<l; i++) {
+            this.filtersSlots[i].interactive = value;
+            this.filtersSlots[i].visible = value;
+        };
+        for (let i=0, l=this.slots.length; i<l; i++) {
+            this.slots[i].itemsFrame.d.interactive = value;
+            this.slots[i].itemsFrame.d.visible = value;
+        };
+        this.sortBox.interactive = value;
     };
 
     IN_itemSlot(e) {

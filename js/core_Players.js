@@ -123,7 +123,6 @@ class _player {
             this.addAnimationMove(true);
             this._isMoving = false;
             this.checkCaseEvents(true);
-            $Objs.setInteractive(true);
             // si plus stamina
             if($huds.displacement._stamina === 0){
                 $huds.displacement.clearRoll(); //FIXME: efface le 0 trop rapidement

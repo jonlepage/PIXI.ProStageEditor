@@ -105,13 +105,32 @@ class _coreLoader {
         this.loadSheets(className, true);
     };
 
-    load_fonts(){
+    load_fonts(){ 
         const fonts = [
             {name:"ArchitectsDaughter", url:"fonts/ArchitectsDaughter.ttf"},
             {name:"zBirdyGame", url:"fonts/zBirdyGame.ttf"},
         ];
+        fonts.forEach(font => {
+            var style = document.createElement('style');
+            var head = document.getElementsByTagName('head');
+            var rule = '@font-face { font-family: "' + font.name + '"; src: url("' + font.url + '"); }';
+            style.type = 'text/css';
+            head.item(0).appendChild(style);
+            style.sheet.insertRule(rule, 0);
+            //this._createFontLoader(name);
+        });
         this.fonts = fonts;
-        return this.load();
+        /*
+            @font-face {
+            font-family: 'ArchitectsDaughter';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Amatica SC'),
+                local('AmaticaSC-Regular'),
+                url(fonts/amaticasc-regular.ttf) format('truetype');
+            }
+        */
+        setTimeout(()=>{ this.load() }, 100); //TODO: find more logical ways
     };
 
     //STEP:1 load dataScenes scenes?.json

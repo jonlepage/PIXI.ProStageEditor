@@ -283,20 +283,26 @@ class _huds_pinBar extends PIXI.Container {
   pointerIN, pointerOUT, pointerUP
   └------------------------------------------------------------------------------┘
   */
-  setupInteractions() {
-      // rotator: controle la rotation showHide du hud
-      this.rotator.interactive = true;
-      this.rotator.on('pointerover', this.IN_rotator, this);
-      this.rotator.on('pointerout', this.OUT_rotator, this);
-      this.rotator.on('pointerup', this.UP_rotator, this);
-      // pinGem
-      this.slots.forEach(slot => {
-          slot.pinGem.interactive = true;
-          slot.pinGem.on('pointerover', this.IN_pinGem, slot);
-          slot.pinGem.on('pointerout', this.OUT_pinGem, slot);
-          slot.pinGem.on('pointerup', this.UP_pinGem, this);
-      });
-  };
+    setupInteractions() {
+        // rotator: controle la rotation showHide du hud
+        this.rotator.on('pointerover', this.IN_rotator, this);
+        this.rotator.on('pointerout', this.OUT_rotator, this);
+        this.rotator.on('pointerup', this.UP_rotator, this);
+        // pinGem
+        this.slots.forEach(slot => {
+            slot.pinGem.on('pointerover', this.IN_pinGem, slot);
+            slot.pinGem.on('pointerout', this.OUT_pinGem, slot);
+            slot.pinGem.on('pointerup', this.UP_pinGem, this);
+        });
+    };
+
+    setInteractive(value) {
+        this.rotator.interactive = value;
+        for (let i=0, l=this.slots.length; i<l; i++) {
+            this.slots[i].pinGem.interactive = value;
+        };
+    };
+
   IN_pinGem(e) {
       this.pinGem.d._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
       if($mouse.holdingItem){
@@ -305,8 +311,8 @@ class _huds_pinBar extends PIXI.Container {
           ease: Back.easeOut.config(4)
         });
       }
-
   };
+
   OUT_pinGem(e) {
       this.pinGem.d._filters = null;
       if(!this.item && this.pinGem.scale._x>0.4){
@@ -343,7 +349,6 @@ class _huds_pinBar extends PIXI.Container {
       } else
       if (e.data.button === 2) { // _clickRight ==>
         if(!$huds.menuItems.renderable){ // si menu est desactive, Activer menuItem
-           // $Objs.disableInteractive(); TODO:
             return $huds.menuItems.show();
         };
         if($huds.menuItems.renderable){// si menu est activer, desactiver menuItem

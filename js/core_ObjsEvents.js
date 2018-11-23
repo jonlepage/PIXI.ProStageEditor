@@ -54,12 +54,6 @@ class _objs{
                 if(dataValues.p.dataName === 'cases'){
                     cage.localCaseID = this.list_cases.length;
                     this.list_cases.push(cage);
-                    // add condition interactive
-                    if(cage.conditionInteractive){ //FIXME: CHECK IF IS OK , AFTER ADD TO EDITOR, peut etre fair plusieur
-                        cage.evalConditionInteractive = () => {
-                            return $gameVariables[this.conditionInteractive[0]] === this.conditionInteractive[1];
-                        };
-                    }
                     // case interactions , check conditionInteractive
                     cage.interactive = true;
                     cage.on('pointerover' , this.pointer_inEventCase ,this);
@@ -81,7 +75,7 @@ class _objs{
 
     pointer_inEventCase (e) {
         const c = e.currentTarget;
-        if(!c.conditionInteractive || c.evalConditionInteractive()){
+        if(!c.conditionInteractive || c.conditionInteractive()){
             c.pointerIn = true;
             c.alpha = 1;
             $huds.displacement._stamina && this.computePathTo(c); // si on a stamina, on peut ce deplacer
@@ -119,7 +113,7 @@ class _objs{
         const gloabalVariable_murMaisonDetruit = false;
         // map all path connextion , only if allowed by conditionInteractive of the case
         const globalPathConnextions = this.list_cases.map((c) => {
-            if(!c.conditionInteractive || c.evalConditionInteractive()){return c.pathConnexion};
+            if(!c.conditionInteractive || c.conditionInteractive()){return c.pathConnexion};
         }); // nodeConnextions
         const startCaseID = $player.inCase.localCaseID;
         const endCaseID = target.localCaseID;
@@ -296,10 +290,29 @@ class _objs{
         }else{
             TweenLite.to(this.skew, 3, { ease: Elastic.easeOut.config(1, 0.3), y: -0.8 }) ;
             TweenLite.to(this.scale, 0.5, { ease: Power1.easeOut, x: 1.2 });
-        }
-        
-      
-       
+        };
+    }
+
+    // get from obj unique name
+    getCase_FromName(name){
+        for (let i=0, l=this.list_cases.length; i<l; i++) {
+            if( this.list_cases[i].name === name){ return this.list_cases[i] };
+        };
+        throw console.error('the case name not existe',name);
+    };
+
+
+    setInteractive(value){
+        for (let i=0, l=this.list_master.length; i<l; i++) {
+            if(this.list_master[i]._eventsCount){ this.list_master[i].interactive = value }; 
+        };
+    };
+
+    //TODO:
+    testHideOnlySpriteInCamera(value){
+        for (let i=0, l=this.list_master.length-20; i<l; i++) {
+            this.list_master[i].renderable = false;
+        };
     }
 
 };// END CLASS

@@ -213,7 +213,6 @@ class _huds_displacement extends PIXI.Container{
   └------------------------------------------------------------------------------┘
   */
   setupInteractions() {
-    this.interactive = true;
     this.on('pointerover', this.pointerIN, this);
     this.on('pointerout', this.pointerOUT, this);
     this.on('pointerdown', this.pointerDW, this);
@@ -221,11 +220,19 @@ class _huds_displacement extends PIXI.Container{
     this.on('pointerupoutside', this.pointerUPOUT, this);
     // items slot
     this.slots.forEach(slot => {
-      slot.itemSlot.interactive = true;
       slot.itemSlot.on('pointerover', this.IN_slots , this);
       slot.itemSlot.on('pointerout' , this.OUT_slots, this);
       slot.itemSlot.on('pointerup'  , this.UP_slots , this);
     });
+  };
+
+  // disable allow interactive
+  setInteractive(value) {
+    this.interactive = value;
+    // items slot
+    for (let i=0, l=this.slots.length; i<l; i++) {
+      this.slots[i].itemSlot.interactive = value;
+    };
   };
 
   pointerIN(e) {
