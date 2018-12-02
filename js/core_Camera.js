@@ -37,7 +37,7 @@ class _camera{
     get y() { return this._pivot._y - (this.screenY/2) };
     set x(x) { this._pivot.x = x-this.screenX/2 }; // call ease
     set y(y) { this._pivot.y = y - (this.screenY/2) }; // call ease
-    get tX() { return this.currentTarget.x - (this.screenX/2)/this.zoom };
+    get tX() { return this.currentTarget.x - (this.screenX/2)/this.zoom }; // target x
     get tY() { return this.currentTarget.y - (this.screenY/2)/this.zoom };
 
     attachToCurrentScene() {
@@ -68,7 +68,7 @@ class _camera{
 
     moveToTarget(speed) {
         this.tweenPosition.vars.x = this.tX;
-        this.tweenPosition.vars.y = this.tY;
+        this.tweenPosition.vars.y = this.tY-220;
         speed? this.tweenPosition._duration = speed : void 0;
         this.tweenPosition.invalidate(); // TODO: deep study source of this
         this.tweenPosition.play(0);
@@ -126,6 +126,23 @@ class _camera{
         this.zoom+=value;
         this.setZoom(this.zoom,3);  //ratio,speed,ease
         this.moveToTarget(3);
+        //TODO: message box, deplacer avec zoom
+        /*if($message.screenXYBubbleBone){
+            const xx = $camera.tX-900;
+            const yy = $camera.tY-650;
+            TweenMax.to($message.screenXYBubbleBone, 6, {
+                x: $message.bubbleBaseXY.x+xx,
+                y: $message.bubbleBaseXY.y-yy,
+                ease: Elastic.easeOut.config(1.2, 0.5),
+            });
+            TweenMax.to($message.cageTxt, 5, {
+                x: $message.boundsz.x+(xx/1.5),
+                y: $message.boundsz.y+(yy/1.5),
+                ease: Elastic.easeOut.config(1.2, 0.5),
+            });
+            
+        };*/
+        
     };
 
     onMouseCheckBorderCamera(e){

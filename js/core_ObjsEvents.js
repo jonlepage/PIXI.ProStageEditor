@@ -283,10 +283,11 @@ class _objs{
         this.d._filters = null;
     }
     pointer_upEventDoor(){
-        console.log(this.skew.y);
         if(this.skew.y<0){
             TweenLite.to(this.skew, 1, { ease: Power1.easeOut, y: 0 });
             TweenLite.to(this.scale, 1, { ease: Power1.easeOut, x: 0.9 });
+            //TODO: DELEME, TEST MESSAGE BOX
+            $message.show('pancart_p1m1_01'); // shew message events
         }else{
             TweenLite.to(this.skew, 3, { ease: Elastic.easeOut.config(1, 0.3), y: -0.8 }) ;
             TweenLite.to(this.scale, 0.5, { ease: Power1.easeOut, x: 1.2 });
@@ -308,7 +309,7 @@ class _objs{
         };
     };
 
-    //TODO:
+    //TODO: deleteMe, test performance cacher quelque sprites a la camera
     testHideOnlySpriteInCamera(value){
         for (let i=0, l=this.list_master.length-20; i<l; i++) {
             this.list_master[i].renderable = false;

@@ -83,7 +83,6 @@ class _huds_stats extends PIXI.Container {
     });
     // create small states
     this.statsList_S.forEach(state => {
-        console.log2('state: ', state);
         // create master_S
         const master_S = new PIXI.Container();
         var d = new PIXI.Sprite(dataBase.textures.barMaster_S);

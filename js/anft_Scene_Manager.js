@@ -41,16 +41,17 @@ class _stage extends PIXI.display.Stage {
         const loaderKit = $Loader.needLoaderKit(sceneName);
         // lots of scenes buffer constructor ready in memory, just need to start, userfull for maps
         const nextScene = loaderKit && new Scene_Loader(sceneClass.name, options, loaderKit) || $Loader.Scenes[sceneName];
-        
         this.scene = nextScene;
         this.addChildAt(nextScene,0);
         nextScene.start();
+       
         document.title = document.title+` =>[${nextScene.constructor.name}] `; 
     };
 
     masterUpdate(delta) {
         try {
             this.updateMain(delta);
+   
         } catch (e) {
             $app.nwjs.win.showDevTools();
             throw console.error(e.stack);

@@ -19,6 +19,7 @@ class Scene_Boot extends PIXI.Container {
     };
 
     start(){
+        
         //$Loader.setPermaCurrentData(); // all loaded from SceneBoot are Perma ressource, protect perma ressource once for avoid destoyed
         $items.initialize();
         $mouse.initialize(); // initialise mouse core

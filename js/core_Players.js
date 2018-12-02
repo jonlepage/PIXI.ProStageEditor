@@ -189,4 +189,53 @@ $player = new _player();
 console.log1('$player: ', $player);
 
 
+// ┌------------------------------------------------------------------------------┐
+// GLOBAL $SLL $player2: _player2 for player2
+//└------------------------------------------------------------------------------┘
+class _player2 {
+    constructor(dataBase, textureName, dataValues) {
+        this.inCase = null; //store the current player case ?
+        this.spine;
+        this._planetID = null; // player current planet id
+        this._dirX = 6; //player direction
+        this.radius = null; // radius player range interactions
+        this._scaleXY = 0.45; // default player scale, also help compute reverse
 
+    };
+    get x(){ return this.spine.x }
+    get y(){ return this.spine.y }
+    set x(x){ return this.spine.x = x }
+    set y(y){ return this.spine.y = y }
+
+    initialize() {
+        this.setupSprites();
+        //this.setupListeners();
+        //this.setupTweens();
+        //this.setupInteractions();
+    };
+
+    setupSprites() {
+        const cage = new PIXI.spine.Spine($Loader.Data2.heroe2.spineData);
+        const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
+        spine.stateData.defaultMix = 0.2;
+        spine.state.setAnimation(0, "idle", true);
+
+        // player transform
+        cage.scale.set(0.45,0.45);
+
+        // player layers hackAttachmentGroups set spine.n
+        cage.asignParentGroups();
+        cage.parentGroup = $displayGroup.group[1];
+        cage.zIndex = 0;
+
+        spine.skeleton.setSlotsToSetupPose();
+        this.spine = cage;
+    };
+
+
+
+    
+};
+
+$player2 = new _player2(); 
+console.log1('$player2.', $player2);

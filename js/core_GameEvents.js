@@ -19,7 +19,6 @@ class _gameEvents {
         this.getEventList = () => {return Object.getOwnPropertyNames(this.__proto__)};
     };
 
-
 };
 
 

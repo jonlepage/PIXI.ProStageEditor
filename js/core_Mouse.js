@@ -58,7 +58,6 @@ class _mouse {
         this.interaction.cursorStyles.pointer = "none";
         this.interaction.setCursorMode('none');
         $mouse.interaction.on( 'pointerup', function(e) {  // TODO: GLOBAL INTERACTION
-            console.log('pointerup: GLOBAL holdingItem:null');
             if(e.data.button === 2 && this.holdingItem){
                 this.holdingItem = null;
             }

@@ -29,6 +29,7 @@ class _coreLoader {
         this.Scenes = {}; // store full scenes cache
         this.options = {};
         this.fonts = null;
+        this._textsSCVLoaded = null; // is textsSCV loaded
         this.loaderBuffers = [];
         this._isLoading = false;
         this.loaderKit = { // batch .json in arrays, when change scene, check if need load a kits
@@ -81,12 +82,15 @@ class _coreLoader {
         options  ? this.options   = options   : void 0;
         // firstBoot verifier que tous est deja preloader, ensuite verifier les kits
         if(!this.fonts){ return this.load_fonts() };
+        if(!this._textsSCVLoaded){ return this.load_textsSCV() };
         //if(!this.DataScenes){ return this.load_dataScenes(options) };
         //if(!this.Data2){ return this.load_perma() };
         // load and store a cache of each scenes class in the kits
         if(this.sceneKits.length){
             this.loadSceneClass(this.sceneKits.shift());
-        }else{ this.options = {}; this._isLoading = false };
+        }else{ 
+            this.options = {}; this._isLoading = false 
+        };
     };
 
     loadFromEditor (className,dataFromNwjs) {
@@ -105,32 +109,49 @@ class _coreLoader {
         this.loadSheets(className, true);
     };
 
-    load_fonts(){ 
+    load_textsSCV(){
+        const loader = new PIXI.loaders.Loader();
+        loader.add('eventMessagesData', `data/eventMessage.csv`);
+        loader.load();
+        loader.onProgress.add((loader, res) => {
+            this.dataText = Papa.parse(res.data);
+            $texts.initializeFromData($Loader.dataText);
+        });
+        loader.onComplete.add((loader, res) => {
+            this._textsSCVLoaded = true;
+            this.load();
+        });
+        
+    };
+
+    load_fonts(){
         const fonts = [
             {name:"ArchitectsDaughter", url:"fonts/ArchitectsDaughter.ttf"},
             {name:"zBirdyGame", url:"fonts/zBirdyGame.ttf"},
         ];
         fonts.forEach(font => {
-            var style = document.createElement('style');
-            var head = document.getElementsByTagName('head');
-            var rule = '@font-face { font-family: "' + font.name + '"; src: url("' + font.url + '"); }';
-            style.type = 'text/css';
-            head.item(0).appendChild(style);
-            style.sheet.insertRule(rule, 0);
-            //this._createFontLoader(name);
+            const style = document.createElement('style');
+            style.appendChild(document.createTextNode(`
+                @font-face {
+                    font-family: '${font.name}';
+                    font-style: normal;
+                    font-weight: 700;
+                    src: url("${font.url}");
+                }
+            `));
+            document.getElementsByTagName('head').item(0).appendChild(style);
+            const div = document.createElement('div');
+            div.style.fontFamily = font.name;
+            document.body.appendChild(div);/* Initiates download in Firefox, IE 9+ */
+            div.innerHTML = 'Content.';/* Initiates download in WebKit/Blink */
         });
-        this.fonts = fonts;
-        /*
-            @font-face {
-            font-family: 'ArchitectsDaughter';
-            font-style: normal;
-            font-weight: 400;
-            src: local('Amatica SC'),
-                local('AmaticaSC-Regular'),
-                url(fonts/amaticasc-regular.ttf) format('truetype');
+        let checkFonts =  setInterval(()=>{
+            if( fonts.every(e => document.fonts.check(`12px ${e.name}`) )){
+                this.fonts = fonts;
+                clearInterval(checkFonts);
+                this.load();
             }
-        */
-        setTimeout(()=>{ this.load() }, 100); //TODO: find more logical ways
+        },60);
     };
 
     //STEP:1 load dataScenes scenes?.json
@@ -307,6 +328,15 @@ class _coreLoader {
             };
         };
         return base;
+    };
+
+    loadCSV(){
+        const loader = new PIXI.loaders.Loader();
+        loader.add('ddd', `data/eventMessage.csv`);
+        loader.load();
+        loader.onProgress.add((loader, res) => {
+            console.log('res: ', res);
+        });
     };
 
 
