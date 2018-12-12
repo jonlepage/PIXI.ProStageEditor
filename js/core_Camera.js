@@ -23,7 +23,7 @@ class _camera{
         this.screenX = $app.screen.width; // 1920
         this.screenY = $app.screen.height; // 1080;
         this._position = null;
-        this._pivot = null;
+        this._pivot = {};
         this._width = null;
         this._height = null;
         this._scale = null;
@@ -68,7 +68,7 @@ class _camera{
 
     moveToTarget(speed) {
         this.tweenPosition.vars.x = this.tX;
-        this.tweenPosition.vars.y = this.tY-220;
+        this.tweenPosition.vars.y = this.tY;
         speed? this.tweenPosition._duration = speed : void 0;
         this.tweenPosition.invalidate(); // TODO: deep study source of this
         this.tweenPosition.play(0);
@@ -126,22 +126,10 @@ class _camera{
         this.zoom+=value;
         this.setZoom(this.zoom,3);  //ratio,speed,ease
         this.moveToTarget(3);
-        //TODO: message box, deplacer avec zoom
-        /*if($message.screenXYBubbleBone){
-            const xx = $camera.tX-900;
-            const yy = $camera.tY-650;
-            TweenMax.to($message.screenXYBubbleBone, 6, {
-                x: $message.bubbleBaseXY.x+xx,
-                y: $message.bubbleBaseXY.y-yy,
-                ease: Elastic.easeOut.config(1.2, 0.5),
-            });
-            TweenMax.to($message.cageTxt, 5, {
-                x: $message.boundsz.x+(xx/1.5),
-                y: $message.boundsz.y+(yy/1.5),
-                ease: Elastic.easeOut.config(1.2, 0.5),
-            });
-            
-        };*/
+        //si ya une messageBox event active ?, ajuster le bones camera des bubbles 
+        if($messages.data){
+            $messages.fitMessageToCamera(this.tX,this.tY,this.zoom);
+        };
         
     };
 

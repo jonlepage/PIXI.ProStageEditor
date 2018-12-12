@@ -9,111 +9,43 @@
 */
 
 // ┌-----------------------------------------------------------------------------┐
-// GLOBAL $text CLASS: _messages
+// GLOBAL $messages CLASS: _messages
 //└------------------------------------------------------------------------------┘
 class _messages{
     constructor() {
         // les texts data son separer par des id, considerer comme des events
-        this.data = null;
-
-        this._currentBubleID = 0; // progresse between bubblesTxt and pages
-        this.bufferDestoys = []; // quand on terminer, stoker ici le bubbles pour sa fermeture et son destroy, permet a une autre apparaitre simultanement
+        this.data = null; // if data => isBusy
+        this._bubbleID = -1; // progresse between bubblesTxt and pages
+        this._eventLenght = 0;
+        this.current = null; // current bubble showed
     };
 
-    intitialize(id){
-        if(!$texts[id]){throw console.error(`show id text event id: ${id} not exist !!!`)};
-        this.data = $texts[id] || null;
-        this._currentBubleID = 0;
-        return this.show(this._currentBubleID);
+    intitialize(textID){
+        if(!$texts[textID]){throw console.error(`show id text event id: ${id} not exist !!!`)};
+        this.data = $texts[textID];
+        this._txtDataBaseID = textID;
+        this._bubbleID = -1;
+        this._eventLenght = this.data.length;
+        this.nextBubble();
     };
 
     // show new events messages with $texts id events
-    show(id) {
-        if(!this.data){ return this.intitialize(id) }; // initialise bubbles messages managers
-        const bubbletxt = new _bubbleTxt(this.data[id],id);
-
-
-
-        
-
-  
-/*
-       
-    */
-
-    /*
-        // position to target camera
-        // normalise global bone camera position
-        const globalMessageXY = cageMessage.getGlobalPosition(); // global wihout zoom
-        const globalCameraBoneXY = new PIXI.Point( globalMessageXY.x+cameraBoneXY.x, globalMessageXY.y+cameraBoneXY.y );
-        const ids = this.lists.length;
-        this.lists.push(
-            {
-                id,
-                globalMessageXY,
-                globalCameraBoneXY,
-                cageTxt,
-                cageMessage,
-                cameraBoneXY,
-                maxW,
-                maxH,
-            }
-        );
-        if(Number.isFinite(tX)){
-            this.moveTo(id,tX,tY);
-        }else{
-            const xx = globalMessageXY.x+cameraBoneXY.x;
-            const yy = globalMessageXY.y-cameraBoneXY.y;
-            cameraBoneXY.x=0
-            cameraBoneXY.y=0
-            this.moveTo(id,xx,yy);
-        };
-        //INTERACTIONS
-        cageMessage.id = id;
-        cageMessage.interactive = true;
-        cageMessage.on('pointerover', this.pointerIN_messageBox , this);
-        cageMessage.on('pointerout' , this.pointerOUT_messageBox, this);
-        cageMessage.on('pointerdown', this.pointerDW_messageBox , this);
-        cageMessage.on('pointerup'  , this.pointerUP_messageBox , this);
-
-        const state = $player.spine.d.state;
-            state.addAnimation(3, "talk1", false);
-            state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
-*/
+    nextBubble() {
+        const bID = ++this._bubbleID;
+        if(bID<this._eventLenght){ // discution events inProgress
+            this.current = new _bubbleTxt(bID, this.data[bID]);
+        }else{ // discution events terminer, TODO: retour a la normal
+            // ending messages events
+            $camera.setTarget($player, 6);
+            this.data = null;
+            this._currentBubleID = 0;
+            this.bufferDestoys = [];
+        }
     };
 
-
-    resizeMessageFrom(cageMessage,cageTxt){
-        // RESIZE from text limit height and width
-        const size = this.data[this._currentPage].pagesSize;
-        
-        const controlerH = cageMessage.d.skeleton.findBone('txtControl_height2');
-        const hh = new PIXI.Point(controlerH.x,controlerH.y);
-        controlerH.x =  -size.h//*zoomFactor); // weird but y become x in spinePlugin
-
-        const controlerW = cageMessage.d.skeleton.findBone('txtControl_width_low');
-        const ww = new PIXI.Point(controlerW.x,controlerW.y);
-        if(size.w>this._minTextWitdh){ controlerW.x = -this._minTextWitdh+(size.w*0.4) }; // weird but y become x in spinePlugin
-        return {controlerH,controlerW,hh,ww};
+    fitMessageToCamera(tX,tY,zoom){
+        this.current.moveCameraBone(tX,tY,zoom);
     };
-
-    moveTo(messageID,tX,tY){
-        if(this.lists[messageID]){
-            const data = this.lists[messageID];
-            TweenMax.to(data.cameraBoneXY, 1, {
-                x: isFinite(tX)? tX-data.globalMessageXY.x : data.cameraBoneXY.x,
-                y: isFinite(tY)?-tY+data.globalMessageXY.y : data.cameraBoneXY.y,
-                ease: Elastic.easeOut.config(0.9, 0.4),
-            });
-            TweenMax.to(data.cageTxt, 2, {
-                x: isFinite(tX)? tX-data.globalMessageXY.x+70 : data.cageTxt.x,
-                y: isFinite(tY)? tY-data.globalMessageXY.y-30 : data.cageTxt.y,
-                ease: Elastic.easeOut.config(1, 0.6),
-    
-            });
-        };
-    };
-
 
 
     debug(cageMessage,cage,bounds,spriteTxt){
@@ -165,86 +97,119 @@ class _messages{
     };
 
 };
-$message = new _messages();
-console.log1('$message', $message);
+$messages = new _messages();
+console.log1('$messages', $messages);
 
+//#region [rgba(1, 20, 40,0.2)]
 /** Class bubble thats show a text sprites from events text target */
 class _bubbleTxt{
-    constructor(data,id) {
+    constructor(id, data) {
         this._id = id;
         this.data = data;
-        this.target = this.getTarget(data._targetEvent);
-        this._pageIndex = 0;
-        this.targetXY   = null; // fitting position for target
-        this.messagesXY = null; // fitting position for messages texts
-        this._minTextWitdh = 500; //the bone from spine are not at 0, need substract for auto-size
-        this._zoomFactor = 0.4; // the text metric are compute without zoom factor, so we want scale for get biutifull text in zoom
+        this._pageIndex = -1;
+        this._pageLenght = data.pagesData.length;
+        this._margin_w = -100; // margin est la valeur zero minimal pour le text, car les position a 0 ne sont pas normaliser
+        this._margin_h = -180;
+        this._bsf = ~~1/0.4; // the spine bubble are scale at 0.4 need compute factor
+        this.target = this.getTarget();
         this.intialize();
-        this.setupInteractive();
-        this.setupEasing();
+        this.setupInteractive(true);
+
     };
 
-    intialize(){
-        // message box spine
-        const spine = new PIXI.ContainerSpine($Loader.Data2.messageBox); // (database,skin)
-        const controlerXY = spine.d.skeleton.findBone('cameraXY'             ); // the bone for control and fit the bubble position
-        const controlerH  = spine.d.skeleton.findBone('txtControl_height2'   );
-        const controlerW  = spine.d.skeleton.findBone('txtControl_width_low' );
-        const messages = new PIXI.Container();
-        this.setupSpine      (spine);
-        this.createSpritesTxt(messages);
-        this.setupControlers (controlerXY);
-        this.setupSize       (controlerH,controlerW);
-        spine.position.copy(this.targetXY);
-        messages.position.copy(this.messagesXY);
-        spine.addChild(messages);
-        $stage.scene.addChild(spine);
-        this.createMotionsBlurFrom(messages);
-        // reference
-        this.sprites = {spine,messages};
-        // player interaction TODO:
-        const state = $player.spine.d.state;
-        state.addAnimation(3, "talk1", false);
-        state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
-    };
-
-    setupSpine(spine){
-        spine.d.stateData.defaultMix = 0.2;
-        spine.d.state.timeScale = 0.1;
-        const entry = spine.d.state.setAnimation(0, "show", false);
-        entry.timeScale = 10;
-        spine.d.state.addAnimation(0, "idle", true);
-        // TODO: create method getPositionForBubbleTxt
-     
-        spine.parentGroup = $displayGroup.group[4];
-        spine.alpha = 0.9;
-    };
-
-    getTarget(_targetEvent){
-        switch (_targetEvent) {
+    getTarget(){
+        switch (this.data._targetEvent) {
             case 'p1': return $player ;break;
-            case 'p2': return $player ;break; //TODO:
+            case 'p2': return $player2 ;break; //TODO:
             default: return $Objs._masterList[_targetEvent]; break; //TODO:
         };
     };
 
-    createSpritesTxt(messages){
-        messages.children.length && messages.removeChildren();
-        messages.spritesTxt = [];
+    remove_spritesMessage(){
+        this.spine.removeChild(this.messages);
+        this.messages = null;
+    };
+
+    intialize(){
+        const spine = this.spine = new PIXI.ContainerSpine($Loader.Data2.messageBox); // (database,skin)
+        this.controler_P = spine.d.skeleton.findBone('controler_P' ); // the bone for control and fit the bubble position
+        this.controler_h = spine.d.skeleton.findBone('controler_h' );
+        this.controler_w = spine.d.skeleton.findBone('controler_w' );
+        this.targetP = new PIXI.Point(this.target.x-45, this.target.y-(this.target.spine.height/2.5)); //player or event TODO: add method getPositionForMessage
+        this.messagesP = new PIXI.Point( this.targetP.x+70, -this.targetP.y-35 );
+        spine.position.copy(this.targetP);
+        spine.parentGroup = $displayGroup.group[4];
+        spine.d.alpha = 0.9;
+        $stage.scene.addChild(spine);
+        // initialisation utilise un easing scale de base
+        this.nextPage();
+    };
+
+    // prevent memoryLeak
+    destroy(){
+        this.spine.removeAllListeners();
+        $stage.scene.removeChild(this.spine);
+        delete this.spine;
+        delete this.controler_P;
+        delete this.controler_h;
+        delete this.controler_w;
+
+    }
+
+    nextPage(){
+        this._pageIndex++;
+        if(this._pageIndex<this._pageLenght){
+            this.create_spritesMessage();
+            this.createMotionsBlurFrom();
+           // bind initial distance for camera zoom
+           this._bindDistX = this.spine.position.x+this.controler_w.worldX;
+           this._bindDistY = this.spine.position.y+this.controler_h.worldY;
+           this.controler_P.xx = this.controler_P.x; // backup ?
+           this.controler_P.yy = this.controler_P.y;
+           this.setupEasing(!this._pageIndex);
+           this.setupCamera();
+        }else{
+            // plus de page, finish and destroy
+            this.setupInteractive(false);
+            $messages.nextBubble();
+            TweenMax.to(this.spine, 3, {
+                alpha: 0,
+                ease:  Power4.easeOut,
+                onComplete:()=>this.destroy(),
+            });
+            TweenMax.to(this.spine.scale, 2, {
+                x:0.5,y:0.5,
+                ease:  Power4.easeOut,
+            });
+        }
+    };
+
+    create_spritesMessage(){
+        this.messages && this.remove_spritesMessage();
+        const messages = this.messages = new PIXI.Container();
         const dataPage = this.data.pagesData[this._pageIndex];
+        messages.spritesTxt = [];
         for (let i=0, l=dataPage.length; i<l; i++) {
             const data = dataPage[i];
-            const txt = new PIXI.Text(data._txt, $texts.styles[data._styleID]);
-            txt.position.set(data._x, data._y);
-            messages.spritesTxt[i] = txt;
+            const spriteTxt = messages.spritesTxt[i] = new PIXI.Text(data._txt, $texts.styles[data._styleID]);
+            spriteTxt.position.set(data._x, data._y);
         };
         messages.addChild(...messages.spritesTxt);
         messages.parentGroup = $displayGroup.group[4];
-        messages.pivot.y = this.data.pagesSize.h[this._pageIndex];
+       //messages.pivot.y = this.data.pagesSize.h[this._pageIndex];
         messages.scale.set(0.4);
+        this.controler_w.x = this._margin_w-this.data.pagesSize.w[this._pageIndex];
+        this.controler_h.y = this._margin_h+this.data.pagesSize.h[this._pageIndex];
+        this.controler_w.update();
+        this.controler_h.update();
+        messages.position.set(this.controler_w.worldX,this.controler_h.worldY);
+        messages.position.xx = messages.position.x;
+        messages.position.yy = messages.position.y;
+        this.spine.addChild(messages);
     };
 
-    createMotionsBlurFrom(messages){
+    createMotionsBlurFrom(){
+        const messages = this.messages;
         const cageTxt_rendered = new PIXI.Sprite( $app.renderer.generateTexture(messages) );
         cageTxt_rendered.alpha = 0.5;
         cageTxt_rendered.filterArea = cageTxt_rendered.getBounds(true).pad(40)
@@ -253,33 +218,14 @@ class _bubbleTxt{
         messages.spritesMotionBlur = cageTxt_rendered;
     };
 
-    setupControlers(controlerXY){
-        // text position helper
-        this.targetXY = new PIXI.Point(this.target.x-45, this.target.y-(this.target.spine.height/2.5));
-        this.messagesXY = new PIXI.Point( controlerXY.x+70, -controlerXY.y-35 );
-        this.controlerXY = controlerXY;
-    };
 
-    setupSize(controlerH,controlerW){
-        // resize messages box with bone controler
-        const h = this.data.pagesSize.h[this._pageIndex];
-        const w = this.data.pagesSize.w[this._pageIndex];
-        controlerH.x =  (-h*0.4)-70;
-        if(w>this._minTextWitdh){
-            controlerW.x =  (w*0.4)-this._minTextWitdh; //*zoomFactor); // weird but y become x in spinePlugin
-        };
-        this.controlerH = controlerH;
-        this.controlerW = controlerW;
-    };
-
-
-    setupInteractive(){
-        const messages = this.sprites.spine;
-        messages.interactive = true;
-        messages.on('pointerover' , this.pointerIN_messages  , this);
-        messages.on('pointerout'  , this.pointerOUT_messages , this);
-        messages.on('pointerdown' , this.pointerDW_messages  , this);
-        messages.on('pointerup'   , this.pointerUP_messages  , this);
+    setupInteractive(value){
+        const spine = this.spine;
+        spine.interactive = value;
+        spine.on('pointerover' , this.pointerIN_messages  , this);
+        spine.on('pointerout'  , this.pointerOUT_messages , this);
+        spine.on('pointerdown' , this.pointerDW_messages  , this);
+        spine.on('pointerup'   , this.pointerUP_messages  , this);
     };
     
     pointerIN_messages(e) {
@@ -307,16 +253,31 @@ class _bubbleTxt{
     };
 
     // basic loop easing
-    setupEasing(){
-        const spine      = this.sprites .spine
-        const messages   = this.sprites .messages
+    setupEasing(firstPage){
+        const spine      = this .spine
+        const messages   = this .messages
         const spritesTxt = messages.spritesTxt
-        TweenMax.to(spine.scale, 6, {
-            x: 1.05,y: 1.05,
-            ease: Power1.easeInOut,
-            repeat: -1,
-            yoyoEase: true
-        });
+        if(firstPage){
+            spine.skew.y = -1;
+            spine.scale.set(0);
+            TweenMax.to(spine.skew, 0.5, {
+                y: 0,
+                ease:  Elastic.easeOut.config(1, 0.4),
+            });
+            
+            TweenMax.to(spine.scale, 0.4, {
+                x: 1,y: 1,
+                ease: Back.easeOut.config(1.7),
+                onComplete:()=>{
+                    TweenMax.to(spine.scale, 6, {
+                        x: 1.05,y: 1.05,
+                        ease: Power1.easeInOut,
+                        repeat: -1,
+                        yoyoEase: true,
+                    });
+                }
+            });
+        };
         let delayAlpha = 0;
         let bevelFilter = new PIXI.filters.BevelFilter({thickness:1,lightColor:0x8a009d,lightAlpha:1,shadowAlpha:0}); // letter 3d
         spritesTxt.forEach(s => {
@@ -357,15 +318,58 @@ class _bubbleTxt{
         });
     };
 
-    nextPage(){
-        if(this.data.pagesData[++this._pageIndex]){
-            this.createSpritesTxt(this.sprites.messages);
-            //this.setupControlers(this.controlerXY);
-            this.setupSize(this.controlerH,this.controlerW);
-            this.sprites.messages.position.copy(this.messagesXY);
-            this.setupEasing();
-        }else{
-            // add bubble to destroy buffer
-        }
-    }
-}
+
+    // move camera to new target
+    setupCamera(){
+        $camera.setTarget(this.target, 3);
+    };
+    
+
+
+    // move camera bone for fit screen
+    moveCameraBone(tX,tY,zoom){
+        const diffX = (this._bindDistX-tX-100);
+        const diffY = (this._bindDistY-tY-20);
+        if(diffX<0){
+          TweenMax.to(this.controler_P, 4.5, {
+                x:this.controler_P.xx-(diffX*this._bsf),
+                ease: Elastic.easeOut.config(0.9, 0.4),
+            });
+            TweenMax.to(this.messages.position, 3.5, {
+                x:this.messages.position.xx-diffX,
+                ease: Elastic.easeOut.config(0.9, 0.4),
+            });
+        };
+        if(diffY<0){
+            TweenMax.to(this.controler_P, 4.5, {
+                  y:this.controler_P.yy+(diffY*this._bsf),
+                  ease: Elastic.easeOut.config(0.9, 0.4),
+              });
+              TweenMax.to(this.messages.position, 3.5, {
+                  y:this.messages.position.yy-diffY,
+                  ease: Elastic.easeOut.config(0.9, 0.4),
+              });
+          };
+        
+
+        /*if(1){
+            this.controler_P
+
+        }*/
+        //const cp = this.controler_P;
+        //const xx = g.x+(cp.x*zoom);
+        /*if($camera.zoom>=1.5){
+            TweenMax.to(this.controlerXY, 0.5, {
+                x:tX-1500,y:-tY+1000,
+                ease: Power2.easeOut,
+            });
+            TweenMax.to(this.sprites.messages.position, 2, {
+                x:this.controlerXY.x,
+                y:-this.controlerXY.y,
+                ease: Power2.easeOut,
+            });
+        };*/
+    };
+};
+
+//#endregion

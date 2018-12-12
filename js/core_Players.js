@@ -166,6 +166,7 @@ class _player {
     
     // when player jump to a case, do all stuff here, ending is the last_nextCaseID, or end stamina
     checkCaseEvents(ending) {
+        $player2.moveToPlayer();
        // stamina, sfx,fx , check auto-break cases ....
         //play audio ...
        $camera.moveToTarget(6);
@@ -215,26 +216,40 @@ class _player2 {
     };
 
     setupSprites() {
-        const cage = new PIXI.spine.Spine($Loader.Data2.heroe2.spineData);
+        const cage = new PIXI.ContainerSpine($Loader.Data2.heroe2);
         const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
-
         // player transform
         cage.scale.set(0.45,0.45);
-
         // player layers hackAttachmentGroups set spine.n
-        cage.asignParentGroups();
-        cage.parentGroup = $displayGroup.group[1];
+        //cage.asignParentGroups();
+        cage.parentGroup = $displayGroup.group[2];
         cage.zIndex = 0;
-
         spine.skeleton.setSlotsToSetupPose();
         this.spine = cage;
     };
 
+    moveToPlayer(){
+        const needReverse = this.needReversX(10-$player._dirX);
+        needReverse && this.reversX();
+        const distXFromPDir = this._dirX===4?100:-100;
+        TweenLite.to(this.spine.position, needReverse&&3||7, {
+            x:$player.x+distXFromPDir,y:$player.y-200, 
+            ease: Power3.easeOut,
+        });
+        this.spine.zIndex = $player.y;
+    }
 
+    needReversX(nextDirection) {
+        return nextDirection !== this._dirX;
+    };
 
-    
+    reversX() {
+        this._dirX = 10-this._dirX;
+        const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
+        TweenLite.to(this.spine.scale, 1, { x:xx, ease: Power3.easeOut });
+    };
 };
 
 $player2 = new _player2(); 

@@ -15,7 +15,7 @@ class _texts{
     constructor(localisation='frCA') {
         this.zoomFactor = ~~1/2.5; // 2.5 is max zoom, 1 is default , factor:0.4
         this._maxW = 1650;
-        this._maxL = 1; // custom game setup for readability
+        this._maxL = 3; // custom game setup for readability
         this._localisations = localisation;
         switch (localisation) {
             case 'frCA': this._localID = 2; break;

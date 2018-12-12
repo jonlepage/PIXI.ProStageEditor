@@ -54,6 +54,7 @@ class Scene_Map1 extends _Scene_Base {
 
     setupPlayer(){
         this.addChild($player.spine);
+        this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
         if( $Objs.list_cases[0]){
             $player.x = $Objs.list_cases[0].x
@@ -62,6 +63,7 @@ class Scene_Map1 extends _Scene_Base {
             $player.spine.zIndex = $player.y;
             $player.inCase = $Objs.list_cases[0]; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
+        $player2.moveToPlayer();
         
     }
 

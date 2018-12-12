@@ -2356,7 +2356,7 @@ _PME.prototype.startEditor = function() {
     startTrailMouse();
 
     //add a mouse position debugger
-    function addMouseCoorDebug() {
+    /*function addMouseCoorDebug() {
         const coor = new PIXI.Text("",{fontSize:16,fill:0x000000,strokeThickness:4,stroke:0xffffff});
         const holding = new PIXI.Text("",{fontSize:16,fill:0xff0000,strokeThickness:4,stroke:0xffffff});
         coor.y = 60;
@@ -2367,6 +2367,6 @@ _PME.prototype.startEditor = function() {
             ObjMouse? holding.text = ObjMouse.name : holding.text = '';
         }, 50);
     };
-    addMouseCoorDebug()
+    addMouseCoorDebug()*/
 };//END EDITOR
 

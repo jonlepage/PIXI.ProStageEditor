@@ -129,6 +129,7 @@ class _coreLoader {
             {name:"ArchitectsDaughter", url:"fonts/ArchitectsDaughter.ttf"},
             {name:"zBirdyGame", url:"fonts/zBirdyGame.ttf"},
         ];
+        let divList = [];
         fonts.forEach(font => {
             const style = document.createElement('style');
             style.appendChild(document.createTextNode(`
@@ -144,9 +145,12 @@ class _coreLoader {
             div.style.fontFamily = font.name;
             document.body.appendChild(div);/* Initiates download in Firefox, IE 9+ */
             div.innerHTML = 'Content.';/* Initiates download in WebKit/Blink */
+            divList.push(div);
+
         });
         let checkFonts =  setInterval(()=>{
             if( fonts.every(e => document.fonts.check(`12px ${e.name}`) )){
+                divList.forEach(div => { document.body.removeChild(div) });
                 this.fonts = fonts;
                 clearInterval(checkFonts);
                 this.load();

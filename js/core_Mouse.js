@@ -31,10 +31,12 @@ class _mouse {
         this.onCase = null;
         Object.defineProperty(this, 'currentHoldingItem', { value: null,writable: true });
     };
+    get mX(){ return (this.x/$camera.zoom)+$camera._pivot._x }
+    get mY(){ return (this.y/$camera.zoom)+$camera._pivot._y }
     get x(){ return this.interaction.mouse.global.x }
     get y(){ return this.interaction.mouse.global.y }
     set holdingItem(id){ // add item to mouse 
-        if(this.currentHoldingItem){ 
+        if(this.currentHoldingItem){
             this.pointer.removeChild(this.currentHoldingItem);
         };
         if(Number.isFinite(id)){
@@ -104,6 +106,7 @@ class _mouse {
         mouseTick.start();
         this.initializeTrailFX();
         $stage.CAGE_MOUSE.addChild( this.mouseTrails, this.pointer );
+        this.debug();
     };
 
     // initialise une trainner FX pour la souris
@@ -155,6 +158,21 @@ class _mouse {
             return (2 * t3 - 3 * t2 + 1) * p[0] + (t3 - 2 * t2 + t) * m[0] + ( -2 * t3 + 3 * t2) * p[1] + (t3 - t2) * m[1];
         };
     };
+
+    //add a mouse position debugger
+    debug() {
+        const coor = new PIXI.Text("",{fontSize:17,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+        const global = new PIXI.Text("",{fontSize:17,fill:0xff0000,strokeThickness:4,stroke:0xffffff});
+        coor.y = 50;
+        coor.x = -5;
+        this.pointer.addChild(coor,global); 
+        setInterval(() => {
+            coor.text = `x:${~~this.x}, y:${~~this.y}`;
+            global.text = `mX:${~~this.mX}, mY:${~~this.mY}`;
+
+        }, 50);
+    };
+
 
 };// end class
 
