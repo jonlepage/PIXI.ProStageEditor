@@ -47,6 +47,7 @@ class Scene_Title extends _Scene_Base {
     }
 
     startNewGame(){
+        //TODO : GENERATE ALL RANDOM MAP, BUT KEEP   STORY SCRYPTED CASE EVENTS
         $stage.goto(Scene_Map1);
     };
 

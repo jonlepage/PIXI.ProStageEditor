@@ -25,7 +25,7 @@ loaderSet_GalaxiScene:[dataMapJson,mapSprites(diff,norm)]
 class _coreLoader {
     constructor () {
         this.Data2 = {}; //{} store textures game by pack name,
-        this.DataScenes = {} //{} info sur tous les pack utliser par scene et leur dir, lier a la phase loaderKit
+        this.DataScenes = null //{} info sur tous les pack utliser par scene et leur dir, cpntien aussi tous les events du jeux a mapper random newGame
         this.Scenes = {}; // store full scenes cache
         this.options = {};
         this.fonts = null;
@@ -71,7 +71,7 @@ class _coreLoader {
     // when need a new loadKit? destroy all cache elements for new loading
     destroyData () {
         this.currentLoadedKit = [];
-        this.DataScenes = {}; //reset data loaded TODO: voir si on peut garder , mais on doi tous precharger au sceneBoot
+        //this.DataScenes = {}; //reset data loaded TODO: voir si on peut garder , mais on doi tous precharger au sceneBoot
         this.Scenes = {}; // store full scenes cache
         for (const key in this.Data2) { delete this.Data2[key] };
     };
@@ -83,11 +83,11 @@ class _coreLoader {
         // firstBoot verifier que tous est deja preloader, ensuite verifier les kits
         if(!this.fonts){ return this.load_fonts() };
         if(!this._textsSCVLoaded){ return this.load_textsSCV() };
-        //if(!this.DataScenes){ return this.load_dataScenes(options) };
+        if(!this.DataScenes){ return this.load_dataScenes() };
         //if(!this.Data2){ return this.load_perma() };
         // load and store a cache of each scenes class in the kits
         if(this.sceneKits.length){
-            this.loadSceneClass(this.sceneKits.shift());
+            this.loadSheets(this.sceneKits.shift());
         }else{ 
             this.options = {}; this._isLoading = false 
         };
@@ -158,12 +158,20 @@ class _coreLoader {
         },60);
     };
 
-    //STEP:1 load dataScenes scenes?.json
-    // TODO: dataScenes fait once au bootGame, ces que du string, 
-    loadSceneClass(className, fromEditor){
-        if(this.DataScenes[className]){
-            throw console.error(`${className} alrealy loaded WTF! check json and loadSceneClass`);
-        };
+    // preload all data scene strings data, help for compute new random game
+    load_dataScenes(){
+        this.DataScenes = {};
+        const loader = new PIXI.loaders.Loader();
+        const scenesList = [].concat(...Object.values(this.loaderKit));
+        scenesList.forEach(sceneDataName => {
+            loader.add(sceneDataName, `data/${sceneDataName}.json`);
+        });
+        loader.load();
+        loader.onProgress.add((loader, res) => {  this.DataScenes[res.name] = res.data }); // json string data parsed
+        loader.onComplete.add((loader, res) => { this.load() });
+    };
+
+    loadSheets(className){
         this.buffers = {
             className  :className,
             base       : {} , // this is the final compute data
@@ -171,14 +179,7 @@ class _coreLoader {
             multiPacks : {} ,
             normals    : {} ,
         };
-        const loader = new PIXI.loaders.Loader();
-        loader.add(className, `data/${className}.json`).load();
-        loader.onProgress.add((loader, res) => { this.DataScenes[className] = res.data }); // json data parsed
-        loader.onComplete.add((loader, res) => { this.loadSheets(className) });
-    };
-
-    loadSheets(className){
-        if(!this.DataScenes[className]){throw console.error(`Critical Error: JSON donc contains Base structure: [_sheets,_objs,background,lights...]`)}
+        if(!this.DataScenes[className]){throw console.error(`Critical Error: JSON dont contains Base structure: [_sheets,_objs,background,lights...]`)}
         const loader = new PIXI.loaders.Loader();
         const sheets = this.DataScenes[className]._sheets;
     if(!sheets){ console.warn('%cSCENE JSON EMPTY DATA: Use editor for create json template => %c%s', 'font-weight:bold;color:#000 ;background:#721919', 'font-weight:bold;color:#ee5000;background:#fffbe6', ` ${className}`);}
