@@ -11,7 +11,7 @@
         "icon": "icon/icon.png",
         "position": "mouse"
     },
-    "_comment": "--disable-gpu-vsync --limit-fps=60 --disable-devtools ",
+    "_comment": "--disable-gpu-vsync --limit-fps=60 --disable-devtools --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers --enable-zero-copy --enable-gpu-async-worker-context",
     "dependencies": {
         "package-merge": "^0.1.2"
     }

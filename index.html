@@ -8,19 +8,17 @@
         <link rel="icon" href="icon/icon.png" type="image/png">
         <link rel="apple-touch-icon" href="icon/icon.png">
         <link rel="stylesheet" type="text/css" href="fonts/gamefont.css">
-        <title>Project1</title>
+        <title>ANFT</title>
         <!--CORE UTILITY Graphics.isFontLoaded("ArchitectsDaughter")-->
  
     </head>
     <body style="background-color: black; overflow: hidden; margin: 0px;">
-
-   
         <!--CORE UTILITY-->
-        <script type="text/javascript" src="js/polyfill.js"></script>
-        <script type="text/javascript" src="js/ANFT/ECC.js"></script>
-        <script type="text/javascript" src="js/plugins/pixiMapEditor.js"></script>
+        <script type="text/javascript" src="js/utility/ECC.js"></script>
+        <script type="text/javascript" src="js/utility/pixiMapEditor.js"></script>
 
-        <!--PIXI AND ADDONS CORE ENGINES-->
+        <!--PIXI && Other-->
+        <script type="text/javascript" src="js/core/polyfill.js"></script>
         <script type="text/javascript" src="js/libs/papaparse.js"></script>
         <script type="text/javascript" src="js/libs/pixi.js"></script>
         <script type="text/javascript" src="js/libs/pixi-tilemap.js"></script>
@@ -34,46 +32,40 @@
         <script type="text/javascript" src="js/libs/TweenMax.js"></script>
         <script type="text/javascript" src="js/libs/TimelineLite.js"></script>
         <script type="text/javascript" src="js/libs/EasePack.js"></script>
-        
-        <!--RMMV ENGINES
-        <script type="text/javascript" src="js/libs/lz-string.js"></script>
-        <script type="text/javascript" src="js/libs/iphone-inline-video.browser.js"></script>
-        <script type="text/javascript" src="js/rpg_core.js"></script>
-        <script type="text/javascript" src="js/rpg_managers.js"></script>
-        <script type="text/javascript" src="js/rpg_objects.js"></script>
-        <script type="text/javascript" src="js/rpg_scenes.js"></script>
-        <script type="text/javascript" src="js/rpg_sprites.js"></script>
-        <script type="text/javascript" src="js/rpg_windows.js"></script>
-        <script type="text/javascript" src="js/plugins.js"></script>
-        <script type="text/javascript" src="js/plugins/Community_Basic.js"></script>
-    -->
-        <script type="text/javascript" src="js/anft_core.js"></script>
-        <script type="text/javascript" src="js/core_Loader.js"></script>
-        <script type="text/javascript" src="js/core_GameEvents.js"></script>
-        <script type="text/javascript" src="js/core_items.js"></script>
-        <script type="text/javascript" src="js/core_text.js"></script>
-        <script type="text/javascript" src="js/core_messages.js"></script>
-        <script type="text/javascript" src="js/core_Camera.js"></script>
-        <script type="text/javascript" src="js/core_displayGroupe.js"></script>
-        <script type="text/javascript" src="js/core_ContainerData.js"></script>
-        <script type="text/javascript" src="js/core_ObjsEvents.js"></script>
-        <script type="text/javascript" src="js/core_Players.js"></script>
-        <script type="text/javascript" src="js/core_Mouse.js"></script>
-        <script type="text/javascript" src="js/anft_Scene_Loader.js"></script>
-        <script type="text/javascript" src="js/anft_Scene_Manager.js"></script>
-        <script type="text/javascript" src="js/anft_Scene_Boot.js"></script>
-        <script type="text/javascript" src="js/anft_Scene_IntroVideo.js"></script>
-        <script type="text/javascript" src="js/anft_Scene_Title.js"></script>
-       
-        <!--GAME HUDS -->
-        <script type="text/javascript" src="js/core_huds.js"></script>
-        <script type="text/javascript" src="js/huds_stats.js"></script>
-        <script type="text/javascript" src="js/huds_displacement.js"></script>
-        <script type="text/javascript" src="js/huds_pinBar.js"></script>
-        <script type="text/javascript" src="js/menu_items.js"></script>
+   
+        <!--core -->
+        <script type="text/javascript" src="js/core/app.js"></script>
+        <script type="text/javascript" src="js/core/systems.js"></script>
+        <script type="text/javascript" src="js/core/displayGroups.js"></script>
+        <script type="text/javascript" src="js/core/containers.js"></script>
+        <script type="text/javascript" src="js/core/loaders.js"></script>
+        <script type="text/javascript" src="js/core/players.js"></script>
+        <script type="text/javascript" src="js/core/mouse.js"></script>
+        <script type="text/javascript" src="js/core/camera.js"></script>
+        <script type="text/javascript" src="js/core/items.js"></script>
+        <script type="text/javascript" src="js/core/texts.js"></script>
+        <script type="text/javascript" src="js/core/message.js"></script>
+        <script type="text/javascript" src="js/core/monsters.js"></script>
+        <script type="text/javascript" src="js/core/combat.js"></script>
+        <script type="text/javascript" src="js/core/gameEvents.js"></script>
+        <script type="text/javascript" src="js/core/objetsManager.js"></script>
+        <script type="text/javascript" src="js/core/huds.js"></script>
 
-        <!--GAME MAPSs -->
-        <script type="text/javascript" src="js/anft_Scene_Map1.js"></script>
+        <!--huds -->
+        <script type="text/javascript" src="js/huds/huds_displacement.js"></script>
+        <script type="text/javascript" src="js/huds/huds_pinBar.js"></script>
+        <script type="text/javascript" src="js/huds/huds_stats.js"></script>
+        <script type="text/javascript" src="js/huds/menu_items.js"></script>
+       
+        <!--scene -->
+        <script type="text/javascript" src="js/scene/scene_Loader.js"></script>
+        <script type="text/javascript" src="js/scene/scene_Manager.js"></script>
+        <script type="text/javascript" src="js/scene/scene_Boot.js"></script>
+        <script type="text/javascript" src="js/scene/scene_IntroVideo.js"></script>
+        <script type="text/javascript" src="js/scene/scene_Title.js"></script>
+
+        <!--scene maps -->
+        <script type="text/javascript" src="js/scene/scene_Map1.js"></script>
 
 
 
