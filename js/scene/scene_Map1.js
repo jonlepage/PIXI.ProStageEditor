@@ -40,8 +40,8 @@ class Scene_Map1 extends _Scene_Base {
     };
 
     setupObjs(){
-        $Objs.createObjsFrom(this.name); //create objs from className json
-        const objs = $Objs.list_master;
+        $objs.createObjsFrom(this.name); //create objs from className json
+        const objs = $objs.list_master;
         if(objs.length){
             this.addChild(...objs);
         };
@@ -56,12 +56,12 @@ class Scene_Map1 extends _Scene_Base {
         this.addChild($player.spine);
         this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
-        if( $Objs.list_cases[0]){
-            $player.x = $Objs.list_cases[0].x
-            $player.y = $Objs.list_cases[0].y+20
+        if( $objs.list_cases[0]){
+            $player.x = $objs.list_cases[0].x
+            $player.y = $objs.list_cases[0].y+20
             $player.spine.parentGroup = $displayGroup.group[1];
             $player.spine.zIndex = $player.y;
-            $player.inCase = $Objs.list_cases[0]; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
+            $player.inCase = $objs.list_cases[0]; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
         $player2.moveToPlayer();
         
@@ -78,9 +78,10 @@ class Scene_Map1 extends _Scene_Base {
         // TODO: METTRE LES ID CASE UNIQUE ?
         if(!$gameVariables._wallMaisonDroiteDetuits){
             // empeche la case id id 8 detre selectionner
-            $Objs.getCase_FromName('caseSousMurMaison').conditionInteractive = () => { 
+            console.log('TODO:: ', 'caseSousMurMaison');
+            /*$objs.getCase_FromName('caseSousMurMaison').conditionInteractive = () => { 
                 return $gameVariables._wallMaisonDroiteDetuits 
-            };
+            };*/
         };
     }
 };

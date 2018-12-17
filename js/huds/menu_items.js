@@ -283,7 +283,7 @@ https://greensock.com/docs/Core/Animation
     };
 
     show(duration) {
-        $Objs.setInteractive(false); // disable objs map interactivity
+        $objs.setInteractive(false); // disable objs map interactivity
         $huds.displacement.setInteractive(false);
         this.setInteractive(true);
         this.renderable = true;
@@ -295,7 +295,7 @@ https://greensock.com/docs/Core/Animation
         this.renderable = false;
         this.visible = false;
         this.setInteractive(false);
-        $Objs.setInteractive(true); // disable objs map interactivity
+        $objs.setInteractive(true); // disable objs map interactivity
         $huds.displacement.setInteractive(true);
     };
     //#endregion

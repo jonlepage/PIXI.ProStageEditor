@@ -205,33 +205,35 @@ PIXI.ContainerTiles = (function () {
         // Si cases, elle ont des sprites special dissosier par couleur tint et caseEventType.
         //system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
         if(dataValues.p.dataName === 'cases'){
-            //colorType linkTo defaultColor
-            const cageColor = new PIXI.Sprite(dataBase.textures.cColor);
-                cageColor.parentGroup = PIXI.lights.diffuseGroup;
-                cageColor.pivot.set((cageColor.width/2)+2,cageColor.height+20);
-            const cageColor_n = new PIXI.Sprite(dataBase.textures_n.cColor_n);
-                cageColor_n.parentGroup = PIXI.lights.normalGroup;
-                cageColor_n.pivot.copy(cageColor.pivot)
-            this.SpritesCageColor = {d:cageColor,n:cageColor_n}; // ref
-            this.addChild(cageColor,cageColor_n);
-            // caseEventType linkTo defaultCaseEventType
-            const cageEventType = new PIXI.Sprite( $Loader.Data2.caseEvents.textures.caseEvent_hide);
-                cageEventType.parentGroup = PIXI.lights.diffuseGroup;
-                cageEventType.pivot.set((cageEventType.width/2),cageEventType.height);
-                cageEventType.position.set(0,-40);
-            const cageEventType_n = new PIXI.Sprite( $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
-                cageEventType_n.parentGroup = PIXI.lights.normalGroup;
-                cageEventType_n.pivot   .copy(cageEventType.pivot   );
-                cageEventType_n.position.copy(cageEventType.position);
-            this.SpritesCageEventType = {d:cageEventType,n:cageEventType_n}; // ref
-            this.addChild(cageEventType,cageEventType_n);
+            //cage color 
+            const ccd = new PIXI.Sprite(dataBase.textures.cColor);
+                ccd.parentGroup = PIXI.lights.diffuseGroup;
+                ccd.pivot.set((ccd.width/2)+2,ccd.height+20);
+            const ccn = new PIXI.Sprite(dataBase.textures_n.cColor_n);
+                ccn.parentGroup = PIXI.lights.normalGroup;
+                ccn.pivot.copy(ccd.pivot)
+            this.Sprites.ccd = ccd;
+            this.Sprites.ccn = ccn;
+            this.addChild(ccd,ccn);
+            // cage type
+            const ctd = new PIXI.Sprite( $Loader.Data2.caseEvents.textures.caseEvent_hide);
+                ctd.parentGroup = PIXI.lights.diffuseGroup;
+                ctd.pivot.set((ctd.width/2),ctd.height);
+                ctd.position.set(0,-40);
+            const ctn = new PIXI.Sprite( $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
+                ctn.parentGroup = PIXI.lights.normalGroup;
+                ctn.pivot   .copy(ctd.pivot   );
+                ctn.position.copy(ctd.position);
+            this.Sprites.ctd = ctd;
+            this.Sprites.ctn = ctn;
+            this.addChild(ctd,ctd);
         };
     };
 
     
     ContainerTiles.prototype.setCaseColorType = function(color){
         // see : $huds.displacement.diceColors same group for gemDice
-        // and $Objs._colorType
+        // and $objs._colorType
         // file:///C:\Users\jonle\Documents\Games\anft_1.6.1\js\core_items.js#L131
         this.colorType = color;
         let colorHex; // redraw color case
@@ -245,7 +247,7 @@ PIXI.ContainerTiles = (function () {
             case 'black' : colorHex=0x000000 ; break;
             default      : colorHex=0xffffff ;
         }
-        this.SpritesCageColor.d.tint = colorHex;
+        this.Sprites.ccd.tint = colorHex;
     };
 
     // change set the events type, swap textures
@@ -254,8 +256,8 @@ PIXI.ContainerTiles = (function () {
         const td = $Loader.Data2.caseEvents.textures[type];
         const tn = $Loader.Data2.caseEvents.textures_n[type+'_n'];
         this.caseEventType = type;
-        this.SpritesCageEventType.d.texture = td;
-        this.SpritesCageEventType.n.texture = tn;
+        this.Sprites.ctd.texture = td;
+        this.Sprites.ctn.texture = tn;
     };
 
     

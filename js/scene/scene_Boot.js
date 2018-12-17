@@ -19,14 +19,14 @@ class Scene_Boot extends PIXI.Container {
     };
 
     start(){
-        
+            // TODO: refresh on newgame ? certain method pourrait etre depalcer dans newGame ?
         //$Loader.setPermaCurrentData(); // all loaded from SceneBoot are Perma ressource, protect perma ressource once for avoid destoyed
+        $objs.initialize();
         $items.initialize();
         $mouse.initialize(); // initialise mouse core
         $player.initialize(); // create game player
         $player2.initialize(); // create game player
         $huds.initialize();
-        $monsters.initialize();
         //$player2.initialize();
         //$items.initialize();
         //$huds.initialize(); // initialise all hubs

@@ -84,7 +84,7 @@ class _camera{
         this.tweenP.play(0);
     };
 
-    setZoom(value,speed,ease) {
+    setZoom(value,speed=1,ease) {
         this.tweenScale.vars.x=value;
         this.tweenScale.vars.y=value;
         this.tweenScale._duration = speed;

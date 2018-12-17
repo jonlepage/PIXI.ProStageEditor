@@ -34,8 +34,8 @@ class Scene_Title extends _Scene_Base {
     };
 
     setupObjs(){
-        $Objs.createObjsFrom(this.name); //create objs from json
-        const objs = $Objs.list_master;
+        $objs.createObjsFrom(this.name); //create objs from json
+        const objs = $objs.list_master;
         if(objs.length){
             this.addChild(...objs);
         };

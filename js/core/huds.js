@@ -26,9 +26,10 @@ class _huds {
     initialize () {
         // initialize all avaible huds class
         if(typeof _huds_displacement === "function"){ this.hudsList.displacements = new _huds_displacement () };
-        if(typeof _huds_pinBar        === "function"){ this.hudsList.pinBar        = new _huds_pinBar        () };
-        if(typeof _huds_stats         === "function"){ this.hudsList.stats         = new _huds_stats         () };
-        if(typeof _menu_items         === "function"){ this.menuList.menuItems         = new _menu_items         () };
+        if(typeof _huds_pinBar       === "function"){ this.hudsList.pinBar        = new _huds_pinBar       () };
+        if(typeof _huds_stats        === "function"){ this.hudsList.stats         = new _huds_stats        () };
+        if(typeof _huds_combats      === "function"){ this.combats                = new _huds_combats      () };
+        if(typeof _menu_items        === "function"){ this.menuList.menuItems     = new _menu_items        () };
         for (const key in this.hudsList) { $stage.CAGE_GUI.addChild( this.hudsList[key] ) };
         for (const key in this.menuList) { $stage.CAGE_GUI.addChild( this.menuList[key] ) };
     };

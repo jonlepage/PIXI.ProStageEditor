@@ -96,6 +96,7 @@ class _coreLoader {
     loadFromEditor (className,dataFromNwjs) {
         this._isLoading = true;
         this.options.fromEditor = true;
+        this.DataScenes = {};
         this.DataScenes[className] = {};
         this.DataScenes[className]._sheets = dataFromNwjs;
         this.DataScenes[className];
@@ -167,7 +168,7 @@ class _coreLoader {
             loader.add(sceneDataName, `data/${sceneDataName}.json`);
         });
         loader.load();
-        loader.onProgress.add((loader, res) => {  this.DataScenes[res.name] = res.data }); // json string data parsed
+        loader.onProgress.add((loader, res) => { this.DataScenes[res.name] = res.data }); // json string data parsed
         loader.onComplete.add((loader, res) => { this.load() });
     };
 
@@ -175,7 +176,7 @@ class _coreLoader {
         this.buffers = {
             className  :className,
             base       : {} , // this is the final compute data
-            ressources  : {} ,
+            ressources : {} ,
             multiPacks : {} ,
             normals    : {} ,
         };

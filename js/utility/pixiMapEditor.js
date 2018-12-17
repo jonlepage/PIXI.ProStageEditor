@@ -361,7 +361,7 @@ _PME.prototype.startEditor = function() {
 
     // convert current objs to editor format
     (function() {
-        $Objs.list_master.forEach(cage => {
+        $objs.list_master.forEach(cage => {
             const dataBase = DATA2[cage.dataName];
             create_DebugElements.call(cage, dataBase);
             
@@ -474,9 +474,9 @@ _PME.prototype.startEditor = function() {
     };
 
     function hideShowDebugElements(){
-        if($Objs.list_master.length){
-            const showed = $Objs.list_master[0].Debug.bg.renderable; // check if we have a element debuged ? 
-            const list = $Objs.list_master;
+        if($objs.list_master.length){
+            const showed = $objs.list_master[0].Debug.bg.renderable; // check if we have a element debuged ? 
+            const list = $objs.list_master;
             list.forEach(element => {
                 element.Debug.hitZone.renderable = !showed;
                 element.Debug.bg.renderable = !showed;
@@ -1025,11 +1025,11 @@ _PME.prototype.startEditor = function() {
     // disable interactive and forcus on path
     function open_drawPathMode(stage) {
         DrawPathMode = true;
-        $Objs.list_master.forEach(e => {
+        $objs.list_master.forEach(e => {
             e.interactive = false;
             e.alpha = 0.1;
         });
-        $Objs.list_cases.forEach(c => {
+        $objs.list_cases.forEach(c => {
             c.interactive = true;
             c.alpha = 1;
         });
@@ -1040,7 +1040,7 @@ _PME.prototype.startEditor = function() {
         DrawPathMode = false;
         PathsBuffers = [];
         MouseHoldDrawPath = false; 
-        $Objs.list_master.forEach(e => {
+        $objs.list_master.forEach(e => {
             e.interactive = true;
             e.alpha = e.dataValues.p.alpha; // restor
         });
@@ -1050,13 +1050,13 @@ _PME.prototype.startEditor = function() {
     function refreshPath() {
         const zoomBuffer = Zoom.clone();
         Zoom.set(1);
-        $Objs.list_cases.forEach(c => {
+        $objs.list_cases.forEach(c => {
             // clear reset grafic path
             c.Debug.path.forEach(p => { c.removeChild(p) }); // remove path grafics
             c.Debug.path = [];
             if(DrawPathMode){
                 Object.keys(c.pathConnexion).forEach(id => { // connextion id
-                    const cc = $Objs.list_cases[id];
+                    const cc = $objs.list_cases[id];
                     let point = new PIXI.Point(0,0);
                     const cXY = c.toGlobal(point)
                     const ccXY = cc.toGlobal(point)
@@ -1102,9 +1102,9 @@ _PME.prototype.startEditor = function() {
 
     function removePath(cage) {
         // remove persitance path connextions
-        const currentID = $Objs.list_cases.indexOf(cage);
+        const currentID = $objs.list_cases.indexOf(cage);
         for (const id in cage.pathConnexion) {
-            delete $Objs.list_cases[id].pathConnexion[currentID];
+            delete $objs.list_cases[id].pathConnexion[currentID];
         }
         cage.pathConnexion = {};
         refreshPath();
@@ -1118,9 +1118,9 @@ _PME.prototype.startEditor = function() {
             const preview = PathsBuffers[i-1];
             const current = PathsBuffers[i  ];
             const next    = PathsBuffers[i+1];
-            const preview_id = $Objs.list_cases.indexOf(preview);
-            const current_id = $Objs.list_cases.indexOf(current);
-            const next_id    = $Objs.list_cases.indexOf(next   );
+            const preview_id = $objs.list_cases.indexOf(preview);
+            const current_id = $objs.list_cases.indexOf(current);
+            const next_id    = $objs.list_cases.indexOf(next   );
             //TODO: FIXME: compute distance via global position for Math.hypot
             if(preview){
                 current.pathConnexion[String(preview_id)] = Math.hypot(preview.x-current.x, preview.y-current.y);;
@@ -1462,8 +1462,8 @@ _PME.prototype.startEditor = function() {
     };
 
     function setStatusInteractiveObj(status, protect){
-        for (let i=0, l= $Objs.list_master.length; i<l; i++) {
-            const _cage =  $Objs.list_master[i];
+        for (let i=0, l= $objs.list_master.length; i<l; i++) {
+            const _cage =  $objs.list_master[i];
             if(_cage===protect){continue};
             _cage.interactive = status;
         };
@@ -1514,7 +1514,7 @@ _PME.prototype.startEditor = function() {
             };
             cage.Debug.bg.renderable = false;
             CAGE_MAP.addChild(cage);
-            $Objs.list_master.push(cage);
+            $objs.list_master.push(cage);
     
             cage.Debug.hitZone.clear();
             const LB = cage.getLocalBounds();
@@ -1961,7 +1961,7 @@ _PME.prototype.startEditor = function() {
             }
             if(this.buttonType === "tileMouse"){
                 // if alrealy instance of map, c'etais un deplacement d'objet, just need deltete reference
-                return add_toScene.call(this, $Objs.list_master.contains(this)); 
+                return add_toScene.call(this, $objs.list_master.contains(this)); 
             }
             if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
                 return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_dataInspector(this);
@@ -1982,15 +1982,15 @@ _PME.prototype.startEditor = function() {
         }
         if(clickLeft_){// => clickUp
             // clear filters on left click
-            $Objs.list_master.forEach(cage => {
+            $objs.list_master.forEach(cage => {
                 clearFiltersFX3(cage);
             });
             if (this.buttonType === "tileMap" && DrawPathMode) { // remove path in DrawPathMode
                 removePath(this);
             }else
             if(this.buttonType === "tileMouse"){
-                // if exist in $Objs registery, go back to dataValues befor click
-                if($Objs.list_master.contains(this)){
+                // if exist in $objs registery, go back to dataValues befor click
+                if($objs.list_master.contains(this)){
                     this.buttonType = "tileMap";
                     this.asignValues(this.dataValues);
                     refreshDebugValues.call(this);
@@ -2003,7 +2003,7 @@ _PME.prototype.startEditor = function() {
                 return CAGE_MOUSE.list = null;
             }
             if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){//TODO: delete the current objsmap selected
-                const index = $Objs.destroy(this);
+                const index = $objs.destroy(this);
                 iziToast.info( $PME.removeSprite(this, index) );
                 InMapObj = null;
             };
@@ -2103,7 +2103,7 @@ _PME.prototype.startEditor = function() {
         // if in a obj map and click 'F', hide elements hitted the InMapObj to focus on im
         if (!CAGE_MOUSE.list && (event.key === "f" || event.key === "F") && InMapObj) {
             setStatusInteractiveObj(false, InMapObj); // protect InMapObj
-            $Objs.list_master.forEach(cage => {
+            $objs.list_master.forEach(cage => {
                 if(cage===InMapObj){//focus 
                     InMapObj.Debug.bg.renderable = true;
                 }else{ // unFocus
@@ -2116,7 +2116,7 @@ _PME.prototype.startEditor = function() {
             });
         };
         if(event.key === "Delete" && InMapObj){
-            const index = $Objs.destroy(InMapObj);
+            const index = $objs.destroy(InMapObj);
             iziToast.info( $PME.removeSprite(InMapObj, index) );
             InMapObj = null;
             setStatusInteractiveObj(true);
@@ -2240,7 +2240,7 @@ _PME.prototype.startEditor = function() {
     // save objs sprites from map
     function addToSave_OBJS() {
         let objs = [];
-        $Objs.list_master.forEach(e => {
+        $objs.list_master.forEach(e => {
             objs.push(e.getDataValues());
         });
         return objs;

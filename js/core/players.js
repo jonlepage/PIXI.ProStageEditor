@@ -111,7 +111,7 @@ class _player {
     };
 
     updateNextPath(checkCaseEvents) {
-        this.inCase = $Objs.list_cases[this._nextCaseID];
+        this.inCase = $objs.list_cases[this._nextCaseID];
         this._currentCaseID = this.pathBuffer[this._currentPath];
         this._nextCaseID = this.pathBuffer[++this._currentPath];
         checkCaseEvents && this.checkCaseEvents(false);
@@ -137,7 +137,7 @@ class _player {
             state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
         }else{
             state.timeScale = 1.2;
-            const nextDirection =  $Objs.getDirXFromId(this._currentCaseID, this._nextCaseID); // get dir base 10
+            const nextDirection =  $objs.getDirXFromId(this._currentCaseID, this._nextCaseID); // get dir base 10
             this.needReversX(nextDirection) && state.addAnimation(3, "reversX", false);
             state.addAnimation(3, "jump1", false);
         }
@@ -157,7 +157,7 @@ class _player {
     
     // easing update x,y to this._nextCaseID
     moveToNextCaseID(entry) { // from jump1...
-        const toCase = $Objs.list_cases[this._nextCaseID];
+        const toCase = $objs.list_cases[this._nextCaseID];
         // tween
         TweenLite.to(this.spine.position, 1, { x:toCase.x, y:toCase.y+20, ease: Power3.easeOut });
         // update setup
@@ -170,13 +170,13 @@ class _player {
        // stamina, sfx,fx , check auto-break cases ....
         //play audio ...
        $camera.moveToTarget(6);
-       $Objs.newHitFX.call(this.inCase); // fx hit case
+       $objs.newHitFX.call(this.inCase); // fx hit case
         if(ending){
-            !this.stopFromBadColorCase && $Objs.executeCaseFrom(this.inCase);
+            !this.stopFromBadColorCase && $objs.executeCaseFrom(this.inCase);
             this.stopFromBadColorCase = false; // reset
         } else {// if not endCase
             //check if autorised color in displacement huds
-            if(this.inCase.colorType && !$huds.displacement.diceColors.contains(this.inCase.colorType)){
+            if(this.inCase.colorType !== 'white' && !$huds.displacement.diceColors.contains(this.inCase.colorType)){
                 $huds.displacement.setStamina(0);
                 this.stopFromBadColorCase = true; // when stop from bad color case, dont allow recive bonus case eventType
             }else{
