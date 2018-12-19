@@ -2,13 +2,6 @@
   "compilerOptions": {
     "target":"ES6",
   },
-  /*"files": [
-    "./rmmv-pixi.d.ts"    
-  ],
-  "include": [
-    "./js/plugins/*.js",
-    "./js/libs/*.js",
-    "./js/*.js",
-  ]*/
+
 
 }

@@ -80,14 +80,22 @@ class _player {
 
     setupListeners() {
         const checkEvent = (entry, event) => {
-            if(event.data.name === "startMove"){
-                this.moveToNextCaseID(entry);
-            }else
-            if(event.data.name === "nextMove"){
-                this.updateNextPath(true,entry);
-            }else
-            if(event.data.name === "reversX"){
-                this.reversX();
+            switch (event.data.name) {
+                case 'startMove':
+                    this.moveToNextCaseID(entry);
+                    break;
+                case 'nextMove':
+                    this.updateNextPath(true,entry);
+                    break;
+                case 'reversX':
+                    this.reversX();
+                    break;
+                case 'endingHit': // combat commence le retour verse la case principal
+                  $combats.playerEndHit(entry);
+                    break;
+            
+                default:
+                    break;
             }
         };
     
@@ -152,7 +160,7 @@ class _player {
     reversX() {
         this._dirX = 10-this._dirX;
         const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
-        TweenLite.to(this.spine.scale, 1, { x:xx, ease: Power3.easeOut });
+        TweenLite.to(this.spine.scale, 0.7, { x:xx, ease: Power3.easeOut });
     };
     
     // easing update x,y to this._nextCaseID

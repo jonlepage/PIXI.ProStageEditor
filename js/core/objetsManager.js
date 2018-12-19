@@ -160,11 +160,9 @@ class _objs{
             cage.setCaseColorType(dataCase._caseColor);
             cage.setCaseEventType(dataCase._caseType);
             cage.dataCase = dataCase;
-            cage.interactive = true; //TODO: METTRE DANS UN SETUP INTERACTIVE TRUE:FALSE
-            cage.on('pointerover' , this.pointer_inEventCase ,this);
-            cage.on('pointerout'  , this.pointer_outEventCase,this);
-            cage.on('pointerup'   , this.pointer_upEventCase ,this);
+         
         };
+        this.setInteractive(true,true);
         //TODO: Faire un sprite pour les door, et tous les portes pourront etre interactive
         /*if(dataValues.p.textureName === 'doorf2cc'){
             cage.interactive = true;
@@ -172,6 +170,19 @@ class _objs{
             cage.on('pointerout' , $objs.pointer_outEventDoor, cage);
             cage.on('pointerup'  , $objs.pointer_upEventDoor , cage);
         }*/
+    };
+
+    setInteractive(value,addOn) {
+        // cases
+        for (let i=0, l=this.list_cases.length; i<l; i++) {
+            const c = this.list_cases[i];
+            c.interactive = value;
+            if(addOn){
+                c.on('pointerover' , this.pointer_inEventCase ,this);
+                c.on('pointerout'  , this.pointer_outEventCase,this);
+                c.on('pointerup'   , this.pointer_upEventCase ,this);
+            }
+        };
     };
 
 
@@ -204,6 +215,8 @@ class _objs{
     pointer_upEventCase(e) {
         const c = e.currentTarget;
         if(c.pointerIn && this.pathBuffer){
+            // start move path
+            $objs.setInteractive(false);
             $player.initialisePath(this.pathBuffer);
         };
     };
@@ -411,11 +424,7 @@ class _objs{
     };
 
 
-    setInteractive(value){
-        for (let i=0, l=this.list_master.length; i<l; i++) {
-            if(this.list_master[i]._eventsCount){ this.list_master[i].interactive = value }; 
-        };
-    };
+
 
     //TODO: deleteMe, test performance cacher quelque sprites a la camera
     testHideOnlySpriteInCamera(value){
