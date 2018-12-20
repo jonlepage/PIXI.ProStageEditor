@@ -21,7 +21,7 @@ Fourni les methodes de base qui peuvent etre ecraser pas les supers de :
     ContainerSpines     : 1 PIXI .spine .Spine et 1 arrays Diffuse Normal
 // └------------------------------------------------------------------------------┘
 */
-
+/** @memberof PIXI.Container */
 PIXI.CageContainer = (function () {
     class CageContainer extends PIXI.Container {
         constructor(dataBase) {

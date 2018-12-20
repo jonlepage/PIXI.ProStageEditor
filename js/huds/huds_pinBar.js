@@ -342,8 +342,7 @@ class _huds_pinBar extends PIXI.Container {
             TweenLite.to(slot.item.position, 0.6, {
                 y: 0, ease: Bounce.easeOut,
             });
-          }else
-          if(slot.item){ // si rien dans mouse et items dans le slot 
+          }else if(slot.item){ // si rien dans mouse et items dans le slot 
             $mouse.holdingItem = slot.item._id;
           }
       } else
@@ -355,6 +354,7 @@ class _huds_pinBar extends PIXI.Container {
            // $Objs.activeInteractive(); TODO:
             return $huds.menuItems.hide();
         };
+
       } else
       if (e.data.button === 1) { // click_Middle =>|<=
       }

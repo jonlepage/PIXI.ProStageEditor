@@ -1,4 +1,3 @@
-
 /*:
 // PLUGIN □────────────────────────────────□CREATE CAHRACTERE PLAYER□───────────────────────────────┐
 * @author □ Jonathan Lepage (dimisterjon),(jonforum) 
@@ -17,7 +16,7 @@ class _player {
         this.inCase = null; //store the current player case ?
         this.spine;
         this._planetID = null; // player current planet id
-        this._dirX = 6; //player direction
+        this._dirX = 6;
         this.radius = null; // radius player range interactions
         this._scaleXY = 0.45; // default player scale, also help compute reverse
         //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
@@ -91,7 +90,10 @@ class _player {
                     this.reversX();
                     break;
                 case 'endingHit': // combat commence le retour verse la case principal
-                  $combats.playerEndHit(entry);
+                  this.moveBackToCase();
+                    break;
+                case 'hit': // combat commence le retour verse la case principal
+                $combats.hitTo(null);
                     break;
             
                 default:
@@ -103,7 +105,6 @@ class _player {
             event: checkEvent,
         });
     };
-
     initialisePath(pathBuffer) {
         this._isMoving = true;
         this.pathBuffer = pathBuffer;
@@ -192,9 +193,17 @@ class _player {
             }
         };
     };
-};
 
-$player = new _player();
+    // le joueur a donner ces coup, il return a sa case initial (combat mode)
+    moveBackToCase(entry){
+        TweenMax.to($player, 1, {
+            x:$player.inCase.x, y:$player.inCase.y,zIndex:$player.inCase.y,
+            ease: Expo.easeOut,
+        });
+    }
+};
+/**@description class du joueur 1 */
+let $player = new _player();
 console.log1('$player: ', $player);
 
 
@@ -258,7 +267,12 @@ class _player2 {
         const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
         TweenLite.to(this.spine.scale, 1, { x:xx, ease: Power3.easeOut });
     };
+
+    
+
+
 };
 
-$player2 = new _player2(); 
+
+let $player2 = new _player2(); 
 console.log1('$player2.', $player2);

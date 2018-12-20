@@ -1,4 +1,5 @@
 
+/**@class */
 class _app extends PIXI.Application {
     /** The title of the book. */
     constructor() {
@@ -105,8 +106,7 @@ class _app extends PIXI.Application {
       }; 
 }; //END CLASS
 
-const $app = new _app(); // new PIXI.Application
-console.log1('$app: ', $app);
+let $app = new _app(); // new PIXI.Application
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild($app.view);
 
@@ -123,3 +123,5 @@ document.addEventListener('keydown', (event) => {
     }
     
 });
+
+

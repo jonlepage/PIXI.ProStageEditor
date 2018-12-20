@@ -15,9 +15,12 @@ class _combats{
     constructor() {
         this._active = false; // in combat mode indicator
         this.monsters = []; // store current reference of monster
+        this.tikers = null; // the combat ticker update ?
+        this.cmtID = null; // current monsters targeted ID ? 
     };
 
     intitialize(dataCase){
+        $systems._inCombat = true;
         $objs.setInteractive(false);
         TweenLite.to($objs.list_cases, 1, { alpha:0, ease: Expo.easeOut });
         //TODO: delete me, generer monster id, et nombre
@@ -29,7 +32,7 @@ class _combats{
         $camera.moveToTarget(1);
         
         for (let i=0, l=3; i<l; i++) {
-            this.monsters[i] = new _monsters(1,1);
+            this.monsters[i] = new _monsters(1,1,i);
             $stage.scene.addChild(this.monsters[i].sprite);
         };
         
@@ -80,12 +83,13 @@ class _combats{
         });
     };
 
-    // le joueur a donner ces coup, il return a sa case initial
-    playerEndHit(entry){
-        TweenMax.to($player, 1, {
-            x:$player.inCase.x, y:$player.inCase.y,
-            ease: Expo.easeOut,
-        });
+
+    hitTo(monsterID){
+        // si pas de monster id passer, ces un appelle depuit player events, on utilise le current monster target
+        if(!monsterID){
+            this.monsters[this.cmtID].playHit();
+        }
+
     }
 
 

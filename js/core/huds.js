@@ -42,7 +42,7 @@ class _huds {
     }
 };
 
-$huds = new _huds();
+let $huds = new _huds();
 console.log1('$huds', $huds);
 
 

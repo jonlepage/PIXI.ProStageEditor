@@ -12,7 +12,6 @@ Initialise avantr le loader , seulement pendant la sceneBOOT
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $mouse CLASS: _mouse
 //└------------------------------------------------------------------------------┘
-
 //Graphics._renderer.plugins.interaction
 //document.getElementById("GameCanvas").style.cursor = "none";
 class _mouse {
@@ -43,8 +42,10 @@ class _mouse {
             const newItem = $items.createItemsSpriteByID(id);
             this.currentHoldingItem = newItem;
             this.pointer.addChild(newItem);
+            $systems._holdItem = true;
         }else{
             this.currentHoldingItem = null;
+            $systems._holdItem = false;
         }
     }
     get holdingItem(){ return this.currentHoldingItem };
@@ -62,6 +63,9 @@ class _mouse {
         $mouse.interaction.on( 'pointerup', function(e) {  // TODO: GLOBAL INTERACTION
             if(e.data.button === 2 && this.holdingItem){
                 this.holdingItem = null;
+            }
+            if($systems._inCombat){
+                $systems._holdItem? $huds.combats.show_combatSlots() : $huds.combats.hide_combatSlots();
             }
         }, $mouse ); // global
         //this.addChild(this.light);
@@ -177,7 +181,7 @@ class _mouse {
 };// end class
 
 //$mouse.sprite
-$mouse = new _mouse();
+let $mouse = new _mouse();
 console.log1('$mouse. ', $mouse);
 
 

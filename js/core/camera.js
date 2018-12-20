@@ -18,6 +18,7 @@
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $camera CLASS: _camera
 //└------------------------------------------------------------------------------┘
+/**@description camera view-port and culling */
 class _camera{
     constructor() {
         this.screenX = $app.screen.width; // 1920
@@ -153,7 +154,7 @@ class _camera{
         SceneManager._scene.addChild(debugLine);
     };
 };
-$camera = new _camera();
+let $camera = new _camera();
 console.log1('$camera.', $camera);
 
 document.onwheel = $camera.onMouseWheel.bind($camera); //TODO:
