@@ -67,15 +67,13 @@ class _camera extends PIXI.projection.Container2d{
         this._sceneH = scene.background? scene.background.d.height : this._screenH;
         scene.pivot.set(this._sceneW/2,this._sceneH);
         this.position.set(this._screenW/2,this._screenH/2);
-        
-      
-      const fp = this.far;
-      fp.factor = this._fpf; // facteur pour la projection global de la map sur les axe x et y
-      fp.position.set(this._screenW/2,-this._sceneH);
-      fp.position.__x = fp.position._x;
-      fp.position.__y = fp.position._y;
-      $stage.addChild(fp);
-      
+
+        const fp = this.far;
+        fp.factor = this._fpf; // facteur pour la projection global de la map sur les axe x et y
+        fp.position.set(this._screenW/2,-this._sceneH);
+        fp.position.__x = fp.position._x;
+        fp.position.__y = fp.position._y;
+        $stage.addChild(fp);
      
         // Listen for animate update
         if(!this._tickerProjection){
@@ -92,16 +90,12 @@ class _camera extends PIXI.projection.Container2d{
                             cage.d.proj.affine = PIXI.projection.AFFINE.AXIS_X;
                             cage.n.proj.affine = PIXI.projection.AFFINE.AXIS_X;
                         }
-                    }
-                     
-                 });
-             });
+                    };
+                    });
+                });
         };
         this.debug();
     };
-
-
-
 
     setTarget(obj = $player.spine) { // add target to camera, default player
         this.target = obj;
@@ -121,7 +115,7 @@ class _camera extends PIXI.projection.Container2d{
         });
     };
 
-    moveFromTarget(x,y,speed,ease) {
+   /* moveFromTarget(x,y,speed,ease) {
         const tX = this.target.x-((this.screenX/2)/this._tmpZoom);
         const tY = this.target.y-((this.screenY/2)/this._tmpZoom);
         isFinite(x) && (this.tweenP.vars.x = tX+x);
@@ -129,13 +123,13 @@ class _camera extends PIXI.projection.Container2d{
         speed && (this.tweenP._duration = speed);
         this.tweenP.invalidate();
         this.tweenP.play(0);
-    };
+    };*/
 
     setZoom(value,speed=1,ease) {
         this.scene.parent.scale.set(value);
     };
 
-    onMouseMove(x,y){
+    /*onMouseMove(x,y){
         const ra = $player._zoneLimit; // player data allowed for zone limit
         const raX = x>this.screenX && ra || x<0 && -ra || NaN;
         const raY = y>this.screenY && ra || y<0 && -ra || NaN;
@@ -160,7 +154,7 @@ class _camera extends PIXI.projection.Container2d{
                 this.targetFocus = 0;
             }
         };
-    };
+    };*/
 
     onMouseWheel(e){
         //TODO: isoler le zoom dans un pixi points pour precalculer le resulta final
@@ -176,7 +170,7 @@ class _camera extends PIXI.projection.Container2d{
         
     };
 
-    onMouseCheckBorderCamera(e){
+    /*onMouseCheckBorderCamera(e){
         e.screenY
         const x = $app.renderer.plugins.interaction.mouse.global.x;
         let xx = 0;
@@ -186,8 +180,9 @@ class _camera extends PIXI.projection.Container2d{
             obj.skew.x = xx*-1;
         });
         
-    };
+    };*/
     
+    /**@description debug camera for test pixi-projections, also need move ticker and update to $app update */
     debug() {
         if(!this._debug){
             this._debug = true;
@@ -243,7 +238,7 @@ class _camera extends PIXI.projection.Container2d{
                 fpY.text = `fpY:${~~this.far.y} : (${~~(this.far.y-this.far.position.__y)})`;
                 fpf.text = 'fpf:'+this._fpf.toFixed(3)+'';
 
-                //TODO: ne pas mettre dans debug.
+                //TODO: ADD ME TO $app core
                 const m =  $mouse;
                 const sW = this._screenW-4, sH = this._screenH-4;
                 let acc = void 0;
@@ -265,8 +260,6 @@ class _camera extends PIXI.projection.Container2d{
                 }else{
                     
                 }
-                
-                
                 
                 this.far.factor = this._fpf;
                 // line for far point and target lock
