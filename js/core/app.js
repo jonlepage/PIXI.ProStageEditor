@@ -121,7 +121,41 @@ document.addEventListener('keydown', (event) => {
     if(event.keyCode === 116){ // F5 refresh
         document.location.reload(true)
     }
-    
+
+    const fpX = $camera._fpX;
+    const fpY = $camera._fpY;
+    const fpf = $camera._fpf;
+    if(event.keyCode === 37){ // arowLeft
+        TweenLite.to($camera, 1, { _fpX: fpX-120, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 38){ // arrowUp
+        TweenLite.to($camera, 1, { _fpY: fpY-120, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 39){ // arrowRight
+        TweenLite.to($camera, 1, { _fpX: fpX+120, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 40){ // arrowDown
+        TweenLite.to($camera, 1, { _fpY: fpY+120, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 107){ // pad+
+        TweenLite.to($camera, 0.5, { _fpf: fpf+0.1, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 109){ // pad-
+        TweenLite.to($camera, 0.5, { _fpf: fpf-0.1, ease: Power4.easeOut });
+    }
+    if(event.keyCode === 100 || event.keyCode === 102){ // numpad 4||6 (lock the X _fpX)
+        $camera._fpXLock = !$camera._fpXLock;
+        $camera.redrawDebugScreen();
+    }
+    if(event.keyCode === 104 || event.keyCode === 98){ // numpad 8||2 (lock the Y _fpY)
+        $camera._fpYLock = !$camera._fpYLock;
+        $camera.redrawDebugScreen();
+    }
+    if(event.keyCode === 101){ // numpad 5 reverse lock _fpY,_fpX
+        $camera._fpXLock = !$camera._fpXLock;
+        $camera._fpYLock = !$camera._fpYLock;
+        $camera.redrawDebugScreen();
+    }
 });
 
 

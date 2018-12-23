@@ -198,35 +198,37 @@ PIXI.ContainerTiles = (function () {
     ContainerTiles.prototype.createBases = function(dataBase, dataValues) {
         const td = dataBase.textures   [dataValues.p.textureName     ]; // ref texture:diffuse
         const tn = dataBase.textures_n [dataValues.p.textureName+'_n']; // ref texture:normal
-        const d = new PIXI.Sprite(td);
-        const n = new PIXI.Sprite(tn);
+        const d = new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.projection.Sprite2d(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
         // Si cases, elle ont des sprites special dissosier par couleur tint et caseEventType.
         //system de couleur relatif au gemDice par couleur. Les couleur autorise certain case pour le path finding.
         if(dataValues.p.dataName === 'cases'){
             //cage color 
-            const ccd = new PIXI.Sprite(dataBase.textures.cColor);
+            this.isCase = true;
+            const ccd = new PIXI.projection.Sprite2d(dataBase.textures.cColor);
                 ccd.parentGroup = PIXI.lights.diffuseGroup;
                 ccd.pivot.set((ccd.width/2)+2,ccd.height+20);
-            const ccn = new PIXI.Sprite(dataBase.textures_n.cColor_n);
+            const ccn = new PIXI.projection.Sprite2d(dataBase.textures_n.cColor_n);
                 ccn.parentGroup = PIXI.lights.normalGroup;
                 ccn.pivot.copy(ccd.pivot)
             this.Sprites.ccd = ccd;
             this.Sprites.ccn = ccn;
             this.addChild(ccd,ccn);
             // cage type
-            const ctd = new PIXI.Sprite( $Loader.Data2.caseEvents.textures.caseEvent_hide);
+            const ctd = new PIXI.projection.Sprite2d( $Loader.Data2.caseEvents.textures.caseEvent_hide);
                 ctd.parentGroup = PIXI.lights.diffuseGroup;
                 ctd.pivot.set((ctd.width/2),ctd.height);
                 ctd.position.set(0,-40);
-            const ctn = new PIXI.Sprite( $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
+            const ctn = new PIXI.projection.Sprite2d( $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
                 ctn.parentGroup = PIXI.lights.normalGroup;
                 ctn.pivot   .copy(ctd.pivot   );
                 ctn.position.copy(ctd.position);
             this.Sprites.ctd = ctd;
             this.Sprites.ctn = ctn;
             this.addChild(ctd,ctd);
+            [ccd,ccn].forEach(c => { c.renderable = false }); //FIXME: TEMP HIDE for camera 2d test
         };
     };
 
@@ -356,7 +358,8 @@ PIXI.ContainerSpine = (function () {
     //TODO: hackAttachmentGroups parent crash et verifier le sprite dans spine ! 
     ContainerSpine.prototype.createBases = function(dataBase, dataValues) {
         const sd = dataBase.spineData; // ref spineData
-        const d = new PIXI.spine.Spine(sd);
+        const d = new PIXI.projection.Spine2d(sd) //new PIXI.spine.Spine(sd);
+        d.proj.affine = 2;
         const n = d.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
         dataValues.p.textureName && d.skeleton.setSkinByName(dataValues.p.textureName); //FIXME: player have no skin for now
         d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..

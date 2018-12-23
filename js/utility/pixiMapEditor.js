@@ -177,7 +177,7 @@ _PME.prototype.startEditor = function() {
 // └------------------------------------------------------------------------------┘
 // CAGE_MAP ________________
     const CAGE_EDITOR = $stage.CAGE_EDITOR; // the overScreen editors Elements
-    const CAGE_MAP = $stage.scene; // Ref to scene Cage Map
+    const CAGE_MAP = $stage.scene.parent; // Ref to scene Cage Map
     const CAGE_MOUSE = $stage.CAGE_MOUSE // ref to cage Mouse
     const CACHETILESSORT = {}; // cache buffer for fast tiles sorting 
     const FILTERS = { // cache filters
@@ -1905,7 +1905,7 @@ _PME.prototype.startEditor = function() {
 
     function pointer_overOUT(event){
         this.mouseIn = false;
-        switch (this.buttonType ) {
+    switch (this.buttonType ) {
             case "thumbs":
                 InLibs = null;
                 show_previews(this,false);
@@ -2014,12 +2014,16 @@ _PME.prototype.startEditor = function() {
     // zoom tileLibs with wheel, emit by listener wheel_Editor()
     function wheelInLibs(event) {
         if(event.wheelDeltaY>0){
-            CAGE_TILESHEETS.scale.x+=0.1;
-            CAGE_TILESHEETS.scale.y+=0.1;
+            //CAGE_TILESHEETS.scale.x+=0.1;
+            //CAGE_TILESHEETS.scale.y+=0.1;
+            //$stage.scene.parent.scale.x+=0.05;
+            //$stage.scene.parent.scale.y+=0.05;
         }else{
             if(CAGE_TILESHEETS.scale._x>0.4){
-                CAGE_TILESHEETS.scale.x-=0.1; 
-                CAGE_TILESHEETS.scale.y-=0.1;
+                //CAGE_TILESHEETS.scale.x-=0.1; 
+                //CAGE_TILESHEETS.scale.y-=0.1;
+                //$stage.scene.parent.scale.x-=0.05;
+                //$stage.scene.parent.scale.y-=0.05;
             }; 
         };
     };
@@ -2041,15 +2045,18 @@ _PME.prototype.startEditor = function() {
         const pos = new PIXI.Point(mX,mY);
         CAGE_MAP.toLocal(pos, null, MemCoorZoom1);
         if(event.wheelDeltaY>0){
-            Zoom.x+=0.1,Zoom.y+=0.1
+            //Zoom.x+=0.1,Zoom.y+=0.1
+            $stage.scene.parent.scale.x+=0.05;
+            $stage.scene.parent.scale.y+=0.05;
         }else{
-            if(Zoom._x>0.4){ Zoom.x-=0.1, Zoom.y-=0.1 }; 
+            $stage.scene.parent.scale.x-=0.05;
+            $stage.scene.parent.scale.y-=0.05;
         };
-        CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
-        CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
-        CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
-        ScrollX -= (MemCoorZoom2.x - MemCoorZoom1.x);
-        ScrollY -= (MemCoorZoom2.y - MemCoorZoom1.y);
+        //CAGE_MAP.toLocal(pos, null, MemCoorZoom2);  // update after scale
+        //CAGE_MAP.pivot.x -= (MemCoorZoom2.x - MemCoorZoom1.x);
+        //CAGE_MAP.pivot.y -= (MemCoorZoom2.y - MemCoorZoom1.y);
+        //ScrollX -= (MemCoorZoom2.x - MemCoorZoom1.x);
+        //ScrollY -= (MemCoorZoom2.y - MemCoorZoom1.y);
     
 
     };
@@ -2146,10 +2153,12 @@ _PME.prototype.startEditor = function() {
             let scrolled = false;
             (mX<8 && (ScrollX-=ScrollF) || mX>1920-8 && (ScrollX+=ScrollF)) && (scrolled=true);
             (mY<8 && (ScrollY-=ScrollF) || mY>1080-8 && (ScrollY+=ScrollF)) && (scrolled=true);
-            scrolled && (ScrollF+=0.4) || (ScrollF=0.1) ;
+            scrolled && (ScrollF+=0.2) || (ScrollF=0.1) ;
         }
         CAGE_MAP.pivot.x+=(ScrollX-CAGE_MAP.pivot.x)/(scrollSpeed*delta);
         CAGE_MAP.pivot.y+=(ScrollY-CAGE_MAP.pivot.y)/(scrollSpeed*delta);
+        squareFar.x = (CAGE_MAP.pivot.x)+squareFar.position.__x;
+        squareFar.y = CAGE_MAP.pivot.y+squareFar.position.__y;
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     editorTiker.start();

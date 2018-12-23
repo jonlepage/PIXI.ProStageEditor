@@ -21,6 +21,9 @@ class _stage extends PIXI.display.Stage {
         this.CAGE_MOUSE.parentGroup = $displayGroup.group[4]; 
         this.LIGHTS.ambientLight     && this.addChild(this.LIGHTS.ambientLight    );
         this.LIGHTS.directionalLight && this.addChild(this.LIGHTS.directionalLight);
+        //TODO: DELEMET ME , TEST FOR 2D CAMERA
+
+        
     };
 
     run() {
@@ -32,9 +35,10 @@ class _stage extends PIXI.display.Stage {
     goto (sceneClass, options) {
         // TODO: add FX transitions, maybe a callBack .onEnd, onStop...
         if(this.scene){
-            this.scene.end();
-            this.removeChild(this.scene);
-            this.scene = null;
+            //this.scene.end();
+            //this.removeChild(this.scene);
+            //this.scene = null;
+            $camera.removeChild(this.scene);
         };
          // check if loaderKit asigned to class are loaded, if yes get the scene, if no , goto loader scene and load all kit and scene
         const sceneName = sceneClass.name || sceneClass;
@@ -42,7 +46,8 @@ class _stage extends PIXI.display.Stage {
         // lots of scenes buffer constructor ready in memory, just need to start, userfull for maps
         const nextScene = loaderKit && new Scene_Loader(sceneClass.name, options, loaderKit) || $Loader.Scenes[sceneName];
         this.scene = nextScene;
-        this.addChildAt(nextScene,0);
+        
+        this.addChild($camera);
         nextScene.start();
        
         document.title = document.title+` =>[${nextScene.constructor.name}] `; 

@@ -28,6 +28,7 @@ class Scene_IntroVideo extends PIXI.Container {
         this.visible = true;
         this.renderable = true;
         this.create_IntroVideo();
+        this.setupCamera(); //TODO: ADD TO SCENE BASE ? 
     };
 
     update(delta){
@@ -60,7 +61,11 @@ class Scene_IntroVideo extends PIXI.Container {
         this.videoControler = videoControler;
         videoControler.play();
     };
-
+    
+    setupCamera(){
+        $camera.initialize();
+       //$camera.setTarget($player.spine.position);
+    }
 
 };
 

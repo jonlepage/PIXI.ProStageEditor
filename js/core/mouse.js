@@ -60,6 +60,8 @@ class _mouse {
         this.interaction.cursorStyles.default = "none";
         this.interaction.cursorStyles.pointer = "none";
         this.interaction.setCursorMode('none');
+        this.interaction.mouse.global.x = 100; // avoid start corner camera
+        this.interaction.mouse.global.y = 100;
         $mouse.interaction.on( 'pointerup', function(e) {  // TODO: GLOBAL INTERACTION
             if(e.data.button === 2 && this.holdingItem){
                 this.holdingItem = null;
@@ -167,12 +169,12 @@ class _mouse {
     debug() {
         const coor = new PIXI.Text("",{fontSize:17,fill:0x000000,strokeThickness:4,stroke:0xffffff});
         const global = new PIXI.Text("",{fontSize:17,fill:0xff0000,strokeThickness:4,stroke:0xffffff});
-        coor.y = 50;
-        coor.x = -5;
+        coor.y = -10;
+        coor.x = 10;
         this.pointer.addChild(coor,global); 
         setInterval(() => {
             coor.text = `x:${~~this.x}, y:${~~this.y}`;
-            global.text = `mX:${~~this.mX}, mY:${~~this.mY}`;
+          //  global.text = `mX:${~~this.mX}, mY:${~~this.mY}`;
 
         }, 50);
     };

@@ -24,7 +24,7 @@ class Scene_Map1 extends _Scene_Base {
         this.setupObjs();
         this.setupLights();
         this.setupPlayer();
-        this.setupCamera();
+        this.setupCamera(); // TODO: ADD TO SCENE BASE ?
         this.setupEventCases(); // setup interactivity for events case in map1?
         this.visible = true;
         this.renderable = true;
@@ -68,8 +68,8 @@ class Scene_Map1 extends _Scene_Base {
     }
 
     setupCamera(){
-        $camera.attachToCurrentScene();
-        $camera.setTarget($player.spine.position);
+        $camera.initialize();
+       //$camera.setTarget($player.spine.position);
     }
 
     // Events initialisator and hack optimiser
