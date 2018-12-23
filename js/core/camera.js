@@ -1,7 +1,7 @@
 /*:
 // PLUGIN □────────────────────────────────□CAMERA CORE ENGINE□───────────────────────────────┐
 * @author □ Jonathan Lepage (dimisterjon),(jonforum) 
-* @plugindesc create player and setup for whole game
+* @plugindesc camera 2.5D engine with pixi-projection, all camera events store here
 * V.0.1a
 * License:© M.I.T
 └───────────────────────────────────────────────────────────────────────────────────────────────────┘
