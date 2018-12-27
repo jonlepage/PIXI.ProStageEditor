@@ -146,6 +146,7 @@ class _objs{
             cage.id = i;
             this.list_master[i] = cage;
             if(dataName==="cases"){this.list_cases.push(cage)};
+            console.log('textureName: ', textureName==='houseBig893'&&cage);
         };
     };
 

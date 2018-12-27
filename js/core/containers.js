@@ -198,8 +198,8 @@ PIXI.ContainerTiles = (function () {
     ContainerTiles.prototype.createBases = function(dataBase, dataValues) {
         const td = dataBase.textures   [dataValues.p.textureName     ]; // ref texture:diffuse
         const tn = dataBase.textures_n [dataValues.p.textureName+'_n']; // ref texture:normal
-        const d = new PIXI.projection.Sprite2d(td);
-        const n = new PIXI.projection.Sprite2d(tn);
+        const d = new PIXI.Sprite(td)//new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.Sprite(tn)//new PIXI.projection.Sprite2d(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
         // Si cases, elle ont des sprites special dissosier par couleur tint et caseEventType.

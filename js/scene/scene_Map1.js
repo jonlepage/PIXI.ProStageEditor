@@ -68,7 +68,7 @@ class Scene_Map1 extends _Scene_Base {
     }
 
     setupCamera(){
-        $camera.initialize();
+        $camera.initialize(true);
        //$camera.setTarget($player.spine.position);
     }
 

@@ -39,7 +39,7 @@ class _app extends PIXI.Application {
             var option = { hideEdit: true, hideWindow: true };
             menubar.createMacBuiltin('Game', option);
             win.menu = menubar;
-        }
+        };
         return {gui,win};
     };
 
@@ -100,8 +100,6 @@ class _app extends PIXI.Application {
         canvas.style.paddingLeft = 0 + "px";canvas.style.paddingRight = 0 + "px";
         canvas.style.paddingTop = 0 + "px";canvas.style.paddingBottom = 0 + "px";
         canvas.style.display = "-webkit-inline-box";
-        //Fix some quirkiness in scaling for Safari
-        //5. Return the `scale` value. This is important, because you'll nee this value 
         return scale;
       }; 
 }; //END CLASS
@@ -119,42 +117,59 @@ document.addEventListener('keydown', (event) => {
         return $app._fullScreen && $app.cancelFullScreen() || $app.requestFullScreen();
     };
     if(event.keyCode === 116){ // F5 refresh
-        document.location.reload(true)
-    }
+        document.location.reload(true);
+    };
 
+
+    //TODO: REMOVE ME , is for debug pixi-projections
     const fpX = $camera._fpX;
     const fpY = $camera._fpY;
     const fpf = $camera._fpf;
+
     if(event.keyCode === 37){ // arowLeft
-        TweenLite.to($camera, 1, { _fpX: fpX-120, ease: Power4.easeOut });
+        $camera.pivot.x-=20;
+        //TweenLite.to($camera, 1, { _fpX: fpX-120, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(fpX-120);
     }
     if(event.keyCode === 38){ // arrowUp
-        TweenLite.to($camera, 1, { _fpY: fpY-120, ease: Power4.easeOut });
+        $camera.pivot.y-=20;
+        //TweenLite.to($camera, 1, { _fpY: fpY-120, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(null,fpY-120);
     }
     if(event.keyCode === 39){ // arrowRight
-        TweenLite.to($camera, 1, { _fpX: fpX+120, ease: Power4.easeOut });
+        $camera.pivot.x+=20;
+        //TweenLite.to($camera, 1, { _fpX: fpX+120, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(fpX+120);
     }
     if(event.keyCode === 40){ // arrowDown
-        TweenLite.to($camera, 1, { _fpY: fpY+120, ease: Power4.easeOut });
+        $camera.pivot.y+=20;
+        //TweenLite.to($camera, 1, { _fpY: fpY+120, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(null,fpY+120);
     }
     if(event.keyCode === 107){ // pad+
-        TweenLite.to($camera, 0.5, { _fpf: fpf+0.1, ease: Power4.easeOut });
+        $camera._fpF+=0.05;
+        //TweenLite.to($camera.far, 0.5, { factor: fpf+0.1, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(null,null,fpf+0.1);
     }
     if(event.keyCode === 109){ // pad-
-        TweenLite.to($camera, 0.5, { _fpf: fpf-0.1, ease: Power4.easeOut });
+        $camera._fpF-=0.05;
+        //TweenLite.to($camera, 0.5, { _fpf: fpf-0.1, ease: Power4.easeOut });
+        //$camera.updateFarPointFromTarget(null,null,fpf-0.1);
     }
     if(event.keyCode === 100 || event.keyCode === 102){ // numpad 4||6 (lock the X _fpX)
-        $camera._fpXLock = !$camera._fpXLock;
-        $camera.redrawDebugScreen();
+        event.keyCode===100 && ($camera._fpX+=20);
+        event.keyCode === 102 && ($camera._fpX-=20);
+        //$camera._fpXLock = !$camera._fpXLock;
+        //$camera.redrawDebugScreen();
     }
     if(event.keyCode === 104 || event.keyCode === 98){ // numpad 8||2 (lock the Y _fpY)
-        $camera._fpYLock = !$camera._fpYLock;
-        $camera.redrawDebugScreen();
+        event.keyCode===104 && ($camera._fpY+=20);
+        event.keyCode === 98 && ($camera._fpY-=20);
     }
     if(event.keyCode === 101){ // numpad 5 reverse lock _fpY,_fpX
-        $camera._fpXLock = !$camera._fpXLock;
-        $camera._fpYLock = !$camera._fpYLock;
-        $camera.redrawDebugScreen();
+        window.prompt("Copy this to $camera.cameraSetup", 
+        `{_fpX:${$camera._fpX.toFixed(2)},_fpY:${$camera._fpY.toFixed(2)},_fpF:${$camera._fpF.toFixed(2)},_zoom:${$camera._zoom.toFixed(2)}}`
+        );
     }
 });
 
