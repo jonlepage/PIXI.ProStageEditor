@@ -178,7 +178,7 @@ class _player {
         $player2.moveToPlayer();
        // stamina, sfx,fx , check auto-break cases ....
         //play audio ...
-       $camera.moveToTarget(6);
+        $camera.moveToTarget($player,0)//$camera.moveToTarget(6);
        $objs.newHitFX.call(this.inCase); // fx hit case
         if(ending){
             !this.stopFromBadColorCase && $objs.executeCaseFrom(this.inCase);

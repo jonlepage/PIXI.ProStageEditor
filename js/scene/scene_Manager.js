@@ -31,7 +31,7 @@ class _stage extends PIXI.display.Stage {
             this._scene = null;
         };
         if(scene){
-            $camera.addChild(scene);
+            this.addChild(scene)//$camera.addChild(scene);
             this._scene = scene;
         };
     };

@@ -28,6 +28,7 @@ class Scene_Map1 extends _Scene_Base {
         this.setupEventCases(); // setup interactivity for events case in map1?
         this.visible = true;
         this.renderable = true;
+        $camera.moveToTarget($player);
        //$stage.goto();
     };
 

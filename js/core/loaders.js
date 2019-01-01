@@ -112,11 +112,19 @@ class _coreLoader {
 
     load_textsSCV(){
         const loader = new PIXI.loaders.Loader();
-        loader.add('eventMessagesData', `data/eventMessage.csv`);
+        loader.add('eventMessagesData', `data/eventMessage.csv`)
+        .add('monsterDataBase', `data/monsterDataBase.csv`);
         loader.load();
         loader.onProgress.add((loader, res) => {
-            this.dataText = Papa.parse(res.data);
-            $texts.initializeFromData($Loader.dataText);
+            if(res.name==='eventMessagesData'){
+                this.dataText = Papa.parse(res.data);
+                $texts.initializeFromData($Loader.dataText);
+            }else
+            if(res.name==='monsterDataBase'){
+                this.dataMonsters = Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true});
+                $dataMonsters.initializeFromData($Loader.dataMonsters); // compute monster data structure
+            }
+            
         });
         loader.onComplete.add((loader, res) => {
             this._textsSCVLoaded = true;

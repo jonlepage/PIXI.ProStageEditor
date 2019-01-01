@@ -1,28 +1,51 @@
 // ┌-----------------------------------------------------------------------------┐
-// GLOBAL $monstersData: _monstersData
-// manage data when creat new monster
+// GLOBAL $dataMonsters: _dataMonsters
+// manage data when creat new monster or load csv
 //└------------------------------------------------------------------------------┘
-class _monstersData {
+class _dataMonstersJson {
     constructor() {
+        // base for monster
         this.id = [];
         this.id[1] = { //data2\Characteres\monster\m1\m1.png
-            _name:"divinom",
-            _type:"plante",
-            _desc:"Lorem ipsum dolor sit amet, consecconsectetur",
-            _level : 1    ,
-            _hp    : 100  ,//data2\Hubs\stats\SOURCE\images\hp_icon.png
-            _mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
-            _atk   : 3    ,//data2\Hubs\stats\SOURCE\images\atk_icon.png
-            _def   : 2    ,//data2\Hubs\stats\SOURCE\images\def_icon.png
-            _sta   : 3    ,//data2\Hubs\stats\SOURCE\images\sta_icon.png
-            _lck   : 3    ,//data2\Hubs\stats\SOURCE\images\lck_icon.png
-            _int   : 3    ,//data2\Hubs\stats\SOURCE\images\int_icon.png
-            _orbSensibility   : ['red'],
+            _powers:['green'], // heritage orbs forces
+            _weakness:['red'], // heritage orbs faiblesse
+            _name:"Salviarum Divinurum",
+            evo:{},// store base,rate,flat states per level from initializeFromData
         }
     };
+
+    /**@description compute parsed data from load csv evo states */
+    initializeFromData(scv){
+        const data = scv.data;
+        const _id  = data[0].indexOf('id' );
+        const _hp  = data[0].indexOf('hp' );
+        const _mp  = data[0].indexOf('mp' );
+        const _atk = data[0].indexOf('atk');
+        const _def = data[0].indexOf('def');
+        const _sta = data[0].indexOf('sta');
+        const _lck = data[0].indexOf('lck');
+        for (let id=1, l=data.length; id<l; id++) {
+            const values = data[id];
+            const hp = {base:values[_hp],rate:values[_hp+1],flat:values[_hp+2]}
+            const mp = {base:values[_mp],rate:values[_mp+1],flat:values[_mp+2]}
+            const atk = {base:values[_atk],rate:values[_atk+1],flat:values[_atk+2]}
+            const def = {base:values[_def],rate:values[_def+1],flat:values[_def+2]}
+            const sta = {base:values[_sta],rate:values[_sta+1],flat:values[_sta+2]}
+            const lck = {base:values[_lck],rate:values[_lck+1],flat:values[_lck+2]}
+            if(!this.id[id]){this.id[id] = {}};
+            this.id[id].evo = {hp,mp,atk,def,def,sta,lck};            
+            
+        };
+
+    };
+
+    /**@description generate a random data monsters for map */
+    generateDataForMap(id,lv){
+
+    }
 };
-$monstersData = new _monstersData();
-console.log1('$monstersData: ', $monstersData);
+$dataMonsters = new _dataMonstersJson();
+console.log1('$dataMonsters: ', $dataMonsters);
 
 
 // ┌------------------------------------------------------------------------------┐
@@ -30,12 +53,13 @@ console.log1('$monstersData: ', $monstersData);
 // create new monster battler
 //└------------------------------------------------------------------------------┘
 class _monsters {
-    constructor(id,lv,bID) {
-        this.database = $Loader.Data2['m'+id];
-        this._id = id; // monster data id
-        this._lv = lv; // monster level
-        this._bID = bID; // battle id order
-        this.stats = $monstersData.id[id];
+    constructor(monsterDataID,level,battleID) {
+        this.database = $Loader.Data2['m'+monsterDataID];
+        this.stats = $dataMonsters.id[monsterDataID]; //TODO: SCV CHEATS
+        this._id = monsterDataID; // monster data id
+        this._lv = level; // monster level
+        this._bID = battleID; // battle id order
+        
         this.sprite = null;
         this.initialize();
     };
@@ -50,6 +74,7 @@ class _monsters {
 
     initialize() {
         const cage = new PIXI.ContainerSpine(this.database); // (database,skin)
+        cage.convertTo2d();
         cage.d.stateData.defaultMix = 0.1;
         cage.d.state.setAnimation(0, "apear", false).timeScale = (Math.random()*0.6)+0.6;
         cage.d.state.addAnimation(0, "idle", true);
@@ -60,7 +85,7 @@ class _monsters {
         cage.asignParentGroups();
         this.setInteractive(true,true);
     };
-
+    
     setInteractive(value,addOn) {
         this.sprite.interactive = value;
         if(addOn){
@@ -95,28 +120,39 @@ class _monsters {
     
     pointer_dwMonster(e) {
         const c = e.currentTarget;
-        $player.spine.d.state.setAnimation(3, "preparAtk", false);
-        this.tweenHoldClick && this.tweenHoldClick.kill();
-        $huds.combats.sprites.carw.position.y = c.y-(c.height);
-        const cHitLow = Math.random(); //critical green hit, start to be green after 1+chl
-        const cHitEnd = 1*0.5; // % duration green hit
-        const carw = $huds.combats.sprites.carw; // arrow
-        this.tweenHoldClick = TweenMax.to(carw.position, 2+cHitLow+cHitEnd, {
-            y:c.y-(c.height-40),
-            ease: Expo.easeOut,
-            onComplete: () => {
-                TweenMax.to($huds.combats.sprites.carw.position, 1, {y:c.y-c.height, ease: Elastic.easeOut.config(1.2, 0.1) });
-                //this.StartRoll();
-            },
-            onUpdate: () => {
-                const t = this.tweenHoldClick._time;
-                if(t>1){this.startHit = true;}
-                if(this.startHit){
-                    t>(1+cHitLow)&&t<(1+cHitLow+cHitEnd)? carw.tint = 0x00ff00 : carw.tint = 0xff0000;
+        const clickLeft_   = e.data.button === 0;
+        const _clickRight  = e.data.button === 2;
+        const click_Middle = e.data.button === 1;
+        if(clickLeft_){
+            $player.spine.d.state.setAnimation(3, "preparAtk", false);
+            this.tweenHoldClick && this.tweenHoldClick.kill();
+            $huds.combats.sprites.carw.position.y = c.y-(c.height);
+            const cHitLow = Math.random(); //critical green hit, start to be green after 1+chl
+            const cHitEnd = 1*0.5; // % duration green hit
+            const carw = $huds.combats.sprites.carw; // arrow
+            this.tweenHoldClick = TweenMax.to(carw.position, 2+cHitLow+cHitEnd, {
+                y:c.y-(c.height-40),
+                ease: Expo.easeOut,
+                onComplete: () => {
+                    TweenMax.to($huds.combats.sprites.carw.position, 1, {y:c.y-c.height, ease: Elastic.easeOut.config(1.2, 0.1) });
+                    //this.StartRoll();
+                },
+                onUpdate: () => {
+                    const t = this.tweenHoldClick._time;
+                    if(t>1){this.startHit = true;}
+                    if(this.startHit){
+                        t>(1+cHitLow)&&t<(1+cHitLow+cHitEnd)? carw.tint = 0x00ff00 : carw.tint = 0xff0000;
+                    }
+    
                 }
+            });
+        }else
+        if(_clickRight){
+            $camera.moveToTarget(this.sprite,3);
 
-            }
-        });
+        }
+
+
     };
 
     pointer_upMonster(e) {

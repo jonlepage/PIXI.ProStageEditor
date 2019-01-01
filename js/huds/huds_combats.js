@@ -136,7 +136,7 @@ class _huds_combats{
         $stage.scene.addChild(carw);
 
         const lRec = this.sprites.lRec;
-        //$stage.CAGE_GUI.addChild(lRec);
+        $stage.CAGE_GUI.addChild(lRec);
 
         const cage_dsb = this.sprites.cage_dsb;
         $stage.scene.addChild(cage_dsb);

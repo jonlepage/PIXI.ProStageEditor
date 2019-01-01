@@ -173,6 +173,12 @@ PIXI.CageContainer = (function () {
 
     };
 
+    // default background not affined
+    CageContainer.prototype.affines = function(value) {
+        this.d.proj.affine = 0;
+        this.n.proj.affine = 0;
+    };
+
 
 //END
 return CageContainer;
@@ -262,6 +268,11 @@ PIXI.ContainerTiles = (function () {
         this.Sprites.ctn.texture = tn;
     };
 
+    ContainerTiles.prototype.affines = function(value) {
+        this.d.proj.affine = value;
+        this.n.proj.affine = value;
+    };
+
     
 //END
 return ContainerTiles;
@@ -333,6 +344,11 @@ PIXI.ContainerAnimations = (function () {
        };
     };
 
+    ContainerAnimations.prototype.affines = function(value) {
+        this.d.proj.affine = value;
+        this.n.proj.affine = value;
+    };
+
 //END
 return ContainerAnimations;
 })();
@@ -378,6 +394,10 @@ PIXI.ContainerSpine = (function () {
     
     ContainerSpine.prototype.asignParentGroups = function() {
         this.Sprites.n = this.d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+    };
+
+    ContainerSpine.prototype.affines = function(value) {
+        this.d.proj.affine = value;
     };
     
 //END

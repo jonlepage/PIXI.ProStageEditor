@@ -28,7 +28,8 @@ class _camera extends PIXI.projection.Container2d{
         this.position.set(this._screenW/2,this._screenH/2); // center camera
         this._sceneW = 0; // scene width
         this._sceneH = 0; // scene height
-        this._zoom = 1; //target zoom for scale, not the current zoom scale
+        this._zoom = 1; //current zoom factor
+        this._tZoom = 1; //target zoom for the easing
         /**@description far point to affine projections, est pinner a (0.5,0) mais permet detre piner a un objet */
         this.far = new PIXI.Sprite(PIXI.Texture.WHITE);
         this.far.factor = 0.5;
@@ -46,15 +47,15 @@ class _camera extends PIXI.projection.Container2d{
         this.tp = new PIXI.Point();
 
         this.scene = null; // scene asigneded when camera initialised
-        this._target = null; // atache a target for the camera 
+        this._target = $player; // atache a target for the camera 
         /**@description preset setup for camera */
         this.cameraSetup = [
             {_fpX:0,_fpY:0,_fpF:0,_zoom:1}, // default setup
-            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_zoom:0.2},
-            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_zoom:1},
-            {_fpX:440.00,_fpY:-1290.00,_fpF:0.55,_zoom:5.00},
-            {_fpX:1010.00,_fpY:-2810.00,_fpF:0.55,_zoom:7.50},
-            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_zoom:1.85}
+            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_tZoom:0.2},
+            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_tZoom:1},
+            {_fpX:440.00,_fpY:-1290.00,_fpF:0.55,_tZoom:5.00},
+            {_fpX:1010.00,_fpY:-2810.00,_fpF:0.55,_tZoom:7.50},
+            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_tZoom:1.85}
         ];
     };
 
@@ -112,17 +113,12 @@ class _camera extends PIXI.projection.Container2d{
         pos.y = -pos.y;
         pos.x = -pos.x;
         this.proj.setAxisY(pos, -far.factor);
-        const objList =  $objs.list_master;
+        const objList =  this.scene.children;
         for (let i=0, l= objList.length; i<l; i++) {
             const cage = objList[i];
-            if(cage.constructor.name === "ContainerSpine"){
-                cage.d.proj.affine = PIXI.projection.AFFINE.AXIS_X;
-            }else{
-                if(!cage.isCase){ // TODO: add affine method in container car special pour les case
-                    cage.d.proj.affine = PIXI.projection.AFFINE.AXIS_X;
-                    cage.n.proj.affine = PIXI.projection.AFFINE.AXIS_X;
-                }
-            };
+            if(!cage.isCase && cage.proj){ // TODO: add affine method in container car special pour les case
+                cage.affines(PIXI.projection.AFFINE.AXIS_X);
+            }
         };
     };
 
@@ -139,6 +135,9 @@ class _camera extends PIXI.projection.Container2d{
         return before;
     }
 
+    getLocalTarget(target){
+        return this.toLocal(target, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
+    }
 
     //$camera.moveToTarget(null,f)
     moveToTarget(target,setup) { // camera objet setup {x,y,z,focal{x,y}
@@ -147,7 +146,7 @@ class _camera extends PIXI.projection.Container2d{
         if(target){
             //if setup for camera, need to preApply setting for good [toLocal(target)]
             const before = setup? this.applyCameraSetup(setup) : null;
-            const to = this.toLocal(target, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
+            const to = this.getLocalTarget(target);
             before && this.applyCameraSetup(before);
             TweenLite.to(this.pivot, 2, {
                 x:to.x, y:to.y, 
@@ -162,25 +161,37 @@ class _camera extends PIXI.projection.Container2d{
                 ease: Power4.easeOut,
             });
         });
-
-
     };
 
-    setZoom(value,speed=1,ease) {
-        TweenLite.to(this.scale, 2, {
-            x:value, y:value, 
+    setZoom(value,refactor) {
+        const z = this._zoom;
+        const zz = this._zoom+=value;
+        this._zoom = zz;
+        this.updateProjection();
+        const to = this.getLocalTarget(this._target);
+        this._zoom = z;
+        this.updateProjection();
+        
+        TweenLite.to(this, 3, {
+            _zoom:zz,
             ease: Elastic.easeOut.config(0.4, 0.4),
         });
-       // this.moveToTarget();
+        TweenLite.to(this.pivot, 3, {
+            x:to.x, y:to.y, 
+            ease: Elastic.easeOut.config(0.5, 0.4),
+            onComplete: () => {},
+        });
+       //this.moveToTarget();
     };
 
     onMouseWheel(e){
         //TODO: isoler le zoom dans un pixi points pour precalculer le resulta final
         // ajouter un condition si mode debug
-        const value = e.deltaY>0 && -0.1 || 0.1;
+        let value = e.deltaY>0 && -0.2 || 0.2;
         //if(this._zoom+value>2.5 || this._zoom+value<1 ){return};
-        this._zoom+=value;
-        //this.setZoom(this._zoom,3);  //ratio,speed,ease
+        value = this._fpF && value*((this._fpF*10)) || value;
+        if(this._zoom+value<0){return};
+        this.setZoom(value);  //ratio,speed,ease
     };
     
     /**@description debug camera for test pixi-projections, also need move ticker and update to $app update */
@@ -248,3 +259,7 @@ console.log1('$camera.', $camera);
 
 document.onwheel = $camera.onMouseWheel.bind($camera); //TODO:
 //document.onmousemove = $camera.onMouseCheckBorderCamera.bind($camera); //TODO:
+
+
+
+
