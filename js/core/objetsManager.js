@@ -16,8 +16,17 @@ Voir le Stages
 //└------------------------------------------------------------------------------┘
 class _objs{
     constructor() {
+        // ici tous les class type possible linker a js class es6
+        this.classLink = {
+            'case': dataObj_case,
+            'door': dataObj_door,
+            'chara': dataObj_chara,
+            'tree': dataObj_tree,
+            'mapItem': dataObj_mapItem,
+            'base': dataObj_base, // basic, rien special, les aurte class herite des base
+        }
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
-        this._caseTypes = {
+        this.actionsCasesSystem  = {
             actions:[ // allowed random computing
                 'caseEvent_gold', //data2\Divers\caseEvents\SOURCE\images\caseEvent_gold.png
                 'caseEvent_teleport', //data2\Divers\caseEvents\SOURCE\images\caseEvent_teleport.png
@@ -32,10 +41,12 @@ class _objs{
                 'caseEvent_exitV', //data2\Divers\caseEvents\SOURCE\images\caseEvent_exitV.png
                 'caseEvent_exitH', //data2\Divers\caseEvents\SOURCE\images\caseEvent_exitH.png
                 'caseEvent_door', //data2\Divers\caseEvents\SOURCE\images\caseEvent_door.png
-            ]
+            ],
+            get list() { return this.actions.concat(this.perma) },
         };
-        // game case colors possibility
-        this._caseColors = [
+
+        // game system colors possibility
+        this.colorsSystem = [
             'red'   , //:0xff0000, #ff0000
             'green' , //:0x00ff3c, #00ff3c
             'blue'  , //:0x003cff, #003cff
@@ -45,7 +56,7 @@ class _objs{
             'black' , //:0x000000, #000000
             'white' , //:0xffffff, #ffffff
         ];
-        this._dataFromMaps = []; // maps scenes data
+        this.dataObjsFromScenes = {}; // maps scenes data
         this._dataFromScenes = []; // special scenes data
 
         this.statisticFromMaps = [];
@@ -64,61 +75,106 @@ class _objs{
     /** Prepare les datas pour tous les cases random procedural events, */
     initialize(){
         const dataScenes = $Loader.DataScenes;
-        Object.keys(dataScenes).forEach(ds => {
-            if(ds.contains('Scene_Map')){  // if scenes map data ?
-                const id = +ds.split('Scene_Map')[1];
-                const objs = dataScenes[ds]._objs;
-                this._dataFromMaps[id] = {
-                    objs,
-                    _cases:[],
+        // initialise pour chaque scene, les data de base
+        let globalID = 0; // le global game ID, utile pour l'editeur ?
+        Object.keys(dataScenes).forEach(sceneName => {
+            const dataObjs = dataScenes[sceneName]._objs;
+            if(dataObjs){
+                const id = +sceneName.split('Scene_Map')[1];
+                // linker, batching, each obj from id
+                this.dataObjsFromScenes[sceneName] = {
+                    objs:[], // local id map objets
+                    _casesID:[],
+                    _doorsID:[],
+                    _charasID:[],
+                    _treesID:[],
+                    _itemsID:[],
+                    _decors:[],
+                    get cases () { return Array.from(this._casesID , id => this.objs[id]) },
+                    get doors () { return Array.from(this._doorsID , id => this.objs[id]) },
+                    get charas() { return Array.from(this._charasID, id => this.objs[id]) },
+                    get trees () { return Array.from(this._treesID , id => this.objs[id]) },
+                    get items () { return Array.from(this._itemsID , id => this.objs[id]) },
+                    get decors() { return Array.from(this._decors  , id => this.objs[id]) },
+                    
                 };
-                // duplicate new case data
-                const dataFromMap = this._dataFromMaps[id];
-                for (let i=0, l=objs.length; i<l; i++) {
-                    const obj = objs[i];
-                    switch (obj.p.groupID) {
-                        case 'case':
-                            dataFromMap._cases.push({
-                                gID:i,
-                                lID:dataFromMap._cases.length,
-                                data:obj,
-                                lID:dataFromMap._cases.length,
-                                visited:false,
-                                reveal:true
-                            });
-                            break;
-                        default:
-                            break;
-                    }
+                // reations et generations des datas (not random initialised)
+                for (let i=0, l=dataObjs.length; i<l; i++) {
+                    const data = dataObjs[i];
+                    const classType = data.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
+                    const classLink = this.classLink[classType];
+                    const linkArrayKey = `_${classType}sID`;
+                    const targetArray = this.dataObjsFromScenes[sceneName][linkArrayKey];
+                    const arrayID = targetArray? targetArray.length : void 0; // used for retrace dataObjsFromScenes._???ID index
+                    const obj = classLink ? new classLink(data,i,globalID,arrayID) : data;
+                    targetArray && targetArray.push(i);
+                    this.dataObjsFromScenes[sceneName].objs.push(obj);
                 };
-            }else{ // if special scenes data
-                const objs = dataScenes[ds]._objs;
-                this._dataFromScenes[ds] = {
-                    objs,
-                };
-            }
+                globalID++;
+            };
         });
-        this.computeNewRandomGame();
+        
     };
 
     // create new random game with options dificulty , generate random
-    computeNewRandomGame(dificulty,randomFactor,bonus) {
+    computeNewRandomGame(dificulty) {
         // randomize case events TODO: add more math logic to percent % global game dificulty
-        this._dataFromMaps.forEach(map => {
-            map._cases.forEach(c => {
-                c._caseColor = c.data.p.defaultColor || this._caseColors[7]//~~(Math.random()*this._caseColors.length)];
-                c._caseType = c.data.p.defaultCaseEventType || this._caseTypes.actions[~~(Math.random()*this._caseTypes.actions.length)];
-            });
+        
+        Object.keys(this.dataObjsFromScenes).forEach(sceneName => {
+            const sceneData = this.dataObjsFromScenes[sceneName];
+            const cases = sceneData.cases; // getter cases lists
+            if(cases.length){
+                // TODO: Stocker ici les valeur qui influenceront la generations des objs et case par map
+                //TODO: goodValue:1 : facteur de valorisation dynamics selon le nombre de gemDice de la meme couleur posseder et la luck du joueur ?
+                const mapInfluencer = { // separer par planet id
+                    'red'   :{rate:10,min:0,max:4,count:0} , //:0xff0000, #ff0000
+                    'green' :{rate:5,min:0,max:-1,count:0} , //:0x00ff3c, #00ff3c
+                    'blue'  :{rate:10,min:0,max:10,count:0} , //:0x003cff, #003cff
+                    'pink'  :{rate:20,min:0,max:-1,count:0} , //:0xf600ff, #f600ff
+                    'purple':{rate:10,min:0,max:4,count:0} , //:0x452d95, #452d95
+                    'yellow':{rate:10,min:0,max:10,count:0} , //:0xfcff00, #fcff00
+                    'black' :{rate:10,min:0,max:-1,count:0} , //:0x000000, #000000
+                    'white' :{rate:75,min:0,max:0,count:0} , //:0xffffff, #ffffff
+                };
+                function knuthfisheryates2(arr) {
+                    var temp, j, i = arr.length;
+                    while (--i) {
+                        j = ~~(Math.random() * (i + 1));
+                        temp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = temp;
+                    }
+                    return arr;
+                };
+                function range(start, end) {
+                    if(start === end) return [start];
+                    return [start, ...range(start + 1, end)];
+                };
+                const ranIndex = knuthfisheryates2(range(0,cases.length-1)); // map id range with random seed
+
+                for (let i=0, l=ranIndex.length; i<l; i++) {
+                    const id = ranIndex[i];
+                    cases[id].initialize(mapInfluencer,l,dificulty);
+                };
+                console.log();
+                    
+                /*sceneData._cases.forEach(c => {
+                    c._caseColor = c.data.p.defaultColor || this._caseColors[7]//~~(Math.random()*this._caseColors.length)];
+                    c._caseType = c.data.p.defaultCaseEventType || this._caseTypes.actions[~~(Math.random()*this._caseTypes.actions.length)];
+                });*/
+            }
+            
         });
     };
 
+    
     // map1 start
     createObjsFrom(className) {
         // reset TODO: add destroy events conextion listener for memory leak
         this.list_master = [];
         this.list_cases  = [];
         const mapID = +className.split('Scene_Map')[1];
-        const dataObjs = mapID? this._dataFromMaps[mapID].objs : this._dataFromScenes[className].objs;
+        const dataObjs = mapID? this.dataObjsFromScenes[mapID].objs : this._dataFromScenes[className].objs;
         if(dataObjs){// generation des sprites avec une base avant les data procedural random
             this.setup_masters(dataObjs);
             mapID && this.setup_cases(mapID); // apply random newGame data
@@ -146,13 +202,12 @@ class _objs{
             cage.id = i;
             this.list_master[i] = cage;
             if(dataName==="cases"){this.list_cases.push(cage)};
-            console.log('textureName: ', textureName==='houseBig893'&&cage);
         };
     };
 
     // setuping case for master TODO: rendu ici, aligner les sprite type setCaseEventType, les textures, et creer 7un swap pour les cases explorers pas le joueur
     setup_cases(mapID){
-        const dataCases = this._dataFromMaps[mapID]._cases;
+        const dataCases = this.dataObjsFromScenes[mapID]._cases;
         // IF IS A CASE EVENT?
         for (let i=0, l=dataCases.length; i<l; i++) {
             const dataCase = dataCases[i];
@@ -377,8 +432,7 @@ class _objs{
             console.log('start Combats', 'monster ???');
             $combats.intitialize(inCase.dataCase);
         }
-
-    }
+    };
 
     };
 
@@ -414,7 +468,7 @@ class _objs{
             TweenLite.to(this.skew, 3, { ease: Elastic.easeOut.config(1, 0.3), y: -0.8 }) ;
             TweenLite.to(this.scale, 0.5, { ease: Power1.easeOut, x: 1.2 });
         };
-    }
+    };
 
     // get from obj unique name
     getCase_FromName(name){

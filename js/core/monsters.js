@@ -10,7 +10,18 @@ class _dataMonstersJson {
             _powers:['green'], // heritage orbs forces
             _weakness:['red'], // heritage orbs faiblesse
             _name:"Salviarum Divinurum",
+            _desc:"日陰に生息する多年生の植物の種, 日陰に生息する多年 日陰に生息する多年生の植物の種 生の植物の種",
             evo:{},// store base,rate,flat states per level from initializeFromData
+            capacity:{// les capaciter possible en heritage
+                attack:100,
+                defense:100,
+                headTackle:40,
+                wineWrap:40,
+            },
+            items:{ // les items possible en heritage
+                1:[20,3], // 20% chance d'ehriter items 1 * 3
+                32:[80,2],
+            },
         }
     };
 
@@ -33,20 +44,73 @@ class _dataMonstersJson {
             const sta = {base:values[_sta],rate:values[_sta+1],flat:values[_sta+2]}
             const lck = {base:values[_lck],rate:values[_lck+1],flat:values[_lck+2]}
             if(!this.id[id]){this.id[id] = {}};
-            this.id[id].evo = {hp,mp,atk,def,def,sta,lck};            
-            
+            this.id[id].evo = {hp,mp,atk,def,def,sta,lck};              
         };
-
     };
 
     /**@description generate a random data monsters for map */
     generateDataForMap(id,lv){
-
+        const data = this.id[id];
+        const hp = data.evo.hp;
+        const states = {
+            hp:hp.base * (1 + (lv - 1) * hp.rate) + (hp.flat * (lv - 1)),
+        };
+        return {id,lv,states};
     }
 };
 $dataMonsters = new _dataMonstersJson();
 console.log1('$dataMonsters: ', $dataMonsters);
 
+/**@description create new random data monster for battle */
+// let data = new _dataMonsters(1,1);
+class _dataMonsters {
+    constructor(id,lv) {
+        this.data = $dataMonsters.id[id];
+        this._dataId = id;
+        this._level = lv;
+        this.states = {};
+        this.capacity = [];
+        this.items = [];
+        this.initializeStates();
+        this.initializeCapacity(); // heritage des capaciter
+        this.initializeItems(); // heritage des items
+    };
+
+    initializeStates(){
+        for (const key in this.data.evo) {
+            const brf = this.data.evo[key];
+            const value =  brf.base * (1 + (this._level - 1) * brf.rate) + (brf.flat * (this._level - 1));
+            this.states[key] = {value, max:value};
+        }
+    };
+
+    initializeCapacity(){
+        for (const key in this.data.capacity) {
+            if(this.capacity.length>6){return}; // maximum de 6 capaciter heriter par monstre
+            // chance heritage dune capciter
+            const percent = this.data.capacity[key];
+            if(percent===100){
+                this.capacity.push(key);
+            }else{
+                const ran = Math.random()*100;
+                if(ran<percent){this.capacity.push(key)};
+            }
+        }
+    };
+
+    initializeItems(){
+        for (const key in this.data.items) {
+            // chance heritage items
+            const percent = this.data.items[key][0];
+            const loop = this.data.items[key][1];
+            for (let i=0; i<loop; i++) {
+                const ran = Math.random()*100;
+                if(ran<percent){this.items.push(key)};
+            };
+        }
+    };
+
+};
 
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $monsters: _monsters
@@ -61,6 +125,7 @@ class _monsters {
         this._bID = battleID; // battle id order
         
         this.sprite = null;
+        this.initialised = false; // when combats start, initialise sprites monster from data
         this.initialize();
     };
     get x( ){ return this.sprite.x     };

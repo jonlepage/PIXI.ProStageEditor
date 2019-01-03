@@ -117,13 +117,11 @@ class _coreLoader {
         loader.load();
         loader.onProgress.add((loader, res) => {
             if(res.name==='eventMessagesData'){
-                this.dataText = Papa.parse(res.data);
-                $texts.initializeFromData($Loader.dataText);
+                $texts.initializeFromData( Papa.parse(res.data) );
             }else
             if(res.name==='monsterDataBase'){
-                this.dataMonsters = Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true});
-                $dataMonsters.initializeFromData($Loader.dataMonsters); // compute monster data structure
-            }
+                $dataMonsters.initializeFromData( Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true}) ); // compute monster data structure
+            };
             
         });
         loader.onComplete.add((loader, res) => {

@@ -105,6 +105,7 @@ PIXI.CageContainer = (function () {
         const isCase       = def? (dataBase.dataName === "cases"          ) : (this.dataName === "cases"          );
         // parent data value
         const p = {
+            classType      : def? dataBase    .dirArray[dataBase.dirArray.length-1] : this .groupID    , // TODO: les class type pour les objet type: cases, house, door, mapItemp, charactere 
             type       : def? dataBase    .type                                 : this .type       , // locked
             textureName: def? textureName                                       : this .textureName, // locked
             dataName   : def? dataBase    .name                                 : this .dataName   , // locked

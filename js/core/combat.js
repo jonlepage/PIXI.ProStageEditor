@@ -29,7 +29,6 @@ class _combats{
         for (let i=0, l=3; i<l; i++) {
             this.monsters[i] = new _monsters(1,2,i);
             $camera.scene.addChild(this.monsters[i].sprite);
-            
         };
         
         // TODO: ADD IN POLYFILL
