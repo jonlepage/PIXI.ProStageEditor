@@ -41,7 +41,7 @@ class Scene_Map1 extends _Scene_Base {
     };
 
     setupObjs(){
-        $objs.createObjsFrom(this.name); //create objs from className json
+        $objs.createSpritesObjsFrom(this.name); //create objs from className json
         const objs = $objs.list_master;
         if(objs.length){
             this.addChild(...objs);

@@ -21,6 +21,11 @@ Fourni les methodes de base qui peuvent etre ecraser pas les supers de :
     ContainerSpines     : 1 PIXI .spine .Spine et 1 arrays Diffuse Normal
 // └------------------------------------------------------------------------------┘
 */
+/*
+TODO: disocier les class par fichier, Container_base, Container_spine, Container_xx
+A chaque changement de scene , metre a jours les data de base ,x,y,tint, type
+Creer un link container dans les dataBase.js associer
+*/
 /** @memberof PIXI.Container */
 PIXI.CageContainer = (function () {
     class CageContainer extends PIXI.Container {

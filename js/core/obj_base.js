@@ -15,13 +15,34 @@ Voir le Stages
 // GLOBAL $objs CLASS: _objs
 //└------------------------------------------------------------------------------┘
 class dataObj_base{
-    constructor(data,localID,globalID,arrayID) {
-        this.data = data;
+    constructor(dataValues,localID,globalID,arrayID) {
+        this.dataValues = dataValues;
         this.id = {localID,globalID,arrayID};
+        this.cage = null;
     };
+
+    get dataBase() { return $Loader.Data2[this.dataValues.p.dataName] }
 
     initialize(){
     
     }
+
+    /**@description initialise the sprite texture */
+    initializeSprites(dataValues){
+        dataValues = dataValues || this.dataBase.dataValues;
+        let cage;
+        switch (dataBase.type) {
+            case "animationSheet":
+            cage = new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
+            case "spineSheet":
+            cage = new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
+            case "tileSheet":
+            cage = new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;
+            default:
+            throw console.error(`FATAL error in json, check the {'type'}!`)
+        };
+        this.cage = cage;
+    }
   
+
 }

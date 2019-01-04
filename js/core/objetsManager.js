@@ -56,7 +56,8 @@ class _objs{
             'black' , //:0x000000, #000000
             'white' , //:0xffffff, #ffffff
         ];
-        this.dataObjsFromScenes = {}; // maps scenes data
+        this.spritesFromScenes = {}; // contien les sprites container par scene
+        this.dataObjsFromScenes = {}; // contien les data pour les sprites par scene, EVOLUTIF
         this._dataFromScenes = []; // special scenes data
 
         this.statisticFromMaps = [];
@@ -100,13 +101,13 @@ class _objs{
                 };
                 // reations et generations des datas (not random initialised)
                 for (let i=0, l=dataObjs.length; i<l; i++) {
-                    const data = dataObjs[i];
-                    const classType = data.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
+                    const dataValues = dataObjs[i];
+                    const classType = dataValues.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
                     const classLink = this.classLink[classType];
                     const linkArrayKey = `_${classType}sID`;
                     const targetArray = this.dataObjsFromScenes[sceneName][linkArrayKey];
                     const arrayID = targetArray? targetArray.length : void 0; // used for retrace dataObjsFromScenes._???ID index
-                    const obj = classLink ? new classLink(data,i,globalID,arrayID) : data;
+                    const obj = classLink ? new classLink(dataValues,i,globalID,arrayID) : dataValues;
                     targetArray && targetArray.push(i);
                     this.dataObjsFromScenes[sceneName].objs.push(obj);
                 };
@@ -126,7 +127,7 @@ class _objs{
             if(cases.length){
                 // TODO: Stocker ici les valeur qui influenceront la generations des objs et case par map
                 //TODO: goodValue:1 : facteur de valorisation dynamics selon le nombre de gemDice de la meme couleur posseder et la luck du joueur ?
-                const mapInfluencer = { // separer par planet id
+                const mapColorInfluencer = { // separer par planet id
                     'red'   :{rate:10,min:0,max:4,count:0} , //:0xff0000, #ff0000
                     'green' :{rate:5,min:0,max:-1,count:0} , //:0x00ff3c, #00ff3c
                     'blue'  :{rate:10,min:0,max:10,count:0} , //:0x003cff, #003cff
@@ -135,6 +136,15 @@ class _objs{
                     'yellow':{rate:10,min:0,max:10,count:0} , //:0xfcff00, #fcff00
                     'black' :{rate:10,min:0,max:-1,count:0} , //:0x000000, #000000
                     'white' :{rate:75,min:0,max:0,count:0} , //:0xffffff, #ffffff
+                };
+                const mapActionInfluencer = { // separer par planet id
+                    'caseEvent_gold'       :{rate:85,min:10,max: 40 ,count:0} ,
+                    'caseEvent_teleport'   :{rate:5 ,min:1,max:-1 ,count:0} ,
+                    'caseEvent_map'        :{rate:5,min:1,max: -1,count:0} ,
+                    'caseEvent_timeTravel' :{rate:10,min:-1,max:5 ,count:0} ,
+                    'caseEvent_buffers'    :{rate:15,min:-1,max: 10 ,count:0} ,
+                    'caseEvent_miniGames'  :{rate:10,min:-1,max: 10,count:0} ,
+                    'caseEvent_monsters'   :{rate:40,min:-1,max:-1 ,count:0} , 
                 };
                 function knuthfisheryates2(arr) {
                     var temp, j, i = arr.length;
@@ -151,59 +161,35 @@ class _objs{
                     return [start, ...range(start + 1, end)];
                 };
                 const ranIndex = knuthfisheryates2(range(0,cases.length-1)); // map id range with random seed
-
                 for (let i=0, l=ranIndex.length; i<l; i++) {
                     const id = ranIndex[i];
-                    cases[id].initialize(mapInfluencer,l,dificulty);
+                    cases[id].initialize(mapColorInfluencer,mapActionInfluencer,l,dificulty);
+                   
                 };
-                console.log();
-                    
-                /*sceneData._cases.forEach(c => {
-                    c._caseColor = c.data.p.defaultColor || this._caseColors[7]//~~(Math.random()*this._caseColors.length)];
-                    c._caseType = c.data.p.defaultCaseEventType || this._caseTypes.actions[~~(Math.random()*this._caseTypes.actions.length)];
-                });*/
-            }
-            
+            };
         });
     };
 
     
     // map1 start
-    createObjsFrom(className) {
-        // reset TODO: add destroy events conextion listener for memory leak
-        this.list_master = [];
-        this.list_cases  = [];
-        const mapID = +className.split('Scene_Map')[1];
-        const dataObjs = mapID? this.dataObjsFromScenes[mapID].objs : this._dataFromScenes[className].objs;
-        if(dataObjs){// generation des sprites avec une base avant les data procedural random
-            this.setup_masters(dataObjs);
-            mapID && this.setup_cases(mapID); // apply random newGame data
+    createSpritesObjsFrom(sceneName) {
+        this.spritesFromScenes[sceneName] = []; // linked by data id
+        const dataObjs = this.dataObjsFromScenes[sceneName].objs;
+        for (let i=0, l=dataObjs.length; i<l; i++) {
+            const dataObj = dataObjs[i];
+            let cage;
+            switch (dataObj.dataValues.p.type) {
+                case "animationSheet": cage = new PIXI.ContainerAnimations(dataObj);break;
+                case "spineSheet"    : cage = new PIXI.ContainerSpine     (dataObj);break;
+                case "tileSheet"     : cage = new PIXI.ContainerTiles     (dataObj);break;
+                default: throw console.error(`FATAL error in json, check the {'type'}!`)
+            };
+            cage.id = i;
+            this.spritesFromScenes[sceneName][i] = cage;
         };
     };
 
-    // setup master base for all sprites objs
-    setup_masters(dataObjs){
-        for (let i=0, l=dataObjs.length; i<l; i++) {
-            const dataValues = dataObjs[i];
-            const dataName = dataValues.p.dataName;
-            const textureName = dataValues.p.textureName;
-            const dataBase = $Loader.Data2[dataName];
-            let cage;
-            switch (dataBase.type) {
-                case "animationSheet":
-                cage = new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
-                case "spineSheet":
-                cage = new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
-                case "tileSheet":
-                cage = new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;
-                default:
-                throw console.error(`FATAL error in json, check the {'type'}!`)
-            };
-            cage.id = i;
-            this.list_master[i] = cage;
-            if(dataName==="cases"){this.list_cases.push(cage)};
-        };
-    };
+
 
     // setuping case for master TODO: rendu ici, aligner les sprite type setCaseEventType, les textures, et creer 7un swap pour les cases explorers pas le joueur
     setup_cases(mapID){

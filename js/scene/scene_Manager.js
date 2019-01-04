@@ -9,7 +9,7 @@ class _stage extends PIXI.display.Stage {
         this.CAGE_GUI   = new PIXI.Container(); // screen menue gui huds
         this.CAGE_MESSAGE   = new PIXI.Container(); // screen message
         this.CAGE_MOUSE = new PIXI.Container(); // store master mouse sprite and FX, toujours top
-        this.LIGHTS = { ambientLight:new PIXI.ContainerAmbientLight()}//, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
+        this.LIGHTS = { ambientLight:new Container_AmbientLight()}//, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
         this.addChild( // lights groups
             $displayGroup._spriteBlack_d,
             $displayGroup._layer_diffuseGroup,
