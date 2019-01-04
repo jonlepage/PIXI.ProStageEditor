@@ -42,7 +42,7 @@ class Scene_Map1 extends _Scene_Base {
 
     setupObjs(){
         $objs.createSpritesObjsFrom(this.name); //create objs from className json
-        const objs = $objs.list_master;
+        const objs = $objs.spritesFromScene;
         if(objs.length){
             this.addChild(...objs);
         };
@@ -55,16 +55,17 @@ class Scene_Map1 extends _Scene_Base {
 
     setupPlayer(){
         this.addChild($player.spine);
-        this.addChild($player2.spine);
+       // this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
-        if( $objs.list_cases[0]){
-            $player.x = $objs.list_cases[0].x
-            $player.y = $objs.list_cases[0].y+20
+        const startCase = $objs.cases[0];
+        if( startCase ){
+            $player.x = startCase.x
+            $player.y = startCase.y+20
             $player.spine.parentGroup = $displayGroup.group[1];
             $player.spine.zIndex = $player.y;
-            $player.inCase = $objs.list_cases[0]; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
+            $player.inCase = startCase; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
-        $player2.moveToPlayer();
+        //$player2.moveToPlayer();
         
     }
 

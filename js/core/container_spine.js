@@ -10,29 +10,49 @@
 
 /** @memberof Container_Base */
 class Container_Spine extends Container_Base {
-    constructor(dataBase, textureName, dataValues) {
+    constructor(dataObj, dataBase, skinName) {
         super();
-        dataValues = dataValues || this.getDataValues(dataBase, textureName);
-        this.createBases(dataBase, dataValues);
-        this.asignValues(dataValues, true);
+        dataObj = dataObj || new dataObj_base( this.getDataValues(dataBase, skinName) );
+        this.DataLink = dataObj;
+        this.createBases(dataObj);
+        this.asignDataValues(dataObj.dataValues);
+        this.addChild(this.s);
+
     };
     // getters for ContainerSpine
+    get s() { return this.Sprites.s };
+
+
+    // add more data called from base getDataValues
+    asignDataValues(dataValues){
+        this.asignValues(dataValues.p);
+        // TODO: permettre dans editeur de editer chaque spineSprite : utile pour arbre dinamy feuille ...
+        this.Sprites.d.forEach(spineSprite => {
+            //dataValues.d && this.asignValues.call(this.Sprites.d, dataValues.d);
+        });
+        this.Sprites.n.forEach(spineSprite => {
+            //dataValues.n && this.asignValues.call(this.Sprites.n, dataValues.n);
+        });
+        
+    };
 
     //TODO: hackAttachmentGroups parent crash et verifier le sprite dans spine ! 
-    createBases (dataBase, dataValues) {
-        const sd = dataBase.spineData; // ref spineData
-        const d = new PIXI.projection.Spine2d(sd) //new PIXI.spine.Spine(sd);
-        d.proj.affine = 2;
-        const n = d.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
-        dataValues.p.textureName && d.skeleton.setSkinByName(dataValues.p.textureName); //FIXME: player have no skin for now
-        d.state.setAnimation(0, "idle", true); // alway use idle base animations or 1er..
-        d.skeleton.setSlotsToSetupPose();
-        this.Sprites = {d,n};
-        this.addChild(d);
+    createBases (dataObj) {
+        const dataBase = dataObj.dataBase; // getter
+        const s = new PIXI.projection.Spine2d(dataBase.spineData); //new PIXI.spine.Spine(sd);
+        const [d,n] = s.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
+        //PIXI.projection.Spine2d.call(this,dataBase.spineData);
+        /*if(dataObj.dataValues.p.skinName){
+            s.skeleton.setSkinByName(dataObj.dataValues.p.skinName);//FIXME: player have no skin for now
+        };
+        s.state.setAnimation(0, dataObj.dataValues.p.defaultAnimation , true); // default animation 'idle' TODO:  add more in getDataValues_spine
+        s.skeleton.setSlotsToSetupPose();*/
+        this.Sprites = {s,d,n};
+        
     };
 
     // dispatch values asigment for spine
-    asignValues (dataValues, storeValues=true) {
+    asignDataValues_spine (dataObj) {
         this.computeValue(dataValues.p);
         this.computeValue.call(this.Sprites.d, dataValues.d);
         // can set false, if need keep temp old values for HTML dataEditor
@@ -40,12 +60,14 @@ class Container_Spine extends Container_Base {
     };
 
     asignParentGroups () {
-        this.Sprites.n = this.d.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+        this.s.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
     };
 
     affines (value) {
-        this.d.proj.affine = value;
+        this.s.proj.affine = value;
     };
+
+
 };
 
 //END CLASS

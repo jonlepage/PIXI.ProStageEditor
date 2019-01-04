@@ -14,11 +14,11 @@
 class Container_Tile extends Container_Base {
     constructor(dataObj, dataBase, textureName) {
         super();
-        if(dataObj){
-            this.DataLink = dataObj;
-            this.createBases(dataObj);
-            this.asignValues(dataValues, true);
-        };
+        dataObj = dataObj || new dataObj_base( this.getDataValues(dataBase, textureName) );
+        this.DataLink = dataObj;
+        this.createBases(dataObj);
+        this.asignDataValues(dataObj.dataValues, true);
+        this.addChild(this.d,this.n);
     };
 
     createBases (dataObj) {
@@ -28,13 +28,17 @@ class Container_Tile extends Container_Base {
         const d = new PIXI.Sprite(tex_d);//new PIXI.projection.Sprite2d(td);
         const n = new PIXI.Sprite(tex_n);//new PIXI.projection.Sprite2d(tn);
         this.Sprites = {d,n};
-        this.addChild(d,n);
-        // Certain tile son special comem les CASES, qui contienne plusieur sprites
-        (dataObj.dataValues.p.classType === 'case') && createBases_case(dataBase);
+        // Certain tile son special comme les CASES, qui contienne plusieur sprites
+        // special data type 
+        switch (dataObj.constructor.name) {
+            case "dataObj_case": this.createBases_case(dataObj); break;
+        };
     };
 
-    // if case: create special base for case
-    createBases_case(dataBase){
+    // extend special Base sprites type: cases
+    createBases_case(dataObj){
+        //TODO: VERIFIER SI ON PEUT METTRE DANS  this.Sprites.d plutot
+        const dataBase = dataObj.dataBase; // getter
         //cage color 
         const ccd = new PIXI.projection.Sprite2d(dataBase.textures.cColor);
             ccd.parentGroup = PIXI.lights.diffuseGroup;
@@ -44,7 +48,7 @@ class Container_Tile extends Container_Base {
             ccn.pivot.copy(ccd.pivot)
         this.Sprites.ccd = ccd;
         this.Sprites.ccn = ccn;
-        this.addChild(ccd,ccn);
+       // this.addChild(ccd,ccn); TODO:
         // cage type
         const ctd = new PIXI.projection.Sprite2d( $Loader.Data2.caseEvents.textures.caseEvent_hide);
             ctd.parentGroup = PIXI.lights.diffuseGroup;
@@ -56,10 +60,10 @@ class Container_Tile extends Container_Base {
             ctn.position.copy(ctd.position);
         this.Sprites.ctd = ctd;
         this.Sprites.ctn = ctn;
-        this.addChild(ctd,ctd);
+       // this.addChild(ctd,ctd); // TODO:
         [ccd,ccn].forEach(c => { c.renderable = false }); //FIXME: TEMP HIDE for camera 2d test
     }
-    
+
     setCaseColorType (color){
         // see : $huds.displacement.diceColors same group for gemDice
         // and $objs._colorType

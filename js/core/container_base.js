@@ -30,15 +30,15 @@ class Container_Base extends PIXI.Container {
     };
 
     // dispatch values asigment
-    asignValues (dataValues, storeValues=true) {
-        this.computeValue(dataValues.p);
-        dataValues.d && this.computeValue.call(this.Sprites.d, dataValues.d);
-        dataValues.n && this.computeValue.call(this.Sprites.n, dataValues.n);
+    asignDataValues(dataValues) {
+        this.asignValues(dataValues.p);
+        dataValues.d && this.asignValues.call(this.Sprites.d, dataValues.d);
+        dataValues.n && this.asignValues.call(this.Sprites.n, dataValues.n);
         // can set false, if need keep temp old values for HTML dataEditor
-        if(storeValues){ this.dataValues = dataValues };
+       // if(storeValues){ this.dataValues = dataValues };
     };
 
-    computeValue (data) {
+    asignValues (data) {
         for (const key in data) {
             const value = data[key];
             switch (key) {
@@ -83,14 +83,23 @@ class Container_Base extends PIXI.Container {
     };
 
     // the DataValues will used for make saveGame or dataEditor manager
+    // si pass dataBase, obtenir des valeur par default, sinon obtenir par rapport a la confi du sprites
     getDataValues (dataBase, textureName) {
+        const dataValues = {
+            p:this.getParentContainerValues(dataBase,textureName),
+            d:this.getSpriteValues.call(this.d, dataBase,textureName),
+            n:this.getSpriteValues.call(this.n, dataBase,textureName),
+        };
+        this.getDataValues_spine && this.getDataValues_spine(dataValues);
+        return dataValues;
+    };
+
+
+    
+    getParentContainerValues(dataBase,textureName){ // .p
         const def = !!dataBase;
-        const isSpine      = def? (dataBase.type     === "spineSheet"     ) : (this.type     === "spineSheet"     );
-        const isAnimations = def? (dataBase.type     === "animationSheet" ) : (this.type     === "animationSheet" );
-        const isCase       = def? (dataBase.dataName === "cases"          ) : (this.dataName === "cases"          );
-        // parent data value
-        const p = {
-            classType      : def? dataBase    .dirArray[dataBase.dirArray.length-1] : this .groupID    , // TODO: les class type pour les objet type: cases, house, door, mapItemp, charactere 
+        return {
+            classType  : def? dataBase    .dirArray[dataBase.dirArray.length-2] : this .classType    , // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere 
             type       : def? dataBase    .type                                 : this .type       , // locked
             textureName: def? textureName                                       : this .textureName, // locked
             dataName   : def? dataBase    .name                                 : this .dataName   , // locked
@@ -108,11 +117,11 @@ class Container_Base extends PIXI.Container {
             // other
             autoGroups    : def? new Array(7).fill(false) : this.autoGroups                              , // permet de changer automatiquement de layers selon player
             zIndex        : def? 0                        : this.zIndex                                  , // locked
-            parentGroup   : def? void 0                   : this.parentGroup   && this.parentGroup.zIndex, //  for editor, need to manual set parentGroup on addMouse
+            parentGroup   : def? 0                        : this.parentGroup   && this.parentGroup.zIndex, //  for editor, need to manual set parentGroup on addMouse
             pathConnexion : def? {}                       : this.pathConnexion || {}                     , // store path connect by id
             
-            // animations
-            ...isAnimations && {
+            // animations TODO: ajouter dans les data obj 
+            /*...isAnimations && {
                 totalFrames    :def? dataBase.textures[textureName].length : this.totalFrames    , // locked
                 animationSpeed :def? 1                                     : this.animationSpeed ,
                 loop           :def? false                                  : this.loop           ,
@@ -123,32 +132,30 @@ class Container_Base extends PIXI.Container {
                 allowRandomStartColor :def? false : this.allowRandomStartColor ,
                 allowRandomTurnColors :def? false : this.allowRandomTurnColors , 
                 defaultCaseEventType :def? false : this.defaultCaseEventType , 
-            },
+            },*/
         };
-        
-        let dn = function (){ // Diffuse Normal data value 
-            if(this.constructor.name === 'Array'){return void 0};
-           return {
-                // observable point
-                position :  def            ? [0   ,0] : [this.position .x, this.position .y],
-                scale    :  def            ? [1   ,1] : [this.scale    .x, this.scale    .y],
-                skew     :  def            ? [0   ,0] : [this.skew     .x, this.skew     .y],
-                pivot    :  def            ? [0   ,0] : [this.pivot    .x, this.pivot    .y],
-                anchor   : (def || isSpine)? [0.5 ,1] : [this.anchor   .x, this.anchor   .y],
-                // transform
-                rotation  : def? 0        : this.rotation  ,
-                alpha     : def? 1        : this.alpha     ,
-                blendMode : def? 0        : this.blendMode ,
-                tint      : def? 0xffffff : this.tint      ,
-                // other
-                ...this.color && {
-                    setDark  : def? [0,0,0] : PIXI.utils.hex2rgb(this.color.darkRgba ).reverse(),
-                    setLight : def? [1,1,1] : PIXI.utils.hex2rgb(this.color.lightRgba).reverse(),
-                },
-            };
+    };
+    
+    getSpriteValues(dataBase,textureName){ // .d .n
+        const def = !!dataBase;
+        return {
+            // observable point
+            position : def ? [0   ,0] : [this.position .x, this.position .y],
+            scale    : def ? [1   ,1] : [this.scale    .x, this.scale    .y],
+            skew     : def ? [0   ,0] : [this.skew     .x, this.skew     .y],
+            pivot    : def ? [0   ,0] : [this.pivot    .x, this.pivot    .y],
+            anchor   : def ? [0.5 ,1] : [this.anchor   .x, this.anchor   .y],
+            // transform
+            rotation  : def? 0        : this.rotation  ,
+            alpha     : def? 1        : this.alpha     ,
+            blendMode : def? 0        : this.blendMode ,
+            tint      : def? 0xffffff : this.tint      ,
+            // other TODO:  heaven
+            /*...this.color && {
+                setDark  : def? [0,0,0] : PIXI.utils.hex2rgb(this.color.darkRgba ).reverse(),
+                setLight : def? [1,1,1] : PIXI.utils.hex2rgb(this.color.lightRgba).reverse(),
+            },*/
         };
-        // TODO: on peut faire une method temp pour verifier l'integrity entre getDataDefault et getDataValues, pour heviter les oublies
-        return { p, d:{...dn.call( def?null:this.d )}, n:{...dn.call( def?null:this.n )} };
     };
 
     createJson () {

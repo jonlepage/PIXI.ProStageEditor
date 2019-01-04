@@ -16,7 +16,10 @@ Voir le Stages
 //└------------------------------------------------------------------------------┘
 class _objs{
     constructor() {
-        // ici tous les class type possible linker a js class es6
+        this._sceneName = null; // nom de la scene actuelement rendu
+        this.spritesFromScene = []; // contien les sprites container par scene
+        this.dataObjsFromScenes = {}; // contients les datas pour les sprites par scene, EVOLUTIF
+        this.pathBuffer = null; // buffer path to move 
         this.classLink = {
             'case': dataObj_case,
             'door': dataObj_door,
@@ -44,7 +47,6 @@ class _objs{
             ],
             get list() { return this.actions.concat(this.perma) },
         };
-
         // game system colors possibility
         this.colorsSystem = [
             'red'   , //:0xff0000, #ff0000
@@ -56,21 +58,14 @@ class _objs{
             'black' , //:0x000000, #000000
             'white' , //:0xffffff, #ffffff
         ];
-        this.spritesFromScenes = {}; // contien les sprites container par scene
-        this.dataObjsFromScenes = {}; // contien les data pour les sprites par scene, EVOLUTIF
-        this._dataFromScenes = []; // special scenes data
-
-        this.statisticFromMaps = [];
-        this.bufferPathFX = []; // store FX for case hover ?!
-        // les objets par scene reste statics, et ne peuve etre suprimer
-        this.list_master = []; // Full Objs Lists
-        this.list_cases  = []; // store only case
-        this.executedCaseFromMapID = []; // see executeCaseFrom
-        //this.list_noEvents = [];
-        //this.list_events = [];
-        //this.list_cases = [];
-        this.pathBuffer = null; // buffer path to move 
     };
+    /**@description get sprites case list from dataObjsFromScenes id */
+    get cases () { return Array.from(this.dataObjsFromScenes[this._sceneName]._casesID , id => this.spritesFromScene[id]) };
+    get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
+    get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
+    get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
+    get items () { return Array.from(this.dataObjsFromScenes[this._sceneName]._itemsID , id => this.spritesFromScene[id]) };
+    get decors() { return Array.from(this.dataObjsFromScenes[this._sceneName]._decors  , id => this.spritesFromScene[id]) };
   
 
     /** Prepare les datas pour tous les cases random procedural events, */
@@ -173,19 +168,20 @@ class _objs{
     
     // map1 start
     createSpritesObjsFrom(sceneName) {
-        this.spritesFromScenes[sceneName] = []; // linked by data id
+        this._sceneName = sceneName;
+
         const dataObjs = this.dataObjsFromScenes[sceneName].objs;
         for (let i=0, l=dataObjs.length; i<l; i++) {
             const dataObj = dataObjs[i];
             let cage;
             switch (dataObj.dataValues.p.type) {
-                case "animationSheet": cage = new PIXI.ContainerAnimations(dataObj);break;
-                case "spineSheet"    : cage = new PIXI.ContainerSpine     (dataObj);break;
-                case "tileSheet"     : cage = new PIXI.ContainerTiles     (dataObj);break;
+                case "animationSheet" : cage = new Container_Animation (dataObj);break;
+                case "spineSheet"     : cage = new Container_Spine     (dataObj);break;
+                case "tileSheet"      : cage = new Container_Tile      (dataObj);break;
                 default: throw console.error(`FATAL error in json, check the {'type'}!`)
             };
             cage.id = i;
-            this.spritesFromScenes[sceneName][i] = cage;
+            this.spritesFromScene[i] = cage;
         };
     };
 

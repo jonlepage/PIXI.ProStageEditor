@@ -53,8 +53,10 @@ class _player {
 
     setupSprites() {
         const database = $Loader.Data2.heroe1_rendered;
-        const cage = new PIXI.ContainerSpine(database); // (database,skin)
-        const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
+        const cage = new Container_Spine(null,database); // (database,skin)
+        //FIXME: A AJOUTER DANS LES DATAVALUES PAR DEFAUT, EDITOR COMPRIT
+        // deleteMe
+        const spine = cage.s;
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
         spine.state.setAnimation(1, "hair_idle", true);
@@ -66,14 +68,10 @@ class _player {
         cage.scale.set(0.45,0.45);
 
         // player layers hackAttachmentGroups set spine.n
-        cage.asignParentGroups();
+        /*cage.asignParentGroups();
         cage.parentGroup = $displayGroup.group[1];
-        cage.zIndex = 0;
-
+        cage.zIndex = 0;*/
         spine.skeleton.setSlotsToSetupPose();
-        // radius range 
-        //const dataBase = $Loader.Data2.playerRadius;
-        // local reference
         this.spine = cage;
     };
 
@@ -101,7 +99,7 @@ class _player {
             }
         };
     
-        this.spine.d.state.addListener({
+        this.spine.s.state.addListener({
             event: checkEvent,
         });
     };
@@ -233,7 +231,7 @@ class _player2 {
     };
 
     setupSprites() {
-        const cage = new PIXI.ContainerSpine($Loader.Data2.heroe2);
+        const cage = new Container_Spine($Loader.Data2.heroe2);
         const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);

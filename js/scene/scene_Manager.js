@@ -102,7 +102,7 @@ class _Scene_Base extends PIXI.Container {
         this.clearBackground();
         const dataValues = sceneData._background;
         dataBase = dataBase || dataValues && $Loader.Data2[dataValues.p.dataName] || null;
-        this.background = new Container_Background(dataBase,dataValues);
+        this.background = new Container_Background(null, dataBase); //TODO:
         this.addChildAt(this.background,0);
     };
 

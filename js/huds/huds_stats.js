@@ -164,13 +164,13 @@ class _huds_stats extends PIXI.Container {
 
   setupInteractions() {
     // TODO: $player faire un sytem global event manager et interaction dans mouse
-    $player.spine.on('pointerover', this.pointerIN, this);
-    $player.spine.on('pointerout', this.pointerOUT, this);
+    $player.spine && $player.spine.on('pointerover', this.pointerIN, this);
+    $player.spine && $player.spine.on('pointerout', this.pointerOUT, this);
     //$player.on('pointerup', this.pointerUP, this);
   };
 
   setInteractive(value) {
-    $player.spine.interactive = value;
+    $player.spine && ($player.spine.interactive = value);
   };
 
   pointerIN(e) {
