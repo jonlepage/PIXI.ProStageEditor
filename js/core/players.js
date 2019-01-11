@@ -51,6 +51,8 @@ class _player {
         //this.setupInteractions();
     };
 
+    
+    
     setupSprites() {
         const database = $Loader.Data2.heroe1_rendered;
         const cage = new Container_Spine(null,database); // (database,skin)
@@ -102,6 +104,8 @@ class _player {
         this.spine.s.state.addListener({
             event: checkEvent,
         });
+
+
     };
     initialisePath(pathBuffer) {
         this._isMoving = true;
@@ -118,7 +122,7 @@ class _player {
     };
 
     updateNextPath(checkCaseEvents) {
-        this.inCase = $objs.list_cases[this._nextCaseID];
+        this.inCase = $objs.cases[this._nextCaseID];
         this._currentCaseID = this.pathBuffer[this._currentPath];
         this._nextCaseID = this.pathBuffer[++this._currentPath];
         checkCaseEvents && this.checkCaseEvents(false);
@@ -133,13 +137,12 @@ class _player {
             // si plus stamina
             if($huds.displacement._stamina === 0){
                 $huds.displacement.clearRoll(); //FIXME: efface le 0 trop rapidement
-            }
-
+            };
         };
     };
 
     addAnimationMove(ending) {
-        const state = this.spine.d.state;
+        const state = this.spine.s.state;
         if(ending){
             state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
         }else{
@@ -164,7 +167,7 @@ class _player {
     
     // easing update x,y to this._nextCaseID
     moveToNextCaseID(entry) { // from jump1...
-        const toCase = $objs.list_cases[this._nextCaseID];
+        const toCase = $objs.cases[this._nextCaseID];
         // tween
         TweenLite.to(this.spine.position, 1, { x:toCase.x, y:toCase.y+20, ease: Power3.easeOut });
         // update setup
@@ -177,13 +180,13 @@ class _player {
        // stamina, sfx,fx , check auto-break cases ....
         //play audio ...
         $camera.moveToTarget($player,0)//$camera.moveToTarget(6);
-       $objs.newHitFX.call(this.inCase); // fx hit case
+       this.inCase.DataLink.playFX_landing();
         if(ending){
-            !this.stopFromBadColorCase && $objs.executeCaseFrom(this.inCase);
+            !this.stopFromBadColorCase && this.inCase.DataLink.executeCaseType();
             this.stopFromBadColorCase = false; // reset
         } else {// if not endCase
             //check if autorised color in displacement huds
-            if(this.inCase.colorType !== 'white' && !$huds.displacement.diceColors.contains(this.inCase.colorType)){
+            if(this.inCase.DataLink._colorType !== 'white' && !$huds.displacement.diceColors.contains(this.inCase.DataLink._colorType)){
                 $huds.displacement.setStamina(0);
                 this.stopFromBadColorCase = true; // when stop from bad color case, dont allow recive bonus case eventType
             }else{
@@ -231,8 +234,9 @@ class _player2 {
     };
 
     setupSprites() {
-        const cage = new Container_Spine($Loader.Data2.heroe2);
-        const spine = cage.d;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
+        const database = $Loader.Data2.heroe2;
+        const cage = new Container_Spine(null,database);
+        const spine = cage.s;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
         // player transform
@@ -251,7 +255,12 @@ class _player2 {
         const distXFromPDir = this._dirX===4?100:-100;
         TweenLite.to(this.spine.position, needReverse&&3||7, {
             x:$player.x+distXFromPDir,y:$player.y-200, 
-            ease: Power3.easeOut,
+            ease: Elastic.easeOut.config(1, 1),
+        });
+        const r = this.spine.rotation;
+        TweenLite.to(this.spine, needReverse&&3||7, {
+            rotation:r===0&&0.1||0, 
+            ease: Elastic.easeOut.config(1, 1),
         });
         this.spine.zIndex = $player.y;
     }

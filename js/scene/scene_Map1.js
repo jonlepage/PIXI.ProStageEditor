@@ -19,16 +19,16 @@ class Scene_Map1 extends _Scene_Base {
 
 
     // prepare and set event for map 1
-    start(){
+    start(){ //TODO: on pourrait l'appelelr preload ? prepare ? load bg + obj sprite , et mettre renderable true dans un ready()
         $huds.setInteractive(true);
         this.setupObjs();
         this.setupLights();
-        this.setupPlayer();
+        //this.setupPlayer();
         this.setupCamera(); // TODO: ADD TO SCENE BASE ?
         this.setupEventCases(); // setup interactivity for events case in map1?
         this.visible = true;
         this.renderable = true;
-        $camera.moveToTarget($player);
+        //$camera.moveToTarget($player);
        //$stage.goto();
     };
 
@@ -55,7 +55,7 @@ class Scene_Map1 extends _Scene_Base {
 
     setupPlayer(){
         this.addChild($player.spine);
-       // this.addChild($player2.spine);
+        this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
         const startCase = $objs.cases[0];
         if( startCase ){
@@ -65,7 +65,7 @@ class Scene_Map1 extends _Scene_Base {
             $player.spine.zIndex = $player.y;
             $player.inCase = startCase; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
-        //$player2.moveToPlayer();
+        $player2.moveToPlayer();
         
     }
 

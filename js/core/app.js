@@ -124,7 +124,7 @@ document.addEventListener('keydown', (event) => {
     //TODO: REMOVE ME , is for debug pixi-projections
     const fpX = $camera._fpX;
     const fpY = $camera._fpY;
-    const fpf = $camera._fpf;
+    const fpf = $camera._fpF;
 
     if(event.keyCode === 37){ // arowLeft
         $camera.pivot.x-=20;
@@ -147,12 +147,13 @@ document.addEventListener('keydown', (event) => {
         //$camera.updateFarPointFromTarget(null,fpY+120);
     }
     if(event.keyCode === 107){ // pad+
-        $camera._fpF+=0.05;
-        //TweenLite.to($camera.far, 0.5, { factor: fpf+0.1, ease: Power4.easeOut });
+        const acc =  TweenLite.getTweensOf($camera).length;
+        TweenLite.to($camera, 1, { _fpF: fpf+0.01+(0.04*acc), ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(null,null,fpf+0.1);
     }
     if(event.keyCode === 109){ // pad-
-        $camera._fpF-=0.05;
+        const acc =  TweenLite.getTweensOf($camera).length;
+        TweenLite.to($camera, 1, { _fpF: fpf-0.01-(0.04*acc), ease: Power4.easeOut });
         //TweenLite.to($camera, 0.5, { _fpf: fpf-0.1, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(null,null,fpf-0.1);
     }

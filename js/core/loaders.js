@@ -240,7 +240,7 @@ class _coreLoader {
         const data2 = {};
         for ( const key in this.buffers.ressources ) {
             const res = this.buffers.ressources[key];
-            const data = data2[key] = this.createBaseFrom(res);
+            const data = data2[key] = this.createBaseFrom(res,this.DataScenes[className]._sheets[key]);
             const key_n = data.meta && data.meta.normal_map && key+'_n';
             const isSpine = !!data.spineData ;
             const isVideo = !!data.dataVideo ;
@@ -273,7 +273,6 @@ class _coreLoader {
                 data.textures = _textures;
                 data.textures_n = _textures_n;
             };
-            data.dirArray = this.DataScenes[className]._sheets[key].dirArray;
             // add only if need
             !this.Data2[key] && Object.defineProperty(this.Data2, key, { value: data, enumerable: !(this.buffers.className === 'Scene_Boot'), configurable: true });
         };
@@ -310,15 +309,18 @@ class _coreLoader {
         return textures_n;
     };
 
-    createBaseFrom(res) {
+    createBaseFrom(res,_base) {
         const base = {
             name : res.name,
+            dirArray:_base.dirArray,
+            classType:_base.dirArray[1],
+            groupID:_base.dirArray[2],
             perma: this.buffers.className === 'Scene_Boot',
             ...( res.isVideo ?  {dataVideo: res.data} : res.data ),
             ...( res.data.meta ? {normal: !!res.data.meta.normal_map } : {normal: true } ), //FIXME: find way to check spine normal ?
             ...( res.spineData ? {meta: {}} : void 0 ),
             ...( res.spineData ? {spineData: {}} : void 0 ),
-            ...( 
+            ...(
                 res.spineData ?       { type:'spineSheet'}:
                 res.data.animations ? { type:'animationSheet'}:
                 res.isVideo?          { type:'video'}:

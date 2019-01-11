@@ -11,7 +11,7 @@ NOTE AND HELP:
 */
 class Scene_Title extends _Scene_Base {
     constructor(sceneData,className) {
-        super(sceneData,className);
+        super(null,className);// TODO:: ADD BACKGROUND
         this.name = className;
 
     };
@@ -21,7 +21,7 @@ class Scene_Title extends _Scene_Base {
     start(){
         this.visible = true;
         this.renderable = true;
-        this.startNewGame();
+        
     };
 
     update(delta){

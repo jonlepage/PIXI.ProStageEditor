@@ -12,7 +12,7 @@ function initializeEditor(event){
     if(event.key === "F1" && !$PME.started){
         console.log1('__________________initializeEditor:__________________ ');
         // REMOVE CURRENT CAMERA LISTENER
-        document.onwheel = null;
+        //document.onwheel = null;
         $huds.displacement.hide();
         $huds.pinBar.hide();
         $huds.pinBar.hide();
@@ -141,6 +141,7 @@ _PME.prototype.startEditorLoader = function() {
 
  _PME.prototype.startGui = function(data2) {
      this.Data2 = data2;
+     $Loader.Data2 = data2;
     // scene hack
     $stage.CAGE_EDITOR = new PIXI.Container();
     $stage.CAGE_EDITOR.parentGroup = $displayGroup.group[4]; 
@@ -318,7 +319,7 @@ _PME.prototype.startEditor = function() {
      (function(){
         let x = 100;
         for (const key in DATA2) { // this._avaibleData === DATA2
-            if(DATA2[key].dirArray[1] !== 'BG'){ // dont add BG inside library
+            if(DATA2[key].dirArray[1] !== 'backgrounds'){ // dont add BG inside library
                 const cage = build_ThumbsGUI(DATA2[key]); // create from Data ""
                 CAGE_LIBRARY.list.push(cage);
             };
@@ -361,8 +362,9 @@ _PME.prototype.startEditor = function() {
 
     // convert current objs to editor format
     (function() {
+        return console.log('TODO:');
         $objs.list_master.forEach(cage => {
-            const dataBase = DATA2[cage.dataName];
+            const dataBase = DATA2[cage.dataObj.name];
             create_DebugElements.call(cage, dataBase);
             
             cage._events = {}; // remove event
@@ -809,12 +811,14 @@ _PME.prototype.startEditor = function() {
     // setup for background and maps informations => CAGE_MAP
     function open_dataBGInspector(cage) {
         if(iniSetupIzit()){return console.error('please Wait izit not cleared')}
-        const dataValues = cage.getDataValues();
+        cage = cage || new Container_Background();
+        const data = cage.dataObj.clone(); // on travail sur un clone, si cancel, use default, si apply, use clone
+
+        //const dataValues = cage.getDataValues();
         // get BG list for options html
-        let bgList = Object.keys(DATA2).filter(word => DATA2[word].dirArray.contains("BG") );
+        let bgList = Object.keys(DATA2).filter(word => DATA2[word].dirArray.contains("backgrounds") );
         bgList.unshift(false);
         bgList = bgList.map(v => [v,v]); 
-        //[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]
         iziToast.info( $PME.izitBackgroundEditor(bgList) );
         // create select for change BG
         const HTMLSelectBG = document.getElementById('p_dataName');
@@ -822,13 +826,13 @@ _PME.prototype.startEditor = function() {
             if (DATA2[s].isBG) {
                 const opt = document.createElement("option");
                 opt.text = DATA2[s].name;
-                opt.selected = (dataValues.p.dataName === DATA2[s].name);
+               // opt.selected = (dataValues.p.dataName === DATA2[s].name);
                 HTMLSelectBG.add(opt);
             };
         });  
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-        create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
-        setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+        create_dataIntepretor.call(data); // create the data Interpretor listener for inputs and buttons
+        //setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
     };
     
     // setup for tile in map
@@ -841,13 +845,12 @@ _PME.prototype.startEditor = function() {
     };
         
     // open data HTML inspector
-    function create_dataIntepretor(dataValues){
+    function create_dataIntepretor(){
         const dataIntepretor = document.getElementById("dataIntepretor");
         dataIntepretor.oninput = (function(event){
             const e = event.target;
             const type = e.type;
             const id = e.id.split("_");
-            
             if(type === "text"){
                 dataValues[id[0]][id[1]] = String(e.value);
             };
@@ -885,21 +888,15 @@ _PME.prototype.startEditor = function() {
             if(type === "select-one"){
                 // convert to boolean.
                 e.value = (e.value==="true" || e.value === "false")? JSON.parse(e.value) : e.value;
-                dataValues[id[0]][id[1]] = e.value;
-                // if is BG, create new base
+                this.dataValues[id[0]][id[1]] = e.value;
+                // if is backgrounds
                 if(id[1] === "dataName"){
-                    const dataBase = DATA2[e.value];
-                    $stage.scene.createBackgroundFrom(dataValues,dataBase); // pass dataBase
-                    dataValues = this.getDataValues(dataBase);
-                    dataBase && this.createBases(dataBase);
-                    setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+                    $stage.scene.createBackgroundFrom(this); // pass dataBase
+                    $camera.initialize(true);
                 };
-                if(dataValues.p.type === "animationSheet"){
-                    this.play(0);
-                }
             };
-            this.asignValues(dataValues, false);
-            this.Debug && refreshDebugValues.call(this);
+            //this.asignValues(dataValues, false);
+            //this.Debug && refreshDebugValues.call(this);
         }).bind(this);
         // BUTTONS
         dataIntepretor.onclick = (function(event){
@@ -908,7 +905,7 @@ _PME.prototype.startEditor = function() {
                 if(e.id==="copy"){ copyData(OBJ, Data_Values) };// apply to all and close
                 if(e.id==="save"){ startSaveDataToJson(true) };// call save json with scan options true:
                 if(e.id==="close"){ close_dataInspector(); };// call save json with scan options true:
-                if(e.id==="apply"){ close_dataInspector.call(this, dataValues) };// apply and close
+                if(e.id==="apply"){ close_dataInspector(this) };// apply and close
                 if(e.id==="cancel"){close_dataInspector.call(this)};// cancel and close
                 if(e.id==="reset"){ // reset dataValues to old dataValues
                     this.asignValues(this.dataValues, false);
@@ -984,9 +981,12 @@ _PME.prototype.startEditor = function() {
     };
 
     // close the data HTML inspector
-    function close_dataInspector(dataValues){
+    function close_dataInspector(dataObj){
         // if is a gui inspectors ?
-        if(this.dataValues){
+        dataObj.link.asignDataValues(dataObj);
+        dataObj.link.dataObj = dataObj;
+
+        /*if(this.dataValues){
             // if cancel, and if old value not have heaven, destroyHeaven
             if(!dataValues && this.dataValues.d && !this.dataValues.d.setDark){
                 this.d.destroyHeaven();
@@ -994,7 +994,7 @@ _PME.prototype.startEditor = function() {
             };
             const oldDataBack = dataValues || this.dataValues; // add or back to old values
             this.asignValues(oldDataBack, true);
-        };
+        };*/
 
         iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
     
@@ -1214,7 +1214,7 @@ _PME.prototype.startEditor = function() {
 
     function create_DebugElements(dataBase){
         const Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
-        if(!this.type){ // if no data type, it a "thumbs"
+        if(this.buttonType==='thumbs'){ // if no data type, it a "thumbs"
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
             const previews = create_Previews(dataBase.baseTextures); // sprites preview reference;
             const icons = create_IconsFilters(dataBase); // icons
@@ -1232,8 +1232,7 @@ _PME.prototype.startEditor = function() {
             this.Debug = Debug;
             this.addChildAt(Debug.bg,0);
             this.addChild(this.Debug.ico);
-        };
-        if(this.type === "tileSheet" || this.type === "animationSheet" || this.type === "spineSheet"){
+        }else{
             let w = this.d.width;
             let h = this.d.height;
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
@@ -1283,18 +1282,18 @@ _PME.prototype.startEditor = function() {
             this.Debug = Debug;
             this.addChildAt(Debug.bg,0);
             this.addChild(this.Debug.an, this.Debug.piv, this.Debug.hitZone);
-        };
+        }
+
     };
 
-    // create tiles for ThumbsGUI libs
+    // create tiles for ThumbsGUI libs, special, utilise simple pixi container, pas de data
     function build_ThumbsGUI(dataBase){
-        const cage = new PIXI.CageContainer(dataBase);
-        cage.dataBase = dataBase; // ref database for thumbs only
-        cage.d.scale.set( getRatio(cage.d, 134, 100)); //ratio for fitt in (obj, w, h)
-        create_DebugElements.call(cage,dataBase);
+        const cage = new Container_Base(dataBase);
+        cage.d.scale.set( getRatio(cage, 134, 100)); //ratio for fitt in (obj, w, h)
         cage.buttonType = "thumbs";
         cage.alpha = 0.75;
         cage.interactive = true;
+        create_DebugElements.call(cage,dataBase);
         cage.on('pointerover', pointer_overIN);
         cage.on('pointerout', pointer_overOUT);
         cage.on('pointerup', pointer_UP);
@@ -1303,52 +1302,32 @@ _PME.prototype.startEditor = function() {
 
     // create tiles for tilesGUI
     function build_tilesGUI(dataBase, textureName){
-        let cage;
-        switch (dataBase.type) {
-            case "animationSheet":
-            cage =  new PIXI.ContainerAnimations(dataBase, textureName);break;
-            case "spineSheet":
-            cage =  new PIXI.ContainerSpine(dataBase, textureName);break;
-            default:
-            cage =  new PIXI.ContainerTiles(dataBase, textureName);break;           
-        }
+        const dataObj = $objs.newDataObjsFrom(null,dataBase,textureName);
+        const cage = $objs.newContainerFrom(dataObj);
         //delete dataDefault.p.parentGroup; // remove parentGroupe because in the tilesGui, we dont use parents and normal
         create_DebugElements.call(cage, dataBase);
-        // hide non essential for tileLibs
-        cage.Sprites.n? cage.Sprites.n.renderable = false : void 0;
-        //cage.Debug.piv? cage.Debug.piv.renderable = false : void 0;
-
-        
+        cage.n? cage.n.renderable = false : void 0;
+        cage.buttonType = "tileLibs";
         cage.interactive = true;
         cage.on('pointerover', pointer_overIN);
         cage.on('pointerout', pointer_overOUT);
         cage.on('pointerup', pointer_UP);
-        
         cage.on('zoomTileLibs', wheelInLibs);
         //cage.on('pointermove', checkAnchor); TODO: permet de changer le anchor par default de 0.5 a unknow...
-        cage.buttonType = "tileLibs";
         return cage;
     };
 
     // create tiles for mouse or map
     function build_Sprites(fromCage){
-        const dataBase = DATA2[fromCage.dataValues.p.dataName];
-        const textureName = fromCage.dataValues.p.textureName;
-        const dataValues = fromCage.getDataValues(); // update and clone dataValues from ref
-        // hack parentGroup and also Anchors
-            dataValues.p.parentGroup = +CurrentDisplayGroup; // hack current parent groups
-        let cage;
-        switch (dataBase.type) {
-            case "animationSheet":
-            cage =  new PIXI.ContainerAnimations(dataBase, textureName, dataValues);break;
-            case "spineSheet":
-            cage =  new PIXI.ContainerSpine(dataBase, textureName, dataValues);break;
-            default:
-            cage =  new PIXI.ContainerTiles(dataBase, textureName, dataValues);break;           
-        }
-        create_DebugElements.call(cage, dataBase);
+        const dataObj = fromCage.dataObj.clone();
+        dataObj.p.parentGroup = CurrentDisplayGroup; // hack parent group 
+        const cage = $objs.newContainerFrom(dataObj);
+        create_DebugElements.call(cage);
+        cage.convertTo2d();
+        
 
         if(fromCage.buttonType === "tileLibs" || fromCage.buttonType === "tileMap"){
+            // hack projection
             cage.buttonType = "tileMouse";
             cage.interactive = true;
         }else
@@ -1376,20 +1355,21 @@ _PME.prototype.startEditor = function() {
         // check if alrealy opened ???  open_tileSheet // return hide
         if(check_tileSheetStatus(InLibs)){return};
         // create tiles from a LIST ARRAY for the tilesBox
-        CAGE_TILESHEETS.name = InLibs.dataName;
+        CAGE_TILESHEETS.name = InLibs.dataObj.name;
         
         const list = [];
-        const dataBase = DATA2[InLibs.dataName];
+        const dataBase = InLibs.dataObj;
         const textures = dataBase.textures || dataBase.skins;
         EDITOR.skeleton.findSlot("TileBarLeft").title.text = `(${Object.keys(textures).length}): ${dataBase.name}.json`; // update title 
         Object.keys(textures).forEach(textureName => {
             const cage = build_tilesGUI(dataBase, textureName);
+            
             list.push(cage); // reference,  sheetName
             CAGE_TILESHEETS.addChild(cage);
         });
         CAGE_TILESHEETS.list = list;
         // if cache not registered, compute path or copy value from cache.
-        const cacheDataName = (InLibs.dataBase.name);
+        const cacheDataName = (dataBase.name);
         if(!CACHETILESSORT[cacheDataName]){
             CACHETILESSORT[cacheDataName] = pathFindSheet(list,20);
         }else{ // alrealy exist caches positions
@@ -1404,11 +1384,12 @@ _PME.prototype.startEditor = function() {
             element.x+= Math.abs(exeed.x);
             element.y+= Math.abs(exeed.y);
         });
+        console.log('list: ', list);
     };
 
     function check_tileSheetStatus(InLibs) {
         // if open, and same name or diff name, hide or clear
-        const sameName = CAGE_TILESHEETS.name === InLibs.dataName;
+        const sameName = CAGE_TILESHEETS.name === InLibs.dataObj.name;
 
         if(CAGE_TILESHEETS.renderable && sameName){ close_tileSheet(); return true; };
         if(CAGE_TILESHEETS.renderable && !sameName){ clear_tileSheet(); return false; }
@@ -1462,8 +1443,9 @@ _PME.prototype.startEditor = function() {
     };
 
     function setStatusInteractiveObj(status, protect){
-        for (let i=0, l= $objs.list_master.length; i<l; i++) {
-            const _cage =  $objs.list_master[i];
+        const objs = $objs.dataObjsFromScenes[$objs._sceneName].objs
+        for (let i=0, l= objs.length; i<l; i++) {
+            const _cage =  objs[i];
             if(_cage===protect){continue};
             _cage.interactive = status;
         };
@@ -1474,12 +1456,12 @@ _PME.prototype.startEditor = function() {
         setStatusInteractiveObj(false); // disable interactivity
         close_editor(true);
         const cage = build_Sprites(InTiles) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-        cage.position.set( mMX, mMY);
-        CAGE_MAP.addChild(cage);
-        CAGE_MOUSE.list = cage;
         cage.buttonType = "tileMouse";
-        // disable other interactive obj map
+        CAGE_MOUSE.list = cage;
+        $stage.scene.addChild(cage);
         
+        
+        // disable other interactive obj map
         const LB = cage.getLocalBounds();
         cage.Debug.hitZone.clear();
         cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
@@ -1492,35 +1474,26 @@ _PME.prototype.startEditor = function() {
     };
 
     // add to map new obj + Obj.Asign a copy unique of html Editor json asigned addtomap
-    function add_toScene(alreadyOnMap) {
-        if(alreadyOnMap){
-            // si exist sur la map, cetai juste un depalcement , dont call new build_Sprites
-            this.buttonType = "tileMap";
-            this.interactive = false;
-            CAGE_MOUSE.list = null;
-            this.asignValues( PIXI.CageContainer.prototype.getDataValues.call(this) );
-            ObjMouse = null;
-            return add_toMouse(this);
-        }else{
-            const cage = build_Sprites(this) //(InTiles.Data, InTiles.Sprites.groupTexureName);
-            //TODO: if pined in a line. get position of old prite this
-            if(FreezeMouse){ // freeze mouse allow to keep the position of the clone this x,y
-                FreezeMouse = false;
-                cage.x = this.x;
-                cage.y = this.y;
-            }else{
-                cage.x = mMX;
-                cage.y = FreezeMY?FreezeMY.y : mMY;
-            };
-            cage.Debug.bg.renderable = false;
-            CAGE_MAP.addChild(cage);
-            $objs.list_master.push(cage);
-    
-            cage.Debug.hitZone.clear();
-            const LB = cage.getLocalBounds();
-            cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
-            cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
-        };
+    function add_toScene(_cage) {
+        _cage.buttonType = 'tileMap'
+        CAGE_MOUSE.list = null;
+        // duplicated
+        const cage = build_Sprites(_cage) //(InTiles.Data, InTiles.Sprites.groupTexureName);
+        //TODO: if pined in a line. get position of old prite this
+        if(FreezeMouse){ // freeze mouse allow to keep the position of the clone this x,y
+            FreezeMouse = false;
+            cage.x = this.x;
+            cage.y = this.y;
+        }
+        cage.Debug.bg.renderable = false;
+        $stage.scene.addChild(cage);
+        CAGE_MOUSE.list = cage;
+
+        cage.Debug.hitZone.clear();
+        const LB = cage.getLocalBounds();
+        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        cage.Debug.hitZone.lineStyle(2, 0x0000FF, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+      
     };
 
     function execute_buttons(buttonSprite) {
@@ -1615,14 +1588,14 @@ _PME.prototype.startEditor = function() {
 
     // active filter1, for thumbs
     function activeFiltersFX1(cage,type){
-        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
+        cage.d._filters = [ FILTERS.OutlineFilterx4 ]; // thickness, color, quality
         cage._filters = [ FILTERS.OutlineFilterx16 ];
         cage.Debug.bg._filters = [ FILTERS.OutlineFilterx16 ];
         cage.alpha = 1;
     };
 
     function clearFiltersFX1(cage,type){
-        cage.Sprites.d._filters = null; // thickness, color, quality
+        cage.d._filters = null; // thickness, color, quality
         cage._filters = null;
         cage.Debug.bg._filters = null;
         cage.alpha = 0.75;
@@ -1655,13 +1628,13 @@ _PME.prototype.startEditor = function() {
     function activeFiltersFX3(cage,checkHit){ //TODO: ALT fpour permuter entre les mask et alpha, mettre dans un buffer []
         cage.Debug.hitZone.renderable = true;
         cage._filters = [ FILTERS.OutlineFilterx8Green];
-        cage.Sprites.d._filters = [ FILTERS.OutlineFilterx8Green ,FILTERS.OutlineFilterx6White];
+        cage.d._filters = [ FILTERS.OutlineFilterx8Green ,FILTERS.OutlineFilterx6White];
     };
 
     function clearFiltersFX3(cage,hideInteractive){ //TODO: ALT fpour permuter entre les mask alpha, mettre dans un buffer []
         cage._filters = null;
-        cage.Sprites.d._filters = null; // thickness, color, quality ,
-        cage.Sprites.n? cage.Sprites.n._filters = null : void 0; // thickness, color, quality ,
+        cage.d._filters = null; // thickness, color, quality ,
+        cage.n? cage.n._filters = null : void 0; // thickness, color, quality ,
         cage.Debug.bg.renderable = false;
         cage.Debug.hitZone.alpha = 1;
         cage.Debug.piv.alpha = 1;
@@ -1669,8 +1642,8 @@ _PME.prototype.startEditor = function() {
             cage.interactive = false;
             cage.Debug.hitZone.alpha = 0.3;
             cage.Debug.piv.alpha = 0.5;
-            cage.Sprites.d._filters = [new PIXI.filters.AlphaFilter (0.2)];
-            cage.Sprites.n? cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter (0.2)] : void 0;
+            cage.d._filters = [new PIXI.filters.AlphaFilter (0.2)];
+            cage.n? cage.n._filters = [new PIXI.filters.AlphaFilter (0.2)] : void 0;
             InMapObj = null;
         };
     };
@@ -1713,7 +1686,7 @@ _PME.prototype.startEditor = function() {
 
         // if mouse have sprite =>update
         if(CAGE_MOUSE.list && !MouseHold && !FreezeMouse){ // update cages list hold by mouse
-            CAGE_MOUSE.list.position.set(mMX,FreezeMY?FreezeMY.y : mMY);
+            CAGE_MOUSE.list.position.set($camera.mouseToMapX3D,FreezeMY?FreezeMY.y : $camera.mouseToMapY3D);
             CAGE_MOUSE.list.zIndex = mMY;
         };
         
@@ -1961,7 +1934,7 @@ _PME.prototype.startEditor = function() {
             }
             if(this.buttonType === "tileMouse"){
                 // if alrealy instance of map, c'etais un deplacement d'objet, just need deltete reference
-                return add_toScene.call(this, $objs.list_master.contains(this)); 
+                return add_toScene(this); 
             }
             if(this.buttonType === "tileMap" && event.data.originalEvent.ctrlKey){ // in mapObj
                 return document.getElementById("dataEditor") ? console.error("WAIT 1 sec, last dataEditor not cleared") : open_dataInspector(this);
@@ -2063,8 +2036,8 @@ _PME.prototype.startEditor = function() {
 
     function keydown_Editor(event) {
         if( isFinite(event.key) ){
-            const spriteSlot = EDITOR.skeleton.findSlot("gb"+event.key).currentSprite;
-            spriteSlot && execute_buttons(spriteSlot);
+            //const spriteSlot = EDITOR.skeleton.findSlot("gb"+event.key).currentSprite;
+           // spriteSlot && execute_buttons(spriteSlot);
         };
 
         if(FastModesObj){
@@ -2089,9 +2062,9 @@ _PME.prototype.startEditor = function() {
             // show all normals
             if(CAGE_TILESHEETS.list){
                 CAGE_TILESHEETS.list.forEach(cage => {
-                    if(cage.Sprites.n && cage.Sprites.d){
-                        cage.Sprites.n.renderable = !cage.Sprites.n.renderable;
-                        cage.Sprites.d.renderable = !cage.Sprites.d.renderable;
+                    if(cage.n && cage.d){
+                        cage.n.renderable = !cage.n.renderable;
+                        cage.d.renderable = !cage.d.renderable;
                     };
                 });
             };
@@ -2116,8 +2089,8 @@ _PME.prototype.startEditor = function() {
                 }else{ // unFocus
                     const hit = hitCheck(cage,InMapObj);
                     if(hit && cage.zIndex>InMapObj.zIndex){
-                        cage.Sprites.d._filters = [new PIXI.filters.AlphaFilter(0.3),FILTERS.OutlineFilterx8Red];
-                        cage.Sprites.n._filters = [new PIXI.filters.AlphaFilter(0.1)];
+                        cage.d._filters = [new PIXI.filters.AlphaFilter(0.3),FILTERS.OutlineFilterx8Red];
+                        cage.n._filters = [new PIXI.filters.AlphaFilter(0.1)];
                     };
                 }
             });
@@ -2157,8 +2130,6 @@ _PME.prototype.startEditor = function() {
         }
         CAGE_MAP.pivot.x+=(ScrollX-CAGE_MAP.pivot.x)/(scrollSpeed*delta);
         CAGE_MAP.pivot.y+=(ScrollY-CAGE_MAP.pivot.y)/(scrollSpeed*delta);
-        squareFar.x = (CAGE_MAP.pivot.x)+squareFar.position.__x;
-        squareFar.y = CAGE_MAP.pivot.y+squareFar.position.__y;
     });
     //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
     editorTiker.start();
@@ -2208,10 +2179,10 @@ _PME.prototype.startEditor = function() {
     };
 
     function create_SceneJSON(options) {
-        let _lights      = addToSave_Lights      () ; // scene global light
+        let _lights      ={};// addToSave_Lights      () ; // scene global light
         let _background  = addToSave_BG          () ; // scene bg
-        let _objs        = addToSave_OBJS        () ; // obj use in this scene
-        let _sheets      = addToSave_Sheets      (_objs,_background) ; // all cheets used in this scene
+        let _objs        =[];// addToSave_OBJS        () ; // obj use in this scene
+        let _sheets      = addToSave_Sheets      (_objs,_background) ; // all cheets used in this scene for load dataBases tuexture
         const sceneData = { system:options.systemInfo, _lights , _background, _sheets, _objs,   };
 
         const fs = require('fs');
@@ -2240,7 +2211,7 @@ _PME.prototype.startEditor = function() {
     //save scene background data
     function addToSave_BG() {
         if($stage.scene.background){
-            return $stage.scene.background.getDataValues();
+            return $stage.scene.background.dataObj.getDataValuesFrom (true);
         }else{
             return null;
         }

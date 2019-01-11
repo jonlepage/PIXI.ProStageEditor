@@ -11,7 +11,7 @@
 /** @memberof Container_Base */
 class Container_Spine extends Container_Base {
     constructor(dataObj, dataBase, skinName) {
-        super();
+        super(dataObj, dataBase, skinName);
         dataObj = dataObj || new dataObj_base( this.getDataValues(dataBase, skinName) );
         this.DataLink = dataObj;
         this.createBases(dataObj);
@@ -19,7 +19,7 @@ class Container_Spine extends Container_Base {
         this.addChild(this.s);
 
     };
-    // getters for ContainerSpine
+    // getters for ContainerSpine TODO: faire pareille que Container_Animation pour les getters
     get s() { return this.Sprites.s };
 
 
@@ -64,7 +64,7 @@ class Container_Spine extends Container_Base {
     };
 
     affines (value) {
-        this.s.proj.affine = value;
+        this.proj.affine = value;
     };
 
 

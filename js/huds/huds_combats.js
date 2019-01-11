@@ -43,7 +43,7 @@ class _huds_combats{
         //lRec.parentGroup = $displayGroup.group[0];
         this.sprites.lRec = lRec;
 
-        this.createMathDmgBox();
+       // this.createMathDmgBox();
         
     };
 

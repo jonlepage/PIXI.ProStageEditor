@@ -20,13 +20,19 @@ class _objs{
         this.spritesFromScene = []; // contien les sprites container par scene
         this.dataObjsFromScenes = {}; // contients les datas pour les sprites par scene, EVOLUTIF
         this.pathBuffer = null; // buffer path to move 
-        this.classLink = {
+        this.classLink = { // voir les folders window , selon leur parent 
             'case': dataObj_case,
             'door': dataObj_door,
             'chara': dataObj_chara,
             'tree': dataObj_tree,
             'mapItem': dataObj_mapItem,
             'base': dataObj_base, // basic, rien special, les aurte class herite des base
+        };
+        // avaible type of container class link
+        this.classContainer = {
+         'animationSheet':Container_Animation,
+         'spineSheet'    :Container_Spine    ,
+         'tileSheet'     :Container_Tile     ,
         }
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
         this.actionsCasesSystem  = {
@@ -72,11 +78,10 @@ class _objs{
     initialize(){
         const dataScenes = $Loader.DataScenes;
         // initialise pour chaque scene, les data de base
-        let globalID = 0; // le global game ID, utile pour l'editeur ?
+        let globalID = 0; // le GLOBAL game ID, utile pour l'editeur ?
         Object.keys(dataScenes).forEach(sceneName => {
-            const dataObjs = dataScenes[sceneName]._objs;
-            if(dataObjs){
-                const id = +sceneName.split('Scene_Map')[1];
+            const savedData = dataScenes[sceneName]._objs;
+            if(savedData){
                 // linker, batching, each obj from id
                 this.dataObjsFromScenes[sceneName] = {
                     objs:[], // local id map objets
@@ -94,17 +99,16 @@ class _objs{
                     get decors() { return Array.from(this._decors  , id => this.objs[id]) },
                     
                 };
-                // reations et generations des datas (not random initialised)
-                for (let i=0, l=dataObjs.length; i<l; i++) {
-                    const dataValues = dataObjs[i];
-                    const classType = dataValues.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
-                    const classLink = this.classLink[classType];
-                    const linkArrayKey = `_${classType}sID`;
-                    const targetArray = this.dataObjsFromScenes[sceneName][linkArrayKey];
+                // creet un baseData avec les saved
+                for (let i=0, l=savedData.length; i<l; i++) {
+                    const data = savedData[i];
+                    const classType = data.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
+                    const classLink = this.classLink[classType] || dataObj_base;
+                    const targetArray = this.dataObjsFromScenes[sceneName][`_${classType}sID`];
                     const arrayID = targetArray? targetArray.length : void 0; // used for retrace dataObjsFromScenes._???ID index
-                    const obj = classLink ? new classLink(dataValues,i,globalID,arrayID) : dataValues;
+                    const dataObj = new classLink(dataValues,i,globalID,arrayID);//TODO: TRANSFERER getDataValues (dataBase, textureName) {
                     targetArray && targetArray.push(i);
-                    this.dataObjsFromScenes[sceneName].objs.push(obj);
+                    this.dataObjsFromScenes[sceneName].objs.push(dataObj);
                 };
                 globalID++;
             };
@@ -159,7 +163,6 @@ class _objs{
                 for (let i=0, l=ranIndex.length; i<l; i++) {
                     const id = ranIndex[i];
                     cases[id].initialize(mapColorInfluencer,mapActionInfluencer,l,dificulty);
-                   
                 };
             };
         });
@@ -169,7 +172,6 @@ class _objs{
     // map1 start
     createSpritesObjsFrom(sceneName) {
         this._sceneName = sceneName;
-
         const dataObjs = this.dataObjsFromScenes[sceneName].objs;
         for (let i=0, l=dataObjs.length; i<l; i++) {
             const dataObj = dataObjs[i];
@@ -183,240 +185,47 @@ class _objs{
             cage.id = i;
             this.spritesFromScene[i] = cage;
         };
-    };
-
-
-
-    // setuping case for master TODO: rendu ici, aligner les sprite type setCaseEventType, les textures, et creer 7un swap pour les cases explorers pas le joueur
-    setup_cases(mapID){
-        const dataCases = this.dataObjsFromScenes[mapID]._cases;
-        // IF IS A CASE EVENT?
-        for (let i=0, l=dataCases.length; i<l; i++) {
-            const dataCase = dataCases[i];
-            const gID = dataCase.gID; // global id
-            const cage = this.list_master[gID];
-            cage.setCaseColorType(dataCase._caseColor);
-            cage.setCaseEventType(dataCase._caseType);
-            cage.dataCase = dataCase;
-         
-        };
         this.setInteractive(true,true);
-        //TODO: Faire un sprite pour les door, et tous les portes pourront etre interactive
-        /*if(dataValues.p.textureName === 'doorf2cc'){
-            cage.interactive = true;
-            cage.on('pointerover', $objs.pointer_inEventDoor , cage);
-            cage.on('pointerout' , $objs.pointer_outEventDoor, cage);
-            cage.on('pointerup'  , $objs.pointer_upEventDoor , cage);
-        }*/
     };
 
+    // selon les type de data , ajouter les interactiviters GLOBAL
     setInteractive(value,addOn) {
         // cases
-        for (let i=0, l=this.list_cases.length; i<l; i++) {
-            const c = this.list_cases[i];
-            c.interactive = value;
-            if(addOn){
-                c.on('pointerover' , this.pointer_inEventCase ,this);
-                c.on('pointerout'  , this.pointer_outEventCase,this);
-                c.on('pointerup'   , this.pointer_upEventCase ,this);
+        for (let i=0, l=this.spritesFromScene.length; i<l; i++) {
+            if ( this.spritesFromScene[i].DataLink.setInteractive ){
+                this.spritesFromScene[i].DataLink.setInteractive(value,addOn);
             }
         };
     };
 
-
-    pointer_inEventCase (e) {
-        const c = e.currentTarget;
-        if(!c.conditionInteractive || c.conditionInteractive()){
-            c.pointerIn = true;
-            c.alpha = 1;
-            $huds.displacement._stamina && this.computePathTo(c); // si on a stamina, on peut ce deplacer
-        };
+    // dataValues or from new empty [dataBase,textureName]
+    newDataObjsFrom(dataValues,dataBase,textureName){
+        const classType = dataValues? dataValues.b.classType : dataBase.classType;
+        const dataClassType = this.classLink[classType] || dataObj_base;
+        return new dataClassType(dataValues,dataBase,textureName);
     };
+
+    // dataValues or from new empty [dataBase,textureName]
+    newContainerFrom(dataObj){
+        const containerClassType = this.classContainer[dataObj.b.type];
+        return new containerClassType (dataObj)
+    };
+
+
+
     
-    pointer_outEventCase(e) {
-        const c = e.currentTarget;
-        if(c.pointerIn){
-            c.pointerIn = false;
-            c.alpha = 1;
-            // clearn pattern cases
-            if(this.pathBuffer){
-                this.pathBuffer = null;
-                for (let i = this.list_cases.length; i--;) {
-                    this.list_cases[i].d.tint = 0xffffff;
-                    this.list_cases[i].d._filters = [];
-                 };
-            };
-        }
-
-    };
-    
-    pointer_upEventCase(e) {
-        const c = e.currentTarget;
-        if(c.pointerIn && this.pathBuffer){
-            // start move path
-            $objs.setInteractive(false);
-            $player.initialisePath(this.pathBuffer);
-        };
-    };
-
-
-    // calcule le chemin vers un target
-    computePathTo(target) {
-        const playerCase = $player.inCase;
-        const gloabalVariable_murMaisonDetruit = false; //TODO: DELETE ME
-        // map all path connextion , only if allowed by conditionInteractive of the case
-        const globalPathConnextions = this.list_cases.map((c) => {
-            if(!c.conditionInteractive || c.conditionInteractive()){return c.pathConnexion};
-        }); // nodeConnextions
-        const startCaseID = $player.inCase.dataCase.lID;
-        const endCaseID = target.dataCase.lID;
-        const pattern = this.findShortestPath(globalPathConnextions, startCaseID, endCaseID) || [];
-        //const pattern = this.dfs(this.list_cases, 0, );
-
-        const allowed = $huds.displacement._stamina;
-        const greenFilter = new PIXI.filters.OutlineFilter (6, 0x1c6600, 1);
-        const redFilter = new PIXI.filters.OutlineFilter (8, 0x660000, 1);
-        for (let i = pattern.length; i--;) {
-            const id = pattern[i];
-            if(i>allowed){
-                //this.list_cases[id].d.tint = 0xa03d21;
-                this.list_cases[id].d._filters = [redFilter]
-
-            }else{
-                //this.list_cases[id].d.tint = 0x42f465;
-                this.list_cases[id].d._filters = [greenFilter]
-            }
-        };
-        this.pathBuffer = pattern || null;
-    };
-
-
-    // parcour chemin invers a partir du IDcase end et trouver connext vers ID start
-    extractShortest(predecessors, end) {
-        const nodes = [];
-        let u = end;
-		while (u !== void 0) {
-			nodes.push(u);
-			u = predecessors[u];
-		};
-		nodes.reverse();
-		return nodes;
-	};
-
-    addToOpen(cost, vertex, open) {
-        const key = "" + cost;
-        if (!open[key]) open[key] = [];
-        open[key].push(+vertex);
-    }
-
-    findShortestPath(globalPathConnextions, startCaseID, endCaseID) {
-        const nodes = [startCaseID,endCaseID];
-        let startID      = nodes.shift();
-        let path         = []           ;
-        let endID        = null         ;
-        let connectedIDList = null         ;
-        let shortest     = null         ;
-		while (nodes.length) { // force one pass
-			endID = nodes.shift();
-			connectedIDList = this.findPaths(globalPathConnextions, startID, endID); // 
-			if (connectedIDList) {
-				shortest = this.extractShortest(connectedIDList, endID);
-				if (nodes.length) {
-					path.push.apply(path, shortest.slice(0, -1));
-				} else {
-					return path.concat(shortest); // finish succeed
-				}
-			} else { return null }; // break
-			startID = endID;
-		}
-    }
-
-	findPaths(globalPathConnextions, startID, endID) {
-        const costs = {};
-        const connectedIDList = {};
-        let open = {'0': [startID]}; // id:start
-        let keys = null;
-		costs[startID] = 0;
-		while (open) {
-			if(!(keys = Object.keys(open)).length) break;
-			keys.sort((a,b)=>{return parseFloat (a) - parseFloat (b)});
-            let key = keys[0];
-            let bucket = open[key];
-            let node = bucket.shift();
-            let currentCost = parseFloat(key);
-            let adjacentNodes = globalPathConnextions[node] || {};
-			if (!bucket.length) delete open[key];
-			for (const vertex in adjacentNodes) {
-                let cost = adjacentNodes[vertex],
-                    totalCost = cost + currentCost,
-                    vertexCost = costs[vertex];
-                if ((vertexCost === void 0) || (vertexCost > totalCost)) {
-                    costs[vertex] = totalCost;
-                    this.addToOpen(totalCost, vertex, open);
-                    connectedIDList[vertex] = node;
-                };
-			};
-		};
-        if (costs[endID] === void 0) { return null; } 
-        else { return connectedIDList; };
-    };
     
 
     getDirXFromId (id1,id2) {
         if (Number.isFinite(id1) && Number.isFinite(id2) ){
-            const c1 = this.list_cases[id1].x;
-            const c2 = this.list_cases[id2].x;
+            const c1 = this.cases[id1].x;
+            const c2 = this.cases[id2].x;
             return c1<c2 && 6 || c2<c1 && 4 || false;
         };
         return false;
     };
 
 
-    newHitFX() { //TODO: FIXME:
-        const textureName = "casesHitsG";
-        const dataBase = $Loader.Data2.caseFXhit1;
-        const dataValues = PIXI.CageContainer.prototype.getDataValues(dataBase, textureName);
-        dataValues.p.parentGroup = 1;
-        var fx = new PIXI.ContainerAnimations(dataBase, textureName,dataValues);
-         fx.parentGroup = $displayGroup.group[1];
-         fx.position.set(this.x,this.y);
-         fx.pivot.y = -140;
-         fx.zIndex = fx.y-1;
-         fx.scale.set(0.8,0.8)
-        this.parent.addChild(fx);
-    };
-
-    // try execute case not visited
-    executeCaseFrom(inCase){
-        if(inCase.dataCase.visited){
-            // malus , retour sur case visited
-        }else{
-            inCase.dataCase.visited = true;
-            this.executeCaseEventTypeFrom(inCase);
-        }
-    };
-
-    executeCaseEventTypeFrom(inCase){
-    //TODO: fair un eventCase Managers
-    $player.spine.d.state.addAnimation(3, "visiteCase", false);
-    inCase.Sprites.ctd.parentGroup = $displayGroup.group[4];
-    TweenLite.to(inCase.Sprites.ctd.position, 1.2, { y:inCase.Sprites.ctd.y-300, ease: Expo.easeOut });
-    TweenLite.to(inCase.Sprites.ctd.scale, 1.4, { x:2,y:2, delay:0.3,ease: Elastic.easeOut.config(1, 0.3),onComplete:()=>executeEvent() });
-    function executeEvent(){
-        // set to taked
-        inCase.Sprites.ctd.renderable = false;
-        inCase.Sprites.ctn.renderable = false;
-        $player.spine.d.state.addEmptyAnimation(3,0.4);
-        if(inCase.caseEventType === "caseEvent_gold"){
-            console.log('recive gold:', ~~(Math.random(100)*100));
-        }
-        if(inCase.caseEventType === "caseEvent_monsters"){
-            console.log('start Combats', 'monster ???');
-            $combats.intitialize(inCase.dataCase);
-        }
-    };
-
-    };
 
     destroy(obj, destroy) { // can be obj or string
         if(typeof obj === "object" ){
@@ -454,8 +263,8 @@ class _objs{
 
     // get from obj unique name
     getCase_FromName(name){
-        for (let i=0, l=this.list_cases.length; i<l; i++) {
-            if( this.list_cases[i].name === name){ return this.list_cases[i] };
+        for (let i=0, l=this.cases.length; i<l; i++) {
+            if( this.cases[i].name === name){ return this.cases[i] };
         };
         throw console.error('the case name not existe',name);
     };

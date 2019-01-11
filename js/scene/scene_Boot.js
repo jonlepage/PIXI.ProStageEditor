@@ -24,7 +24,7 @@ class Scene_Boot extends PIXI.Container {
         $objs.initialize();
         $items.initialize();
         $mouse.initialize(); // initialise mouse core
-        $player.initialize(); // create game player
+        //$player.initialize(); // create game player
         //$player2.initialize(); // create game player
         $huds.initialize();
         //$player2.initialize();

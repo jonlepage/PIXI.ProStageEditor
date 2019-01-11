@@ -12,32 +12,29 @@
 
 /** @memberof Container_Base */
 class Container_Tile extends Container_Base {
-    constructor(dataObj, dataBase, textureName) {
-        super();
-        dataObj = dataObj || new dataObj_base( this.getDataValues(dataBase, textureName) );
-        this.DataLink = dataObj;
-        this.createBases(dataObj);
-        this.asignDataValues(dataObj.dataValues, true);
-        this.addChild(this.d,this.n);
+    constructor(dataObj) {
+        super(dataObj); // dataObj_base selon dirArray TODO: refaire le system de random
+        
+
     };
 
     createBases (dataObj) {
-        const dataBase = dataObj.dataBase; // getter
-        const tex_d = dataBase.textures   [dataObj.dataValues.p.textureName     ]; // ref texture:diffuse
-        const tex_n = dataBase.textures_n [dataObj.dataValues.p.textureName+'_n']; // ref texture:normal
-        const d = new PIXI.Sprite(tex_d);//new PIXI.projection.Sprite2d(td);
-        const n = new PIXI.Sprite(tex_n);//new PIXI.projection.Sprite2d(tn);
+        const textureName = dataObj.b.textureName;
+        const td = dataObj.dataBase.textures   [textureName     ];
+        const tn = dataObj.dataBase.textures_n [textureName+'_n'];
+        const d = new PIXI.Sprite(td);//new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.Sprite(tn);//new PIXI.projection.Sprite2d(tn);
         this.Sprites = {d,n};
-        // Certain tile son special comme les CASES, qui contienne plusieur sprites
-        // special data type 
-        switch (dataObj.constructor.name) {
+        this.addChild(d,n);
+        /*switch (dataObj.constructor.name) {
             case "dataObj_case": this.createBases_case(dataObj); break;
-        };
+        };*/
     };
 
     // extend special Base sprites type: cases
     createBases_case(dataObj){
         //TODO: VERIFIER SI ON PEUT METTRE DANS  this.Sprites.d plutot
+        this._isCase = true; // help fast flags for affine projection
         const dataBase = dataObj.dataBase; // getter
         //cage color 
         const ccd = new PIXI.projection.Sprite2d(dataBase.textures.cColor);
@@ -48,7 +45,7 @@ class Container_Tile extends Container_Base {
             ccn.pivot.copy(ccd.pivot)
         this.Sprites.ccd = ccd;
         this.Sprites.ccn = ccn;
-       // this.addChild(ccd,ccn); TODO:
+        this.addChild(ccd,ccn); //TODO:
         // cage type
         const ctd = new PIXI.projection.Sprite2d( $Loader.Data2.caseEvents.textures.caseEvent_hide);
             ctd.parentGroup = PIXI.lights.diffuseGroup;
@@ -60,7 +57,7 @@ class Container_Tile extends Container_Base {
             ctn.position.copy(ctd.position);
         this.Sprites.ctd = ctd;
         this.Sprites.ctn = ctn;
-       // this.addChild(ctd,ctd); // TODO:
+        this.addChild(ctd,ctd); // TODO:
         [ccd,ccn].forEach(c => { c.renderable = false }); //FIXME: TEMP HIDE for camera 2d test
     }
 
@@ -94,8 +91,11 @@ class Container_Tile extends Container_Base {
     };
 
     affines (value) {
-        this.d.proj.affine = value;
-        this.n.proj.affine = value;
+        this.proj.affine = value;
+        if(!this._isCase){ // si pas une case
+            //this.d.proj.affine = value;
+            //this.n.proj.affine = value;
+        }
     };
 
 };//END CLASS
