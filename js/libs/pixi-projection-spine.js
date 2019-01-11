@@ -246,7 +246,7 @@ var pixi_projection;
         var GLBuffer = PIXI.glCore.GLBuffer;
         var premultiplyTint = PIXI.utils.premultiplyTint;
         var premultiplyBlendMode = PIXI.utils.premultiplyBlendMode;
-        var TICK = 0;
+        var TICK = 1 << 21;
         var BatchGroup = (function () {
             function BatchGroup() {
                 this.textures = [];
@@ -1684,7 +1684,7 @@ var pixi_projection;
             if (affine >= 2) {
                 var D = 0;
                 if (preserveOrientation) {
-                    D = mat3[0] * mat3[4] - mat3[1] * mat3[3];
+                    D = matrix.a * matrix.d - matrix.b * matrix.c;
                     if (D >= 0.0)
                         D = 1;
                     else
@@ -3050,7 +3050,7 @@ var pixi_projection;
             if (affine >= 2) {
                 var D = 0;
                 if (preserveOrientation) {
-                    D = mat3[0] * mat3[4] - mat3[1] * mat3[3];
+                    D = matrix.a * matrix.d - matrix.b * matrix.c;
                     if (D >= 0.0)
                         D = 1;
                     else
