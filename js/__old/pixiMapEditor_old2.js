@@ -69,21 +69,7 @@ function initializeEditor(event){
     };
 };
 
-// ┌------------------------------------------------------------------------------┐
-// GLOBAL $PME CLASS: _SLL for SPRITE LIBRARY LOADER
-//└------------------------------------------------------------------------------┘
-class _PME{
-    constructor() {
-        this.version = "v1.1.5A";
-        this._tmpRes_normal = {};
-        this._tmpRes_multiPack = {};
-        this._tmpRes = {};
-        this._tmpData = {}; // store tmp data for loader , wait to compute
-        this.Data2 = {};
-        this.editor = {}; // store editor
-        this.stage = null;
-    };
-  };
+
   const $PME = new _PME(); // global ↑↑↑
   console.log2('$PME.', $PME);
 
