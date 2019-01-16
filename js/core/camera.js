@@ -118,7 +118,7 @@ class _camera extends PIXI.projection.Container2d{
             const cage = objList[i];
             if(!cage.isCase && cage.proj){ // TODO: add affine method in container car special pour les case
                 cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
-        }
+            };
         };
     };
 

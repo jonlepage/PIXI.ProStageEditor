@@ -101,7 +101,21 @@ class _app extends PIXI.Application {
         canvas.style.paddingTop = 0 + "px";canvas.style.paddingBottom = 0 + "px";
         canvas.style.display = "-webkit-inline-box";
         return scale;
-      }; 
+    }; 
+
+    // Get a ratio for resize in a bounds
+    getRatio(obj, w, h) {
+        let r = Math.min(w / obj.width, h / obj.height);
+        return r;
+    };
+
+    hitCheck(a, b){ // colision
+        var ab = a._boundsRect;
+        var bb = b._boundsRect;
+        return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width && ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
+    };
+
+
 }; //END CLASS
 
 let $app = new _app(); // new PIXI.Application
@@ -112,7 +126,6 @@ document.body.appendChild($app.view);
 
 document.addEventListener('contextmenu', event => event.preventDefault()); // disable nwjs right click
 document.addEventListener('keydown', (event) => {
-    console.log('event: ', event);
     if(event.keyCode === 115){ // F4
         return $app._fullScreen && $app.cancelFullScreen() || $app.requestFullScreen();
     };

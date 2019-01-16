@@ -23,6 +23,8 @@ class _mouse {
 
         this._screenX = 1920;
         this._screenY = 1080;
+        this._screenW = 1920;
+        this._screenY = 1080;
         this.interaction = null; // reference to plugin global interaction Graphics._renderer.plugins.interaction;
 
         this.follower = new PIXI.Point(0,0);

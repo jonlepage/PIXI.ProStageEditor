@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "TkFGXwNls/DFvtOZnT9gNeX0uSU", "spine": "3.7.25-beta", "width": 1950.39, "height": 1079 },
+"skeleton": { "hash": "32Q6h/jha9FO/I6FOXGz8fPUFgc", "spine": "3.7.80-beta", "width": 1950.39, "height": 1079 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Rectangle 1 copie", "parent": "root", "length": 150.7, "x": 272.96, "y": -1073.32 },
@@ -39,26 +39,26 @@
 	{ "name": "TileBarLeft copie 3", "bone": "TileBarLeft copie 3", "attachment": "TileBarLeft copie 3" },
 	{ "name": "filterBG", "bone": "filterBG", "attachment": "filterBG" },
 	{ "name": "icon_darkMode", "bone": "icon_darkMode", "attachment": "icon_darkMode" },
-	{ "name": "icon_setup", "bone": "icon_set_option", "attachment": "icon_setup" },
-	{ "name": "icon_Save", "bone": "icon_set_G", "attachment": "icon_Save" },
-	{ "name": "icon_showHideSprites", "bone": "icon_set_G", "attachment": "icon_showHideSprites" },
-	{ "name": "icon_grid", "bone": "icon_set_G", "attachment": "icon_grid" },
-	{ "name": "icon_drawLine", "bone": "icon_set_G", "attachment": "icon_drawLine" },
-	{ "name": "icon_scale", "bone": "icon_set_G", "attachment": "icon_scale" },
-	{ "name": "icon_skew", "bone": "icon_set_G", "attachment": "icon_skew" },
-	{ "name": "icon_rotation", "bone": "icon_set_G", "attachment": "icon_rotation" },
-	{ "name": "icon_move", "bone": "icon_set_G", "attachment": "icon_move" },
+	{ "name": "icon_setup", "bone": "icon_set_option", "color": "ffffff7e", "attachment": "icon_setup" },
+	{ "name": "icon_Save", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_Save" },
+	{ "name": "icon_showHideSprites", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_showHideSprites" },
+	{ "name": "icon_grid", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_grid" },
+	{ "name": "icon_drawLine", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_drawLine" },
+	{ "name": "icon_scale", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_scale" },
+	{ "name": "icon_skew", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_skew" },
+	{ "name": "icon_rotation", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_rotation" },
+	{ "name": "icon_move", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_move" },
 	{ "name": "icon_pathMaker", "bone": "icon_set_G", "attachment": "icon_pathMaker" },
-	{ "name": "icon_events", "bone": "icon_set_G", "attachment": "icon_events" },
-	{ "name": "icon_light", "bone": "icon_set_G", "attachment": "icon_light" },
-	{ "name": "icon_spotLight", "bone": "icon_set_G", "attachment": "icon_spotLight" },
-	{ "name": "icon_masterLight", "bone": "icon_set_G", "attachment": "icon_masterLight" },
-	{ "name": "icon_pivot", "bone": "icon_pivot", "attachment": "icon_pivot" },
+	{ "name": "icon_events", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_events" },
+	{ "name": "icon_light", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_light" },
+	{ "name": "icon_spotLight", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_spotLight" },
+	{ "name": "icon_masterLight", "bone": "icon_set_G", "color": "ffffff7e", "attachment": "icon_masterLight" },
+	{ "name": "icon_pivot", "bone": "icon_pivot", "color": "ffffff7e", "attachment": "icon_pivot" },
 	{ "name": "pivotModePoint", "bone": "icon_pivot", "attachment": "greenPivotPoint11" },
-	{ "name": "filter_texturePacker", "bone": "icon_filters", "attachment": "filter_texturePacker" },
-	{ "name": "filter_normal", "bone": "icon_filters", "attachment": "filter_normal" },
-	{ "name": "filter_animation", "bone": "icon_filters", "attachment": "filter_animation" },
-	{ "name": "filter_spine", "bone": "icon_filters", "attachment": "filter_spine" }
+	{ "name": "filter_texturePacker", "bone": "icon_filters", "color": "ffffff7e", "attachment": "filter_texturePacker" },
+	{ "name": "filter_normal", "bone": "icon_filters", "color": "ffffff7e", "attachment": "filter_normal" },
+	{ "name": "filter_animation", "bone": "icon_filters", "color": "ffffff7e", "attachment": "filter_animation" },
+	{ "name": "filter_spine", "bone": "icon_filters", "color": "ffffff7e", "attachment": "filter_spine" }
 ],
 "skins": {
 	"default": {
@@ -72,7 +72,7 @@
 			"Rectangle 1 copie": { "x": 674.04, "y": 72.32, "width": 1896, "height": 130 }
 		},
 		"TileBarLeft": {
-			"TileBarLeft": { "x": 486.7, "y": -574.92, "rotation": -179.57, "width": 654, "height": 39 }
+			"TileBarLeft": { "x": 486.67, "y": -571.62, "rotation": -179.57, "width": 654, "height": 39 }
 		},
 		"TileBarLeft copie": {
 			"TileBarLeft copie": { "x": 152.08, "y": 1.82, "rotation": 0.55, "width": 307, "height": 33 }
@@ -157,7 +157,7 @@
 			"icon_move": { "x": 404.73, "y": 35.34, "rotation": 89.74, "width": 58, "height": 57 }
 		},
 		"icon_pathMaker": {
-			"icon_pathMaker": { "x": 299.85, "y": 36.81, "rotation": 89.74, "width": 58, "height": 57 }
+			"icon_pathMaker": { "color": "ffffff7e", "x": 299.85, "y": 36.81, "rotation": 89.74, "width": 58, "height": 57 }
 		},
 		"icon_pivot": {
 			"icon_pivot": { "x": -17.49, "y": -0.89, "rotation": 179.57, "width": 74, "height": 39 }
