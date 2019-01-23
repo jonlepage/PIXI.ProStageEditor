@@ -12,7 +12,7 @@
 /** @memberof PIXI.Container */
 class Container_Base extends PIXI.Container {
     // si pas de data objet , ce net pas un obj de l'editeur ,mais un obj special
-    constructor(dataObj) {
+    constructor(dataObj,needID) { //needID : ces pour un sprite permanent dans une map
         super();
         // FIXME: deplacer les dossiers window et reformater leur nom et structure
         //const classLink = dataBase && $objs.classLink[dataBase.dirArray[1]] || dataObj_base; // check si un dataObj existe, sinon utiliser un base
@@ -80,7 +80,6 @@ class Container_Base extends PIXI.Container {
                     this.setCaseEventType(value);
                 break;
                 default:
-                console.log('default Unknow key: ', key,' value: ',value);
                     this[key] = value;
                 break;
             };

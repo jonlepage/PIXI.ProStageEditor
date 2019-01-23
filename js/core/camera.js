@@ -265,7 +265,7 @@ class _camera extends PIXI.projection.Container2d{
 let $camera = new _camera();
 console.log1('$camera.', $camera);
 
-document.onwheel = $camera.onMouseWheel.bind($camera); //TODO:
+document.onwheel = $camera.onMouseWheel.bind($camera); //TODO: proceder grace au emit, verifier lelement targeted pour diferent zoom de diferent element, aussi compatible pour lediteur
 //document.onmousemove = $camera.onMouseCheckBorderCamera.bind($camera); //TODO:
 
 

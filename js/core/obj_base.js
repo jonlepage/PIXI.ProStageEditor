@@ -17,7 +17,7 @@ Voir le Stages
 class dataObj_base{
     constructor(dataValues,dataBase,textureName) {
         // dataValues: from json or new from [dataBase,textureName]
-        this.link = null; // link cage display objet container when asigned
+        this.id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
         this.dataValues = dataValues || this.getDataValuesFrom(null,dataBase,textureName); // obtenir tous les datas key de base, default ou selon le Cage Container assigner
     };
     get dataBase() { return $Loader.Data2[this.dataValues.b.dataName] };
@@ -25,7 +25,7 @@ class dataObj_base{
     get p() { return this.dataValues.p };
     get d() { return this.dataValues.d };
     get n() { return this.dataValues.n };
-    get parentContainer() { return $objs.spritesFromScene[this.id.localID] };
+    get parentContainer() { return $objs.spritesFromScene[this.id.localID] };// link cage display objet container when asigned
 
     initialize(){
        // getDataValues (dataBase, textureName) { TODO:
@@ -114,7 +114,8 @@ class dataObj_base{
         };
     };
 
-    clone(){
+    //updatebefor: update le dataValue aver le sprite connecter avant de stringify
+    clone(updatebefor){
         const dataValues = JSON.parse(JSON.stringify(this.dataValues));
         return new this.constructor(dataValues);
     };

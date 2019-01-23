@@ -211,6 +211,12 @@ class _objs{
         return new containerClassType (dataObj)
     };
 
+    // get a new sprite ID reference from local current scene
+    //TODO: POUR LEDITEUR, il faut un verificateur index , scan tous les sprites a nouveau et reindexer les id des dataObjets
+    getNewLocalSpriteID(){
+        const id = this.spritesFromScene.length;
+        return id;
+    };
 
 
     

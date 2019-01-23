@@ -26,11 +26,11 @@ class _PME{
         this.inMouse = null ; // if sprite in mouse ?
         this._displayGroupID = 1; // current display groups selected
         this._fastModeKey = "p"; // ["p","y","w","s","r","u"] // fast mode transfome type 
+        this.LIBRARY_TILE_active = false; // indique si la tile library est showed
         this.initialize(event); // loader
     };
 
     initialize(e){
-        this.setupScroll();
         this.prepareScene()
         this.load_Js();
     };
@@ -146,6 +146,12 @@ class _PME{
                 const slot = spine.skeleton.findSlot(_slot.name);
                 slot.currentSprite.slot = slot;
                 this.editor.buttons.push( slot.currentSprite );
+                slot.currentSprite.interactive = true;
+                slot.currentSprite.on('pointerover'      , this.pIN_buttons    , this);
+                slot.currentSprite.on('pointerout'       , this.pOUT_buttons   , this);
+                slot.currentSprite.on('pointerdown'      , this.pDW_buttons    , this);
+                slot.currentSprite.on('pointerup'        , this.pUP_buttons    , this);
+                slot.currentSprite.on('pointerupoutside' , this.pUPOUT_buttons , this);
             };
         });
         const tilesheetBar_txt = new PIXI.Text('Hello World', {fill: "white"});
@@ -155,6 +161,7 @@ class _PME{
         tilesheetBar_txt.position.set(-200,-15);
 
         spine.autoUpdate = true;
+        spine.stateData.defaultMix = 0.1;
         spine.state.setAnimation(0, 'idle', true);
         spine.state.setAnimation(1, 'start0', false);
         //EDITOR.state.setAnimation(2, 'hideTileSheets', false);
@@ -182,29 +189,33 @@ class _PME{
         this.LIBRARY_TILE = this.createLibrary_tile();
         this.FASTMODES = this.createFastModes();
         this.refresh_LIBRARY_BASE();
-        this.setupInteractions();
+        this.setupScroll();
+        this.setupListener();
 
     };
 
     createLibrary_base(){
         const c = new PIXI.Container();
+        const list = new PIXI.Container(); // container obj to masks
         const mask = new PIXI.Sprite(PIXI.Texture.WHITE);
         c.position.set(115,950);
         [mask.width, mask.height] = [1740, 105];
-        mask.position.set(-8,-8); // marge outline filters
+        mask.anchor.set(0,1);
+        mask.position.set(-8,mask.height); // marge outline filters
+        mask.interactive = true;
+        mask.on('pointerdown'    , this.pDW_Library_base_mask , this);
+        mask.on('pointerup'      , this.pUP_Library_base_mask , this);
+        mask.on('mouseupoutside' , this.pUP_Library_base_mask , this);
+        c.addChild(mask,list);
         c.mask = mask;
-        c.addChild(mask);
         // reference
         c.name = "LIBRARY_BASE";
-        c.interactive = true;
         //c.hitArea = new PIXI.Rectangle(0,0,1740,220);
-        c.buttonType = "library";
-       // c.on('pointerover', pointer_overIN);
-       // c.on('pointerout', pointer_overOUT);
-       // c.on('pointerdown', pointer_DW);
+
        $stage.CAGE_EDITOR.addChild(c);
-       // create thumbs 
-       c.list = []; // store liste of current obj cages elements
+       // create thumbs
+       c.list = list;
+       c._list = []; // store liste of current obj cages elements
        for (const key in this.data2) { // this._avaibleData === DATA2
             const dataBase =  this.data2[key];
             if(dataBase.classType !== 'backgrounds'){ // dont add BG inside library
@@ -213,7 +224,13 @@ class _PME{
                 cage.buttonType = "thumbs";
                 cage.alpha = 0.75;
                 this.create_Debug(cage,dataBase);
-                c.list.push(cage);
+                c._list.push(cage);
+                // interactions
+                cage.interactive = true;
+                cage.on('pointerover' , this.pIN_thumbs            , this);
+                cage.on('pointerout'  , this.pOUT_thumbs           , this);
+                cage.on('pointerdown' , this.pDW_Library_base_mask , this);
+                cage.on('pointerup'   , this.pUP_thumbs            , this);
             };
         };
         return c;
@@ -221,18 +238,22 @@ class _PME{
 
     createLibrary_tile(){
         const c = new PIXI.Container();
+        const list = new PIXI.Container(); // container obj to masks
         const mask = new PIXI.Sprite(PIXI.Texture.WHITE);
         c.position.set(1280,50);
-        c.cage = new PIXI.Container(); // list inside subContainer for allow mask zoom
-        c.list = [];
-        c.cache = {}; // cache coord by dataName
+        c.cache = {}; // cache coord by dataName // TODO: PRECOMPUTE AT EDITOR START ? sa pourait etre long ? a verifier
         [mask.width, mask.height] = [640, 880];
         mask.position.set(0, 0); // marge outline filters
         c.mask = mask;
-        c.addChild(mask,c.cage);
+        c.list = list;
+        c.addChild(mask,list);
         // reference
         c.name = "LIBRARY_TILE";
-        c.buttonType = "library";
+        mask.interactive = true;
+        mask.on('pointerdown'    , this.pDW_Library_tile_mask   , this);
+        mask.on('pointerup'      , this.pUP_Library_tile_mask   , this);
+        mask.on('mouseupoutside' , this.pUP_Library_tile_mask   , this);
+        mask.on('mousewheel'     , this.pWEEL_Library_tile_mask , this);
        $stage.CAGE_EDITOR.addChild(c);
        return c;
     };
@@ -255,19 +276,19 @@ class _PME{
        return c;
     };
 
-    refresh_LIBRARY_BASE(){
+    refresh_LIBRARY_BASE(){ // TODO: AUTO SORT BY NAME ? helper visuel
         const c = this.LIBRARY_BASE;
-        c.removeChild(...c.list); // clear all child but keep the child mask
+        c.list.removeChild(...c._list); // clear all child but keep the child mask
         const maxX = 1740;
         const maskH = 105;
-        for (let [i,x,y,line] = [0,0,0,0], disX = 25, l = c.list.length; i < l; i++) {
-            const cage = c.list[i];
+        for (let [i,x,y,line] = [0,0,0,0], disX = 25, l = c._list.length; i < l; i++) {
+            const cage = c._list[i];
             if(cage.renderable){
                 if(cage.x+cage.width+x>maxX){ x=0, y+=maskH+8};
                 cage.x = +x;
                 cage.y = +y;
                 x+=cage.width+disX;
-                c.addChild(cage);
+                c.list.addChild(cage);
             };
         };
     };
@@ -359,7 +380,8 @@ class _PME{
             an.addChild(txt);
 
             // pivot
-            var txt = new PIXI.Text("↓■↓-P-↑□↑",{fontSize:12,fill:0x000000,strokeThickness:4,stroke:0xffffff});
+            var txt = new PIXI.Text("(P)",{fontSize:26,fill:0x000000,strokeThickness:6,stroke:0xffffff,fontWeight: "bold"});
+                txt.scale.set(0.5);
                 txt.anchor.set(0.5,0.5);
             pivLine.anchor.set(0.5,0.5);
             piv.position.copy(c.pivot);
@@ -390,31 +412,18 @@ class _PME{
         }
     };
 
-    
-    setupInteractions() {
-        this.editor.buttons.forEach(buttons => {
-            buttons.interactive = true;
-            buttons.on('pointerover'      , this.pIN_buttons    , this);
-            buttons.on('pointerout'       , this.pOUT_buttons   , this);
-            buttons.on('pointerdown'      , this.pDW_buttons    , this);
-            buttons.on('pointerup'        , this.pUP_buttons    , this);
-            buttons.on('pointerupoutside' , this.pUPOUT_buttons , this);
-        });
-        this.LIBRARY_BASE.list.forEach(thumbs => {
-            thumbs.interactive = true;
-            thumbs.on('pointerover' , this.pIN_thumbs  , this);
-            thumbs.on('pointerout'  , this.pOUT_thumbs , this);
-            thumbs.on('pointerup'   , this.pUP_thumbs  , this);
-        });
-    };
-    
-
+//#region [rgba(40, 0, 0, 0.2)]
+// ┌------------------------------------------------------------------------------┐
+// EVENTS INTERACTION LISTENERS
+// └------------------------------------------------------------------------------┘
+/**BUTTONS */
     pIN_buttons(e){
         const ee = e.currentTarget;
         ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
         TweenMax.to(ee.scale, 0.3, {x:1.25,y:-1.25, ease: Back.easeOut.config(2.5) });
         ee.slot.color.a = 1;
     };
+
     pOUT_buttons(e){
         const ee = e.currentTarget;
         ee._filters = null; // thickness, color, quality
@@ -425,10 +434,9 @@ class _PME{
     pUP_buttons(e){};
     pUPOUT_buttons(e){};
 
-
+/**THUMBS */
     pIN_thumbs(e){
         this.preview && $stage.CAGE_MOUSE.removeChild(this.preview);
-
         const ee = e.currentTarget;
         this.preview = ee.Debug.previews;
         this.preview.x = $mouse.x;
@@ -436,8 +444,8 @@ class _PME{
         TweenMax.to(this.preview, 2, {alpha:1, ease: Power3.easeOut });
         $stage.CAGE_MOUSE.addChild(this.preview);
         ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
-       
     };
+
     pOUT_thumbs(e){
         const ee = e.currentTarget;
         this.preview && $stage.CAGE_MOUSE.removeChild(this.preview);
@@ -447,72 +455,133 @@ class _PME{
 
     pUP_thumbs(e){
         const ee = e.currentTarget;
+        this.startMouseHold(false);
         this.show_tileSheet(ee.dataObj);
     };
 
+/**LIBRARY BASE */
+    pDW_Library_base_mask(e){
+        const ee = e.currentTarget.parent.list || e.currentTarget.parent; // also from thumbs
+        !e.currentTarget.isMask && this.pOUT_thumbs(e); // force hide preview if hold from thumbs
+        const callBack = () => {
+            ee.interactiveChildren = false; // disable thumbs interactions
+            this.editor.gui.state.setAnimation(3, 'expendThumbsLibs', false);
+            ee.parent.mask.height = 105+600;
+        }
+        ee.position.zeroSet();
+        $mouse.pointer.position.zeroSet();
+        this.startMouseHold(ee,callBack); // this.mouseHold set ee
+    };
+
+    pUP_Library_base_mask(e){
+        const ee = e.currentTarget.parent.list;
+        ee.parent.mask.height = 105;
+        (this.mouseHold === ee) && this.editor.gui.state.setAnimation(3, 'colapseThumbLibs', false); // close expen mode
+        this.startMouseHold(false); // this.mouseHold nulled
+        ee.interactiveChildren = true; // enable thumbs interactions
+    };
+
+/**LIBRARY TILES */
+    pDW_Library_tile_mask(e){
+        const ee = e.currentTarget.parent.list;
+        const callBack = () => {
+            ee.interactiveChildren = false; // disable thumbs interactions
+        };
+        ee.position.zeroSet();
+        $mouse.pointer.position.zeroSet();
+        this.startMouseHold(ee,callBack); // this.mouseHold set ee
+    };
+
+    pUP_Library_tile_mask(e){
+        const ee = e.currentTarget.parent.list;
+        this.startMouseHold(false); // this.mouseHold nulled
+        ee.interactiveChildren = true; // enable thumbs interactions
+    };
+
+    pWEEL_Library_tile_mask(e,ee){
+        const scale = ee.parent.list.scale;
+        if(e.wheelDeltaY>0 && scale._x<2){
+            TweenMax.to(scale, 1, {x:scale._x+0.2,y:scale._y+0.2, ease: Back.easeOut.config(1.4) });
+        }else
+        if( e.wheelDeltaY<0 && scale._x>0.5){
+            TweenMax.to(scale, 1, {x:scale._x-0.2,y:scale._y-0.2, ease: Back.easeOut.config(1.4) });
+        };
+    };
+
+/**TILES MAPS */
     pIN_tile(e){
         const ee = e.currentTarget;
         ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
     };
+
     pOUT_tile(e){
         const ee = e.currentTarget;
+        this.LIBRARY_TILE._hold = false;
         ee._filters = null;
     };
+
+    pDW_tile(e){
+        const ee = e.currentTarget;
+        const callBack = () => {
+            ee.interactiveChildren = false; // disable thumbs interactions
+            this.activeFastModes(ee);
+        }
+        this.startMouseHold(ee,callBack);
+    };
+    
     pUP_tile(e){
+        if(this.mouseHold){return this.startMouseHold(false) };
+        this.startMouseHold(false);
         const ee = e.currentTarget;
-        this.add_toMouse(ee.dataObj);
-    };
-
-    pDW_mouse(e){
-        const ee = e.currentTarget;
-        this.startMouseHold(ee);
-    };
-
-    pUP_mouse(e){
-        if(this.mouseHold){return};
-        const ee = e.currentTarget;
-        console.log('ee: ', ee);
-        ee.hitArea = null;
-        this.inMouse = null;
-        // Right click => cancel
+        this.remove_toMouse(ee); // detach from mouse
+        // Right click => cancel delete current attach
         if(e.data.button===2){
-            $stage.scene.removeChild(ee);
+            $stage.scene.removeChild(ee); //TODO: seulment si vien de la sourits
         };
         // Left click <= apply
         if(e.data.button===0){
-            this.add_toMouse(ee.dataObj)
+            this.add_toMouse( this.add_toMap(ee) ); // attache to mouse
         };
     };
-
+//#endregion
     show_tileSheet(dataObj) {
         const name = dataObj.name;
         const textures = dataObj.textures || dataObj.skins;
         const dataBase = this.data2[name]
-        this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
-        this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(textures).length}): ${name}.json`; // update title 
-        this.LIBRARY_TILE.list = []; //TODO: NEED RESET
+        this.LIBRARY_TILE._list = [];
+        this.LIBRARY_TILE.list.removeChildren();
         Object.keys(textures).forEach(textureName => {
           const _dataObj = $objs.newDataObjsFrom(null,dataBase,textureName);
           const cage = $objs.newContainerFrom(_dataObj);
           cage.buttonType = "tileLibs";
           this.create_Debug(cage,dataBase);
-          this.LIBRARY_TILE.list.push(cage);
-          this.LIBRARY_TILE.cage.addChild(cage);
+          this.LIBRARY_TILE._list.push(cage);
+          this.LIBRARY_TILE.list.addChild(cage);
           cage.n.renderable = false; // disable normal
+          // interactions
           cage.interactive = true;
-          cage.on('pointerover', this.pIN_tile, this);
-          cage.on('pointerout', this.pOUT_tile, this);
-          cage.on('pointerup', this.pUP_tile, this);
+          cage.on('pointerdown', this.pDW_tile , this);
+          cage.on('pointerover', this.pIN_tile , this);
+          cage.on('pointerout' , this.pOUT_tile, this);
+          cage.on('pointerup'  , this.pUP_tile , this);
         });
         const cache = this.LIBRARY_TILE.cache;
         if(!cache[name]){
-            cache[name] = this.pathFindSheet(this.LIBRARY_TILE.list, 20);
+            cache[name] = this.pathFindSheet(this.LIBRARY_TILE._list, 20);
         };
-        this.LIBRARY_TILE.list.forEach(cage => {
+        this.LIBRARY_TILE._list.forEach(cage => {
             const pos = cache[name][cage.dataObj.b.textureName];
             cage.position.copy(pos); 
         });
-        
+        // anime
+        this.LIBRARY_TILE.alpha = 0;
+        TweenMax.to(this.LIBRARY_TILE, 1, {alpha:1, ease: Power4.easeOut });
+        // anime spine
+        if(!this.LIBRARY_TILE_active){
+            this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
+            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(textures).length}): ${name}.json`; // update title 
+        }
+        this.LIBRARY_TILE_active = true; // flag indic si activer
     };
 
     // build a sheets objList with pathFinding => [vertical to horizontal]
@@ -551,30 +620,46 @@ class _PME{
         return cache;
     };
 
-    add_toMouse(dataObj) {
-        const name = dataObj.b.name;
-        const dataBase = this.data2[name]
-        const _dataObj = $objs.newDataObjsFrom(null,dataBase,dataObj.b.textureName);
-        // hack data 
-        _dataObj.p.parentGroup = this._displayGroupID;
-        const cage = $objs.newContainerFrom(_dataObj);
+
+    add_toMap(fromCage) { // add new sprite to map
+        const dataObj = fromCage.dataObj.clone();
+        // hack dataObj 
+        dataObj.p.parentGroup = this._displayGroupID;
+        const cage = $objs.newContainerFrom(dataObj);
         cage.convertTo2d();
         cage.position.set($camera.mouseToMapX3D,$camera.mouseToMapY3D);
         cage.buttonType = "tileMouse";
-        this.inMouse = cage;
         $stage.scene.addChild(cage);
         this.create_Debug(cage);
-
-        // disable other interactive obj map
-        const LB = cage.getLocalBounds();
-        cage.Debug.hitZone.clear();
-        cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
-        LB.pad(1920,1080);
-        cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
         cage.interactive = true;
-        cage.on('pointerdown' , this.pDW_mouse , this);
-        cage.on('pointerup'   , this.pUP_mouse , this);
+        cage.on('pointerdown'      , this.pDW_tile , this);
+        cage.on('pointerup'        , this.pUP_tile , this);
+        return cage;
     };
+
+    add_toMouse(cage){ // attache to mouse update
+        this.enlargeHitZone(cage);
+        this.inMouse = cage;
+    };
+    remove_toMouse(cage){ // detach from mouse 
+        this.enlargeHitZone(cage,'remove');
+        this.inMouse = null;
+        cage.Debug.hitZone.tint = 0x000000;
+    };
+
+    enlargeHitZone(cage,remove){
+        // disable other interactive obj map
+        if(!remove){
+            const LB = cage.getLocalBounds();
+            cage.Debug.hitZone.clear();
+            cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
+            LB.pad(1920,1080);
+            cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+        }else{
+            cage.hitArea = null;
+        }
+    };
+
 
     setupScroll(){
         this.scrollable = true;
@@ -602,17 +687,89 @@ class _PME{
 
     update(e=$mouse.interaction.mouse.originalEvent){
         //this.preview && this.preview.position.set($mouse.x,900);
+        if(this.mouseHold){
+            // reposition du mask
+            const name = this.mouseHold.name || this.mouseHold.parent.name;
+            const diff = $mouse.pointer.position.zeroDiff();
+            const zero = this.mouseHold.position.zero;
+            if(name==="LIBRARY_BASE"){
+                this.mouseHold.position.set(zero.x,zero.y-(diff.x/1.5));
+            }else
+            if(name==="LIBRARY_TILE"){
+                this.mouseHold.position.set(zero.x+(diff.x*2),zero.y+(diff.y*2));
+            } 
+        };
         if(this.preview){
             const xLimit = ($mouse.x+this.preview.width-$mouse._screenW);
             this.preview.x = ($mouse.x-(xLimit>0?xLimit:0))
         }
+        if(this.FASTMODES.renderable && this.mouseHold){
+            this.computeFastModes(this.mouseHold);
+        }else
         if(this.inMouse){
             this.inMouse.position.set($camera.mouseToMapX3D,$camera.mouseToMapY3D);
+            this.inMouse.zIndex = this.inMouse.y;
         }
-        
-     
+ 
+  
     };
 
+    activeFastModes(cage,changeKey){
+        this._fastModeKey = changeKey || 'p';
+        Object.values(this.FASTMODES.txtModes).forEach(txt => { txt._filters = null });
+        if(cage){ // active mode
+            this.FASTMODES.renderable = cage; // show fastmode key debug
+            this.FASTMODES.txtModes[this._fastModeKey]._filters = [this.filters.OutlineFilterx8Red]
+            this.FASTMODES.freeze = new PIXI.Point($mouse.x,$mouse.y);
+            cage.Debug.bg     .renderable = true;
+            cage.Debug.an     .renderable = true;
+            cage.Debug.hitZone.renderable = true;
+            cage.Debug.piv    .renderable = true;
+            // ZERO all possible transform  ["p","y","w","s","r","u"]
+            this.FASTMODES.zero = {
+                mouse:new PIXI.Point($mouse.x,$mouse.y),
+                position:cage.position.clone(),
+                pivot   :cage.pivot   .clone(),
+                skew    :cage.skew    .clone(),
+                scale    :cage.scale    .clone(),
+                rotation:cage.rotation        ,
+                zh:cage.zh        ,
+            }
+        }else{ // disable mode
+            this.FASTMODES.renderable = cage; // show fastmode key debug
+            this.FASTMODES.txtModes[this._fastModeKey]._filters = null;
+
+        }
+  
+    };
+
+    computeFastModes(cage) {
+        // compute diff
+        const diff = new PIXI.Point(($mouse.x-this.FASTMODES.freeze.x), ($mouse.y-this.FASTMODES.freeze.y));
+        switch (this._fastModeKey) { // ["p","y","w","s","r","u"]
+            case "p": // pivot from position"
+                cage.pivot.set(this.FASTMODES.zero.pivot.x-diff.x, this.FASTMODES.zero.pivot.y-diff.y);
+                cage.Debug.piv.position.copy(cage.pivot);
+            break;
+            case "y": // position from pivot
+                cage.position.set(this.FASTMODES.zero.position.x-diff.x, this.FASTMODES.zero.position.y-diff.y);
+                cage.pivot.set((this.FASTMODES.zero.pivot.x-diff.x)/cage.scale._x, (this.FASTMODES.zero.pivot.y-diff.y)/cage.scale._y);
+                cage.Debug.piv.position.copy(cage.pivot);
+            break;
+            case "w": // skew mode
+                cage.skew.set(this.FASTMODES.zero.skew.x-(diff.x/400), this.FASTMODES.zero.skew.y-(diff.y/400));
+            break;
+            case "s": // Scale mode
+                cage.scale.set(this.FASTMODES.zero.scale.x-(diff.x/100), this.FASTMODES.zero.scale.y-(diff.y/100));
+            break;
+            case "r": // Rotation mode
+                cage.rotation = this.FASTMODES.zero.rotation-(diff.x/100);
+            break;
+            case "u": // Rotation textures
+                // TODO:
+            break;
+        }
+    };
 
     // Build Rectangles // x, y, w:width, h:height, c:color, a:alpha, r:radius, l_c_a:[lineWidth,colorLine,alphaLine]
     drawRec(x, y, w, h, c, a, r, l_c_a) {
@@ -623,24 +780,38 @@ class _PME{
         return rec;
     };
     
-    startMouseHold(cage){
+    startMouseHold(cage,callBack){
         clearTimeout(this._holdTimeOut);
         this.mouseHold = null;
+        this.activeFastModes(false);
         if(cage){ // active mouse MouseHold after 160 ms
             this._holdTimeOut = setTimeout(() => {
                 this.mouseHold = cage;
-                this.activeFastModes(cage);
-            }, 160);
+                callBack && callBack();
+            }, 190);
         };
     };
 
-    activeFastModes(cage){
-        this.FASTMODES.renderable = true; // show fastmode key debug
-        const fmKey = this._fastModeKey;
-        cage.Debug.bg.renderable = true;
-        cage.Debug.an.renderable = true;
-        cage.Debug.hitZone.renderable = true;
-        cage.Debug.piv.renderable = true;
-    };
+    setupListener(){
+        document.addEventListener('keydown', (event) => {
+            // key for FASTMODES
+            if(this.FASTMODES.renderable){
+                if(event.key === event.key.toUpperCase()){ throw console.error('ERREUR LES CAPITAL SON ACTIVER!')}
+                if(["p","y","w","s","r","u"].contains(event.key)){
+                    this.activeFastModes(this.FASTMODES.renderable, event.key)
+                }
+            };
+        });
 
+        document.addEventListener('wheel',(e) => {
+            const hitTest = $mouse.interaction.hitTest($mouse.pointer.position);
+            // Dispatch scroll event
+            if (hitTest) { 
+                hitTest._events.mousewheel && hitTest.emit('mousewheel',e,hitTest);
+            };
+        });
+
+
+    };
+    
 };//END 
