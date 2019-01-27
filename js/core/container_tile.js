@@ -18,17 +18,20 @@ class Container_Tile extends Container_Base {
 
     };
 
-    createBases (dataObj) {
+    createBases (dataObj = this.dataObj) {
         const textureName = dataObj.b.textureName;
         const td = dataObj.dataBase.textures   [textureName     ];
         const tn = dataObj.dataBase.textures_n [textureName+'_n'];
         const d = new PIXI.Sprite(td);//new PIXI.projection.Sprite2d(td);
         const n = new PIXI.Sprite(tn);//new PIXI.projection.Sprite2d(tn);
-        this.Sprites = {d,n};
         this.addChild(d,n);
-        /*switch (dataObj.constructor.name) {
-            case "dataObj_case": this.createBases_case(dataObj); break;
-        };*/
+        this.Sprites = {d,n};
+        // certain type objet on des sprites special et config special, verifier dans les method du dataObj
+        if(dataObj.createBases){
+            const _bases = dataObj.createBases();
+            this.addChild(...Object.values(_bases)); //TODO: VERIFIER SI L'INDEX EST OK
+            Object.assign(this.Sprites,_bases);
+        };
     };
 
     // extend special Base sprites type: cases

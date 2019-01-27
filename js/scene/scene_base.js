@@ -51,16 +51,15 @@ loadSpriteSheet(function(resource){
         */
     };
     setupBackgroundFrom(dataValues,className){
-        const dataObj = $objs.newDataObjsFrom(dataValues);
-        this.createBackgroundFrom (dataObj);
+        this.createBackgroundFrom (dataValues);
     };
     
     /*** clear and creat Background, from dataValues or dataBase editor select
     * @param {objet} dataValues * @param {Number} dataBase editor
     */
-   createBackgroundFrom(dataObj) {
+   createBackgroundFrom(dataValues) {
         this.clearBackground();
-        this.background = new Container_Background(dataObj); //TODO:
+        this.background =  $objs.newContainer_dataValues(dataValues); //TODO:
         this.addChildAt(this.background,0);
     };
 

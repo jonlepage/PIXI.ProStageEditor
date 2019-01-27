@@ -113,10 +113,10 @@ class _camera extends PIXI.projection.Container2d{
         pos.y = -pos.y;
         pos.x = -pos.x;
         this.proj.setAxisY(pos, -far.factor);
-        const objList =  this.scene.children;
-        for (let i=0, l= objList.length; i<l; i++) {
+        const objList =  $objs.spritesFromScene;
+        for (let i=1, l= objList.length; i<l; i++) {// 1: evite le background
             const cage = objList[i];
-            if(!cage.isCase && cage.proj){ // TODO: add affine method in container car special pour les case
+            if(!(cage.dataObj._dataBase === "cases") && cage.proj){ // TODO: add affine method in container car special pour les case
                 cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
             };
         };

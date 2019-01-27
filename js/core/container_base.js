@@ -18,12 +18,12 @@ class Container_Base extends PIXI.Container {
         //const classLink = dataBase && $objs.classLink[dataBase.dirArray[1]] || dataObj_base; // check si un dataObj existe, sinon utiliser un base
         //dataObj = new classLink(); // creer un dataObj Vierge sans dataValues
         //this.getDataValues(dataBase, textureName);
-        dataObj = dataObj ;//|| new dataObj_base(this, dataValues); , verifier si instance dataOBj or {} json
-        this.Sprites = {};
         this.dataObj = dataObj;
+        this.Sprites = {};
         
-        this.createBases(dataObj);
-        this.asignDataValues(dataObj);
+        this.createBases();
+        this.asignDataObjValues();
+        
         
 
         // if have parameter dataBase, its a "thumbs" from editor or maybe others future
@@ -33,26 +33,33 @@ class Container_Base extends PIXI.Container {
     get d() { return this.Sprites.d };
     get n() { return this.Sprites.n };
 
-    // si pas heritage super(), ces un background style
-    createBases (dataObj) {
-        const isDataObj = dataObj instanceof dataObj_base; //permet d'itentifier si on a passer dataBase ou un dataObj
-        if(!isDataObj){
-            const d = new PIXI.Sprite(dataObj.baseTextures[0]); // thumbs [0]
-            this.Sprites = {d};
+    // si pas heritage super(),
+    createBases (dataObj = this.dataObj) {
+        const dataBase = dataObj.dataBase;
+        const textureName = dataObj.b.textureName;
+        // si pas de textureName, utiliser baseTextures: thumbs
+        if(!textureName){
+            const d = new PIXI.Sprite(dataBase.baseTextures[0]); // thumbs [0]
+            this.Sprites.d = d;
             this.addChild(d);
-        };
+        }else{
+
+        }
     };
 
     // dispatch values asigment
-    asignDataValues(dataObj) {
-        if(dataObj instanceof dataObj_base){
-            this.asignValues(dataObj.p,dataObj.b);
-            this.asignValues.call(this.d, dataObj.d, dataObj.b);
-            this.asignValues.call(this.n, dataObj.n, dataObj.b);
-        };
+    asignDataObjValues() {
+        this.asignValues(this.dataObj.p);
+        this.d && this.asignValues.call(this.d, this.dataObj.d);
+        this.n && this.asignValues.call(this.n, this.dataObj.n);
     };
 
-    asignValues (data,base) {
+    getDataValues () {
+        this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
+    };
+
+
+    asignValues (data) {
         Object.keys(data).forEach(key => {
             const value = data[key];
             switch (key) {
@@ -65,7 +72,7 @@ class Container_Base extends PIXI.Container {
                 case "parentGroup": // if parentGroup, also asign diffuseGroup,normalGroup to childs
                     if(Number.isFinite(value)){
                         this.parentGroup = $displayGroup.group[value];
-                        this.asignChildParentGroups(base.normals);
+                        this.asignChildParentGroups(this.dataObj.b.normals);
                     };
                 break;
                 case "zIndex":

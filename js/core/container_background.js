@@ -19,7 +19,7 @@ class Container_Background extends Container_Base {
     };
     // getters for ContainerTiles
 
-    createBases (dataObj) {
+    createBases (dataObj = this.dataObj) {
         // TODO: les bg pourrai etre parfoi decouper en arrays dans textures packer
         const textureName = dataObj.b.dataName;
         const td = dataObj.dataBase.textures   [textureName] || PIXI.Texture.EMPTY;

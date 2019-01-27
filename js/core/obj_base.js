@@ -17,15 +17,20 @@ Voir le Stages
 class dataObj_base{
     constructor(dataValues,dataBase,textureName) {
         // dataValues: from json or new from [dataBase,textureName]
-        this.id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
-        this.dataValues = dataValues || this.getDataValuesFrom(null,dataBase,textureName); // obtenir tous les datas key de base, default ou selon le Cage Container assigner
+        this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
+        this._spriteID = null;
+        this._sceneName = $stage.scene.constructor.name;
+        this._dataBase = dataValues? dataValues.b.dataName : dataBase.name;
+        this._textureName = dataValues? dataValues.b.textureName : textureName;
+        this.dataValues = dataValues || this.getDataValuesFrom(false);
     };
-    get dataBase() { return $Loader.Data2[this.dataValues.b.dataName] };
+    set register(reg) {this._id = reg._id,this._spriteID = reg._spriteID,this._sceneName = reg._sceneName}; // register id from existed saved data json
+    get dataBase() { return $Loader.Data2[ this._dataBase ] };
     get b() { return this.dataValues.b };
     get p() { return this.dataValues.p };
     get d() { return this.dataValues.d };
     get n() { return this.dataValues.n };
-    get parentContainer() { return $objs.spritesFromScene[this.id.localID] };// link cage display objet container when asigned
+    get sprite() { return (this._sceneName===$objs._sceneName)? $objs.spritesFromScene[this._spriteID] : null };// link cage display objet container when asigned
 
     initialize(){
        // getDataValues (dataBase, textureName) { TODO:
@@ -33,22 +38,24 @@ class dataObj_base{
 
     
     // the DataValues will used for make saveGame or dataEditor manager
-    getDataValuesFrom (link,dataBase,textureName) {
-        link = link || this.link
+    // use parent build build value from parent sprite container, or default
+    getDataValuesFrom (cage) {
         const dataValues = {
-            b:this.getDataBaseValues(dataBase,textureName),
-            p:this.getParentContainerValues(link),
-            d:this.getSpriteValues         (link&&this.link.d),
-            n:this.getSpriteValues         (link&&this.link.n),
+            b:this.getDataBaseValues        (cage),
+            p:this.getParentContainerValues (cage),
+            d:this.getSpriteValues          (cage&&cage.d),
+            n:this.getSpriteValues          (cage&&cage.n),
         };
         return dataValues;
     };
 
     // get important dataValue from de base
-    getDataBaseValues(dataBase,textureName){
+    getDataBaseValues(cage){
+        const dataBase = this.dataBase; // getters
+        const textureName = this._textureName || null;
         return {
             classType  : dataBase    .classType, // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere
-            type       : dataBase    .type     , // locked: les type the container , tile,,animation,spine,light...
+            type       : textureName && dataBase    .type     , // locked: les type the container , tile,,animation,spine,light..., si pas textureName, aucun class type
             textureName: textureName           , // locked
             dataName   : dataBase    .name     , // locked
             groupID    : dataBase    .groupID  , // asigner un groupe dapartenance ex: flags
@@ -72,7 +79,7 @@ class dataObj_base{
             // other
             autoGroups    : cage? cage.autoGroups          : new Array(7).fill(false) , // permet de changer automatiquement de layers selon player
             zIndex        : cage? cage.zIndex              : 0                        , // locked
-            parentGroup   : cage? cage.parentGroup.zIndex  : null                        , //  for editor, need to manual set parentGroup on addMouse
+            parentGroup   : cage&&cage.parentGroup? cage.parentGroup.zIndex  : null                        , //  for editor, need to manual set parentGroup on addMouse
             //pathConnexion : cage? cage.pathConnexion     : {}                       , // store path connect by id
             // conditionInteractive TODO:
 
@@ -100,7 +107,7 @@ class dataObj_base{
             scale    : sprite ? [sprite.scale    ._x,sprite.scale    ._y] :[1  ,1],
             skew     : sprite ? [sprite.skew     ._x,sprite.skew     ._y] :[0  ,0],
             pivot    : sprite ? [sprite.pivot    ._x,sprite.pivot    ._y] :[0  ,0],
-            anchor   : sprite ? [sprite.anchor   ._x,sprite.anchor   ._y] :[0.5,1],
+            anchor   : sprite ? [sprite.anchor   ._x,sprite.anchor   ._y] :this._textureName && [0.5,1] || [0,0],
             // transform
             rotation  : sprite ? sprite.rotation  :0        ,
             alpha     : sprite ? sprite.alpha     :1        ,

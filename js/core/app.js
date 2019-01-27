@@ -124,7 +124,10 @@ document.body.appendChild($app.view);
 
 
 
-document.addEventListener('contextmenu', event => event.preventDefault()); // disable nwjs right click
+document.addEventListener('contextmenu', event => {
+    event.path[0] === $app.renderer.view && event.preventDefault(); // FIXME: premet enpecher right click dans editeur ,mais autorise les html
+}); 
+// disable nwjs right click
 document.addEventListener('keydown', (event) => {
     if(event.keyCode === 115){ // F4
         return $app._fullScreen && $app.cancelFullScreen() || $app.requestFullScreen();

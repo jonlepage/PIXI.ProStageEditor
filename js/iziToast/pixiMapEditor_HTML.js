@@ -308,8 +308,98 @@ function new_HTML_contentSlidersFalloff(targets){
     `];
 };
 
+function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
+    // if is a sprite obj
+    const message1 = /*html*/ `
+    <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"shaderName","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"blendMode","number",{step:1,min:0,max:3,small:true}),
+                        new_HTML_content1D(["p"],"alpha","number",{step:0.05,min:0,max:1,small:true}),
+                        new_HTML_content1D(["p"],"drawMode","select",{option:[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]}),//loop
+                        new_HTML_content1D(["p"],"lightHeight","number",{step:0.001,small:true}),
+                        new_HTML_content1D(["p"],"brightness","number",{step:0.02,min:0,small:true}),
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_contentMessage("Control the rate at which light is gradually reduced as a function of the distance between a point in 3D space and the light source."),
+                        new_HTML_contentSlidersFalloff(),// heaven color
+                    ])}
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"tint","text",{jscolor:"jscolor"}),// tint
+                    ])}
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Light Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
 
-function HTML_DATA_UI(){
+                </div>
+            </div><!--accordion item END-->
+        </div><!--END-->
+        <div class="container buttons"> 
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
+
+    </div> `;//END message1
+    return message1;
+};
+
+
+function HTML_BG_UI(bgList){ // html_izit_sceneGlobalLight
+    // if is a sprite obj
+    
+    const message1 = /*html*/ `
+    <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    ${ new_HTML_table([
+                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
+                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:bgList}), // locked
+                        new_HTML_content1D(["p"],"name","text",{largeX:true}), // locked
+                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
+                   ])}
+                </div>
+            </div><!--accordion item END-->
+        </div><!--END-->
+        <div class="container buttons"> 
+            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
+            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
+            <br><br>
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
+        </div>
+
+    </div> `;//END message1
+    return message1;
+};
+
+//#region [rgba(50,250, 0,0.3)]
+//#endregion
+function HTML_DATA_UI(cage){
+    const dataObj = cage.dataObj;
+    const speraration = [ // // sepration des props selon les tables expendable
+
+    ];  
     // if is a sprite obj
     const defaultCaseEventType = [[false,false],...Object.keys($Loader.Data2.caseEvents.textures).map(n=>{return [n,n]})]
     const message1 = /*html*/ `
@@ -438,96 +528,11 @@ function HTML_DATA_UI(){
     </div> `;//END message1
     return message1;
 };
-
-function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
-    // if is a sprite obj
-    const message1 = /*html*/ `
-    <div class="container" id="dataIntepretor">
-        <h6>
-            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
-            <small class="text-muted"><kbd>Json</kbd></small>
-        </h6>
-        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"shaderName","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"blendMode","number",{step:1,min:0,max:3,small:true}),
-                        new_HTML_content1D(["p"],"alpha","number",{step:0.05,min:0,max:1,small:true}),
-                        new_HTML_content1D(["p"],"drawMode","select",{option:[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]}),//loop
-                        new_HTML_content1D(["p"],"lightHeight","number",{step:0.001,small:true}),
-                        new_HTML_content1D(["p"],"brightness","number",{step:0.02,min:0,small:true}),
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_contentMessage("Control the rate at which light is gradually reduced as a function of the distance between a point in 3D space and the light source."),
-                        new_HTML_contentSlidersFalloff(),// heaven color
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"tint","text",{jscolor:"jscolor"}),// tint
-                    ])}
-                </div>
-            </div><!--accordion item END-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Light Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-
-                </div>
-            </div><!--accordion item END-->
-        </div><!--END-->
-        <div class="container buttons"> 
-            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
-            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
-            <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
-        </div>
-
-    </div> `;//END message1
-    return message1;
-};
-
-
-function HTML_BG_UI(bgList){ // html_izit_sceneGlobalLight
-    // if is a sprite obj
-    
-    const message1 = /*html*/ `
-    <div class="container" id="dataIntepretor">
-        <h6>
-            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
-            <small class="text-muted"><kbd>Json</kbd></small>
-        </h6>
-        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:bgList}), // locked
-                        new_HTML_content1D(["p"],"name","text",{largeX:true}), // locked
-                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
-                   ])}
-                </div>
-            </div><!--accordion item END-->
-        </div><!--END-->
-        <div class="container buttons"> 
-            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
-            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
-            <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
-        </div>
-
-    </div> `;//END message1
-    return message1;
-};
-
 //#region [rgba(255,100, 0,0.8)]
 //#endregion
-function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
+function html_izit_saveSetup(){
     // get a copy of old file? if exist
+    const stage = $stage;
     const fs = require('fs');
     const path = `data/${stage.constructor.name}_data.json`;
     const buffer = fs.existsSync(path)? JSON.parse(fs.readFileSync(path, 'utf8')) : false;
@@ -594,6 +599,7 @@ function html_izit_saveSetup(stage){ // html_izit_sceneGlobalLight
             </div><!--accordion item END-->
         </div><!--END-->
         <div class="container buttons">
+            <button id="clearScene" type="button" class="btn btn-outline-light btn-sm">Clear Scene</button>
             <button id="copy" type="button" class="btn btn-outline-light btn-sm">Refresh Memory</button>
             <br><br>
             <button id="save" type="button" class="btn btn-outline-success btn-sm col-md-6">Save</button>

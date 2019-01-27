@@ -7,7 +7,6 @@
 └────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 
-
 document.addEventListener('keydown', (e)=>{
     if(!window.$PME&&e.key=== "F1"){
         $PME = new _PME();
@@ -25,7 +24,6 @@ class _PME{
         this.data2 = null;
         this.inMouse = null ; // if sprite in mouse ?
         this._displayGroupID = 1; // current display groups selected
-        this._fastModeKey = "p"; // ["p","y","w","s","r","u"] // fast mode transfome type 
         this.LIBRARY_TILE_active = false; // indique si la tile library est showed
         this.initialize(event); // loader
     };
@@ -172,19 +170,23 @@ class _PME{
         };
     };
 
-
+//#region [rgba(250, 0, 0,0.03)]
+// ┌------------------------------------------------------------------------------┐
+// START INITIALISE
+// └------------------------------------------------------------------------------┘
     startEditor(){
         this.filters = { // cache filters
-            OutlineFilterx4: new PIXI.filters.OutlineFilter (4, 0x000000, 1),
-            OutlineFilterx16: new PIXI.filters.OutlineFilter (16, 0x000000, 1),
-            OutlineFilterx6White: new PIXI.filters.OutlineFilter (4, 0xffffff, 1),
-            OutlineFilterx8Green: new PIXI.filters.OutlineFilter (4, 0x16b50e, 1),
-            OutlineFilterx8Green_n: new PIXI.filters.OutlineFilter (8, 0x16b50e, 1), // need x2 because use x2 blendMode for diffuse,normal
-            OutlineFilterx8Red: new PIXI.filters.OutlineFilter (8, 0xdb120f, 1),
-            ColorMatrixFilter: new PIXI.filters.ColorMatrixFilter(),
-            PixelateFilter12: new PIXI.filters.PixelateFilter(12),
-            BlurFilter: new PIXI.filters.BlurFilter (10, 3),
+            OutlineFilterx4       : new PIXI.filters.OutlineFilter     (4, 0x000000, 1 ),
+            OutlineFilterx16      : new PIXI.filters.OutlineFilter     (16, 0x000000, 1),
+            OutlineFilterx6White  : new PIXI.filters.OutlineFilter     (4, 0xffffff, 1 ),
+            OutlineFilterx8Green  : new PIXI.filters.OutlineFilter     (4, 0x16b50e, 1 ),
+            OutlineFilterx8Green_n: new PIXI.filters.OutlineFilter     (8, 0x16b50e, 1 ), // need x2 because use x2 blendMode for diffuse,normal
+            OutlineFilterx8Red    : new PIXI.filters.OutlineFilter     (8, 0xdb120f, 1 ),
+            ColorMatrixFilter     : new PIXI.filters.ColorMatrixFilter (               ),
+            PixelateFilter12      : new PIXI.filters.PixelateFilter    (12             ),
+            BlurFilter            : new PIXI.filters.BlurFilter        (10, 3          ),
         };
+        this.convertForEditor();
         this.LIBRARY_BASE = this.createLibrary_base();
         this.LIBRARY_TILE = this.createLibrary_tile();
         this.FASTMODES = this.createFastModes();
@@ -192,6 +194,16 @@ class _PME{
         this.setupScroll();
         this.setupListener();
 
+    };
+//#endregion
+    convertForEditor(){
+        $objs.spritesFromScene.forEach(cage => {
+            this.create_Debug(cage);
+            cage.interactive = true;
+            cage.on('pointerdown'      , this.pDW_tile , this);
+            cage.on('pointerup'        , this.pUP_tile , this);
+            
+        });
     };
 
     createLibrary_base(){
@@ -219,7 +231,7 @@ class _PME{
        for (const key in this.data2) { // this._avaibleData === DATA2
             const dataBase =  this.data2[key];
             if(dataBase.classType !== 'backgrounds'){ // dont add BG inside library
-                const cage = new Container_Base(dataBase);
+                const cage = $objs.newContainer_dataBase(dataBase); //Container_Base
                 cage.d.scale.set( $app.getRatio(cage, 134, 100));
                 cage.buttonType = "thumbs";
                 cage.alpha = 0.75;
@@ -269,10 +281,12 @@ class _PME{
         const txtH = txt0.height;
         txt1.y = txt0.y+txtH, txt2.y = txt1.y+txtH, txt3.y = txt2.y+txtH, txt4.y = txt3.y+txtH, txt5.y = txt4.y+txtH;
         c.txtModes = {p:txt0, y:txt1, w:txt2, s:txt3, r:txt4, u:txt5}; // when asign a FastModesKey
+        c._mode = 'p';
         c.renderable = false; // render only when mouse hold.
         c.y = 100;
         c.addChild(txt0,txt1,txt2,txt3,txt4, txt5);
         $mouse.pointer.addChild(c);
+        c.target = null; // target cage element for fast mode
        return c;
     };
 
@@ -412,6 +426,52 @@ class _PME{
         }
     };
 
+//#region [rgba(219, 182, 2, 0.05)]
+// ┌------------------------------------------------------------------------------┐
+// IZITOAST DATA2 EDITOR 
+// └------------------------------------------------------------------------------┘
+    open_dataInspector(cage) {
+        const dataValues = cage.getDataValues();
+        iziToast.info( this.izit_dataObjsEditor(cage) );
+        const _accordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        
+        //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
+        //create_jsColors.call(cage, dataValues); // create color box for tint 
+        //create_sliderHeaven.call(cage, dataValues); // create slider html for pixiHaven
+        //create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
+        //setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+    };
+
+    create_dataIntepretor(cage){
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        dataIntepretor.onclick = (e) => {
+            const div = e.target;
+            if(div.type === "button"){
+                switch (div.id) {
+                    case "save" : this.startSaveDataToJson(); break;
+                    case "close": this.close_dataInspector(); break;
+                    case "clearScene": this.clearScene(); break;
+                    default:break;
+                };
+            };
+        };
+    };
+
+    // close the data HTML inspector
+    close_dataInspector(){
+        iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
+        $stage.interactiveChildren = true;
+    };
+    // close the data HTML inspector
+    clearScene(){
+        $objs.spritesFromScene.forEach(cage => {
+            $stage.scene.removeChild(cage);
+            $objs.LIST[cage.dataObj._id] = void 0;
+        });
+        $objs.spritesFromScene = [];
+    };
+//#endregion
+
 //#region [rgba(40, 0, 0, 0.2)]
 // ┌------------------------------------------------------------------------------┐
 // EVENTS INTERACTION LISTENERS
@@ -431,7 +491,10 @@ class _PME{
         ee.slot.color.a = 0.5;
     };
     pDW_buttons(e){};
-    pUP_buttons(e){};
+    pUP_buttons(e){
+        const ee = e.currentTarget;
+        this.execute_buttons(ee);
+    };
     pUPOUT_buttons(e){};
 
 /**THUMBS */
@@ -456,7 +519,9 @@ class _PME{
     pUP_thumbs(e){
         const ee = e.currentTarget;
         this.startMouseHold(false);
-        this.show_tileSheet(ee.dataObj);
+        this.LIBRARY_TILE.list.removeChildren();
+        this.LIBRARY_TILE._list = [];
+        this.show_tileSheet(ee);
     };
 
 /**LIBRARY BASE */
@@ -530,29 +595,65 @@ class _PME{
     };
     
     pUP_tile(e){
+        if(this.FASTMODES.renderable){ this.disableFastModes(true) };
         if(this.mouseHold){return this.startMouseHold(false) };
         this.startMouseHold(false);
         const ee = e.currentTarget;
         this.remove_toMouse(ee); // detach from mouse
+        const cLeft   = e.data.button===0; // <== 
+        const cRight  = e.data.button===2; // ==>
+        const cCenter = e.data.button===1; // >|<
+
+        if(e.data.originalEvent.ctrlKey && cLeft){
+            return this.open_dataInspector(ee);
+        }
         // Right click => cancel delete current attach
         if(e.data.button===2){
-            $stage.scene.removeChild(ee); //TODO: seulment si vien de la sourits
+            $stage.scene.removeChild(ee);
         };
         // Left click <= apply
         if(e.data.button===0){
+            this.registerToMap(ee); // register in map objs
+            ee.getDataValues(); // update attached dataValues
             this.add_toMouse( this.add_toMap(ee) ); // attache to mouse
         };
     };
 //#endregion
-    show_tileSheet(dataObj) {
-        const name = dataObj.name;
-        const textures = dataObj.textures || dataObj.skins;
-        const dataBase = this.data2[name]
-        this.LIBRARY_TILE._list = [];
-        this.LIBRARY_TILE.list.removeChildren();
-        Object.keys(textures).forEach(textureName => {
-          const _dataObj = $objs.newDataObjsFrom(null,dataBase,textureName);
-          const cage = $objs.newContainerFrom(_dataObj);
+
+    registerToMap(ee){
+        if(ee.parent === $stage.scene && ee.dataObj._id === null){
+            // cherche si des array son undefined, (suprimer) pour remplacer les data au bon id
+            const id = ($objs.LIST.indexOf(void 0)>-1)? $objs.LIST.indexOf(void 0) : $objs.LIST.length;
+            const spriteID = $objs.spritesFromScene.length;
+            ee.dataObj._id = id;
+            ee.dataObj._spriteID = spriteID;
+            $objs.LIST[id] = ee.dataObj;
+            $objs.spritesFromScene[spriteID] = ee;
+        };
+    };
+
+    //dispatch button executor
+    execute_buttons(ee) {
+        const slot = ee.slot;
+        const name = slot.currentSpriteName;
+        switch (name) {
+            case "icon_Save": this.show_saveSetup();break;
+            default: throw console.error(' le button name existe pas , TODO'); break;
+        }
+    };
+
+    show_saveSetup() {
+        $stage.interactiveChildren = false; // disable stage interactive
+        iziToast.info( this.izit_saveSetup() );
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        this.create_dataIntepretor(); // create the data Interpretor listener for inputs and buttons
+    };
+        
+
+    show_tileSheet(cage) {
+        const dataBase = cage.dataObj.dataBase;
+        Object.keys(dataBase.textures).forEach(textureName => {
+          const cage = $objs.newContainer_dataBase(dataBase,textureName);
           cage.buttonType = "tileLibs";
           this.create_Debug(cage,dataBase);
           this.LIBRARY_TILE._list.push(cage);
@@ -566,11 +667,11 @@ class _PME{
           cage.on('pointerup'  , this.pUP_tile , this);
         });
         const cache = this.LIBRARY_TILE.cache;
-        if(!cache[name]){
-            cache[name] = this.pathFindSheet(this.LIBRARY_TILE._list, 20);
+        if(!cache[dataBase.name]){
+            cache[dataBase.name] = this.pathFindSheet(this.LIBRARY_TILE._list, 20);
         };
         this.LIBRARY_TILE._list.forEach(cage => {
-            const pos = cache[name][cage.dataObj.b.textureName];
+            const pos = cache[dataBase.name][cage.dataObj.b.textureName];
             cage.position.copy(pos); 
         });
         // anime
@@ -579,7 +680,7 @@ class _PME{
         // anime spine
         if(!this.LIBRARY_TILE_active){
             this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
-            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(textures).length}): ${name}.json`; // update title 
+            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures).length}): ${name}.json`; // update title 
         }
         this.LIBRARY_TILE_active = true; // flag indic si activer
     };
@@ -620,12 +721,11 @@ class _PME{
         return cache;
     };
 
-
     add_toMap(fromCage) { // add new sprite to map
         const dataObj = fromCage.dataObj.clone();
         // hack dataObj 
         dataObj.p.parentGroup = this._displayGroupID;
-        const cage = $objs.newContainerFrom(dataObj);
+        const cage = $objs.newContainer_dataObj(dataObj);
         cage.convertTo2d();
         cage.position.set($camera.mouseToMapX3D,$camera.mouseToMapY3D);
         cage.buttonType = "tileMouse";
@@ -660,7 +760,6 @@ class _PME{
         }
     };
 
-
     setupScroll(){
         this.scrollable = true;
         let [ScrollX,ScrollY] = [$camera.pivot.x, $camera.pivot.y];
@@ -680,6 +779,10 @@ class _PME{
             };
             $camera.pivot.x+=(ScrollX- $camera.pivot.x)/(speed);
             $camera.pivot.y+=(ScrollY- $camera.pivot.y)/(speed);
+            // 2.5D affine mouse 
+            if( this.inMouse && !(this.inMouse.dataObj._dataBase === "cases") && this.inMouse.proj){ // TODO: add affine method in container car special pour les case
+                this.inMouse.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
+            };
         });
         //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode
         editorTiker.start();
@@ -714,39 +817,43 @@ class _PME{
   
     };
 
-    activeFastModes(cage,changeKey){
-        this._fastModeKey = changeKey || 'p';
+    activeFastModes(cage=this.FASTMODES.target){
         Object.values(this.FASTMODES.txtModes).forEach(txt => { txt._filters = null });
-        if(cage){ // active mode
-            this.FASTMODES.renderable = cage; // show fastmode key debug
-            this.FASTMODES.txtModes[this._fastModeKey]._filters = [this.filters.OutlineFilterx8Red]
-            this.FASTMODES.freeze = new PIXI.Point($mouse.x,$mouse.y);
-            cage.Debug.bg     .renderable = true;
-            cage.Debug.an     .renderable = true;
-            cage.Debug.hitZone.renderable = true;
-            cage.Debug.piv    .renderable = true;
-            // ZERO all possible transform  ["p","y","w","s","r","u"]
-            this.FASTMODES.zero = {
-                mouse:new PIXI.Point($mouse.x,$mouse.y),
-                position:cage.position.clone(),
-                pivot   :cage.pivot   .clone(),
-                skew    :cage.skew    .clone(),
-                scale    :cage.scale    .clone(),
-                rotation:cage.rotation        ,
-                zh:cage.zh        ,
-            }
-        }else{ // disable mode
-            this.FASTMODES.renderable = cage; // show fastmode key debug
-            this.FASTMODES.txtModes[this._fastModeKey]._filters = null;
-
+        this.FASTMODES.target = cage;
+        this.FASTMODES.renderable = true; // show fastmode key debug
+        this.FASTMODES.txtModes[this.FASTMODES._mode]._filters = [this.filters.OutlineFilterx8Red]
+        this.FASTMODES.freeze = new PIXI.Point($mouse.x,$mouse.y);
+        cage.Debug.bg     .renderable = true;
+        cage.Debug.an     .renderable = true;
+        cage.Debug.hitZone.renderable = true;
+        cage.Debug.piv    .renderable = true;
+        // ZERO all possible transform  ["p","y","w","s","r","u"]
+        this.FASTMODES.zero = {
+            mouse:new PIXI.Point($mouse.x,$mouse.y),
+            position:cage.position.clone(),
+            pivot   :cage.pivot   .clone(),
+            skew    :cage.skew    .clone(),
+            scale    :cage.scale    .clone(),
+            rotation:cage.rotation        ,
+            zh:cage.zh        ,
         }
-  
+        
+    };
+
+    disableFastModes(updateValue){
+        const cage = this.FASTMODES.target;
+        updateValue && cage.getDataValues();
+        cage.asignDataObjValues();
+        cage.Debug.piv.position.copy(cage.pivot);
+        this.FASTMODES.target = null;
+        this.FASTMODES.renderable = false; // show fastmode key debug
+        this.FASTMODES.txtModes[this.FASTMODES._mode]._filters = null;
     };
 
     computeFastModes(cage) {
         // compute diff
         const diff = new PIXI.Point(($mouse.x-this.FASTMODES.freeze.x), ($mouse.y-this.FASTMODES.freeze.y));
-        switch (this._fastModeKey) { // ["p","y","w","s","r","u"]
+        switch (this.FASTMODES._mode) { // ["p","y","w","s","r","u"]
             case "p": // pivot from position"
                 cage.pivot.set(this.FASTMODES.zero.pivot.x-diff.x, this.FASTMODES.zero.pivot.y-diff.y);
                 cage.Debug.piv.position.copy(cage.pivot);
@@ -760,7 +867,7 @@ class _PME{
                 cage.skew.set(this.FASTMODES.zero.skew.x-(diff.x/400), this.FASTMODES.zero.skew.y-(diff.y/400));
             break;
             case "s": // Scale mode
-                cage.scale.set(this.FASTMODES.zero.scale.x-(diff.x/100), this.FASTMODES.zero.scale.y-(diff.y/100));
+                cage.scale.set(this.FASTMODES.zero.scale.x-(diff.x/200), this.FASTMODES.zero.scale.y-(diff.y/200));
             break;
             case "r": // Rotation mode
                 cage.rotation = this.FASTMODES.zero.rotation-(diff.x/100);
@@ -783,7 +890,6 @@ class _PME{
     startMouseHold(cage,callBack){
         clearTimeout(this._holdTimeOut);
         this.mouseHold = null;
-        this.activeFastModes(false);
         if(cage){ // active mouse MouseHold after 160 ms
             this._holdTimeOut = setTimeout(() => {
                 this.mouseHold = cage;
@@ -798,7 +904,8 @@ class _PME{
             if(this.FASTMODES.renderable){
                 if(event.key === event.key.toUpperCase()){ throw console.error('ERREUR LES CAPITAL SON ACTIVER!')}
                 if(["p","y","w","s","r","u"].contains(event.key)){
-                    this.activeFastModes(this.FASTMODES.renderable, event.key)
+                    this.FASTMODES._mode = event.key;
+                    this.activeFastModes(this.FASTMODES.target);
                 }
             };
         });
@@ -811,7 +918,103 @@ class _PME{
             };
         });
 
+        document.addEventListener('mouseup',(event)=>{
+            // disable fastmode si hold click left et click right
+            if(event.button===2 && this.FASTMODES.renderable){
+                this.disableFastModes(false);
+            };
+        });
+
 
     };
     
+
+//#region [rgba(100, 5, 0,0.2)]
+// ┌------------------------------------------------------------------------------┐
+// SAVE COMPUTE JSON
+// └------------------------------------------------------------------------------┘
+    startSaveDataToJson() { // open_SaveSetup
+        this.close_dataInspector();
+        $stage._filters = [this.filters.BlurFilter];
+        TweenMax.to(this.filters.BlurFilter, 1.2, {
+            blur:0, ease: Power2.easeOut, delay:0.5,
+            onComplete: (e) => { $stage._filters = null, this.filters.BlurFilter = 10;}, 
+        });
+        //this.close_dataInspector();
+        const useOption = {};
+        // close html editor
+        if(useOption){
+            /*useOption = {
+                _renderParaForRMMV : document.getElementById("_renderParaForRMMV").value,
+                _renderLayersPSD : document.getElementById("_renderLayersPSD").value,
+                _renderEventsPlayers : document.getElementById("_renderEventsPlayers").value,
+                _renderDebugsElements : document.getElementById("_renderDebugsElements").value,
+                _renderingLight : document.getElementById("_renderingLight").value,
+                _renderLayers_n : document.getElementById("_renderLayers_n").value,
+                _renderAnimationsTime0 : document.getElementById("_renderAnimationsTime0").value,
+            }*/
+            // system info data
+            useOption.systemInfo = {
+                //MEMORY USAGES
+                heaps     : +document.getElementById("heaps"    ).innerHTML.replace("MB","").replace("GB",""),
+                heapTotal : +document.getElementById("heapTotal").innerHTML.replace("MB","").replace("GB",""),
+                external  : +document.getElementById("external" ).innerHTML.replace("MB","").replace("GB",""),
+                rss       : +document.getElementById("rss"      ).innerHTML.replace("MB","").replace("GB",""),
+                // generique
+                versionEditor    :  document.getElementById("versionEditor"    ).innerText,
+                SavePath         :  document.getElementById("SavePath"         ).innerText,
+                totalSpines      : +document.getElementById("totalSpines"      ).innerText,
+                totalAnimations  : +document.getElementById("totalAnimations"  ).innerText,
+                totalTileSprites : +document.getElementById("totalTileSprites" ).innerText,
+                totalLight       : +document.getElementById("totalLight"       ).innerText,
+                totalEvents      : +document.getElementById("totalEvents"      ).innerText,
+                totalSheets      : +document.getElementById("totalSheets"      ).innerText,
+            };
+        };
+        this.create_JSON(useOption);
+        iziToast.warning( $PME.savedComplette() );
+    };
+
+    create_JSON(options) {
+        let _lights      ={};// addToSave_Lights      () ; // scene global light
+        let _background  = this.save_background          () ; // scene bg
+        let _objs        = $objs.list // getter objs in current scene only
+        let _sheets      = this.compute_Sheets      (_objs,_background) ; // all cheets used in this scene for load dataBases tuexture
+        const json = { system:options.systemInfo, _lights , _background, _sheets, _objs,   };
+
+        const fs = require('fs');
+        function writeFile(path,content){
+            // backup current to _old.json with replace() rename()
+            fs.rename(`${path}`, `${path.replace(".","_OLD.")}`, function(err) {
+                if ( err ) { console.log('ERROR:rename ' + err) };
+                fs.writeFile(path, content, 'utf8', function (err) { 
+                    if(err){return console.error(path,err) }
+                    return console.log9("WriteFile Complette: "+path,JSON.parse(content));
+                });
+                
+            });
+            };      
+            writeFile(`data/${$stage.scene.constructor.name}.json` , JSON.stringify(json, null, '\t') );
+        };
+
+    // save objs sprites from map
+    save_background() {
+        return $stage.scene.background? $stage.scene.background.dataObj.dataValues : null;
+    };
+
+        
+    // add dataBase sheets need for this scene
+    compute_Sheets(_objs,_background) {
+        const sheets = {};
+        if(_background){
+            const background = $stage.scene.background;
+            sheets[background.dataObj._dataBase] = background.dataObj.dataBase;
+        };
+        _objs.forEach(dataObj => {
+            sheets[dataObj._dataBase] = dataObj.dataBase;
+        });
+        return sheets;
+    };
+
+//#endregion
 };//END 

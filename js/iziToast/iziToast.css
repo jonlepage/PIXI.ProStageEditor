@@ -6,7 +6,7 @@
 .iziToast-capsule {
   font-size: 0;
   height: 0;
-  width: 100%;
+  width: 30%;
   transform: translateZ(0);
   backface-visibility: hidden;
   transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), height 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);

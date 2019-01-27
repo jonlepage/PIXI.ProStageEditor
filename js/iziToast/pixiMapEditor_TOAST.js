@@ -1,11 +1,86 @@
 
+
+// open save interactions
+_PME.prototype.izit_saveSetup = function() {
+    let message = html_izit_saveSetup();
+    return{
+        title: 'Save and compute progress in json format \n',
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'fadeIn', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 12,
+        maxWidth: 700,
+        theme: 'dark',
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(50, 0, 0, 0.95)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
+_PME.prototype.izit_dataObjsEditor = function(cage){
+    let message = HTML_DATA_UI(cage);
+    return {// 
+        title: `<font color="#d2bc97">Name:</font> ${cage.dataObj._textureName} &nbsp <font color="#d2bc97">ObjsID:</font> ${cage.dataObj._id}<br><font color="#d2bc97">ClassType:</font> ${cage.dataObj.b.classType}  &nbsp <font color="#d2bc97">HASH32:</font> ${JSON.stringify(cage.dataObj).hashCode()}`,
+        message: message,
+        id:'dataEditor',
+        layout: 2,
+        transitionIn: 'flipInX', // bounceInLeft, bounceInRight, bounceInUp, bounceInDown, fadeIn, fadeInDown, fadeInUp, fadeInLeft, fadeInRight or flipInX.
+        transitionOut:	'fadeOut', // fadeOut, fadeOutUp, fadeOutDown, fadeOutLeft, fadeOutRight, flipOutX
+        messageSize: 10,
+        maxWidth: false,
+        theme: 'dark',
+        position: 'topLeft', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        backgroundColor: 'rgba(38, 38, 38, 0.99)',
+        close: false,
+        progressBar: false,
+        timeout:false,
+        icon:false,
+        drag: false,
+    };
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // TOAST METHOD FOR EDITOR
 // ┌------------------------------------------------------------------------------------------------┐
 // iziToast Builder See=>pixiMapEditor_HTML.js   http://izitoast.marcelodolce.com/
 //└------------------------------------------------------------------------------------------------┘
 
 // open the tileEditor
-_PME.prototype.tileSetupEditor = function(InMapObj){
+/*_PME.prototype.tileSetupEditor = function(InMapObj){
     let message = HTML_DATA_UI(InMapObj);
     return{
         title: `${InMapObj.name}`,
@@ -25,7 +100,7 @@ _PME.prototype.tileSetupEditor = function(InMapObj){
         icon:false,
         drag: false,
     };
-};
+};*/
 
 // open the tileEditor
 _PME.prototype.izitGlobalLightEditor = function(scene){
@@ -163,7 +238,7 @@ _PME.prototype.izit_sceneSetup = function() {
 };
 
 // open save interactions
-_PME.prototype.izit_saveSetup = function(stage) {
+/*_PME.prototype.izit_saveSetup = function(stage) {
     let message = html_izit_saveSetup(stage);
     return{
         title: 'Save and compute progress in json format \n',
@@ -183,7 +258,7 @@ _PME.prototype.izit_saveSetup = function(stage) {
         icon:false,
         drag: false,
     };
-};
+};*/
 
 _PME.prototype.izit_copyData = function(ClipboarData){
     console.log('ClipboarData: ', ClipboarData);

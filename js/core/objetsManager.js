@@ -16,23 +16,25 @@ Voir le Stages
 //└------------------------------------------------------------------------------┘
 class _objs{
     constructor() {
+        this.LIST = []; // master list objets, see small list getter for get list in current scene
         this._sceneName = null; // nom de la scene actuelement rendu
         this.spritesFromScene = []; // contien les sprites container par scene
         this.dataObjsFromScenes = {}; // contients les datas pour les sprites par scene, EVOLUTIF
         this.pathBuffer = null; // buffer path to move 
-        this.classLink = { // voir les folders window , selon leur parent 
-            'case': dataObj_case,
-            'door': dataObj_door,
-            'chara': dataObj_chara,
-            'tree': dataObj_tree,
-            'mapItem': dataObj_mapItem,
-            'base': dataObj_base, // basic, rien special, les aurte class herite des base
+        this.classDataObjs = { //tous les dataObj selon les type, voir les folders window , 
+            case   : dataObj_case   ,
+            door   : dataObj_door   ,
+            chara  : dataObj_chara  ,
+            tree   : dataObj_tree   ,
+            mapItem: dataObj_mapItem,
+            base   : dataObj_base   ,
         };
         // avaible type of container class link
-        this.classContainer = {
-         'animationSheet':Container_Animation,
-         'spineSheet'    :Container_Spine    ,
-         'tileSheet'     :Container_Tile     ,
+        this.classContainers = {
+            animationSheet :Container_Animation ,
+            spineSheet     :Container_Spine     ,
+            tileSheet      :Container_Tile      ,
+            base           :Container_Base      ,
         }
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
         this.actionsCasesSystem  = {
@@ -66,13 +68,20 @@ class _objs{
         ];
     };
     /**@description get sprites case list from dataObjsFromScenes id */
+    get list () { return this.LIST.filter( obj => { return obj && (obj._sceneName === $objs._sceneName) }) };
     get cases () { return Array.from(this.dataObjsFromScenes[this._sceneName]._casesID , id => this.spritesFromScene[id]) };
     get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
     get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
     get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
     get items () { return Array.from(this.dataObjsFromScenes[this._sceneName]._itemsID , id => this.spritesFromScene[id]) };
     get decors() { return Array.from(this.dataObjsFromScenes[this._sceneName]._decors  , id => this.spritesFromScene[id]) };
-  
+    
+    getClassDataObjs(type){
+        return this.classDataObjs[type] || this.classDataObjs.base
+    };
+    getClassContainers(type){
+        return this.classContainers[type] || this.classContainers.base
+    };
 
     /** Prepare les datas pour tous les cases random procedural events, */
     initialize(){
@@ -80,38 +89,18 @@ class _objs{
         // initialise pour chaque scene, les data de base
         let globalID = 0; // le GLOBAL game ID, utile pour l'editeur ?
         Object.keys(dataScenes).forEach(sceneName => {
-            const savedData = dataScenes[sceneName]._objs;
-            if(savedData){
-                // linker, batching, each obj from id
-                this.dataObjsFromScenes[sceneName] = {
-                    objs:[], // local id map objets
-                    _casesID:[],
-                    _doorsID:[],
-                    _charasID:[],
-                    _treesID:[],
-                    _itemsID:[],
-                    _decors:[],
-                    get cases () { return Array.from(this._casesID , id => this.objs[id]) },
-                    get doors () { return Array.from(this._doorsID , id => this.objs[id]) },
-                    get charas() { return Array.from(this._charasID, id => this.objs[id]) },
-                    get trees () { return Array.from(this._treesID , id => this.objs[id]) },
-                    get items () { return Array.from(this._itemsID , id => this.objs[id]) },
-                    get decors() { return Array.from(this._decors  , id => this.objs[id]) },
-                    
-                };
-                // creet un baseData avec les saved
-                for (let i=0, l=savedData.length; i<l; i++) {
-                    const data = savedData[i];
-                    const classType = data.p.classType || "base"; //TODO:  refactgoriser l'editeur permet d'asigner ou generate auto les class type
-                    const classLink = this.classLink[classType] || dataObj_base;
-                    const targetArray = this.dataObjsFromScenes[sceneName][`_${classType}sID`];
-                    const arrayID = targetArray? targetArray.length : void 0; // used for retrace dataObjsFromScenes._???ID index
-                    const dataObj = new classLink(dataValues,i,globalID,arrayID);//TODO: TRANSFERER getDataValues (dataBase, textureName) {
-                    targetArray && targetArray.push(i);
-                    this.dataObjsFromScenes[sceneName].objs.push(dataObj);
-                };
-                globalID++;
+            // conversion des dataValues en dataObjs exploitable
+            const dataSaved = dataScenes[sceneName]._objs || [];
+            for (let i=0, l=dataSaved.length; i<l; i++) {
+                const data = dataSaved[i];
+                const id = data._id;
+                if(this.LIST[id]){throw console.error('ID dataObjs exist deja!, check integrity for id: '+id)}; //FIXME: DEBUG
+                const dataObj = this.newDataObjs_dataValues(data.dataValues);
+                dataObj.register = data;
+                this.LIST[id] = dataObj;
+            
             };
+            
         });
         
     };
@@ -172,20 +161,12 @@ class _objs{
     // map1 start
     createSpritesObjsFrom(sceneName) {
         this._sceneName = sceneName;
-        const dataObjs = this.dataObjsFromScenes[sceneName].objs;
+        const dataObjs = this.list;
         for (let i=0, l=dataObjs.length; i<l; i++) {
             const dataObj = dataObjs[i];
-            let cage;
-            switch (dataObj.dataValues.p.type) {
-                case "animationSheet" : cage = new Container_Animation (dataObj);break;
-                case "spineSheet"     : cage = new Container_Spine     (dataObj);break;
-                case "tileSheet"      : cage = new Container_Tile      (dataObj);break;
-                default: throw console.error(`FATAL error in json, check the {'type'}!`)
-            };
-            cage.id = i;
+            const cage = this.newContainer_dataObj(dataObj);
             this.spritesFromScene[i] = cage;
-        };
-        this.setInteractive(true,true);
+        }
     };
 
     // selon les type de data , ajouter les interactiviters GLOBAL
@@ -199,16 +180,42 @@ class _objs{
     };
 
     // dataValues or from new empty [dataBase,textureName]
-    newDataObjsFrom(dataValues,dataBase,textureName){
+    newDataObjsFrom(dataValues,dataBase,textureName){//
         const classType = dataValues? dataValues.b.classType : dataBase.classType;
-        const dataClassType = this.classLink[classType] || dataObj_base;
+        const dataClassType = this.classDataObjs[classType] || dataObj_base;
         return new dataClassType(dataValues,dataBase,textureName);
     };
 
-    // dataValues or from new empty [dataBase,textureName]
-    newContainerFrom(dataObj){
-        const containerClassType = this.classContainer[dataObj.b.type];
-        return new containerClassType (dataObj)
+    // creer une nouveau dataObjs avec dataValues stringnifier
+    newDataObjs_dataValues(dataValues,needRegister){
+        const class_data = this.getClassDataObjs(dataValues.b.classType);
+        return new class_data(dataValues);
+    };
+
+    // creer une nouveau dataObjs video selon type dataBase
+    newDataObjs_dataBase(dataBase,textureName,needRegister){
+        const class_data = this.getClassDataObjs(dataBase.classType);
+        return new class_data(null,dataBase,textureName);
+    };
+
+    // create un nouveau type container , from dataBase [pour l'editeur ]
+    newContainer_dataBase(dataBase,textureName,needRegister){
+        const dataObj = this.newDataObjs_dataBase(dataBase,textureName);
+        const class_container = this.getClassContainers(dataObj.b.type);
+        return new class_container (dataObj);
+    };
+
+    // create new container type from existed dataObj
+    newContainer_dataObj(dataObj,needRegister){
+        const class_container = this.getClassContainers(dataObj.b.type);
+        return new class_container (dataObj);
+    };
+
+    // create new container type from existed dataObj
+    newContainer_dataValues(dataValues,needRegister){
+        const dataObj = this.newDataObjs_dataValues(dataValues);
+        const class_container = this.getClassContainers(dataObj.b.type);
+        return new class_container (dataObj);
     };
 
     // get a new sprite ID reference from local current scene

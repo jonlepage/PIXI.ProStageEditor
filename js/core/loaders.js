@@ -341,6 +341,14 @@ class _coreLoader {
                 });
             };
         };
+        // descripteur texture 
+        if(!res.spineData){
+            Object.defineProperty(base, 'textures', { enumerable: false });
+            Object.defineProperty(base, 'textures_n', { enumerable: false });
+        }else{
+            Object.defineProperty(base, 'spineData', { enumerable: false });
+        }
+        
         return base;
     };
 

@@ -11,18 +11,57 @@
 // GLOBALFROM $objs CLASS: dataObj_case HERITAGE:dataObj_base
 //└------------------------------------------------------------------------------┘
 class dataObj_case extends dataObj_base{
-    constructor(dataValues,localID,globalID,arrayID) {
-        super(dataValues,localID,globalID,arrayID);
+    constructor(dataValues,dataBase,textureName) {
+        super(dataValues,dataBase,textureName);
         /**@description la couleur type selon les reference couleur des gemDices. Use setter .colorType */
         this._colorType = null;
         this._actionType = null;
         this._visited = false; // indique si la case actionType a deja eter executer ?
     };
 
-    set colorType(color){ this._colorType = color };
-    set actionType(action){ this._actionType = action };
+    set caseColor(color){ };
+    get caseColor(){ };
+    set caseType (type ){ };
+    get caseType (){ };
     
+    // extend create sprite from Container_Tile
+    createBases(){
+        const dataBase = this.dataBase; // getter
+        //color
+        const cd = new PIXI.Sprite(dataBase.textures.cColor);
+        const cn = new PIXI.Sprite(dataBase.textures_n.cColor_n);
+            cd.parentGroup = PIXI.lights.diffuseGroup;
+            cn.parentGroup = PIXI.lights.normalGroup;
+            cd.anchor.set(0.5,1.2);
+            cn.anchor.set(0.5,1.2);
+        // type
+        const td = new PIXI.Sprite( PIXI.Texture.EMPTY ); //$Loader.Data2.caseEvents.textures.caseEvent_hide);
+        const tn = new PIXI.Sprite( PIXI.Texture.EMPTY ) // $Loader.Data2.caseEvents.textures_n.caseEvent_hide_n);
+            td.parentGroup = PIXI.lights.diffuseGroup;
+            tn.parentGroup = PIXI.lights.normalGroup;
+            td.anchor.set(0.5,1.2);
+            tn.anchor.set(0.5,1.2);
+        return {cd,cn,td,tn};
+    };
+
+    getDataValuesFrom (cage) {
+        const dataValues = super.getDataValuesFrom(cage); // get default dataValues
+        Object.assign(dataValues.p, this.getParentValues_case (cage) )
+        return dataValues;
+    };  
     
+    // les data du parentContainer pour les dataObj_case  .p
+    getParentValues_case(cage){
+        return {
+            caseColor        :cage? cage.caseColor        : false , // couleur case
+            caseType         :cage? cage.caseType         : null  , // type event associer (bounty)
+            randomStartColor :cage? cage.randomStartColor : false , // bootGame allow random value based on planet and dificulty
+            randomTurnColors :cage? cage.randomTurnColors : false , // allow random color per turn
+            randomStartType  :cage? cage.randomStartType  : false , // bootGame allow random value based on planet and dificulty
+            randomTurnType   :cage? cage.randomTurnType   : false , // allow random type per turn
+        };
+    };
+
     initialize(mapColorInfluencer,mapActionInfluencer,totalCases,dificulty){
         this.init_baseColor(mapColorInfluencer,totalCases,dificulty);
         this.init_baseAction(mapActionInfluencer,totalCases,dificulty);
