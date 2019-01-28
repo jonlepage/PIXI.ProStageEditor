@@ -37,22 +37,23 @@ function new_HTML_table_Info(contents){
 // create new content for tbody tr
 // example:  p.position, d.position n.position
 function new_HTML_content_options(description,options){
+    const id = description.hashCode();
     return /*html*/ `
         <tr>
             <td>
-                <div class="input-group input-group-xs ${options.break? "parentBreak":''} ${options.smallz? "smallz":''}">
+                <div class="input-group input-group-xs}">
                     <div class="input-group-prepend">
-                        <div class="input-group-text ${options.trClass && options.trClass}" >
+                        <div class="input-group-text" >
                             <p>${description}:&nbsp</p>
                         </div>
                     </div>
                 </div>
             </td>
-            <td ${options.trClass && 'class='+options.trClass}>
+            <td>
                 <div class="form-check-inline funkyradio">
                     <div class="funkyradio funkyradio-warning">
-                        <input type="checkbox" name="checkbox" id="check_haven"/>
-                        <label for="check_haven">&nbsp;</label>
+                        <input type="checkbox" name="checkbox" id=o${id}>
+                        <label for=o${id}>&nbsp;</label>
                     </div>
                 </div>
             </td>
@@ -110,6 +111,71 @@ function newInputType(target,id,type,opt,index){
         >
     `
 };
+
+function newInputType_text(target,description,opt,opt2){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    let isDisable = opt.disable && `disabled` || ``;
+    let min = opt.hasOwnProperty("min") && `min=${opt.min}` || ``;
+    let max = opt.hasOwnProperty("max") && `max=${opt.max}` || ``;
+    let step = opt.hasOwnProperty("step") && `step=${opt.step}` || ``;
+    let jscolor = opt.contains('jscolor') && "jscolor" || "";
+    return /*html*/ `
+        <input 
+        class=" ${jscolor} form-control ${isSmall} ${isLargeX} ${isLargeY}"
+        type="text" 
+        id=${description}
+        autocomplete="on"
+        ${opt.contains('lock') && 'disabled = true'}
+        >
+    `
+};
+function newInputType_textarea(target,description,opt,opt2){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    return /*html*/ `
+        <textarea 
+        rows="5" 
+        class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
+        type="textarea"
+        id=${description}
+        ${opt.contains('lock') && 'disabled = true'}
+        > </textarea>
+        `
+};
+function newInputType_number(target,description,opt,opt2){
+    let min  = opt2.hasOwnProperty("min" ) && `min=${ opt2.min }` || ``;
+    let max  = opt2.hasOwnProperty("max" ) && `max=${ opt2.max }` || ``;
+    let step = opt2.hasOwnProperty("step") && `step=${opt2.step}` || ``;
+    let contents = '';
+    if(target.length>1){ // si attributs x,y
+        ['x','y'].forEach(tag => {
+            contents = contents + createInput(tag);
+        });
+        contents = contents+`<input class="lockXY" type="checkbox" id=${description+'.'+".lockXY"} checked>🔒`
+    }else{
+        contents = createInput();
+    };
+    function createInput(tag=''){
+        const label = tag && `<label for=${description+'.'+tag} class="labelXY">${tag}:</label>` || '';
+        return/*html*/`
+            ${label}
+            <input 
+                class="form-control"
+                type="number" 
+                id=${description+'.'+tag}
+                ${opt.contains('lock') && 'disabled = true'}
+                ${min} ${max} ${step}
+            >`
+        };
+    return contents;
+};
+
+
+
+
 
 function newInputTypeSelect(target,id,type,opt,index){
     // TODO: rendre dinamycs
@@ -218,6 +284,36 @@ function new_HTML_content1D(targets,id,type,opts,end){
         );
     });
     return result;
+};
+
+function new_HTML_content(dataObj,id,type,opts,opt2){
+    let contents = "";
+    ['b','p','d','n'].forEach(target => {
+        if(dataObj[target] && dataObj[target].hasOwnProperty(id)){
+            const description = `${target}.${id}`;
+            let contentValues;
+            switch (type) {
+                case 'text'    : contentValues = newInputType_text    (dataObj[target][id],description,opts,opt2); break;
+                case 'textarea': contentValues = newInputType_textarea(dataObj[target][id],description,opts,opt2); break;
+                case 'number'  : contentValues = newInputType_number  (dataObj[target][id],description,opts,opt2); break;
+                default:throw console.error(type+'not Existe'); break;
+            };
+            contents = contents+ /*html*/ `
+            <tr>
+                <td ${opt2.color&&('class='+opt2.color)}>
+                    <div class="input-group-text"> <p>${description}:</p> </div>
+                </td>
+                <td ${opt2.color&&('class='+opt2.color)} >
+                    ${contentValues}
+                </td>
+                <td ${opt2.color&&('class='+opt2.color)}>
+                    <input class="saveCheck" type="checkbox" id="checkCopyValues">
+                </td>
+            </tr>
+            `;
+        }
+    });
+    return contents;
 };
 
 // create new content for tbody tr 2D Alway number type
@@ -397,9 +493,15 @@ function HTML_BG_UI(bgList){ // html_izit_sceneGlobalLight
 //#endregion
 function HTML_DATA_UI(cage){
     const dataObj = cage.dataObj;
-    const speraration = [ // // sepration des props selon les tables expendable
+    const bcolor = { // background color
+        list:["green","blue","red","pink"],
+        _id:0,
+        get current(){
+            this._id>this.list.length-1? this._id = 0 : void 0;
+            return this.list[this._id++];
+        }
+    }
 
-    ];  
     // if is a sprite obj
     const defaultCaseEventType = [[false,false],...Object.keys($Loader.Data2.caseEvents.textures).map(n=>{return [n,n]})]
     const message1 = /*html*/ `
@@ -412,58 +514,99 @@ function HTML_DATA_UI(cage){
             <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table_options([
-                        // rotation
-                        new_HTML_content_options("Lock: normal value to Diffuse",{}),
-                        new_HTML_content_options("Lock: Y to X value",{}),
-                        new_HTML_content_options("Disable not avaible data",{}),
-                        new_HTML_content_options("Allow Camera mouse in inspecor",{}),
-                        new_HTML_content_options("Allow mouse sprite interaction in inspector",{}),
-                        new_HTML_content_options("Colors mode for jsColors HSV / HVS",{}),
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">Descriptions</th>
+                                <th scope="col">Values</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ new_HTML_content_options("<font color=#d2bc97>Lock:</font> Diffuse and Normals Values"      ,{}) }
+                            ${ new_HTML_content_options("<font color=#d2bc97>Lock:</font> Scale,Skew from Y to X value"    ,{}) }
+                            ${ new_HTML_content_options("<font color=#ce2121>Disable:</font> Camera Controler"             ,{}) }
+                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Enable Hight precision factor" ,{}) }
+                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Grafics Debugger"              ,{}) }
+                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> jsColors HSV / HVS"            ,{}) }
+                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Large x2 Inspector"            ,{}) }
+                        </tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3>Base Data Attributs</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"textureName","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"dataName","text",{largeX:true,disable:true}),// locked
-                        new_HTML_content1D(["p"],"groupID","text",{largeX:true}),
-                        new_HTML_content1D(["p"],"name","text",{largeX:true}),
-                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ new_HTML_content(dataObj,"classType"  ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"type"       ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"textureName","text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"dataName"   ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"groupID"    ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"normals"    ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"name"       ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"description","textarea",[],{}) }
+                        </tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>ObservablePoint Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content2D(["p","d","n"],"position","number",{step:1}),// position
-                        new_HTML_content2D(["p","d","n"],"pivot","number",{step:1}),// pivot
-                        new_HTML_content2D(["p","d","n"],"scale","number",{step:0.05,small:true}),// scale
-                        new_HTML_content2D(["p","d","n"],"skew","number",{step:0.05,small:true}),// skew
-                        new_HTML_content2D(["d","n"],"anchor","number",{step:0.01,min:0,max:1,small:true}),// anchor
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"position" ,"number",[],{step:1   , color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"pivot"    ,"number",[],{step:1   , color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"scale"    ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"skew"     ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"anchor"   ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p","d","n"],"rotation","number",{step:0.01,small:true}),// rotation
-                        new_HTML_content1D(["p","d","n"],"alpha","number",{step:0.01,min:0,max:1,small:true}),// alpha
-                        new_HTML_content1D(["d","n"],"blendMode","number",{step:1,min:0,max:3,small:true}),// blendMode
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"rotation"  ,"number",[],{step:0.1 ,             color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"alpha"     ,"number",[],{step:0.1 ,min:0,max:1, color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"blendMode" ,"number",[],{step:1   ,min:0,max:3, color:bcolor.current }) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>Colors Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["d","n"],"tint","text",{jscolor:"jscolor"}),// tint
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"tint"  ,"text",['jscolor'],{step:0.1 , color:bcolor.current }) }</tbody>
+                    </table>
+                 
                     ${ new_HTML_table([
                         new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
                         new_HTML_contentColorHeaven(["d","n"]),// heaven color

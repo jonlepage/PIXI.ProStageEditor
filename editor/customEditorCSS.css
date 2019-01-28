@@ -114,6 +114,8 @@
 
   .table-dark.table-hover tbody tr:hover {
     background-color: rgb(49, 47, 47);
+    text-decoration: overline;
+    text-shadow: 0px -1px 17px #ffffff;
 }
 
 
@@ -314,28 +316,27 @@ div#dataEditor {
 .parentBreak{
   margin-bottom: 5px;
   }
-.green {
-    background-color: #1a812810;
+  .green {
+    background-color: #1a81282b;
     color: white;
     font-size: 13px;
 }
 .blue {
-  background-color: #23295611;
+  background-color: #23295640;
   color: white;
   font-size: 13px;
 }
 .red {
-  background-color: #c9171709;
+  background-color: #c9a21726;
   color: white;
   font-size: 13px;
 }
 .pink {
-  background-color: #4e224a15;
+  background-color: #4e224a4d;
   color: white;
   font-size: 13px;
   text-shadow: 0px 0px 8px #000000;
 }
-
 .smallz {
   width: 65px !important;
   padding-left: 16px !important;
@@ -469,6 +470,10 @@ h3:hover {
   float: left;
   margin-left: 5px;
 }
+.lockXY {
+  margin-left: 5px;
+  margin-top: 3px;
+}
 .form-control:disabled, .form-control[readonly] {
   background-color: #9f9f9f;
   border-style: dashed;
@@ -484,4 +489,8 @@ h3:hover {
   opacity: 0.8;
   border-radius: 14px;
   transform: scale(0.8);
+}
+.iziToast.iziToast-theme-dark .iziToast-title {
+  color: #e1e1e1;
+  font-size: 12px;
 }

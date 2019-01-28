@@ -434,9 +434,9 @@ class _PME{
         const dataValues = cage.getDataValues();
         iziToast.info( this.izit_dataObjsEditor(cage) );
         const _accordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-        
+
         //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
-        //create_jsColors.call(cage, dataValues); // create color box for tint 
+        this.create_jsColors(cage, dataValues); // create color box for tint 
         //create_sliderHeaven.call(cage, dataValues); // create slider html for pixiHaven
         //create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
         //setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
@@ -457,6 +457,20 @@ class _PME{
         };
     };
 
+    create_jsColors(cage,dataValues){
+        // initialise all colors pickers
+        const nodeList = document.getElementsByClassName("jscolor");
+        for (let i=0, l=nodeList.length; i<l; i++) {
+            const input = nodeList[i];
+            const _jscolor = new jscolor(input);
+            const attributID = input.id.split(".");
+            _jscolor.zIndex = 99999999;
+            _jscolor.onFineChange = ((e) => {
+                console.log('cage: ', cage);
+            }).bind(this);
+        };
+    };
+    
     // close the data HTML inspector
     close_dataInspector(){
         iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
