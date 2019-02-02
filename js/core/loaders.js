@@ -263,14 +263,14 @@ class _coreLoader {
                 };
                 key_n && Object.assign(data.textures_n, this.createNormals(resLink.data, resLink.textures, this.buffers.normals[keyLink_n].texture));
             });
-            if(isAni){ // cache a map of bach textures animations by name
+            if(isAni){ // cache a map of bach textures animations by name and also bind textures to gpu.
                 let _textures = {};
                 let _textures_n = {};
                 for (const key in data.animations) {
-                    _textures   [key ] = data.animations[key].map(a => data.textures   [a     ]);
-                    _textures_n [key ] = data.animations[key].map(a => data.textures_n [a+'_n']);
+                    _textures   [key] = data.animations[key].map(a => {const t = data.textures   [a     ]; $app.renderer.bindTexture(t); return t; });
+                    _textures_n [key] = data.animations[key].map(a => {const t = data.textures_n [a+'_n']; $app.renderer.bindTexture(t); return t; });
                 }
-                data.textures = _textures;
+                data.textures   = _textures  ;
                 data.textures_n = _textures_n;
             };
             // add only if need

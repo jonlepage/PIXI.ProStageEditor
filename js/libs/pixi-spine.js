@@ -7262,8 +7262,8 @@ var pixi_spine;
                 if (name_2.endsWith(nameSuffix)) {
                     target.parentGroup = group;
                     list_n.push(target);
-                }else if(outGroup && target){
-                    target.parentGroup = outGroup;
+                }else if(target){
+                    outGroup && (target.parentGroup = outGroup);
                     list_d.push(target);
                 }
             }

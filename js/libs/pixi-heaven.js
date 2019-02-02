@@ -2613,8 +2613,8 @@ var pixi_heaven;
                 },
                 enumerable: true, configurable: true
             }); 
-            this._onTextureUpdate = Sprite.prototype._onTextureUpdate;
-            this.updateTransform = Sprite.prototype.updateTransform;
+            this._onTextureUpdate = PIXI.Sprite.prototype._onTextureUpdate;
+            this.updateTransform = PIXI.Sprite.prototype.updateTransform;
             return true;
         };
         return false;

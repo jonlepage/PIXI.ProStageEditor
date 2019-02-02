@@ -48,19 +48,23 @@ class Container_Base extends PIXI.Container {
     };
 
     // dispatch values asigment
-    asignDataObjValues() {
-        this.asignValues(this.dataObj.p);
-        this.d && this.asignValues.call(this.d, this.dataObj.d);
-        this.n && this.asignValues.call(this.n, this.dataObj.n);
+    asignDataObjValues(dataObj = this.dataObj) {
+        this.asignValues(dataObj.p);
+        if(!this.dataObj.s){
+            this.d && this.asignValues.call(this.d, dataObj.d);
+            this.n && this.asignValues.call(this.n, dataObj.n);
+        };
+        this.asignValues(dataObj.a); // animatedSprite
+        this.asignValues(dataObj.s); // SprineSprites
     };
 
     getDataValues () {
-        this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
+        return this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
     };
 
 
     asignValues (data) {
-        Object.keys(data).forEach(key => {
+        data && Object.keys(data).forEach(key => {
             const value = data[key];
             switch (key) {
                 case "position":case "scale":case "skew":case "pivot":case "anchor":
@@ -75,6 +79,9 @@ class Container_Base extends PIXI.Container {
                         this.asignChildParentGroups(this.dataObj.b.normals);
                     };
                 break;
+                case "color":
+                    value?this.convertToHeaven():this.destroyHeaven();
+                break;
                 case "zIndex":
                     this.zIndex = +data.position[1];
                 break;
@@ -85,6 +92,16 @@ class Container_Base extends PIXI.Container {
                 case "defaultCaseEventType": // for cases, change color
                     this.defaultCaseEventType = value;
                     this.setCaseEventType(value);
+                break;
+                //ANIMATIONS
+                case "autoPlay": // for cases, change color
+                    this.autoPlay = value;
+                    this.autoPlay && this.play && this.play();
+                break;
+                //spine
+                case "defaultAnimation": // for cases, change color
+                    this.s.state.setAnimation(0, value, true);
+                    
                 break;
                 default:
                     this[key] = value;

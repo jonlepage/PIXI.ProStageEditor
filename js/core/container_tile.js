@@ -14,8 +14,6 @@
 class Container_Tile extends Container_Base {
     constructor(dataObj) {
         super(dataObj); // dataObj_base selon dirArray TODO: refaire le system de random
-        
-
     };
 
     createBases (dataObj = this.dataObj) {

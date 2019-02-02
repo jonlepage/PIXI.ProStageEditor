@@ -20,7 +20,8 @@ class _PME{
     constructor() {
         console.log1('__________________initializeEditor:__________________ ');
         this._version = 'v2.0';
-        this.editor = {gui:null,buttons:[]};
+        this._debugMode = true;
+        this.editor = {gui:null,buttons:[],icons:{}};
         this.data2 = null;
         this.inMouse = null ; // if sprite in mouse ?
         this._displayGroupID = 1; // current display groups selected
@@ -92,6 +93,9 @@ class _PME{
            // if (res.extension === "png") { this.editor[res.name] = res.texture};
             if (res.spineData) { this.editor.gui = new PIXI.spine.Spine(res.spineData)};
         });
+        // load some icons
+        this.editor.icons.icon_light = new PIXI.Texture.fromImage(`editor/images/${'icon_light.png'}`);
+        this.editor.icons.icon_spotLight = new PIXI.Texture.fromImage(`editor/images/${'icon_spotLight.png'}`);
         loader.onComplete.add(() => { this.load_dataJson() });
     };
 
@@ -235,7 +239,7 @@ class _PME{
                 cage.d.scale.set( $app.getRatio(cage, 134, 100));
                 cage.buttonType = "thumbs";
                 cage.alpha = 0.75;
-                this.create_Debug(cage,dataBase);
+                this.create_Debug(cage);
                 c._list.push(cage);
                 // interactions
                 cage.interactive = true;
@@ -307,122 +311,141 @@ class _PME{
         };
     };
 
-    create_Debug(c,dataBase){
-        const Debug = {bg:null, previews:null, an:null, piv:null, ico:null};
-        if(c.buttonType==='thumbs'){ // if no data type, it a "thumbs"
-        const create_Previews = (textures) => {
-                const cage = new PIXI.Container();
-                let totalWidth = 0;
-                for (let i = 0, l = textures.length; i < l; i++) { // build the preview sheets
-                    const sprite = new PIXI.Sprite(textures[i]);
-                    sprite.scale.set( $app.getRatio(sprite, 400, 400) );
-                    sprite.anchor.y = 1;
-                    sprite.x = totalWidth;
-                    totalWidth+=sprite.width;
-                    cage.addChild(sprite);
-                };
-                const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-                (bg.width = cage.width), (bg.height = cage.height);
-                bg.anchor.y = 1;
-                bg.alpha = 0.9;
-                cage.addChildAt(bg,0);
-                cage.y = 900;
-                return cage;
-            };
-            const create_IconsFilters = (dataBase) => {
-                const cage = new PIXI.Container();
-                const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-                const filtersID = []; // when we filtering by ID
-                let y = 0;
-                function addIconFrom(filePNG,id){
-                    const texture = new PIXI.Texture.fromImage(`editor/images/${filePNG}`);
-                    const sprite = new PIXI.Sprite(texture);
-                    sprite.y = +y;
-                    y+=30;
-                    cage.addChild(sprite);
-                    filtersID.push(id);
-                };
-                if(dataBase.type === "tileSheet"){ addIconFrom('filter_texturePacker.png'),0 };
-                if(dataBase.type === "animationSheet"){ addIconFrom('filter_animation.png'),1 };
-                if(dataBase.type === "spineSheet"){ addIconFrom('filter_spine.png'),2 };
-                if(dataBase.normal){ addIconFrom('filter_normal.png'),3 };
-                if(dataBase.name.contains("-0")){ addIconFrom('info_multiPack.png'),4 };
-                cage.addChildAt(bg,0);
-                cage.filtersID = filtersID;
-                cage.bg = bg;
-                bg.tint = 0x000000;
-                bg.alpha = 0.5;
-                bg.width = 30;
-                bg.height = y;
-                return cage;
-            };
+    create_Debug(c){
+        // callBack
+        const createBackground = (w,h,a=0.35,color=0xffffff) => {
             const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const previews = create_Previews(dataBase.baseTextures); // sprites preview reference;
-            const icons = create_IconsFilters(dataBase); // icons
-            // setup
-            icons.x = c.d.width;
-            bg.width = c.d.width + icons.width;
-            bg.height =  Math.max(c.d.height, icons.height);
-            //bg.getBounds();
-            Debug.bg = bg;
-            Debug.previews = previews;
-            Debug.ico = icons;
-            Debug.bg.name = "debug-bg";
-            Debug.previews.name = "debug-previews";
-            Debug.ico.name = "debug-ico";
-            c.Debug = Debug;
-            c.addChildAt(Debug.bg,0);
-            c.addChild(c.Debug.ico);
-        }else{
-            let w = c.d.width;
-            let h = c.d.height;
-            const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-            const an = new PIXI.Sprite( $app.renderer.generateTexture( this.drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
-            const piv = new PIXI.Container(); //computeFastModes need a container for skews
-            const pivLine = new PIXI.Sprite( $app.renderer.generateTexture( this.drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
-            // BG
+            bg.name = "debug-bg";
             bg.width = w, bg.height = h;
-            bg.alpha = 0.4;
-            bg.tint = 0xffffff;
-            bg.anchor.copy(c.d.anchor || new PIXI.Point(0.5,1));
+            bg.alpha = a;
+            bg.tint = color;
+            bg.anchor.copy(c.d && c.d.anchor || new PIXI.Point(0.5,1));
             c.parentGroup? bg.parentGroup = PIXI.lights.diffuseGroup : void 0;
-
-            //anchor point
-            var txt = new PIXI.Text("A",{fontSize:12,fill:0xffffff});
-            txt.anchor.set(0.5,0.5);
-            an.anchor.set(0.5,0.5);
+            return bg;
+        };
+        const createAnchor = () => {
+            const an = new PIXI.Sprite( $app.renderer.generateTexture( this.drawRec(0,0, 14,14, '0x000000', 1, 6) ) ); // x, y, w, h, c, a, r, l_c_a
+            const txt = new PIXI.Text("A",{fontSize:12,fill:0xffffff});
+            an.name = "debug-an";
+            txt.anchor.set(0.5,0.5), an.anchor.set(0.5,0.5);
             an.addChild(txt);
-
-            // pivot
-            var txt = new PIXI.Text("(P)",{fontSize:26,fill:0x000000,strokeThickness:6,stroke:0xffffff,fontWeight: "bold"});
-                txt.scale.set(0.5);
-                txt.anchor.set(0.5,0.5);
-            pivLine.anchor.set(0.5,0.5);
+            return an;
+        };
+        const createPivot = (w,h) => {
+            const piv = new PIXI.Sprite( $app.renderer.generateTexture( this.drawRec(0,0, 4,h, '0xffffff', 1, 1) ) ); // x, y, w, h, c, a, r, l_c_a
+            const line = new PIXI.Sprite( $app.renderer.generateTexture( this.drawRec(0,0, w,4, '0xffffff', 1) ) );//computeFastModes need a container
+            const txt = new PIXI.Text("(P)",{fontSize:26,fill:0x000000,strokeThickness:6,stroke:0xffffff,fontWeight: "bold"});
+            piv.name = "debug-piv";
+            piv.anchor.set(0.5,1);
+            txt.scale.set(0.5), txt.anchor.set(0.5);
             piv.position.copy(c.pivot);
-            piv.pivLine = pivLine;
-            piv.txtGroupeID = txt;
-            piv.addChild(pivLine);
-            pivLine.addChild(txt);
-
-            // hitArea hitZone
-            const lb = c.getLocalBounds();
+            piv.line = line;
+            piv.txt = txt;
+            line.anchor.set(0.5,0.5);
+            line.addChild(txt);
+            piv.addChild(line);
+            return piv;
+        };
+        const createHitzone = (color=0x0000FF) => { // hitArea hitZone
             const hitZone = new PIXI.Graphics();
-            hitZone.lineStyle(2, 0x0000FF, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
+            const lb = c.getLocalBounds();
+            hitZone.name = "debug-hitZone";
+            hitZone.lineStyle(2, color, 1).drawRect(lb.x, lb.y, lb.width, lb.height);
             hitZone.endFill();
+            return hitZone;
+        };
+        const create_Previews = (textures) => {
+            const cage = new PIXI.Container();
+            cage.name = "debug-previews";
+            let totalWidth = 0;
+            for (let i = 0, l = textures.length; i < l; i++) { // build the preview sheets
+                const sprite = new PIXI.Sprite(textures[i]);
+                sprite.scale.set( $app.getRatio(sprite, 400, 400) );
+                sprite.anchor.y = 1;
+                sprite.x = totalWidth;
+                totalWidth+=sprite.width;
+                cage.addChild(sprite);
+            };
+            const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
+            (bg.width = cage.width), (bg.height = cage.height);
+            bg.anchor.y = 1;
+            bg.alpha = 0.9;
+            cage.addChildAt(bg,0);
+            cage.y = 900;
+            return cage;
+        };
+        const create_IconsFilters = (dataBase,x) => {
+            const cage = new PIXI.Container();
+            const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
+            const filtersID = []; // when we filtering by ID
+            cage.name = "debug-ico";
+            let y = 0;
+            function addIconFrom(filePNG,id){
+                const texture = new PIXI.Texture.fromImage(`editor/images/${filePNG}`);
+                const sprite = new PIXI.Sprite(texture);
+                sprite.y = +y;
+                y+=30;
+                cage.addChild(sprite);
+                filtersID.push(id);
+            };
+            if(dataBase.type === "tileSheet"     ){ addIconFrom('filter_texturePacker.png'),0 };
+            if(dataBase.type === "animationSheet"){ addIconFrom('filter_animation.png'    ),1 };
+            if(dataBase.type === "spineSheet"    ){ addIconFrom('filter_spine.png'        ),2 };
+            if(dataBase.normal                   ){ addIconFrom('filter_normal.png'       ),3 };
+            if(dataBase.name.contains("-0")      ){ addIconFrom('info_multiPack.png'      ),4 };
+            cage.addChildAt(bg,0);
+            cage.filtersID = filtersID;
+            cage.bg = bg;
+            bg.tint = 0x000000;
+            bg.alpha = 0.5;
+            bg.width = 30;
+            bg.height = y;
+            cage.x = x;
+            return cage;
+        };
+        const create_ico = () => {
+            const ico = new PIXI.Sprite(this.editor.icons.icon_light);
+            ico.anchor.set(0.5,1);
+            ico.parentGroup = $displayGroup.group[3];
+            return ico;
+        };
 
-            Debug.path = [];
-            Debug.bg = bg;
-            Debug.an = an;
-            Debug.piv = piv;
-            Debug.hitZone = hitZone;
-            Debug.bg.name = "debug-bg";
-            Debug.an.name = "debug-an";
-            Debug.piv.name = "debug-piv";
-            Debug.hitZone.name = "debug-hitZone";
+        const type = c.dataObj.b.type;
+        const dataBase = c.dataObj.dataBase;
+        const w = c.d||c.s||c.a? c.d.width  || c.s.width  || c.a.width : 24;
+        const h = c.n||c.s||c.a? c.n.height || c.s.height || c.a.width : 24;
 
-            c.Debug = Debug;
-            c.addChildAt(Debug.bg,0);
-            c.addChild(c.Debug.an, c.Debug.piv, c.Debug.hitZone);
+        if(!type){ // if no data type, it a "thumbs"
+            // create visual debug elements
+            const icons = create_IconsFilters(dataBase, c.d.width); // icons
+            const bg = createBackground(c.d.width + icons.width, Math.max(c.d.height, icons.height), 0.7);
+            const previews = create_Previews(dataBase.baseTextures); // sprites preview reference;
+
+            c.Debug = {bg, icons, previews};
+            c.addChildAt(bg,0);
+            c.addChild(icons);
+        }else
+        if(["tileSheet", "animationSheet", "spineSheet"].contains(type) ){
+            // create visual debug elements
+            const bg = createBackground(w,h);
+            const an = createAnchor();
+            const piv = createPivot(w,h); 
+            const hitZone = createHitzone();
+            //const path = createPath();
+            c.Debug = {bg,an,piv,hitZone};
+            c.addChild(...Object.values(c.Debug));
+            c.addChildAt(bg,0);
+        }else 
+        if(["PointLight"].contains(type)){
+            // create visual debug elements
+            const ico = create_ico();
+            const bg = createBackground(ico.width,ico.height,0.3);
+            const hitZone = createHitzone(c.color);
+
+            c.Debug = {bg,ico,hitZone};
+            c.addChildAt(bg,0);
+            c.addChild(ico,hitZone);
+     
         }
     };
 
@@ -437,18 +460,44 @@ class _PME{
 
         //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
         this.create_jsColors(cage, dataValues); // create color box for tint 
-        //create_sliderHeaven.call(cage, dataValues); // create slider html for pixiHaven
-        //create_dataIntepretor.call(cage, dataValues); // create the data Interpretor listener for inputs and buttons
-        //setHTMLWithData.call(this, dataValues); // asign dataValues to HTML inspector
+        const slidersNode = this.create_sliderHeaven(cage, dataValues); // create slider html for pixiHaven
+        this.setHTMLWithData(dataValues,slidersNode); // asign dataValues to HTML inspector
+        this.startDataIntepretor(cage,slidersNode); // create the data Interpretor listener for inputs and buttons
+        
     };
 
-    create_dataIntepretor(cage){
+    startDataIntepretor(cage,slidersNode){
+        const backUp = cage.dataObj.clone();
         const dataIntepretor = document.getElementById("dataIntepretor");
-        dataIntepretor.onclick = (e) => {
+        dataIntepretor.oninput = (e) => {
             const div = e.target;
-            if(div.type === "button"){
-                switch (div.id) {
+            const value = JSON.parse(div.value);
+            const ids = div.id.split('.');
+            const att = ids.pop();
+            let path = cage.dataObj;
+            ids.forEach(deep => { path = path[deep] });
+            if( ['x','y'].contains(att) ){
+                att==='x'? path[0] = value : att==='y'? path[1] = value : void 0;
+            }else{
+                path[att] = value;
+            }
+            cage.asignDataObjValues(); // refresh value
+        };
+
+        dataIntepretor.onchange = (e) => {
+            if(e.target.type === "checkbox"){
+                e.target.value = e.target.checked;
+                dataIntepretor.oninput(e);
+            };
+        };
+
+        dataIntepretor.onclick = (e) => {
+            if(e.target.type === "button"){
+                switch (e.target.id) {
+                    case "reset" : cage.asignDataObjValues(backUp); this.setHTMLWithData(cage.getDataValues(),slidersNode); break;
                     case "save" : this.startSaveDataToJson(); break;
+                    case "apply": this.close_dataInspector(); break;
+                    case "cancel": cage.asignDataObjValues(backUp); this.close_dataInspector(); break;
                     case "close": this.close_dataInspector(); break;
                     case "clearScene": this.clearScene(); break;
                     default:break;
@@ -464,10 +513,60 @@ class _PME{
             const input = nodeList[i];
             const _jscolor = new jscolor(input);
             const attributID = input.id.split(".");
+            
             _jscolor.zIndex = 99999999;
-            _jscolor.onFineChange = ((e) => {
-                console.log('cage: ', cage);
-            }).bind(this);
+            _jscolor.onFineChange = (e) => {
+                console.log('attributID: ', attributID);
+                cage.dataObj.dataValues[attributID[0]][attributID[1]] = +`0x${_jscolor.targetElement.value}`;
+                cage.asignDataObjValues();
+            };
+        };
+    };
+
+    // create multi sliders Heaven
+    create_sliderHeaven(cage,dataValues){
+        let list = {}; // store slider list
+        const nodeList = document.getElementsByClassName("sliders");
+        for (let i=0, l=nodeList.length; i<l; i++) {
+            const input = nodeList[i];
+            const attributID = input.id.split(".");
+            const slider = new Slider(input, { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1,
+            slider.tooltip.style.opacity = 1, slider.tooltip.style.opacity = 1, slider.tooltip.style.opacity = 1;
+            slider.on("slide",  ()=>{
+                cage.dataObj.dataValues[attributID[0]][attributID[1]][attributID[2]] = slider.getValue();
+                cage.asignDataObjValues();
+            });
+            list[input.id] = slider;
+        };
+        return list;
+    };
+
+    // asign props value to HTML data Inspector
+    
+    setHTMLWithData(dataValues,slidersNode) {
+        const computeHTMLValue = (key,prop,value) =>{
+            const id = [key,prop].toString().replace(/\,/g,".");
+            switch (prop) {
+                case "position":case "scale":case "skew":case "pivot":case "anchor":
+                    for (const [i, p] of ['.x','.y'].entries()) { document.getElementById(id+p).value = value[i] };
+                break;
+                case "autoGroups":
+                //TODO:
+                break;
+                case "setDark": case "setLight":
+                    for (const [i, v] of value.entries()) {  slidersNode[`${id}.${i}`].setValue(v) };
+                break;
+                default:
+                  document.getElementById(id).value = value;
+                break;
+            }
+        }; 
+        for (const key in dataValues) {
+            Object.entries(dataValues[key]).forEach(entry => {
+                const prop  = entry[0];
+                const value = entry[1];
+                computeHTMLValue(key,prop,value);
+            });
         };
     };
     
@@ -652,8 +751,68 @@ class _PME{
         const name = slot.currentSpriteName;
         switch (name) {
             case "icon_Save": this.show_saveSetup();break;
+            case "icon_light": this.add_toMouse( this.add_toMap( this.create_light(ee) ) );  ;break;
+            case "icon_showHideSprites": this.toggle_debugMode();  ;break;
+            case "icon_grid": this.create_grids();  ;break;
             default: throw console.error(' le button name existe pas , TODO'); break;
         }
+    };
+
+    // toggle , hide show debug mode
+    toggle_debugMode(forceValue){
+        if(forceValue !== void 0){
+            this._debugMode = forceValue
+        }else{
+            this._debugMode = !this._debugMode
+        }
+        $objs.LIST.forEach(cage => {
+            console.log('cage: ', cage);
+            Object.values(cage.sprite.Debug).forEach(debug => {
+                debug.renderable = this._debugMode;
+            });
+        });
+    };
+
+    create_grids(){
+        if($stage.scene.debugGrid){
+            $stage.scene.removeChild($stage.scene.debugGrid); 
+            $stage.scene.debugGrid.destroy()
+            return $stage.scene.debugGrid = false;
+        };
+        const w = $stage.scene.background? $stage.scene.background.width  : $stage.width ; // map width + zoom
+        const h = $stage.scene.background? $stage.scene.background.height : $stage.height; // map width + zoom
+        const color = [0xffffff,0x000000,0xff0000,0x0000ff,0xffd800,0xcb42f4][~~(Math.random()*6)];
+        const graphics = new PIXI.Graphics();
+            graphics.lineStyle(2, color, 0.5);
+        // draw Vertical line
+        for (let i=0, l=w/48; i<l; i++) {
+            graphics.beginFill(color);
+            graphics.moveTo(i*48,0).lineTo(i*48, h).endFill();
+        };
+         // draw Horizontal line
+        for (let i=0, l=h/48; i<l; i++) {
+            graphics.beginFill(color);
+            graphics.moveTo(0,i*48).lineTo(w, i*48).endFill();
+        };
+        const sprite = new PIXI.Sprite( $app.renderer.generateTexture(graphics) );
+        sprite.anchor.set(0.5,1);
+        sprite.position.set(w/2,h);
+        sprite.scale.set(1.1);
+        sprite.convertTo2d();
+        $stage.scene.addChild(sprite);
+        sprite.parentGroup = $displayGroup.group[0];
+        $stage.scene.debugGrid = sprite;
+    };
+
+    // create light from icons type
+    create_light(ee){
+        const slot = ee.slot;
+        let type;
+        switch (slot.currentSpriteName) {
+            case "icon_light": type = 'PointLight';break;
+            default:break;
+        }
+        return $objs.newContainer_light(type); //Container_Base
     };
 
     show_saveSetup() {
@@ -666,8 +825,9 @@ class _PME{
 
     show_tileSheet(cage) {
         const dataBase = cage.dataObj.dataBase;
-        Object.keys(dataBase.textures).forEach(textureName => {
+        Object.keys(dataBase.textures || dataBase.skins).forEach(textureName => {
           const cage = $objs.newContainer_dataBase(dataBase,textureName);
+          console.log('cage: ', cage);
           cage.buttonType = "tileLibs";
           this.create_Debug(cage,dataBase);
           this.LIBRARY_TILE._list.push(cage);
@@ -694,7 +854,7 @@ class _PME{
         // anime spine
         if(!this.LIBRARY_TILE_active){
             this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
-            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures).length}): ${name}.json`; // update title 
+            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures||dataBase.skins).length}): ${name}.json`; // update title 
         }
         this.LIBRARY_TILE_active = true; // flag indic si activer
     };
@@ -913,6 +1073,7 @@ class _PME{
     };
 
     setupListener(){
+        document.onwheel = null;
         document.addEventListener('keydown', (event) => {
             // key for FASTMODES
             if(this.FASTMODES.renderable){
@@ -925,11 +1086,19 @@ class _PME{
         });
 
         document.addEventListener('wheel',(e) => {
-            const hitTest = $mouse.interaction.hitTest($mouse.pointer.position);
-            // Dispatch scroll event
-            if (hitTest) { 
-                hitTest._events.mousewheel && hitTest.emit('mousewheel',e,hitTest);
+            console.log('e: ', e);
+            // autorize zoom just quand sourit dans canvas
+            if (e.path.contains($app.renderer.view)) {
+                const hitTest = $mouse.interaction.hitTest($mouse.pointer.position);
+                console.log('hitTest: ', hitTest);
+                // Dispatch scroll event
+                if (hitTest) { 
+                    hitTest._events.mousewheel && hitTest.emit('mousewheel',e,hitTest);
+                }else{
+                    $camera.onMouseWheel.call($camera,e);
+                }
             };
+
         });
 
         document.addEventListener('mouseup',(event)=>{

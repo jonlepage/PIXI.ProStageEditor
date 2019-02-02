@@ -137,7 +137,7 @@ class _camera extends PIXI.projection.Container2d{
 
     getLocalTarget(target){
         return this.toLocal(target, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
-    }
+    };
 
     //$camera.moveToTarget(null,f)
     moveToTarget(target,setup) { // camera objet setup {x,y,z,focal{x,y}

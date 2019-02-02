@@ -31,10 +31,11 @@ class _objs{
         };
         // avaible type of container class link
         this.classContainers = {
-            animationSheet :Container_Animation ,
-            spineSheet     :Container_Spine     ,
-            tileSheet      :Container_Tile      ,
-            base           :Container_Base      ,
+            animationSheet :Container_Animation  ,
+            spineSheet     :Container_Spine      ,
+            tileSheet      :Container_Tile       ,
+            PointLight     :Container_PointLight ,
+            base           :Container_Base       ,
         }
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
         this.actionsCasesSystem  = {
@@ -57,14 +58,14 @@ class _objs{
         };
         // game system colors possibility
         this.colorsSystem = [
-            'red'   , //:0xff0000, #ff0000
-            'green' , //:0x00ff3c, #00ff3c
-            'blue'  , //:0x003cff, #003cff
-            'pink'  , //:0xf600ff, #f600ff
-            'purple', //:0x452d95, #452d95
-            'yellow', //:0xfcff00, #fcff00
-            'black' , //:0x000000, #000000
-            'white' , //:0xffffff, #ffffff
+            'white'  , //:0xffffff, #ffffff
+            'red'    , //:0xff0000, #ff0000
+            'green'  , //:0x00ff3c, #00ff3c
+            'blue'   , //:0x003cff, #003cff
+            'pink'   , //:0xf600ff, #f600ff
+            'purple' , //:0x452d95, #452d95
+            'yellow' , //:0xfcff00, #fcff00
+            'black'  , //:0x000000, #000000
         ];
     };
     /**@description get sprites case list from dataObjsFromScenes id */
@@ -192,8 +193,8 @@ class _objs{
         return new class_data(dataValues);
     };
 
-    // creer une nouveau dataObjs video selon type dataBase
-    newDataObjs_dataBase(dataBase,textureName,needRegister){
+    // creer une nouveau dataObjs 
+    newDataObjs_dataBase(dataBase,textureName){
         const class_data = this.getClassDataObjs(dataBase.classType);
         return new class_data(null,dataBase,textureName);
     };
@@ -216,6 +217,12 @@ class _objs{
         const dataObj = this.newDataObjs_dataValues(dataValues);
         const class_container = this.getClassContainers(dataObj.b.type);
         return new class_container (dataObj);
+    };
+
+    // les light ont besoin de creer un dataBase, qui n'est pas dans le loader
+    newContainer_light(type){
+        const dataObj = new dataObj_light(null,type);
+        return new Container_PointLight(dataObj);
     };
 
     // get a new sprite ID reference from local current scene

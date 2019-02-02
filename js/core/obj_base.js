@@ -30,6 +30,8 @@ class dataObj_base{
     get p() { return this.dataValues.p };
     get d() { return this.dataValues.d };
     get n() { return this.dataValues.n };
+    get a() { return this.dataValues.a };
+    get s() { return this.dataValues.s };
     get sprite() { return (this._sceneName===$objs._sceneName)? $objs.spritesFromScene[this._spriteID] : null };// link cage display objet container when asigned
 
     initialize(){
@@ -39,6 +41,7 @@ class dataObj_base{
     
     // the DataValues will used for make saveGame or dataEditor manager
     // use parent build build value from parent sprite container, or default
+    //TODO: RENDU ICI , a,s sont creer pour les thumps ???
     getDataValuesFrom (cage) {
         const dataValues = {
             b:this.getDataBaseValues        (cage),
@@ -46,6 +49,13 @@ class dataObj_base{
             d:this.getSpriteValues          (cage&&cage.d),
             n:this.getSpriteValues          (cage&&cage.n),
         };
+        // si ces un spriteAnimations ?
+        if(dataValues.b.type === "animationSheet"){
+            dataValues.a = this.getAnimationsValues(cage);
+        }
+        if(dataValues.b.type === "spineSheet"){
+            dataValues.s = this.getSpineValues(cage);
+        }
         return dataValues;
     };
 
@@ -67,6 +77,7 @@ class dataObj_base{
 
     // les datas Du container parent CAGE
     getParentContainerValues(cage){ // .p
+        const isAnimations = !!this.dataBase.animations && this.dataBase;
         return {
             // observable point
             position : cage? [cage.position._x,cage.position ._y ] : [0,0] ,
@@ -77,30 +88,17 @@ class dataObj_base{
             rotation : cage? cage.rotation : 0 ,
             alpha    : cage? cage.alpha    : 1 ,
             // other
-            autoGroups    : cage? cage.autoGroups          : new Array(7).fill(false) , // permet de changer automatiquement de layers selon player
-            zIndex        : cage? cage.zIndex              : 0                        , // locked
-            parentGroup   : cage&&cage.parentGroup? cage.parentGroup.zIndex  : null                        , //  for editor, need to manual set parentGroup on addMouse
+            autoGroups  : cage                  ? cage.autoGroups         : new Array(7).fill(false) , // permet de changer automatiquement de layers selon player
+            zIndex      : cage                  ? cage.zIndex             : 0                        , // locked
+            parentGroup : cage&&cage.parentGroup? cage.parentGroup.zIndex : null                     , //  for editor, need to manual set parentGroup on addMouse
+            zHeight     : cage                  ? cage.zHeight             : 0                        , // ajust height layers from sort pivot+ zHeight
             //pathConnexion : cage? cage.pathConnexion     : {}                       , // store path connect by id
             // conditionInteractive TODO:
-
-
-            // animations TODO: ajouter dans les data obj 
-            /*...isAnimations && {
-                totalFrames    :def? dataBase.textures[textureName].length : this.totalFrames    , // locked
-                animationSpeed :def? 1                                     : this.animationSpeed ,
-                loop           :def? false                                  : this.loop           ,
-            },
-            // animations
-            ...isCase && {
-                defaultColor          :def? false : this.defaultColor          ,
-                allowRandomStartColor :def? false : this.allowRandomStartColor ,
-                allowRandomTurnColors :def? false : this.allowRandomTurnColors , 
-                defaultCaseEventType :def? false : this.defaultCaseEventType , 
-            },*/
         };
     };
     
     getSpriteValues(sprite, dataBase,textureName){ // .d .n
+        if(sprite instanceof Array){return {}}; // si spine, this.d,n sont des array, rien faire pour le moment TODO:
         return {
             // observable point
             position : sprite ? [sprite.position ._x,sprite.position ._y] :[0  ,0],
@@ -109,15 +107,34 @@ class dataObj_base{
             pivot    : sprite ? [sprite.pivot    ._x,sprite.pivot    ._y] :[0  ,0],
             anchor   : sprite ? [sprite.anchor   ._x,sprite.anchor   ._y] :this._textureName && [0.5,1] || [0,0],
             // transform
-            rotation  : sprite ? sprite.rotation  :0        ,
-            alpha     : sprite ? sprite.alpha     :1        ,
-            blendMode : sprite ? sprite.blendMode :0        ,
-            tint      : sprite ? sprite.tint      :0xffffff ,
-            // other TODO:  heaven
-            /*...this.color && {
-                setDark  : def? [0,0,0] : PIXI.utils.hex2rgb(this.color.darkRgba ).reverse(),
-                setLight : def? [1,1,1] : PIXI.utils.hex2rgb(this.color.lightRgba).reverse(),
-            },*/
+            rotation  : sprite ?   sprite.rotation  :0        ,
+            alpha     : sprite ?   sprite.alpha     :1        ,
+            blendMode : sprite ?   sprite.blendMode :0        ,
+            tint      : sprite ?   sprite.tint      :0xffffff ,
+            color     : sprite ? !!sprite.color     :false    ,
+            setDark  : sprite && sprite.color? PIXI.utils.hex2rgb(sprite.color.darkRgba ).reverse() : [0,0,0],
+            setLight : sprite && sprite.color? PIXI.utils.hex2rgb(sprite.color.lightRgba).reverse() : [1,1,1],
+        };
+    };
+
+    // les datas pour les spriteAnimations
+    getAnimationsValues(cage){ 
+        return {
+            //totalFrames    :cage? cage.totalFrames    : this._textureName?this.dataBase.animations[this._textureName].length:Infinity, // locked
+            animationSpeed :cage? cage.animationSpeed : 1     ,
+            loop           :cage? cage.loop           : true ,
+            autoPlay       :cage? cage.autoPlay       : true  ,
+        };
+    };
+
+    // les datas pour les spriteAnimations
+    getSpineValues(cage){
+        return {
+            //totalFrames    :cage? cage.totalFrames    : this._textureName?this.dataBase.animations[this._textureName].length:Infinity, // locked
+            defaultAnimation :cage? cage.s.state.getCurrent(0).animation.name : 'idle',
+            timeScale        :cage? cage.timeScale        : 1     ,
+            startTime        :cage? cage.startTime        : 0     ,
+            defaultMix       :cage? cage.defaultMix       : 0.2   ,
         };
     };
 

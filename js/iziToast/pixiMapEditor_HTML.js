@@ -1,46 +1,11 @@
-// create a new Tabs, Options
-function new_HTML_table_options(contents){
-    let c = ``;
-    contents.forEach(e => { c = c+e });
 
-    return /*html*/ `
-    <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">Options</th>
-                <th scope="col">value</th>
-            </tr>
-        </thead>
-            <tbody>${c}</tbody>
-        </table>
-    `
-};
-
-// create a new Tabs, Options
-function new_HTML_table_Info(contents){
-    let c = ``;
-    contents.forEach(e => { c = c+e });
-
-    return /*html*/ `
-    <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">information</th>
-                <th scope="col">currentValue</th>
-                <th scope="col">oldValue</th>
-            </tr>
-        </thead>
-            <tbody>${c}</tbody>
-        </table>
-    `
-};
 // create new content for tbody tr
 // example:  p.position, d.position n.position
-function new_HTML_content_options(description,options){
+function new_HTML_content_options(target,description,opt,opt2){
     const id = description.hashCode();
     return /*html*/ `
         <tr>
-            <td>
+            <td ${opt2.colspan? 'colspan='+opt2.colspan : ''}>
                 <div class="input-group input-group-xs}">
                     <div class="input-group-prepend">
                         <div class="input-group-text" >
@@ -60,58 +25,6 @@ function new_HTML_content_options(description,options){
         </tr>
     `
 };
-
-// create a new Tabs, type propreties [parent,diffuse,normal]
-function new_HTML_table(contents,id){
-    id? id = `id=${id}` : ``;
-    let bodys = [];
-    let i = 0;
-    let colorClass = ["green","blue","red","pink","green"];
-    contents.forEach(c => {
-        let color = colorClass[i]? colorClass[i++] : colorClass[i=0];
-        bodys.push(`<tbody ${id} class="${color}">${c.join("")}</tbody>`); // TODO: ADD BODY CLASS color
-    });
-    bodys = bodys.join("");
-    return /*html*/ `
-    <table class="table table-hover table-dark table-sm">
-        <thead style="background-color: #393939" >
-            <tr>
-                <th scope="col">propreties</th>
-                <th scope="col">value</th>
-                <th scope="col">select</th>
-            </tr>
-        </thead>${bodys}</table>
-    `
-};
-
-function createOptsCalss(opts){
-    opts.break? opts.break = "parentBreak" : void 0;
-    opts.sm ? opts.sm = "smallz" : void 0;
-};
-
-function newInputType(target,id,type,opt,index){
-    let isSmall = opt.small? "smallz" : "" ;
-    let isLargeX = opt.largeX? "largeX" : "" ;
-    let isLargeY = opt.largeY? "largeY" : "" ;
-    let isDisable = opt.disable && `disabled` || ``;
-    let min = opt.hasOwnProperty("min") && `min=${opt.min}` || ``;
-    let max = opt.hasOwnProperty("max") && `max=${opt.max}` || ``;
-    let step = opt.hasOwnProperty("step") && `step=${opt.step}` || ``;
-    return /*html*/ `
-        <input 
-        class="form-control ${isSmall} ${isLargeX} ${isLargeY}"
-        type=${type} 
-        id=${target+'_'+id}  
-        index=${index} 
-        target=${target} 
-        ${step} 
-        ${min} 
-        ${max} 
-        ${isDisable}
-        >
-    `
-};
-
 function newInputType_text(target,description,opt,opt2){
     let isSmall = opt.small? "smallz" : "" ;
     let isLargeX = opt.largeX? "largeX" : "" ;
@@ -159,23 +72,67 @@ function newInputType_number(target,description,opt,opt2){
         contents = createInput();
     };
     function createInput(tag=''){
-        const label = tag && `<label for=${description+'.'+tag} class="labelXY">${tag}:</label>` || '';
+        const tagId = tag && '.'+tag || '';
+        const label = tagId && `<label for=${description+tagId} class="labelXY">${tagId}:</label>` || '';
+        
         return/*html*/`
             ${label}
             <input 
                 class="form-control"
                 type="number" 
-                id=${description+'.'+tag}
+                id=${description+tagId}
                 ${opt.contains('lock') && 'disabled = true'}
                 ${min} ${max} ${step}
             >`
         };
     return contents;
 };
-
-
-
-
+function newInputType_slider(target,description,opt,opt2){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    let isDisable = opt.disable && `disabled` || ``;
+    let heaven = opt.contains('heaven');
+    if(heaven){ // return heaven slider
+        return /*html*/`
+        <div class="form-control ${description.contains('setDark')&&'dark'||''}"> <!--diffuse rvb setDark -->
+            <b>dr:</b> <input id=${description}.0 value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" data-slider-handle="triangle" type="text" class="sliders span2"/><br>
+            <b>dg:</b> <input id=${description}.1 value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" data-slider-handle="triangle" type="text" class="sliders span2"/><br>
+            <b>db:</b> <input id=${description}.2 value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" data-slider-handle="triangle" type="text" class="sliders span2"/>
+        </div>`
+    }else{ // return classic slider
+        return /*html*/ `
+       
+        `;
+    }
+};
+function newInputType_select(target,description,opt,opt2){
+    let isSmall = opt.small? "smallz" : "" ;
+    let isLargeX = opt.largeX? "largeX" : "" ;
+    let isLargeY = opt.largeY? "largeY" : "" ;
+    let isDisable = opt.disable && `disabled` || ``;
+    const options = opt.map((o)=>{ return /*html*/`<option class=${o} value=${o}>${o}</option>` });
+    return /*html*/ `
+        <select class="selectRadius" id=${description} >
+            ${options.join().replace(',','')}
+        </select>
+    `;
+};
+function newInputType_checkbox(target,description,opt,opt2){
+    let isSmall   = opt.small  ? "smallz" : ""     ;
+    let isLargeX  = opt.largeX ? "largeX" : ""     ;
+    let isLargeY  = opt.largeY ? "largeY" : ""     ;
+    let isDisable = opt.disable && `disabled` || ``;
+    const options = opt.map((o)=>{ return /*html*/`<option class=${o} value=${o}>${o}</option>` });
+    return /*html*/ `
+        <div class="form-check-inline funkyradio">
+            <div class="funkyradio funkyradio-warning">
+                <input type="checkbox" name="checkbox" id=${description}>
+                <label for=${description}>&nbsp;</label>
+            </div>
+        </div>
+    `;
+};
 
 function newInputTypeSelect(target,id,type,opt,index){
     // TODO: rendre dinamycs
@@ -222,80 +179,19 @@ function newInputTypeColor(target,id,type,opt){
         >
     `
 };
-
-// create new content for tbody tr 2D Alway number type
-// example:  p.position, d.position n.position
-function new_HTML_content2D(targets,id,type,opts,end){
-    let result = [];
-    targets.forEach(target => {
-        let description = `${target}.${id}`;
-        let x = newInputType(target,id,type,opts,0);
-        let y = newInputType(target,id,type,opts,1);
-        let padLeft = targets.contains("p")&&["d","n"].contains(target)? `style="padding-left: 14px;"` : void 0;
-        let lockDN = target === "n"? `<input class="lockDN" type="checkbox" id=${id+"_lockDN"} checked>` : ``;
-        result.push(
-            /*html*/ `
-            <tr>
-            <td ${padLeft}>
-                <div class="input-group-text"> <p>${description}:</p> </div>
-            </td>
-            <td>
-                <label for=${target+'_'+id} class="labelXY">x:</label>${x}
-                <label for=${target+'_'+id} class="labelXY">y:</label>${y}
-                ${lockDN}
-            </td>
-            <td ${opts.color?('class='+opts.color):void 0}>
-                <input class="saveCheck" type="checkbox" id=${target+'_'+id+"_select"}>
-            </td>
-            </tr>
-            `
-        );
-    });
-    return result;
-};
-
-// create new content for tbody tr 2D Alway number type
-// example:  p.position, d.position n.position
-function new_HTML_content1D(targets,id,type,opts,end){
-    let result = [];
-    targets.forEach(target => {
-        let description = `${target}.${id}`;
-        let i;
-        let lockDN = (target === "n")? `<input class="lockDN" type="checkbox" id=${id+"_lockDN"} checked>` : ``;
-        if(opts.jscolor){i = newInputTypeColor(target,id,type,opts);}
-        else if(type === "select"){i = newInputTypeSelect(target,id,type,opts);}
-        else if(type === "textArea"){i = newInputTypeTextareat(target,id,type,opts);}
-        else{ i = newInputType(target,id,type,opts,0) };
-        result.push(
-            /*html*/ `
-            <tr>
-            <td>
-                <div class="input-group-text"> <p>${description}:</p> </div>
-            </td>
-            <td>
-                ${i}
-                ${lockDN}
-            </td>
-            <td ${opts.color?('class='+opts.color):void 0}>
-                <input class="saveCheck" type="checkbox" id=${target+'_'+id+"_select"}>
-            </td>
-            </tr>
-            `
-        );
-    });
-    return result;
-};
-
 function new_HTML_content(dataObj,id,type,opts,opt2){
     let contents = "";
-    ['b','p','d','n'].forEach(target => {
+    ['b','p','d','n','a'].forEach(target => {
         if(dataObj[target] && dataObj[target].hasOwnProperty(id)){
             const description = `${target}.${id}`;
             let contentValues;
             switch (type) {
-                case 'text'    : contentValues = newInputType_text    (dataObj[target][id],description,opts,opt2); break;
-                case 'textarea': contentValues = newInputType_textarea(dataObj[target][id],description,opts,opt2); break;
-                case 'number'  : contentValues = newInputType_number  (dataObj[target][id],description,opts,opt2); break;
+                case 'text'     : contentValues = newInputType_text     (dataObj[target][id],description,opts,opt2); break;
+                case 'textarea' : contentValues = newInputType_textarea (dataObj[target][id],description,opts,opt2); break;
+                case 'number'   : contentValues = newInputType_number   (dataObj[target][id],description,opts,opt2); break;
+                case 'slider'   : contentValues = newInputType_slider   (dataObj[target][id],description,opts,opt2); break;
+                case 'select'   : contentValues = newInputType_select   (dataObj[target][id],description,opts,opt2); break;
+                case 'checkbox' : contentValues = newInputType_checkbox (dataObj[target][id],description,opts,opt2); break;
                 default:throw console.error(type+'not Existe'); break;
             };
             contents = contents+ /*html*/ `
@@ -316,178 +212,7 @@ function new_HTML_content(dataObj,id,type,opts,opt2){
     return contents;
 };
 
-// create new content for tbody tr 2D Alway number type
-// example:  p.position, d.position n.position
-function new_HTML_contentMessage(description,caseID){
-    let checkBox = caseID? `<td>Enable: <input class="saveCheck" type="checkbox" id=${caseID}></td>` : void 0;
-    return [/*html*/ `
-        <tr>
-            ${checkBox}
-            <th colspan="3" style="max-width: 360px;">
-                <div > <p class="specialMessage">${description}:</p> </div>
-            </th>
-        </tr>
-    `];
-};
 
-// simple data information value show
-function new_HTML_contentDataInfo(description,oldData,newData){
-    return [/*html*/ `
-        <tr>
-            <td>
-                <div class="input-group-text"> <p>${description}:</p> </div>
-            </td>
-            <td>
-                <div class="input-group-text"> <p>${oldData}:</p> </div>
-            </td>
-            <td>
-                <div class="input-group-text" id=${description}>${newData}</div>
-            </td>
-        </tr>
-    `];
-};
-
-// create new content for tbody tr colors pickers
-function new_HTML_contentColorHeaven(targets){
-    let result = [];
-    targets.forEach(target => {
-        let description = `${target}:chanel`;
-        let darkID = [`${target}dr`,`${target}dg`,`${target}db`];
-        let lightID = [`${target}lr`,`${target}lg`,`${target}lb`];
-        result.push(
-            /*html*/ `
-            <tr>
-                <td>
-                    <div class="input-group-text"> <p>${description}:</p> </div>
-                </td>
-            <td>
-                <div class="form-control dark"> <!--diffuse rvb setDark -->
-                    <b>dr:</b> <input id=${darkID[0]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="RC" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>dg:</b> <input id=${darkID[1]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="GC" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>db:</b> <input id=${darkID[2]} value=0 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=0 data-slider-id="BC" data-slider-handle="triangle" type="text" class="span2"/>
-                </div>
-                <div class="form-control"> <!--diffuse rvb setLight -->
-                    <b>lr:</b> <input id=${lightID[0]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="RC" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>lg:</b> <input id=${lightID[1]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="GC" data-slider-handle="triangle" type="text" class="span2"/><br>
-                    <b>lb:</b> <input id=${lightID[2]} value=1 data-slider-min=0 data-slider-max=1 data-slider-step=0.01 data-slider-value=1 data-slider-id="BC" data-slider-handle="triangle" type="text" class="span2"/>
-                </div>
-            </td>
-            <td>
-                <input class="saveCheck" type="checkbox" id=${target+"heaven_select"}>
-            </td>
-            </tr>
-            `
-        );
-    });
-    return result;
-};
-
-// create new content for tbody tr colors pickers
-function new_HTML_contentSlidersFalloff(targets){
-    return [/*html*/ `
-        <tr>
-            <td>
-                <div class="input-group-text"> <p>fallOff:</p> </div>
-            </td>
-            <td>
-                <div class="form-control dark"> <!--light fallOff Slider -->
-                <p>[Kc: Constante, Kl: Linéaire Kq: Quadratique]</p>
-                    <b>Kc:</b> <input id="Kc" type="text" data-slider-handle="square" class="span2"/><br>
-                    <b>Kl:</b> <input id="Kl" type="text" data-slider-handle="square" class="span2"/><br>
-                    <b>Kq:</b> <input id="Kq" type="text" data-slider-handle="square" class="span2"/><br>
-                </div>
-            </td>
-            <td>
-                <input class="saveCheck" type="checkbox" id=fallOff_select>
-            </td>
-        </tr>
-    `];
-};
-
-function HTML_LIGHT_UI(scene){ // html_izit_sceneGlobalLight
-    // if is a sprite obj
-    const message1 = /*html*/ `
-    <div class="container" id="dataIntepretor">
-        <h6>
-            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
-            <small class="text-muted"><kbd>Json</kbd></small>
-        </h6>
-        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Transforms Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"shaderName","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"blendMode","number",{step:1,min:0,max:3,small:true}),
-                        new_HTML_content1D(["p"],"alpha","number",{step:0.05,min:0,max:1,small:true}),
-                        new_HTML_content1D(["p"],"drawMode","select",{option:[["LINES",1],["LINE_LOOP",2],["LINE_STRIP",3],["POINTS",4],["TRIANGLES",5],["TRIANGLE_FAN",6],["TRIANGLE_STRIP",7]]}),//loop
-                        new_HTML_content1D(["p"],"lightHeight","number",{step:0.001,small:true}),
-                        new_HTML_content1D(["p"],"brightness","number",{step:0.02,min:0,small:true}),
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_contentMessage("Control the rate at which light is gradually reduced as a function of the distance between a point in 3D space and the light source."),
-                        new_HTML_contentSlidersFalloff(),// heaven color
-                    ])}
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"tint","text",{jscolor:"jscolor"}),// tint
-                    ])}
-                </div>
-            </div><!--accordion item END-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Light Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-
-                </div>
-            </div><!--accordion item END-->
-        </div><!--END-->
-        <div class="container buttons"> 
-            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
-            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
-            <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
-        </div>
-
-    </div> `;//END message1
-    return message1;
-};
-
-
-function HTML_BG_UI(bgList){ // html_izit_sceneGlobalLight
-    // if is a sprite obj
-    
-    const message1 = /*html*/ `
-    <div class="container" id="dataIntepretor">
-        <h6>
-            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
-            <small class="text-muted"><kbd>Json</kbd></small>
-        </h6>
-        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
-            <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Attributs Asigments </h3><div class="icon"><i class="arrow right"></i></div></div>
-                <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"type","text",{largeX:true,disable:true}), // locked
-                        new_HTML_content1D(["p"],"dataName","select",{largeX:true,option:bgList}), // locked
-                        new_HTML_content1D(["p"],"name","text",{largeX:true}), // locked
-                        new_HTML_content1D(["p"],"description","textArea",{largeX:true,largeY:true}),// description
-                   ])}
-                </div>
-            </div><!--accordion item END-->
-        </div><!--END-->
-        <div class="container buttons"> 
-            <button id="reset" type="button" class="btn btn-outline-warning btn-sm">Reset</button>
-            <button id="copy" type="button" class="btn btn-outline-light btn-sm">Copy Properties</button>
-            <br><br>
-            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
-            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
-            <br><td colspan="3"><font color="#c17d2e">**use the mouse on obj for fast setup!"</font></td>
-        </div>
-
-    </div> `;//END message1
-    return message1;
-};
 
 //#region [rgba(50,250, 0,0.3)]
 //#endregion
@@ -495,10 +220,13 @@ function HTML_DATA_UI(cage){
     const dataObj = cage.dataObj;
     const bcolor = { // background color
         list:["green","blue","red","pink"],
-        _id:0,
+        _id:4,
+        get next(){
+            this._id = this._id+1>this.list.length-1? 0 : this._id+1;
+            return this.current;
+        },
         get current(){
-            this._id>this.list.length-1? this._id = 0 : void 0;
-            return this.list[this._id++];
+            return this.list[this._id];
         }
     }
 
@@ -522,13 +250,14 @@ function HTML_DATA_UI(cage){
                             </tr>
                         </thead>
                         <tbody>
-                            ${ new_HTML_content_options("<font color=#d2bc97>Lock:</font> Diffuse and Normals Values"      ,{}) }
-                            ${ new_HTML_content_options("<font color=#d2bc97>Lock:</font> Scale,Skew from Y to X value"    ,{}) }
-                            ${ new_HTML_content_options("<font color=#ce2121>Disable:</font> Camera Controler"             ,{}) }
-                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Enable Hight precision factor" ,{}) }
-                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Grafics Debugger"              ,{}) }
-                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> jsColors HSV / HVS"            ,{}) }
-                            ${ new_HTML_content_options("<font color=#397c33>Enable:</font> Large x2 Inspector"            ,{}) }
+                            <td><p class="specialMessage">Select Global inspector options</p></td>
+                            ${ new_HTML_content_options(dataObj,"<font color=#d2bc97>Lock:</font> Diffuse and Normals Values"      ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#d2bc97>Lock:</font> Scale,Skew from Y to X value"    ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#ce2121>Disable:</font> Camera Controler"             ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#397c33>Enable:</font> Enable Hight precision factor" ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#397c33>Enable:</font> Grafics Debugger"              ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#397c33>Enable:</font> jsColors HSV / HVS"            ,[],{}) }
+                            ${ new_HTML_content_options(dataObj,"<font color=#397c33>Enable:</font> Large x2 Inspector"            ,[],{}) }
                         </tbody>
                     </table>
                 </div>
@@ -568,11 +297,11 @@ function HTML_DATA_UI(cage){
                                 <th scope="col">select</th>
                             </tr>
                         </thead>
-                        <tbody>${ new_HTML_content(dataObj,"position" ,"number",[],{step:1   , color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"pivot"    ,"number",[],{step:1   , color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"scale"    ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"skew"     ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"anchor"   ,"number",[],{step:0.01, color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"position" ,"number",[],{step:1   , color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"pivot"    ,"number",[],{step:1   , color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"scale"    ,"number",[],{step:0.01, color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"skew"     ,"number",[],{step:0.01, color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"anchor"   ,"number",[],{step:0.01, color:bcolor.next }) }</tbody>
                     </table>
                 </div>
             </div><!--accordion item END-->
@@ -587,9 +316,26 @@ function HTML_DATA_UI(cage){
                                 <th scope="col">select</th>
                             </tr>
                         </thead>
-                        <tbody>${ new_HTML_content(dataObj,"rotation"  ,"number",[],{step:0.1 ,             color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"alpha"     ,"number",[],{step:0.1 ,min:0,max:1, color:bcolor.current }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"blendMode" ,"number",[],{step:1   ,min:0,max:3, color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"rotation"  ,"number",[],{step:0.1 ,             color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"alpha"     ,"number",[],{step:0.1 ,min:0,max:1, color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"blendMode" ,"number",[],{step:1   ,min:0,max:3, color:bcolor.next }) }</tbody>
+                    </table>
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Projections Layers 3D</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"parentGroup" ,"number",[],{step:1 , min:0, max:6,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"zIndex"      ,"number",[],{step:1 ,              color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"zHeight"      ,"number",[],{step:1 ,              color:bcolor.next }) }</tbody>
                     </table>
                 </div>
             </div><!--accordion item END-->
@@ -604,34 +350,49 @@ function HTML_DATA_UI(cage){
                                 <th scope="col">select</th>
                             </tr>
                         </thead>
-                        <tbody>${ new_HTML_content(dataObj,"tint"  ,"text",['jscolor'],{step:0.1 , color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"tint"  ,"text",['jscolor'],{step:0.1 , color:bcolor.next }) }</tbody>
+                        <td colspan="3"><p class="specialMessage">"<font color=#d2bc97>Enable:</font> PIXI-HEAVEN for diffuses and normals"</p></td>
+                        <tbody>${ new_HTML_content(dataObj,"color"    ,"checkbox" ,[        ],{}) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"setDark"  ,"slider"   ,['heaven'],{}) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"setLight" ,"slider"   ,['heaven'],{}) }</tbody>
                     </table>
-                 
-                    ${ new_HTML_table([
-                        new_HTML_contentMessage("PIXI.HEAVEN chanel coloration.","enableHeaven"),
-                        new_HTML_contentColorHeaven(["d","n"]),// heaven color
-                    ],"HeavenSliders")}
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3 ${!(dataObj instanceof dataObj_case)&&'class=disabled'}>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"defaultColor","select",{option:["false","red","green","blue","pink","purple","yellow","black"]}),//loop
-                        new_HTML_content1D(["p"],"allowRandomStartColor","select",{option:["false","true"]}), // permet couleur hazard lorsque creer
-                        new_HTML_content1D(["p"],"allowRandomTurnColors","select",{option:["false","true"]}), //permet changer couleur lorsque fin de tours
-                        new_HTML_content1D(["p"],"defaultCaseEventType","select",{option:defaultCaseEventType}), //permet changer couleur lorsque fin de tours
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"caseColor" ,"select",$objs.colorsSystem           , { color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"caseType"  ,"select",$objs.actionsCasesSystem.list, { color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"randomStartColor" ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"randomTurnColors" ,"select",[false,true],{ color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"randomStartType"  ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"randomTurnType"   ,"select",[false,true],{ color:bcolor.current }) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3 ${!(dataObj.a)&&'class=disabled'}>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table([
-                        new_HTML_content1D(["p"],"totalFrames","text",{step:0.1,small:true,disable:true}),// animations
-                        new_HTML_content1D(["p"],"animationSpeed","number",{step:0.1,small:true}),// animations
-                        new_HTML_content1D(["p"],"loop","select",{option:[$Loader.Data2.cases.textures]}),//loop
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"animationSpeed" ,"number",[],{step:0.05,min:0.01,max:30, color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"loop" ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"autoPlay" ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->

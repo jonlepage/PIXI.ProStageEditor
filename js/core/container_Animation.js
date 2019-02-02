@@ -10,14 +10,10 @@
 //TODO: RENDU ICI, 
 /** @memberof Container_Base */
 class Container_Animation extends Container_Base {
-        constructor(dataObj, dataBase, animationName) {
-            super();
-            dataObj = dataObj || new dataObj_base( this.getDataValues(dataBase, animationName) );
-            this.DataLink = dataObj;
-            this.createBases(dataObj);
-            this.asignDataValues(dataObj.dataValues);
-            this.addChild(this.d,this.n);
+        constructor(dataObj) {
+            super(dataObj);
         };
+        
         // getters for ContainerAnimations
         get animationSpeed() { return this.d.animationSpeed };
         set animationSpeed(value) { this.d.animationSpeed = value };
@@ -32,14 +28,16 @@ class Container_Animation extends Container_Base {
 
 
  // create,build basic textures need for ContainerAnimations
-    createBases (dataObj) {
-        const textures_d = dataObj.dataBase.textures  [dataObj.dataValues.p.textureName]; // ref texture:diffuse
-        const textures_n = dataObj.dataBase.textures_n [dataObj.dataValues.p.textureName]; // ref texture:normal
-        const d = new PIXI.extras.AnimatedSprite(textures_d);
-        const n = new PIXI.Sprite(textures_n[0]);
+    createBases (dataObj = this.dataObj) {
+        const textureName = dataObj.b.textureName;
+        const td = dataObj.dataBase.textures   [textureName ];
+        const tn = dataObj.dataBase.textures_n [textureName ];
+        const d = new PIXI.extras.AnimatedSprite(td);
+        const n = new PIXI.Sprite(tn[0]);
         this.Sprites = {d,n};
-        this.batchWithNormals(n,textures_n);
- 
+        this.batchWithNormals(n,tn);
+        this.addChild(d,n);
+        
     };
 
     // hack updateTexture for allow normals and diffuse with closure
@@ -66,14 +64,8 @@ class Container_Animation extends Container_Base {
     };
 
     affines (value) {
-        this.d.proj.affine = value;
-        this.n.proj.affine = value;
+        this.proj.affine = value;
     };
-
-
-
-
-
 
 };//END CLASS
     
