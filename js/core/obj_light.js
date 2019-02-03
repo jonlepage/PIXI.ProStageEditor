@@ -19,7 +19,7 @@ class dataObj_light{
         // dataValues: from json or new from [dataBase,textureName]
         this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
         this._spriteID = null;
-        this._sceneName = $stage.scene.constructor.name;
+        this._sceneName = $stage && $stage.scene.constructor.name || null;
         this._type = type || dataValues.b.type;
         this.dataValues = dataValues || this.getDataValuesFrom(false);
     };

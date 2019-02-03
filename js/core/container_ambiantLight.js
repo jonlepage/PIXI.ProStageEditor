@@ -9,10 +9,10 @@
 
 /** @memberof  PIXI.lights.AmbientLight */
 class Container_AmbientLight extends PIXI.lights.AmbientLight {
-    constructor(dataValues ,brightness, color) { //TODO: verifier que on peut changer brightness et color dans asignValues sans constructor
-        super();
-        dataValues = dataValues || this.getDataValues(true);
-        this.asignValues(dataValues, true);
+    constructor(dataObj ,brightness, color) { //TODO: verifier que on peut changer brightness et color dans asignValues sans constructor
+        super(0xFFFFFF,1);
+        this.dataObj = dataObj;
+
     };
         // getters for ContainerSpine
         // get dataValue of AmbientLight

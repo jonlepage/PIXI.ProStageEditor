@@ -47,7 +47,7 @@ class Scene_Map1 extends _Scene_Base {
 
     setupLights(){
         const dataValues = $Loader.DataScenes[this.name]._lights.ambientLight;
-        $stage.LIGHTS.ambientLight.asignValues(dataValues, true);
+        //$stage.LIGHTS.ambientLight.asignValues(dataValues, true);
     }
 
     setupPlayer(){

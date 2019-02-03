@@ -143,28 +143,50 @@ document.addEventListener('keydown', (event) => {
     const fpf = $camera._fpF;
 
     if(event.keyCode === 37){ // arowLeft
-        $camera.pivot.x-=20;
+        if(event.ctrlKey){
+            const pos = $camera.scene.position;
+            TweenLite.to(pos, 1, { y:pos.x-20, ease: Power4.easeOut });
+        }else{
+            $camera.pivot.x-=20;
+        }
+        
         //TweenLite.to($camera, 1, { _fpX: fpX-120, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(fpX-120);
     }
     if(event.keyCode === 38){ // arrowUp
-        $camera.pivot.y-=20;
+        if(event.ctrlKey){
+            const pos = $camera.scene.position;
+            TweenLite.to(pos, 1, { y:pos.y+20, ease: Power4.easeOut });
+        }else{
+            $camera.pivot.y-=20;
+        }
         //TweenLite.to($camera, 1, { _fpY: fpY-120, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(null,fpY-120);
     }
     if(event.keyCode === 39){ // arrowRight
-        $camera.pivot.x+=20;
+        if(event.ctrlKey){
+            const pos = $camera.scene.position;
+            TweenLite.to(pos, 1, { y:pos.x+20, ease: Power4.easeOut });
+        }else{
+            $camera.pivot.x+=20;
+        }
         //TweenLite.to($camera, 1, { _fpX: fpX+120, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(fpX+120);
     }
     if(event.keyCode === 40){ // arrowDown
-        $camera.pivot.y+=20;
+        if(event.ctrlKey){
+            const pos = $camera.scene.position;
+            TweenLite.to(pos, 1, { y:pos.y-20, ease: Power4.easeOut });
+        }else{
+            $camera.pivot.y+=20;
+        }
         //TweenLite.to($camera, 1, { _fpY: fpY+120, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(null,fpY+120);
     }
     if(event.keyCode === 107){ // pad+
         const acc =  TweenLite.getTweensOf($camera).length;
-        TweenLite.to($camera, 1, { _fpF: fpf+0.01+(0.04*acc), ease: Power4.easeOut });
+        TweenLite.to($camera, 1, { _fpF: fpf+0.02, ease: Power4.easeOut });
+        event.ctrlKey && TweenLite.to($camera, 1, { _fpY: fpY-30, ease: Power4.easeOut });
         //$camera.updateFarPointFromTarget(null,null,fpf+0.1);
     }
     if(event.keyCode === 109){ // pad-
@@ -174,14 +196,14 @@ document.addEventListener('keydown', (event) => {
         //$camera.updateFarPointFromTarget(null,null,fpf-0.1);
     }
     if(event.keyCode === 100 || event.keyCode === 102){ // numpad 4||6 (lock the X _fpX)
-        event.keyCode===100 && ($camera._fpX+=20);
-        event.keyCode === 102 && ($camera._fpX-=20);
+        event.keyCode===100 && TweenLite.to($camera, 0.7, { _fpX:fpX+25, ease: Power4.easeOut });
+        event.keyCode === 102 && TweenLite.to($camera, 0.7, { _fpX:fpX-25, ease: Power4.easeOut });
         //$camera._fpXLock = !$camera._fpXLock;
         //$camera.redrawDebugScreen();
     }
     if(event.keyCode === 104 || event.keyCode === 98){ // numpad 8||2 (lock the Y _fpY)
-        event.keyCode===104 && ($camera._fpY+=20);
-        event.keyCode === 98 && ($camera._fpY-=20);
+        event.keyCode===104 && TweenLite.to($camera, 0.7, { _fpY:fpY+25, ease: Power4.easeOut });
+        event.keyCode === 98 && TweenLite.to($camera, 0.7, { _fpY:fpY-25, ease: Power4.easeOut });
     }
     if(event.keyCode === 101){ // numpad 5 reverse lock _fpY,_fpX
         window.prompt("Copy this to $camera.cameraSetup", 

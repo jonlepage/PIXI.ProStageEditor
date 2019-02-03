@@ -31,11 +31,13 @@ class _objs{
         };
         // avaible type of container class link
         this.classContainers = {
-            animationSheet :Container_Animation  ,
-            spineSheet     :Container_Spine      ,
-            tileSheet      :Container_Tile       ,
-            PointLight     :Container_PointLight ,
-            base           :Container_Base       ,
+            animationSheet   :Container_Animation        ,
+            spineSheet       :Container_Spine            ,
+            tileSheet        :Container_Tile             ,
+            base             :Container_Base             ,
+            PointLight       :Container_PointLight       ,
+            AmbientLight     :Container_AmbientLight     ,
+            DirectionalLight :Container_DirectionalLight ,
         }
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
         this.actionsCasesSystem  = {
@@ -221,8 +223,11 @@ class _objs{
 
     // les light ont besoin de creer un dataBase, qui n'est pas dans le loader
     newContainer_light(type){
-        const dataObj = new dataObj_light(null,type);
-        return new Container_PointLight(dataObj);
+        const class_container = this.classContainers[type];
+        if(class_container){
+            const dataObj = new dataObj_light(null,type);
+            return new class_container(dataObj);
+        }else{ throw console.error('light type not exist!: ',type) };
     };
 
     // get a new sprite ID reference from local current scene
@@ -300,5 +305,5 @@ class _objs{
     }
 
 };// END CLASS
-$objs = new _objs();
+var $objs = new _objs();
 console.log1('$objs: ', $objs);

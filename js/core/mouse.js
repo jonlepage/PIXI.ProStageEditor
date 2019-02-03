@@ -84,9 +84,8 @@ class _mouse {
         
 
         // create light pointer for mouse
-        const pointerLight = new PIXI.lights.PointLight(0xffffff,1);
-        this.pointerLight = pointerLight;
-        this.pointer.addChild(pointerLight)
+        this.pointerLight = $stage.LIGHTS.PointLight_mouse;
+        this.pointer.addChild(this.pointerLight)
 
 
         //easing mouse tikers

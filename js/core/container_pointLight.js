@@ -10,9 +10,8 @@
 /** @memberof  PIXI.lights.PointLight */
 class Container_PointLight extends PIXI.lights.PointLight {
     constructor(dataObj ,brightness, color) {
-        super(0x00ff2a, 1);
+        super(0xFFFFFF, 1, Infinity);
         this.dataObj = dataObj;
-        this.Sprites = {};
        // dataValues = dataValues || this.getDataValues(true);
        // this.asignValues(dataValues, true);
     };

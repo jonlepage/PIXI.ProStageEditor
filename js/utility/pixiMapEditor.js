@@ -27,7 +27,6 @@ class _PME{
         this.data2 = null;
         this.inMouse = null ; // if sprite in mouse ?
         this._displayGroupID = 1; // current display groups selected
-        this.LIBRARY_TILE_active = false; // indique si la tile library est showed
         this.initialize(event); // loader
     };
 
@@ -272,6 +271,7 @@ class _PME{
         mask.on('pointerup'      , this.pUP_Library_tile_mask   , this);
         mask.on('mouseupoutside' , this.pUP_Library_tile_mask   , this);
         mask.on('mousewheel'     , this.pWEEL_Library_tile_mask , this);
+        c.renderable = false;
        $stage.CAGE_EDITOR.addChild(c);
        return c;
     };
@@ -703,19 +703,19 @@ class _PME{
 /**TILES MAPS */
     pIN_tile(e){
         const ee = e.currentTarget;
-        ee._filters = [ this.filters.OutlineFilterx2 ]; // thickness, color, quality
+        !ee.dataObj.l? ee._filters = [ this.filters.OutlineFilterx2 ] : void 0; // dont use filter on light
         ee.Debug.hitZone.renderable = true;
         if(this._pathMode && this.mouseHold){
             this.checkPathMode(ee);
         };
-        ee.Debug.path._filters = [ this.filters.OutlineFilterx8Green ];
+        ee.Debug.path?ee.Debug.path._filters = [ this.filters.OutlineFilterx8Green ]: void 0;
     };
 
     pOUT_tile(e){
         const ee = e.currentTarget;
         this.LIBRARY_TILE._hold = false;
         ee._filters = null;
-        ee.Debug.path._filters = null;
+        ee.Debug.path?ee.Debug.path._filters = null: void 0;
     };
 
     pDW_tile(e){
@@ -728,27 +728,30 @@ class _PME{
     };
     
     pUP_tile(e){
+        const cLeft   = e.data.button===0; // <== 
+        const cRight  = e.data.button===2; // ==>
+        const cCenter = e.data.button===1; // >|<
         this.startMouseHold(false);
         if(this.FASTMODES.renderable){
            return this.disableFastModes(true) 
         };
         if(this._pathMode){ return };
+        if(this.inMouse && cRight){this.showTileLibs();}
         const ee = e.currentTarget;
         this.remove_toMouse(ee); // detach from mouse
-        const cLeft   = e.data.button===0; // <== 
-        const cRight  = e.data.button===2; // ==>
-        const cCenter = e.data.button===1; // >|<
+
 
         if(e.data.originalEvent.ctrlKey && cLeft){
             return this.open_dataInspector(ee);
         }
         // Right click => cancel delete current attach
-        if(e.data.button===2){
+        if(cRight){
             $stage.scene.removeChild(ee);
             this.setObjsInteractive();
+            
         };
         // Left click <= apply
-        if(e.data.button===0){
+        if(cLeft){
             this.registerToMap(ee); // register in map objs
             ee.getDataValues(); // update attached dataValues
             this.add_toMouse( this.add_toMap(ee) ); // attache to mouse
@@ -778,6 +781,7 @@ class _PME{
             case "icon_showHideSprites": this.toggle_debugMode();  ;break;
             case "icon_grid": this.create_grids();  ;break;
             case "icon_pathMaker": this.toggle_drawPathMode(ee);  ;break;
+            case "icon_masterLight": this.open_dataInspector($stage.LIGHTS.ambientLight);  ;break;
             default: throw console.error(' le button name existe pas , TODO'); break;
         }
     };
@@ -848,6 +852,7 @@ class _PME{
 
     show_tileSheet(cage) {
         const dataBase = cage.dataObj.dataBase;
+        if(this.LIBRARY_TILE._dataName === dataBase.name){return this.hideTileLibs()};
         Object.keys(dataBase.textures || dataBase.skins).forEach(textureName => {
           const cage = $objs.newContainer_dataBase(dataBase,textureName);
           cage.buttonType = "tileLibs";
@@ -862,6 +867,7 @@ class _PME{
           cage.on('pointerout' , this.pOUT_tile, this);
           cage.on('pointerup'  , this.pUP_tile , this);
         });
+        this.LIBRARY_TILE
         const cache = this.LIBRARY_TILE.cache;
         if(!cache[dataBase.name]){
             cache[dataBase.name] = this.pathFindSheet(this.LIBRARY_TILE._list, 20);
@@ -871,14 +877,27 @@ class _PME{
             cage.position.copy(pos); 
         });
         // anime
+        const defaultPos = this.LIBRARY_TILE.list.getLocalBounds();
+        this.LIBRARY_TILE.list.position.set(-defaultPos.x,-defaultPos.y)
+        this.LIBRARY_TILE.list
+        this.LIBRARY_TILE._dataName = dataBase.name;
+        !this.LIBRARY_TILE.renderable && this.showTileLibs();
+        this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures||dataBase.skins).length}): ${dataBase.name}.json`; // update title 
+    };
+
+    showTileLibs(){
         this.LIBRARY_TILE.alpha = 0;
         TweenMax.to(this.LIBRARY_TILE, 1, {alpha:1, ease: Power4.easeOut });
-        // anime spine
-        if(!this.LIBRARY_TILE_active){
-            this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
-            this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures||dataBase.skins).length}): ${name}.json`; // update title 
-        }
-        this.LIBRARY_TILE_active = true; // flag indic si activer
+        this.LIBRARY_TILE.renderable = true;
+        this.LIBRARY_TILE.interactiveChildren = true;
+        this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
+        
+    };
+    hideTileLibs(){
+        this.LIBRARY_TILE._dataName = null;
+        this.LIBRARY_TILE.renderable = false;
+        this.LIBRARY_TILE.interactiveChildren = false;
+        this.editor.gui.state.setAnimation(2, 'hideTileSheets', false);
     };
 
     // build a sheets objList with pathFinding => [vertical to horizontal]
@@ -926,7 +945,7 @@ class _PME{
         this._pathMode = !this._pathMode;
         //SHOW PATH
         if(this._pathMode){
-            this.editor.gui.state.setAnimation(2, 'hideTileSheets', false); //TODO: RENDU ICI
+            this.hideTileLibs();
             this.editor.gui.state.setAnimation(3, 'pathMode', false);
             this.LIBRARY_BASE.renderable = false;
             this.LIBRARY_BASE.interactiveChildren = false;
@@ -966,7 +985,7 @@ class _PME{
                     const dX = xy_c.x-xy.x
                     const dY = xy_c.y-xy.y;
                     const path = new PIXI.Graphics();
-                    path.lineStyle(4, 0xffffff, 1);
+                    path.lineStyle(4, 0x4286f4, 1);
                     path.moveTo(0,0).lineTo(dX, dY).endFill();
                     const scaleXY = new PIXI.Point(~~1/dataObj.sprite.scale.x,~~1/dataObj.sprite.scale.y);
                     path.scale.copy(scaleXY);
@@ -1047,6 +1066,7 @@ class _PME{
         this.enlargeHitZone(cage);
         this.inMouse = cage;
         this.setObjsInteractive(cage);
+        this.hideTileLibs();
     };
     remove_toMouse(cage){ // detach from mouse 
         this.enlargeHitZone(cage,'remove');

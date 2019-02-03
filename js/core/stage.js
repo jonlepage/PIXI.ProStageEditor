@@ -6,22 +6,12 @@ class _stage extends PIXI.display.Stage {
         super();
         this.ticker = PIXI.ticker.shared.add(this.masterUpdate, this);
         // TODO: PEUT ETRE MODIFIER POUR LES FABRIER AU BOOT, class direct [huds,screenMesage,mouse]
-        this.CAGE_GUI   = new PIXI.Container(); // screen menue gui huds
-        this.CAGE_MESSAGE   = new PIXI.Container(); // screen message
-        this.CAGE_MOUSE = new PIXI.Container(); // store master mouse sprite and FX, toujours top
-        this.LIGHTS = { ambientLight:new Container_AmbientLight()}//, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
-        this.addChild( // lights groups
-            $displayGroup._spriteBlack_d,
-            $displayGroup._layer_diffuseGroup,
-            $displayGroup._layer_normalGroup,
-            $displayGroup._layer_lightGroup,
-            ...$displayGroup.layersGroup // displayGroups
-        );
-        this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
-        this.addChild($camera); // camera can hold scene with projections
-        this.CAGE_MOUSE.parentGroup = $displayGroup.group[4]; 
-        this.LIGHTS.ambientLight     && this.addChild(this.LIGHTS.ambientLight    );
-        this.LIGHTS.directionalLight && this.addChild(this.LIGHTS.directionalLight);
+        this.CAGE_GUI     = new PIXI.Container(); // screen menue gui huds
+        this.CAGE_MESSAGE = new PIXI.Container(); // screen message
+        this.CAGE_MOUSE   = new PIXI.Container(); // store master mouse sprite and FX, toujours top
+        this.LIGHTS = {ambientLight:{},PointLight_mouse:{}}; //, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
+
+
     };
     
 
@@ -37,7 +27,28 @@ class _stage extends PIXI.display.Stage {
     };
     get scene(){ return this._scene };
 
-
+    initialize(){
+        this.initialize_Layers();
+        this.initialize_lights();
+    };
+    initialize_Layers(){
+        this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
+        this.addChild($camera); // camera can hold scene with projections
+        this.CAGE_MOUSE.parentGroup = $displayGroup.group[4];
+        this.addChild( // lights groups
+            $displayGroup._spriteBlack_d,
+            $displayGroup._layer_diffuseGroup,
+            $displayGroup._layer_normalGroup,
+            $displayGroup._layer_lightGroup,
+            ...$displayGroup.layersGroup // displayGroups
+        );
+    };
+    initialize_lights(){
+       this.LIGHTS.ambientLight = $objs.newContainer_light('AmbientLight');
+       this.LIGHTS.PointLight_mouse = $objs.newContainer_light('PointLight');
+       this.addChild(...Object.values(this.LIGHTS) );
+    };
+    
     run() {
         try { this.goto(Scene_Boot, {}) } // option for loader scenes boot
         catch (e) { throw console.error(e.stack) };

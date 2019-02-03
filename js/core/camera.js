@@ -94,8 +94,9 @@ class _camera extends PIXI.projection.Container2d{
     update(){
         if(this._projected && this.scene){
           this.updateProjection();
+          this.debug();//FIXME: DELETEME
         }
-        this.debug();
+        
     };
 
     updateProjection(){
