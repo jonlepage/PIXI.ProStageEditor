@@ -92,7 +92,6 @@ class dataObj_base{
             zIndex      : cage                  ? cage.zIndex             : 0                        , // locked
             parentGroup : cage&&cage.parentGroup? cage.parentGroup.zIndex : null                     , //  for editor, need to manual set parentGroup on addMouse
             zHeight     : cage                  ? cage.zHeight             : 0                        , // ajust height layers from sort pivot+ zHeight
-            //pathConnexion : cage? cage.pathConnexion     : {}                       , // store path connect by id
             // conditionInteractive TODO:
         };
     };
@@ -132,9 +131,9 @@ class dataObj_base{
         return {
             //totalFrames    :cage? cage.totalFrames    : this._textureName?this.dataBase.animations[this._textureName].length:Infinity, // locked
             defaultAnimation :cage? cage.s.state.getCurrent(0).animation.name : 'idle',
-            timeScale        :cage? cage.timeScale        : 1     ,
-            startTime        :cage? cage.startTime        : 0     ,
-            defaultMix       :cage? cage.defaultMix       : 0.2   ,
+            timeScale        :cage? cage.s.state.tracks[ 0 ].timeScale : 1 ,
+            startTime        :cage? cage.s.startTime : 0 ,
+            defaultMix       :cage? cage.s.stateData.defaultMix : 0.2 ,
         };
     };
 

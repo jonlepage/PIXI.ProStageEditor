@@ -21,6 +21,8 @@ class _PME{
         console.log1('__________________initializeEditor:__________________ ');
         this._version = 'v2.0';
         this._debugMode = true;
+        this._pathMode = false; // pathMode indicator
+        this._pathBuffer = []; // store selected case for computing path
         this.editor = {gui:null,buttons:[],icons:{}};
         this.data2 = null;
         this.inMouse = null ; // if sprite in mouse ?
@@ -180,7 +182,7 @@ class _PME{
 // └------------------------------------------------------------------------------┘
     startEditor(){
         this.filters = { // cache filters
-            OutlineFilterx4       : new PIXI.filters.OutlineFilter     (4, 0x000000, 1 ),
+            OutlineFilterx2       : new PIXI.filters.OutlineFilter     (2, 0x000000, 1 ),
             OutlineFilterx16      : new PIXI.filters.OutlineFilter     (16, 0x000000, 1),
             OutlineFilterx6White  : new PIXI.filters.OutlineFilter     (4, 0xffffff, 1 ),
             OutlineFilterx8Green  : new PIXI.filters.OutlineFilter     (4, 0x16b50e, 1 ),
@@ -409,6 +411,12 @@ class _PME{
             ico.parentGroup = $displayGroup.group[3];
             return ico;
         };
+        const create_path = () => {
+            const path = new PIXI.Container();
+            path.graficConection = []; // store grafic conection line
+            path.textID = []; // store text id
+            return path;
+        };
 
         const type = c.dataObj.b.type;
         const dataBase = c.dataObj.dataBase;
@@ -431,8 +439,9 @@ class _PME{
             const an = createAnchor();
             const piv = createPivot(w,h); 
             const hitZone = createHitzone();
+            const path = create_path(); // for debug pathMode for cases only
             //const path = createPath();
-            c.Debug = {bg,an,piv,hitZone};
+            c.Debug = {bg,an,piv,hitZone,path};
             c.addChild(...Object.values(c.Debug));
             c.addChildAt(bg,0);
         }else 
@@ -441,7 +450,6 @@ class _PME{
             const ico = create_ico();
             const bg = createBackground(ico.width,ico.height,0.3);
             const hitZone = createHitzone(c.color);
-
             c.Debug = {bg,ico,hitZone};
             c.addChildAt(bg,0);
             c.addChild(ico,hitZone);
@@ -542,7 +550,6 @@ class _PME{
     };
 
     // asign props value to HTML data Inspector
-    
     setHTMLWithData(dataValues,slidersNode) {
         const computeHTMLValue = (key,prop,value) =>{
             const id = [key,prop].toString().replace(/\,/g,".");
@@ -552,6 +559,9 @@ class _PME{
                 break;
                 case "autoGroups":
                 //TODO:
+                break;
+                case "pathConnexion":
+                    document.getElementById(id).value = Object.keys(value).toString();
                 break;
                 case "setDark": case "setLight":
                     for (const [i, v] of value.entries()) {  slidersNode[`${id}.${i}`].setValue(v) };
@@ -592,7 +602,7 @@ class _PME{
 /**BUTTONS */
     pIN_buttons(e){
         const ee = e.currentTarget;
-        ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
+        ee._filters = [ this.filters.OutlineFilterx2 ]; // thickness, color, quality
         TweenMax.to(ee.scale, 0.3, {x:1.25,y:-1.25, ease: Back.easeOut.config(2.5) });
         ee.slot.color.a = 1;
     };
@@ -601,7 +611,11 @@ class _PME{
         const ee = e.currentTarget;
         ee._filters = null; // thickness, color, quality
         TweenMax.to(ee.scale, 0.3, {x:1,y:-1, ease: Back.easeOut.config(1.4) });
-        ee.slot.color.a = 0.5;
+        if(ee.slot.currentSpriteName ==='icon_pathMaker' && this._pathMode){
+            ee.slot.color.set(1,1,0.1,2);
+        }else{
+            ee.slot.color.a = 0.5;
+        }
     };
     pDW_buttons(e){};
     pUP_buttons(e){
@@ -619,7 +633,7 @@ class _PME{
         this.preview.alpha = 0;
         TweenMax.to(this.preview, 2, {alpha:1, ease: Power3.easeOut });
         $stage.CAGE_MOUSE.addChild(this.preview);
-        ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
+        ee._filters = [ this.filters.OutlineFilterx2 ]; // thickness, color, quality
     };
 
     pOUT_thumbs(e){
@@ -689,28 +703,36 @@ class _PME{
 /**TILES MAPS */
     pIN_tile(e){
         const ee = e.currentTarget;
-        ee._filters = [ this.filters.OutlineFilterx4 ]; // thickness, color, quality
+        ee._filters = [ this.filters.OutlineFilterx2 ]; // thickness, color, quality
+        ee.Debug.hitZone.renderable = true;
+        if(this._pathMode && this.mouseHold){
+            this.checkPathMode(ee);
+        };
+        ee.Debug.path._filters = [ this.filters.OutlineFilterx8Green ];
     };
 
     pOUT_tile(e){
         const ee = e.currentTarget;
         this.LIBRARY_TILE._hold = false;
         ee._filters = null;
+        ee.Debug.path._filters = null;
     };
 
     pDW_tile(e){
         const ee = e.currentTarget;
         const callBack = () => {
-            ee.interactiveChildren = false; // disable thumbs interactions
             this.activeFastModes(ee);
         }
         this.startMouseHold(ee,callBack);
+        this._pathMode && this.checkPathMode(ee);
     };
     
     pUP_tile(e){
-        if(this.FASTMODES.renderable){ this.disableFastModes(true) };
-        if(this.mouseHold){return this.startMouseHold(false) };
         this.startMouseHold(false);
+        if(this.FASTMODES.renderable){
+           return this.disableFastModes(true) 
+        };
+        if(this._pathMode){ return };
         const ee = e.currentTarget;
         this.remove_toMouse(ee); // detach from mouse
         const cLeft   = e.data.button===0; // <== 
@@ -723,6 +745,7 @@ class _PME{
         // Right click => cancel delete current attach
         if(e.data.button===2){
             $stage.scene.removeChild(ee);
+            this.setObjsInteractive();
         };
         // Left click <= apply
         if(e.data.button===0){
@@ -754,6 +777,7 @@ class _PME{
             case "icon_light": this.add_toMouse( this.add_toMap( this.create_light(ee) ) );  ;break;
             case "icon_showHideSprites": this.toggle_debugMode();  ;break;
             case "icon_grid": this.create_grids();  ;break;
+            case "icon_pathMaker": this.toggle_drawPathMode(ee);  ;break;
             default: throw console.error(' le button name existe pas , TODO'); break;
         }
     };
@@ -821,13 +845,11 @@ class _PME{
         const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
         this.create_dataIntepretor(); // create the data Interpretor listener for inputs and buttons
     };
-        
 
     show_tileSheet(cage) {
         const dataBase = cage.dataObj.dataBase;
         Object.keys(dataBase.textures || dataBase.skins).forEach(textureName => {
           const cage = $objs.newContainer_dataBase(dataBase,textureName);
-          console.log('cage: ', cage);
           cage.buttonType = "tileLibs";
           this.create_Debug(cage,dataBase);
           this.LIBRARY_TILE._list.push(cage);
@@ -895,6 +917,114 @@ class _PME{
         return cache;
     };
 
+    //#region [rgba(10, 60, 70, 0.15)]
+    // ┌------------------------------------------------------------------------------┐
+    // EVENTS INTERACTION LISTENERS
+    // └------------------------------------------------------------------------------┘
+    // start or close the path mode
+    toggle_drawPathMode(ee) {
+        this._pathMode = !this._pathMode;
+        //SHOW PATH
+        if(this._pathMode){
+            this.editor.gui.state.setAnimation(2, 'hideTileSheets', false); //TODO: RENDU ICI
+            this.editor.gui.state.setAnimation(3, 'pathMode', false);
+            this.LIBRARY_BASE.renderable = false;
+            this.LIBRARY_BASE.interactiveChildren = false;
+            ee.slot.color.set(1,1,0.1,1); // (r, g, b, a)
+            ee.scale.set(1.5,-1.5);
+            $objs.LIST.forEach(dataObj => {
+                const isCase = dataObj.b.dataName === "cases";
+                dataObj.sprite.interactive = isCase;
+                dataObj.sprite.alpha = isCase?1:0.1;
+            });
+           this.refreshPath();
+        }else{
+            this.LIBRARY_BASE.renderable = true;
+            this.LIBRARY_BASE.interactiveChildren = true;
+            this.editor.gui.state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
+            ee.slot.color.set(1,1,1,1); // (r, g, b, a)
+            ee.scale.set(1.25,-1.25);
+        }
+    };
+
+    refreshPath() {
+        $objs.LIST.forEach(dataObj => {
+            const isCase = dataObj.b.dataName === "cases";
+            // clear reset grafic path
+            if(isCase){
+                //dataObj.sprite.Debug.path.forEach(p => { dataObj.sprite.removeChild(p) }); // remove path grafics
+                dataObj.sprite.Debug.path.removeChildren();
+                dataObj.sprite.Debug.path.graficConection = [];
+                dataObj.sprite.Debug.path.textID = [];
+            };
+            if(this._pathMode){
+                Object.keys(dataObj.sprite.pathConnexion).forEach(id => { // connextion id to sprite ID
+                    const dataObj_c = $objs.LIST[id]; // dataobj conected
+                    let point = new PIXI.Point(0,0);
+                    const xy   = dataObj  .sprite.toGlobal(point)
+                    const xy_c = dataObj_c.sprite.toGlobal(point)
+                    const dX = xy_c.x-xy.x
+                    const dY = xy_c.y-xy.y;
+                    const path = new PIXI.Graphics();
+                    path.lineStyle(4, 0xffffff, 1);
+                    path.moveTo(0,0).lineTo(dX, dY).endFill();
+                    const scaleXY = new PIXI.Point(~~1/dataObj.sprite.scale.x,~~1/dataObj.sprite.scale.y);
+                    path.scale.copy(scaleXY);
+                    dataObj.sprite.addChild(path);
+                    dataObj.sprite.Debug.path.graficConection.push(path);
+                    dataObj.sprite.Debug.path.addChild(path);
+                });
+            }
+        });
+    };
+
+    // lorsque MouseHold, on ajoute les casesIn dans un buffer, lorsque mouseHold release, on Compute le buffer
+    checkPathMode(cage) {
+        const buffer = this._pathBuffer;
+        // si pas deja dans buffer: ajouter les connextion
+        if(!buffer.contains(cage)){
+            buffer.push(cage);
+            // create debug number
+            const txt = new PIXI.Text(buffer.length,{fontSize:42,fill:0xff0000,strokeThickness:8,stroke:0x000000});
+            txt.pivot.y = txt.height+cage.Debug.bg.height;
+            cage.Debug.path.textID.push(txt);
+            cage.Debug.path.addChild(txt);
+        }else{
+
+        };
+    };
+
+        // finalise compute path draw in buffers
+    //TODO: rendu ici , verifier le syste ID pour pathConnexion.
+    computeDrawPathBuffers() {
+        const buffer = this._pathBuffer;
+        let preview,current,next;
+        for (let i=0, l=buffer.length; i<l; i++) {
+            const preview = buffer[i-1];
+            const current = buffer[i  ];
+            const next    = buffer[i+1];
+            const preview_id = preview && preview.dataObj._spriteID;
+            const current_id = current && current.dataObj._spriteID;
+            const next_id    = next    && next   .dataObj._spriteID;
+            //TODO: FIXME: compute distance via global position for Math.hypot
+            if(preview){
+                current.pathConnexion[String(preview_id)] = Math.hypot(preview.x-current.x, preview.y-current.y);;
+            };
+            if(next){
+                current.pathConnexion[String(next_id)] = Math.hypot(next.x-current.x, next.y-current.y);;
+            };
+        };
+        // clear number text debug
+        buffer.forEach(cage => {
+            cage.removeChild(cage.Debug.pathIndexTxt);
+            delete cage.Debug.pathIndexTxt;
+        });
+        console.log0('PathsBuffers: ', buffer);
+        this._pathBuffer = [];
+        this.refreshPath();
+    };
+    //#endregion
+
     add_toMap(fromCage) { // add new sprite to map
         const dataObj = fromCage.dataObj.clone();
         // hack dataObj 
@@ -906,14 +1036,17 @@ class _PME{
         $stage.scene.addChild(cage);
         this.create_Debug(cage);
         cage.interactive = true;
-        cage.on('pointerdown'      , this.pDW_tile , this);
-        cage.on('pointerup'        , this.pUP_tile , this);
+        cage.on('pointerover' , this.pIN_tile  , this);
+        cage.on('pointerout'  , this.pOUT_tile , this);
+        cage.on('pointerdown' , this.pDW_tile  , this);
+        cage.on('pointerup'   , this.pUP_tile  , this);
         return cage;
     };
 
     add_toMouse(cage){ // attache to mouse update
         this.enlargeHitZone(cage);
         this.inMouse = cage;
+        this.setObjsInteractive(cage);
     };
     remove_toMouse(cage){ // detach from mouse 
         this.enlargeHitZone(cage,'remove');
@@ -932,6 +1065,13 @@ class _PME{
         }else{
             cage.hitArea = null;
         }
+    };
+
+    setObjsInteractive(protect){ // detach from mouse
+        const value = !this.inMouse;
+        $objs.LIST.forEach(dataObj => {
+            dataObj.sprite.interactive = value;
+        });
     };
 
     setupScroll(){
@@ -964,7 +1104,7 @@ class _PME{
 
     update(e=$mouse.interaction.mouse.originalEvent){
         //this.preview && this.preview.position.set($mouse.x,900);
-        if(this.mouseHold){
+        if(this.mouseHold && this.mouseHold !== true ){ // isBoolean for pathMode
             // reposition du mask
             const name = this.mouseHold.name || this.mouseHold.parent.name;
             const diff = $mouse.pointer.position.zeroDiff();
@@ -1014,6 +1154,7 @@ class _PME{
         
     };
 
+    //updateValue: refresh les values
     disableFastModes(updateValue){
         const cage = this.FASTMODES.target;
         updateValue && cage.getDataValues();
@@ -1086,7 +1227,6 @@ class _PME{
         });
 
         document.addEventListener('wheel',(e) => {
-            console.log('e: ', e);
             // autorize zoom just quand sourit dans canvas
             if (e.path.contains($app.renderer.view)) {
                 const hitTest = $mouse.interaction.hitTest($mouse.pointer.position);
@@ -1101,10 +1241,18 @@ class _PME{
 
         });
 
+        document.addEventListener('mousedown',(event)=>{
+            this._pathMode && this.startMouseHold(true); // only for path mode , allow click on scene
+        });
+
         document.addEventListener('mouseup',(event)=>{
             // disable fastmode si hold click left et click right
-            if(event.button===2 && this.FASTMODES.renderable){
-                this.disableFastModes(false);
+            this.startMouseHold(false);
+            if(this.FASTMODES.renderable){
+                this.disableFastModes(false); //e.data.button===0 || event.button===2
+            };
+            if(this._pathMode){
+                this.computeDrawPathBuffers()
             };
         });
 

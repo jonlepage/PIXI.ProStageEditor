@@ -101,7 +101,13 @@ class Container_Base extends PIXI.Container {
                 //spine
                 case "defaultAnimation": // for cases, change color
                     this.s.state.setAnimation(0, value, true);
-                    
+                break;
+                case "timeScale": // for cases, change color
+                    this.s.state.tracks[0].timeScale = value;
+                break;
+                case "startTime": // update animation to specific time
+                    this.s.startTime = value;
+                    this.s.update(value);
                 break;
                 default:
                     this[key] = value;

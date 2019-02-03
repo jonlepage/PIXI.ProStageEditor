@@ -475,6 +475,9 @@ h3:hover {
 h3.disabled {
   color: #3e545a52 !important;
 }
+h3.specialType {
+  color: #3c6daa !important;
+}
 .lockDN {
   margin-top: -7px;
   float: left;

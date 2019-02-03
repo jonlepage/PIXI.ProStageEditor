@@ -181,7 +181,7 @@ function newInputTypeColor(target,id,type,opt){
 };
 function new_HTML_content(dataObj,id,type,opts,opt2){
     let contents = "";
-    ['b','p','d','n','a'].forEach(target => {
+    ['b','p','d','n','a','s'].forEach(target => {
         if(dataObj[target] && dataObj[target].hasOwnProperty(id)){
             const description = `${target}.${id}`;
             let contentValues;
@@ -359,7 +359,7 @@ function HTML_DATA_UI(cage){
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3 ${!(dataObj instanceof dataObj_case)&&'class=disabled'}>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3 ${!(dataObj instanceof dataObj_case)&&'class=disabled'||'class=specialType'}>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     <table class="table table-hover table-dark table-sm">
                         <thead style="background-color: #393939" >
@@ -369,6 +369,7 @@ function HTML_DATA_UI(cage){
                                 <th scope="col">select</th>
                             </tr>
                         </thead>
+                        ${ new_HTML_content(dataObj,"pathConnexion"  ,"text",['lock'],{}) }
                         <tbody>${ new_HTML_content(dataObj,"caseColor" ,"select",$objs.colorsSystem           , { color:bcolor.next }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"caseType"  ,"select",$objs.actionsCasesSystem.list, { color:bcolor.current }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"randomStartColor" ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
@@ -379,7 +380,7 @@ function HTML_DATA_UI(cage){
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3 ${!(dataObj.a)&&'class=disabled'}>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3 ${!(dataObj.a)&&'class=disabled'||'class=specialType'}>SpriteSheets Animations </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     <table class="table table-hover table-dark table-sm">
                         <thead style="background-color: #393939" >
@@ -396,9 +397,21 @@ function HTML_DATA_UI(cage){
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
-                <div class="accordion-heading"><h3>Spine Skeletons Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-heading"><h3 ${!(dataObj.s)&&'class=disabled'||'class=specialType'}>Spine Skeletons Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"defaultAnimation" ,"select",dataObj.s&&cage.s.spineData.animations.map((a)=>a.name),{ color:bcolor.next}) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"timeScale"  ,"number",[],{step:0.05 , min:0.05,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"startTime"  ,"number",[],{step:1    , min:0   ,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"defaultMix" ,"number",[],{step:0.1  , min:0   ,color:bcolor.next }) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->

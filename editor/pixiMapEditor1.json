@@ -1,5 +1,5 @@
 {
-"skeleton": { "hash": "u/p0RfKfy6zOQJ7ntp3h01hmh7k", "spine": "3.7.80-beta", "width": 2616.39, "height": 1079 },
+"skeleton": { "hash": "jt0LW+xbxARhxXwzr3u9WbhnkKo", "spine": "3.7.80-beta", "width": 2616.39, "height": 1079 },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Rectangle 1 copie", "parent": "root", "length": 150.7, "x": 272.96, "y": -1073.32 },
@@ -526,6 +526,83 @@
 			"Rectangle 1 copie": {
 				"translate": [
 					{ "time": 0, "x": 0, "y": 0 }
+				]
+			}
+		}
+	},
+	"pathMode": {
+		"bones": {
+			"filterBG": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0, 0.34, 0.28, 1 ]
+					},
+					{ "time": 0.6667, "x": 0, "y": -138.32 }
+				]
+			},
+			"Rectangle 1 copie": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.516, 0.03, 0.262, 0.99 ]
+					},
+					{ "time": 0.5, "x": 0, "y": -137.33 }
+				]
+			},
+			"bar_Filters": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 1, 0.06, 0.312, 0.99 ]
+					},
+					{ "time": 0.3333, "x": -300.35, "y": 0 }
+				]
+			},
+			"TileBarLeft copie 3": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{
+						"time": 0.1667,
+						"x": -124.2,
+						"y": 0,
+						"curve": [ 0.044, 0.26, 0.157, 1 ]
+					},
+					{
+						"time": 0.5,
+						"x": -119.58,
+						"y": 722.7,
+						"curve": [ 0.25, 0, 0.75, 1 ]
+					},
+					{ "time": 0.6667, "x": -119.58, "y": 709.83 }
+				]
+			},
+			"icon_set_option": {
+				"translate": [
+					{
+						"time": 0,
+						"x": 0,
+						"y": 0,
+						"curve": [ 1, -0.17, 0.899, 0.75 ]
+					},
+					{ "time": 0.3333, "x": -27.21, "y": 0 }
+				]
+			},
+			"bar_G": {
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 },
+					{ "time": 0.3333, "x": -20.75, "y": 0 }
 				]
 			}
 		}
