@@ -22,16 +22,13 @@ class Container_Background extends Container_Base {
     createBases (dataObj = this.dataObj) {
         // TODO: les bg pourrai etre parfoi decouper en arrays dans textures packer
         const textureName = dataObj.b.dataName;
-        const td = dataObj.dataBase.textures   [textureName] || PIXI.Texture.EMPTY;
-        const tn = dataObj.dataBase.textures_n [textureName+'_n'] || PIXI.Texture.EMPTY;
+        const td = dataObj.dataBase.textures   [textureName];
+        const tn = dataObj.dataBase.textures_n [textureName+'_n'];
         const d = new PIXI.Sprite(td);
         const n = new PIXI.Sprite(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
     };
-
-
-
 };
 
 //END CLASS

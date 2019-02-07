@@ -9,10 +9,9 @@
 
 /** @memberof  PIXI.lights.DirectionalLight */
 class Container_DirectionalLight extends PIXI.lights.DirectionalLight {
-    constructor(dataValues ,brightness, color) {
+    constructor(dataObj ,brightness, color) {
         super(0xffffff, 1, $mouse.follower);
-        dataValues = dataValues || this.getDataValues(true);
-        this.asignValues(dataValues, true);
+        this.dataObj = dataObj;
     };
     // getters for ContainerDirectionalLight
     

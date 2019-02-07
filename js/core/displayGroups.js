@@ -15,13 +15,12 @@ $Filters = {
 
 class _DisplayGoup {
     constructor() {
-        this._layer_diffuseGroup = new PIXI.display.Layer(PIXI.lights.diffuseGroup);
-        this._layer_diffuseGroup.clearColor = [0,0,0,0];
-        this._layer_normalGroup = new PIXI.display.Layer(PIXI.lights.normalGroup);
-        this._layer_lightGroup = new PIXI.display.Layer(PIXI.lights.lightGroup);
-        this._spriteBlack_d = new PIXI.Sprite(this._layer_diffuseGroup.getRenderTexture()); //FIXME: WebGL: INVALID_VALUE: texSubImage2D: no pixels
-        this._spriteBlack_d.tint = 0x000000;
-        this._spriteBlack_d.name = "_spriteBlack_d";
+        /**@namespace PIXI.lights.diffuseGroup*/
+        this._layer_diffuseGroup ;
+        this._layer_diffuseGroup ;
+        this._layer_normalGroup  ;
+        this._layer_lightGroup   ;
+        this._spriteBlack_d      ;
 
         this.group = [ // le groupe dasignement pour les parentGroupe = 
             new PIXI.display.Group(0, false), // backgroud Map. BG tile elements will no update and no interaction
@@ -41,16 +40,20 @@ class _DisplayGoup {
             this.layersGroup.push( g );
             g.name = 'group'+i;
         };
-    
+        
+        this._layer_diffuseGroup = new PIXI.display   .Layer(PIXI.lights.diffuseGroup)             ;
+        this._layer_diffuseGroup           .clearColor = [0,0,0,0]                                 ;
+        this._layer_normalGroup  = new PIXI.display   .Layer(PIXI.lights.normalGroup)              ;
+        this._layer_lightGroup   = new PIXI.display   .Layer(PIXI.lights.lightGroup)               ;
+        this._spriteBlack_d      = new PIXI.Sprite    ( this._layer_diffuseGroup.getRenderTexture() );
+        this._spriteBlack_d.tint = 0x000000;
+        this._spriteBlack_d.name = "_spriteBlack_d";
             // add filter map 
+            // TODO: CREER UNE CLASS POUR LES FILTERS SCENE SPCIAL
            // this._layer_diffuseGroup._filters = [$Filters.noiseGame,$Filters.TiltShiftFilterBlur];
-    
-            this._layer_diffuseGroup.updateTransform = function updateTransform() {
+           /* this._layer_diffuseGroup.updateTransform = function updateTransform() {
                 // update filters noise
                 //this._filters[0].seed = Math.random();
-
-               
-    
                 this._boundsID++;
                 this.transform.updateTransform(this.parent.transform);
                 // TODO: check render flags, how to process stuff here
@@ -61,13 +64,11 @@ class _DisplayGoup {
                         child.updateTransform();
                     }
                 }
-            };
+            };*/
     
     };
     
-    initialize() {
 
-    };
 };
-$displayGroup = new _DisplayGoup(); // initialise basic for display groupe
+const $displayGroup = new _DisplayGoup(); // initialise basic for display groupe
 console.log1('$displayGroup.', $displayGroup);

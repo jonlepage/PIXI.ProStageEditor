@@ -4,36 +4,45 @@
 class _stage extends PIXI.display.Stage {
     constructor() {
         super();
-        this.ticker = PIXI.ticker.shared.add(this.masterUpdate, this);
         // TODO: PEUT ETRE MODIFIER POUR LES FABRIER AU BOOT, class direct [huds,screenMesage,mouse]
         this.CAGE_GUI     = new PIXI.Container(); // screen menue gui huds
         this.CAGE_MESSAGE = new PIXI.Container(); // screen message
         this.CAGE_MOUSE   = new PIXI.Container(); // store master mouse sprite and FX, toujours top
         this.LIGHTS = {ambientLight:{},PointLight_mouse:{}}; //, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
-
+        
+        this.ticker = PIXI.ticker.shared.add(this.update, this);
 
     };
-    
-
-    set scene(scene){
-        if(this._scene){
-            this._scene.parent.removeChild(this._scene);
+    // change scene in camera viewPort
+    set scene(nextScene){
+        if(this._scene){ // initialise camera with new scene
+            //this.scene.onStop();
+            //this.scene.onEnd();
+            //this.scene.unLoad(); // quand on change de scenePack
+            $camera.removeChild(this._scene);
             this._scene = null;
         };
-        if(scene){
-            this.addChild(scene)//$camera.addChild(scene);
-            this._scene = scene;
+        if(nextScene){
+            document.title = document.title+` =>[${nextScene.constructor.name}] `; 
+            $camera.addChildAt(nextScene,0);
+            this._scene = nextScene;
+            this.nextScene = null;
+            
         };
     };
-    get scene(){ return this._scene };
+    get scene(){ return this._scene || false };
 
     initialize(){
         this.initialize_Layers();
+        this.initialize_Camera();
         this.initialize_lights();
+        this.goto('Scene_Boot', {});
+    };
+    initialize_Camera(){
+        this.addChild($camera); // camera can hold scene with projections
     };
     initialize_Layers(){
         this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
-        this.addChild($camera); // camera can hold scene with projections
         this.CAGE_MOUSE.parentGroup = $displayGroup.group[4];
         this.addChild( // lights groups
             $displayGroup._spriteBlack_d,
@@ -44,46 +53,80 @@ class _stage extends PIXI.display.Stage {
         );
     };
     initialize_lights(){
-       this.LIGHTS.ambientLight = $objs.newContainer_light('AmbientLight');
-       this.LIGHTS.PointLight_mouse = $objs.newContainer_light('PointLight');
+       this.LIGHTS.ambientLight     = $objs.newContainer_light('AmbientLight'    );
+       this.LIGHTS.PointLight_mouse = $objs.newContainer_light('PointLight'      );
+       this.LIGHTS.DirectionalLight = $objs.newContainer_light('DirectionalLight');
        this.addChild(...Object.values(this.LIGHTS) );
     };
     
-    run() {
-        try { this.goto(Scene_Boot, {}) } // option for loader scenes boot
-        catch (e) { throw console.error(e.stack) };
-    };
+
 
     // see http://pixijs.download/dev/docs/PIXI.prepare.html for gpu cache 
-    goto (sceneClass, options) {
-        // TODO: add FX transitions, maybe a callBack .onEnd, onStop...
-        this.scene = null;
-        
+    goto (targetSceneName, options) {
          // check if loaderKit asigned to class are loaded, if yes get the scene, if no , goto loader scene and load all kit and scene
-        const sceneName = sceneClass.name || sceneClass;
-        const loaderKit = $Loader.needLoaderKit(sceneName);
-        // lots of scenes buffer constructor ready in memory, just need to start, userfull for maps
-        const nextScene = loaderKit && new Scene_Loader(sceneClass.name, options, loaderKit) || $Loader.Scenes[sceneName];
-        this.scene = nextScene;
-        document.title = document.title+` =>[${nextScene.constructor.name}] `; 
-        nextScene.start();
-       
-        
+        this.nextScene = $Loader.getNextScene(targetSceneName); //|| $Loader.loadSceneKit(sceneName); //$Loader.needLoaderKit(sceneName);
     };
-
-    masterUpdate(delta) {
+    
+    update(delta) {
         try {
-            this.updateMain(delta);
-   
+            if(this.nextScene){
+                this.scene = this.nextScene;
+            }else if(this.scene._started){
+                // update scene, that update camera
+                this.scene.update(delta);
+                //$camera.update(delta);
+            }else if(this.scene){
+                this.scene.start();
+            }
         } catch (e) {
             $app.nwjs.win.showDevTools();
             throw console.error(e.stack);
         };
     };
 
-    updateMain(delta){
-        $camera.update();
-        this.scene && this.scene.update(delta);
+
+    // get stage system informations
+    getDataValues () {
+        // TODO: total sheet et objet doi etre par scene et non par scenePack
+        const sceneObjs = $objs.list; // getter Obj from current scene
+        const totalBySheetsType = (()=>{
+            return {
+                totalSpines:$objs.list.filter((o) => { return o.dataValues.b.type === "spineSheet" }),
+                totalTileSprites:$objs.list.filter((o) => { return o.dataValues.b.type === "tileSheet" }),
+                totalAnimationSprites:$objs.list.filter((o) => { return o.dataValues.b.type === "animationSheet" }),
+                totalLight:$objs.list.filter((o) => { return o.dataValues.b.type === "light" }),
+            };
+        })();
+        const totalByClass = (()=>{
+            const r={},l=$objs.list,cl = Object.keys($objs.classDataObjs);
+            cl.forEach(cdt => { r[cdt] = l.filter((o) => { return o.dataValues.b.classType === cdt }) });
+            r.base = l.filter((o) => { return !cl.contains(o.dataValues.b.classType) });
+            return r;
+        })();
+        const memoryUsage = (()=>{
+            const m = process.memoryUsage();
+            Object.keys(m).map((i)=>{ return m[i] = (m[i]/ 1024 / 1024).toFixed(2) });
+            return m;
+        })();
+        const totalSheet = (()=>{
+            const list = {};
+            $objs.list.forEach(dataObj => { list[dataObj.dataBase.name] = dataObj.dataBase });
+            if($stage.scene.background){
+                const bg = $stage.scene.background.dataObj;
+                list[bg.dataBase.name] = $stage.scene.background.dataObj.dataBase;
+            }
+            return list;
+        })();
+        return {
+            memoryUsage,
+            currentScene : this.scene.name,
+            savePath : `data/${this.scene.name}.json`,
+            totalBySheetsType,
+            totalByClass,
+            totalSheet,
+            totalObjs : $objs.list.length,
+            
+        };
     };
 };
 

@@ -21,13 +21,14 @@ class _objs{
         this.spritesFromScene = []; // contien les sprites container par scene
         this.dataObjsFromScenes = {}; // contients les datas pour les sprites par scene, EVOLUTIF
         this.pathBuffer = null; // buffer path to move 
-        this.classDataObjs = { //tous les dataObj selon les type, voir les folders window , 
-            case   : dataObj_case   ,
-            door   : dataObj_door   ,
-            chara  : dataObj_chara  ,
-            tree   : dataObj_tree   ,
-            mapItem: dataObj_mapItem,
-            base   : dataObj_base   ,
+        this.classDataObjs = {
+            case   : dataObj_case    ,
+            door   : dataObj_door    ,
+            chara  : dataObj_chara   ,
+            tree   : dataObj_tree    ,
+            mapItem: dataObj_mapItem ,
+            light  : dataObj_light   ,
+            base   : dataObj_base    ,
         };
         // avaible type of container class link
         this.classContainers = {
@@ -38,7 +39,8 @@ class _objs{
             PointLight       :Container_PointLight       ,
             AmbientLight     :Container_AmbientLight     ,
             DirectionalLight :Container_DirectionalLight ,
-        }
+            background       :Container_Background       ,
+        };
         // game case types possibility data2\Divers\caseEvents\caseEvents.png
         this.actionsCasesSystem  = {
             actions:[ // allowed random computing
@@ -96,14 +98,12 @@ class _objs{
             const dataSaved = dataScenes[sceneName]._objs || [];
             for (let i=0, l=dataSaved.length; i<l; i++) {
                 const data = dataSaved[i];
-                const id = data._id;
-                if(this.LIST[id]){throw console.error('ID dataObjs exist deja!, check integrity for id: '+id)}; //FIXME: DEBUG
-                const dataObj = this.newDataObjs_dataValues(data.dataValues);
-                dataObj.register = data;
-                this.LIST[id] = dataObj;
-            
+                const register = { _id:data._id, _spriteID:data._id, _sceneName:data._sceneName }; // existed permat game id registery from editor
+                if(this.LIST[register._id]){ throw console.error('ID dataObjs exist deja!, check integrity for id: '+id) }; //FIXME: DEBUG only
+                const dataObj = this.newDataObjs_dataValues(data.dataValues, register);
+                dataObj.register = register; // setter asign register
+                this.LIST[register._id] = dataObj;
             };
-            
         });
         
     };
@@ -168,7 +168,7 @@ class _objs{
         for (let i=0, l=dataObjs.length; i<l; i++) {
             const dataObj = dataObjs[i];
             const cage = this.newContainer_dataObj(dataObj);
-            this.spritesFromScene[i] = cage;
+            this.spritesFromScene[dataObj._spriteID] = cage;
         }
     };
 
@@ -190,7 +190,7 @@ class _objs{
     };
 
     // creer une nouveau dataObjs avec dataValues stringnifier
-    newDataObjs_dataValues(dataValues,needRegister){
+    newDataObjs_dataValues(dataValues){
         const class_data = this.getClassDataObjs(dataValues.b.classType);
         return new class_data(dataValues);
     };
@@ -202,20 +202,20 @@ class _objs{
     };
 
     // create un nouveau type container , from dataBase [pour l'editeur ]
-    newContainer_dataBase(dataBase,textureName,needRegister){
+    newContainer_dataBase(dataBase,textureName){
         const dataObj = this.newDataObjs_dataBase(dataBase,textureName);
         const class_container = this.getClassContainers(dataObj.b.type);
         return new class_container (dataObj);
     };
 
     // create new container type from existed dataObj
-    newContainer_dataObj(dataObj,needRegister){
+    newContainer_dataObj(dataObj){
         const class_container = this.getClassContainers(dataObj.b.type);
         return new class_container (dataObj);
     };
 
     // create new container type from existed dataObj
-    newContainer_dataValues(dataValues,needRegister){
+    newContainer_dataValues(dataValues){
         const dataObj = this.newDataObjs_dataValues(dataValues);
         const class_container = this.getClassContainers(dataObj.b.type);
         return new class_container (dataObj);

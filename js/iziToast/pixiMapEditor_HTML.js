@@ -25,17 +25,16 @@ function new_HTML_content_options(target,description,opt,opt2){
         </tr>
     `
 };
-function newInputType_text(target,description,opt,opt2){
-    let isSmall = opt.small? "smallz" : "" ;
-    let isLargeX = opt.largeX? "largeX" : "" ;
-    let isLargeY = opt.largeY? "largeY" : "" ;
-    let isDisable = opt.disable && `disabled` || ``;
-    let min = opt.hasOwnProperty("min") && `min=${opt.min}` || ``;
-    let max = opt.hasOwnProperty("max") && `max=${opt.max}` || ``;
-    let step = opt.hasOwnProperty("step") && `step=${opt.step}` || ``;
+function newInputType_text(value,description,opt,opt2){
+    value = Array.isArray(value)? value.length : value;
+    let isSmall   = opt2.small  ? "smallz" : ""     ;
+    let isLargeX  = opt2.largeX ? "largeX" : ""     ;
+    let isLargeY  = opt2.largeY ? "largeY" : ""     ;
+    let isDisable = opt2.disable && `disabled` || ``;
     let jscolor = opt.contains('jscolor') && "jscolor" || "";
     return /*html*/ `
         <input 
+        value = ${value} 
         class=" ${jscolor} form-control ${isSmall} ${isLargeX} ${isLargeY}"
         type="text" 
         id=${description}
@@ -102,7 +101,14 @@ function newInputType_slider(target,description,opt,opt2){
         </div>`
     }else{ // return classic slider
         return /*html*/ `
-       
+        <div class="form-control"> <!--falloff -->
+            <p class="specialMessage">GL_CONSTANT_ATTENUATION </p>
+            <div><b >kc :</b> <input id=${description}.0 type="text" class="sliders span2"></div>
+            <p class="specialMessage">GL_LINEAR_ATTENUATION </p>
+            <div><b >kl :</b> <input id=${description}.1 type="text" class="sliders span2"></div>
+            <p class="specialMessage">GL_QUADRATIC_ATTENUATION </p>
+            <div><b >kq :</b> <input id=${description}.2 type="text" class="sliders span2"></div>
+        </div>
         `;
     }
 };
@@ -118,6 +124,15 @@ function newInputType_select(target,description,opt,opt2){
         </select>
     `;
 };
+function newInputType_select_BG(target,description,opt,opt2){
+    const options = opt.map((o)=>{ return /*html*/`<option value=${o.name}>${o.name}</option>` });
+    return /*html*/ `
+        <select class="selectRadius" id=${description} >
+            ${options.join().replace(',','')}
+        </select>
+    `;
+};
+
 function newInputType_checkbox(target,description,opt,opt2){
     let isSmall   = opt.small  ? "smallz" : ""     ;
     let isLargeX  = opt.largeX ? "largeX" : ""     ;
@@ -181,7 +196,7 @@ function newInputTypeColor(target,id,type,opt){
 };
 function new_HTML_content(dataObj,id,type,opts,opt2){
     let contents = "";
-    ['b','p','d','n','a','s'].forEach(target => {
+    ['b','p','d','n','a','s','l'].forEach(target => {
         if(dataObj[target] && dataObj[target].hasOwnProperty(id)){
             const description = `${target}.${id}`;
             let contentValues;
@@ -211,7 +226,51 @@ function new_HTML_content(dataObj,id,type,opts,opt2){
     });
     return contents;
 };
+function new_HTML_Empty_content(id,type,opts,opt2){
+    let contentValues;
+    switch (type) {
+        case 'select'   : contentValues = newInputType_select_BG   (id,id,opts,opt2); break;
+        default:throw console.error(type+'not Existe'); break;
+    };
+    return  /*html*/ `
+    <tr>
+        <td ${opt2.color&&('class='+opt2.color)}>
+            <div class="input-group-text"> <p>${id}:</p> </div>
+        </td>
+        <td ${opt2.color&&('class='+opt2.color)} >
+            ${contentValues}
+        </td>
+    </tr>
+    `;
+};
 
+// for savesetup memory list
+function new_HTML_content_Table(id, dataValues ,dataValues_old ){
+    const target = dataValues[id];
+    let contents = ``;
+   Object.keys(target).forEach(subID => {
+        const value = +target[subID];
+        const oldValue = +target[subID];
+        const description = `${id}.${subID}`;
+        const diff = ~~((+oldValue)-(+value));
+        const indice = diff>0 && `<font color=#587a3d>+${diff}</font>`||diff<0 && `<font color=#bc2020>-${diff}</font>` || '';
+        contents = contents+ /*html*/ `
+        <tr>
+            <td>
+                <div class="input-group-text"> <p>${subID}:</p> </div>
+            </td>
+            <td>
+                ${ newInputType_text(value,description,['lock'],{small:true}) } ${id==='memoryUsage'?'MB':'' } ${indice}
+            </td>
+            <td>
+                ${ newInputType_text(oldValue,description,['lock'],{small:true}) } ${id==='memoryUsage'?'MB':'' } ${indice}
+            </td>
+        </tr>
+        `;
+    });
+return contents;
+   
+};
 
 
 //#region [rgba(50,250, 0,0.3)]
@@ -359,6 +418,30 @@ function HTML_DATA_UI(cage){
                 </div>
             </div><!--accordion item END-->
             <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3 ${!(dataObj.l)&&'class=disabled'||'class=specialType'}>Light Shadder Inspector </h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                                <th scope="col">select</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_content(dataObj,"displayOrder"  ,"number",[],{step:1 , min:0,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"drawMode"  ,"number",[],{step:1 , min:0,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"radius"  ,"number",[],{step:0.002 , min:0,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"blendMode"  ,"number",[],{step:1 , min:0,max:3,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"lightHeight"  ,"number",[],{step:0.001 , min:0,max:3,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"brightness"  ,"number",[],{step:0.01 , min:0,color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"color"  ,"text",['jscolor'],{ color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"useViewportQuad"  ,"select",[true,false],{ color:bcolor.next }) }</tbody>
+                        ${ new_HTML_content(dataObj,"indices"  ,"text",['lock'],{}) } 
+                        <tbody>${ new_HTML_content(dataObj,"falloff"  ,"slider"   ,[],{}) }</tbody>
+                    </table>
+                </div>
+            </div><!--accordion item END-->
+            <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3 ${!(dataObj instanceof dataObj_case)&&'class=disabled'||'class=specialType'}>Cases Inspector</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
                     <table class="table table-hover table-dark table-sm">
@@ -445,40 +528,54 @@ function HTML_DATA_UI(cage){
     </div> `;//END message1
     return message1;
 };
-//#region [rgba(255,100, 0,0.8)]
-//#endregion
-function html_izit_saveSetup(){
-    // get a copy of old file? if exist
-    const stage = $stage;
-    const fs = require('fs');
-    const path = `data/${stage.constructor.name}_data.json`;
-    const buffer = fs.existsSync(path)? JSON.parse(fs.readFileSync(path, 'utf8')) : false;
-    const oldSystem = buffer.system || false;
-    // help converting byte memory to readable size
-    function bytesToSize(bytes) {
-        if (bytes == 0) return 'n/a';
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-        if (i == 0) return bytes + ' ' + sizes[i];
-        return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-    };
-    function getMemorySize(reel){
-        const memory = process.memoryUsage();
-        for (const entry in memory) {
-            const r = memory[entry];
-            memory[entry] = bytesToSize( memory[entry] );
-        }
-        const heapUsed_old  = oldSystem? oldSystem.heaps     : "...notAvaible!";
-        const heapTotal_old = oldSystem? oldSystem.heapTotal : "...notAvaible!";
-        const external_old  = oldSystem? oldSystem.external  : "...notAvaible!";
-        const rss_old       = oldSystem? oldSystem.rss       : "...notAvaible!";
 
-        return `
-        <font color="#bb5179">heaps: </font><font color="#fff"> Used:</font> (<span id="heaps">${reel?memory.heapUsed:heapUsed_old}</span>) / <font color="#fff">Total:</font> <span id="heapTotal">${reel?memory.heapTotal:heapTotal_old}</span><br>
-        <font color="#bb5179">external:</font><span id="external">${reel?memory.external:external_old}</span><br>
-        <font color="#bb5179">rss:</font>  <span id="rss">${reel?memory.rss:rss_old}</span>
-        `;
+//#region [rgba(70,70, 70,0.6)]
+//#endregion
+function HTML_BG_SCENE_UI(dataValues,bgList){
+    const bcolor = { // background color
+        list:["green","blue","red","pink"], _id:4,
+        get next(){ this._id = this._id+1>this.list.length-1? 0 : this._id+1; return this.current },
+        get current(){ return this.list[this._id];}
     };
+
+    const message1 = /*html*/ `
+    <div class="container" id="dataIntepretor">
+        <h6>
+            <font color="#d2bc97">CUSTOM INSPECTOR DATA</font>
+            <small class="text-muted"><kbd>Json</kbd></small>
+        </h6>
+        <div class="mn-accordion scrollable" id="accordion"><!--__NEW Accordions__-->
+            <div class="accordion-item"> <!--accordion item-->
+                <div class="accordion-heading"><h3>Scene Background</h3><div class="icon"><i class="arrow right"></i></div></div>
+                <div class="accordion-content">
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">propreties</th>
+                                <th scope="col">value</th>
+                            </tr>
+                        </thead>
+                        <tbody>${ new_HTML_Empty_content("background"  ,"select",bgList,{ color:bcolor.next }) }</tbody>
+                    </table>
+                </div>
+            </div><!--accordion item END-->
+            </div>
+        <div class="container buttons"> 
+            <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
+            <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
+        </div>
+
+    </div> `;//END message1
+    return message1;
+};
+
+
+//#region [rgba(255,1, 0,0.3)]
+//#endregion
+function html_izit_saveSetup(dataValues){
+    const fs = require('fs');
+    const path = `data/${$stage.scene.name}_data.json`;
+    const dataValues_old = fs.existsSync(path)? JSON.parse(fs.readFileSync(path, 'utf8')) : false;
     const message1 = /*html*/ `
     <div class="container" id="dataIntepretor">
         <h6>
@@ -489,29 +586,53 @@ function html_izit_saveSetup(){
             <div class="accordion-item"> <!--accordion item-->
                 <div class="accordion-heading"><h3>Inspecor Options</h3><div class="icon"><i class="arrow right"></i></div></div>
                 <div class="accordion-content">
-                    ${ new_HTML_table_options([
-                        // rotation
-                        new_HTML_content_options("_renderParaForRMMV': Rendering parralaxe for RMMV?:"              ,{}),
-                        new_HTML_content_options("_renderLayersPSD': Rendering Layers For PhotoShops?"              ,{}),
-                        new_HTML_content_options("_renderEventsPlayers': Rendering Events and Players Sprites?"     ,{}),
-                        new_HTML_content_options("_renderingLight': Rendering Light shadders?:"                     ,{}),
-                        new_HTML_content_options("_renderAnimationsTime0: Reset Animations time to 0 befor render?:",{}),
-                        new_HTML_content_options("_renderDebugsElements': Rendering grafics debugging?:"            ,{}),
-                    ])}
-                    ${ new_HTML_table_Info([
-                        `<tr><td>MEMORY USAGES:</td>
-                            <td class="text-success">${getMemorySize(true)}</td>
-                            <td class="text-danger">${getMemorySize()}</td>
-                        <tr>`,
-                        new_HTML_contentDataInfo("versionEditor"   ,`${stage.version         }`,`${oldSystem?oldSystem.versionEditor   :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("SavePath"        ,`${stage.SavePath        }`,`${oldSystem?oldSystem.SavePath        :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalSpines"     ,`${stage.totalSpines     }`,`${oldSystem?oldSystem.totalSpines     :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalAnimations" ,`${stage.totalAnimations }`,`${oldSystem?oldSystem.totalAnimations :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalTileSprites",`${stage.totalTileSprites}`,`${oldSystem?oldSystem.totalTileSprites:">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalLight"      ,`${stage.totalLight      }`,`${oldSystem?oldSystem.totalLight      :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalEvents"     ,`${stage.totalEvents     }`,`${oldSystem?oldSystem.totalEvents     :">not avaible ..."}`),
-                        new_HTML_contentDataInfo("totalSheets"     ,`${stage.totalSheets     }`,`${oldSystem?oldSystem.totalSheets     :">not avaible ..."}`),
-                    ])}
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">Descriptions</th>
+                                <th scope="col">Values</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td><p class="specialMessage">Save configuration</p></td>
+                            ${ new_HTML_content_options(null,"<font color=#397c33>Enable:</font> Check hash32 Integrity versionning"            ,[],{}) }
+                            ${ new_HTML_content_options(null,"<font color=#397c33>Enable:</font> Easy JSON readable"            ,[],{}) }
+                            ${ new_HTML_content_options(null,"<font color=#397c33>Enable:</font> Reboot after save"            ,[],{}) }
+                        </tbody>
+                    </table>
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">Descriptions</th>
+                                <th scope="col">current</th>
+                                <th scope="col">oldValue</th>
+                            </tr>
+                        </thead>
+                        <td><p class="specialMessage">Average memoryUsage</p></td>
+                        <tbody>${ new_HTML_content_Table('memoryUsage', dataValues ,dataValues_old ) }</tbody>
+                    </table>
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">Descriptions</th>
+                                <th scope="col">current</th>
+                                <th scope="col">oldValue</th>
+                            </tr>
+                        </thead>
+                        <td><p class="specialMessage">Total By ObjData_ClassType</p></td>
+                        <tbody>${ new_HTML_content_Table('totalByClass', dataValues ,dataValues_old ) }</tbody>
+                    </table>
+                    <table class="table table-hover table-dark table-sm">
+                        <thead style="background-color: #393939" >
+                            <tr>
+                                <th scope="col">Descriptions</th>
+                                <th scope="col">current</th>
+                                <th scope="col">oldValue</th>
+                            </tr>
+                        </thead>
+                        <td><p class="specialMessage">Total General</p></td>
+                        <tbody>${ new_HTML_content_Table('totalBySheetsType', dataValues ,dataValues_old ) }</tbody>
+                    </table>
                 </div>
             </div><!--accordion item END-->
         </div><!--END-->

@@ -13,12 +13,10 @@ NOTE AND HELP:
 // scene qui affiche  lecran de loading
 // loadCore mais aussi precharge les nouvelle scene de la planet
 
-class Scene_Loader extends PIXI.Container {
-    constructor(nextSceneClass, options, loaderKit) {
+class Scene_Loader extends _Scene_Base {
+    constructor(nextSceneName) {
         super();
-        this.nextSceneClass = nextSceneClass;
-        this.options = options;
-        this.loaderKit = loaderKit.clone();
+        this._nextSceneName = nextSceneName;
         this.createDisplayLoading(); // affiche loiading status
     };
 
@@ -30,14 +28,14 @@ class Scene_Loader extends PIXI.Container {
     };
 
     start(){
-        this.visible = true;
-        this.renderable = true;
-        $Loader.load(this.options,this.loaderKit);
+        super.start();
+        $Loader.initialize (this._nextSceneName);
     };
 
     update(delta){
+        super.update(delta);
         if(!$Loader._isLoading){
-            $stage.goto(this.nextSceneClass, this.options);
+           $stage.goto(this._nextSceneName);
         }
     };
 

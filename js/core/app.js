@@ -17,6 +17,11 @@ class _app extends PIXI.Application {
           //this.nwjs.win.showDevTools() //auto-start devTool chromium
           document.body.onresize = () => { this.scaleToWindow() };
     };
+    // BOOT APP
+    run() {
+        try { $stage.initialize(); } 
+        catch (e) { throw console.error(e.stack) };
+    };
 
     isNwjs() {
       return typeof require === 'function' && typeof process === 'object';

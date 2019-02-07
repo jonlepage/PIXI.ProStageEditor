@@ -21,6 +21,31 @@ loaderSet_GalaxiScene:[dataMapJson,mapSprites(diff,norm)]
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $Loader CLASS: _coreLoader for pixi loader management and caches
 //└------------------------------------------------------------------------------┘
+// structure de base pour les dataBase stoker dans data2
+class _dataBase {
+    constructor (_base,res,perma) {
+        Object.assign(this,_base);
+        Object.defineProperty(this, "data", { value: res.data });
+        this.type = res.spineData?'spineSheet':res.data.animations?'animationSheet':res.isVideo?'video':this.isBackground?'background':'tileSheet';
+        this.perma = perma;
+        // textures or spineData
+        if(res.spineData){
+            Object.defineProperty(this, "spineData", { value: res.spineData }); // TODO: new skeletonData = spineJsonParser.readSkeletonData(resource.data);
+
+        }else{
+            Object.defineProperty(this, "textures", { value: {} });
+            Object.defineProperty(this, "textures_n", { value: {} });
+        }
+    };
+};
+Object.defineProperty(_dataBase.prototype, 'isMultiPacks'    , { get:function() { return this.data.meta && this.data.meta.related_multi_packs || false       } });
+Object.defineProperty(_dataBase.prototype, 'isVideo'         , { get:function() { return this.type === "video"                             } });
+Object.defineProperty(_dataBase.prototype, 'isSpineSheet'    , { get:function() { return this.type === "spineSheet"                        } });
+Object.defineProperty(_dataBase.prototype, 'isAnimationSheet', { get:function() { return this.type === "animationSheet"                    } });
+Object.defineProperty(_dataBase.prototype, 'isTileSheet'     , { get:function() { return this.type === "tileSheet"                         } });
+Object.defineProperty(_dataBase.prototype, 'isNormal'        , { get:function() { return this.isSpineSheet || !this.isVideo && !!this.data.meta.normal_map  } }); // TODO: voir si on peut ajouter un skins
+Object.defineProperty(_dataBase.prototype, 'isBackground'    , { get:function() { return this.dirArray.contains("backgrounds")  } });
+
 
 class _coreLoader {
     constructor () {
@@ -32,64 +57,83 @@ class _coreLoader {
         this._textsSCVLoaded = null; // is textsSCV loaded
         this.loaderBuffers = [];
         this._isLoading = false;
-        this.loaderKit = { // batch .json in arrays, when change scene, check if need load a kits
-            loaderSet_boot:['Scene_Boot','Scene_IntroVideo','Scene_Title'],
-            loaderSet_planet1:['Scene_Map1'],
-        };
+
         this.sceneKits = []; // buffering scene kits for loader progress
-        this.currentLoadedKit = []; // buffering scene kits for loader progress
+        this.currentLoaded = []; // buffering scene kits for loader progress
         this.buffers = null; // buffer used when load scenes
+
+        //TODO: SPERARER Scene_Boot pour permettre d'aller dans le scene title?
+        this.loaderKit = [  // batch .json in arrays, when change scene, check if need load a kits
+            ['Scene_Boot','Scene_IntroVideo','Scene_Title'], // bootKit
+            ['Scene_Map1'], // planet1
+        ];
+        this._sceneKit_queue = []; // queue all scene need to load from kit
+        this._scenesLoaded = []; // store scene loaded by string
+        this.scenesLoaded = []; // store scene loaded class Obj
     };
     get utils () { return PIXI.utils };
     get BaseTextureCache () { return PIXI.utils.BaseTextureCache };
     get TextureCache () { return PIXI.utils.TextureCache };
     get utils () { return PIXI.utils };
 
+    // return sois la prochaine scene, sois la scene loader pour changer de scene pack
+    getNextScene(targetScene){
+        const index = this._scenesLoaded.indexOf(targetScene);
+        if(index>-1){  // scene deja loader
+            return this.scenesLoaded[index];
+        }else{
+            // scene n'est pas loader ! creet une nouvelle scene loader 
+            return new Scene_Loader(targetScene);
+        };
+    };
 
     getClassScene(className){
         switch (className) {
             case 'Scene_Boot'       : return Scene_Boot       ; break;
             case 'Scene_IntroVideo' : return Scene_IntroVideo ; break;
             case 'Scene_Title'      : return Scene_Title      ; break;
-            case 'Scene_Map1'      : return Scene_Map1      ; break;
+            case 'Scene_Map1'       : return Scene_Map1       ; break;
         };
     };
-    // defeni les classGroup du jeux pour le loader, lorsqune class appartien a un groups, loader tous les elements de chaque class.
-    // lorsque goto:class, verifier a quel loaderSet elel appatien, si le loaderSet nest pas en memore, passer a la scene loading.
-    needLoaderKit(className){
-        if(this.currentLoadedKit.contains(className)){return false}; // alrealy loaded
-        this.currentLoadedKit = [];
-        function check(arr) { return arr[1].contains(className) };
-        const result = Object.entries(this.loaderKit).find(check);
-        if(!result){ throw console.error("CRITIAL ERROR:'getClassGroups' not found, Scene do not exist!") };
-        // reset for next loading
-        this.destroyData();
-        this.currentLoadedKit = result[1];
-        return result[1];
-    };
+
 
     // when need a new loadKit? destroy all cache elements for new loading
     destroyData () {
-        this.currentLoadedKit = [];
-        //this.DataScenes = {}; //reset data loaded TODO: voir si on peut garder , mais on doi tous precharger au sceneBoot
-        this.Scenes = {}; // store full scenes cache
+        this._scenesLoaded = [];
+        this.scenesLoaded = [];
         for (const key in this.Data2) { delete this.Data2[key] };
     };
 
-    load (options,loaderKit) {
+    getSceneKitFrom(nextSceneName){
+        for (let i=0, l=this.loaderKit.length; i<l; i++) {
+            if( this.loaderKit[i].contains(nextSceneName) ){
+                return this.loaderKit[i].clone();
+            };
+        };
+    };
+
+    // initialise prepare loader setup
+    initialize (nextSceneName) {
+        this._sceneName = nextSceneName;
+        this.destroyData();// purge loaded scene TODO: add a destroy manager , from GPU ?
         this._isLoading = true;
-        loaderKit? this.sceneKits = loaderKit.clone() : void 0;
-        options  ? this.options   = options   : void 0;
+        this._sceneKit_queue = this.getSceneKitFrom(nextSceneName); // obtien un kitList de scenes attacher a `nextSceneName`;
+        this.load();
+    };
+
+    load() {
         // firstBoot verifier que tous est deja preloader, ensuite verifier les kits
-        if(!this.fonts){ return this.load_fonts() };
-        if(!this._textsSCVLoaded){ return this.load_textsSCV() };
-        if(!this.DataScenes){ return this.load_dataScenes() };
-        //if(!this.Data2){ return this.load_perma() };
-        // load and store a cache of each scenes class in the kits
-        if(this.sceneKits.length){
-            this.loadSheets(this.sceneKits.shift());
-        }else{ 
-            this.options = {}; this._isLoading = false 
+        if(!this.fonts){ return this.load_fonts() }; // load les fonts
+        if(!this._textsSCVLoaded){ return this.load_textsSCV() }; // load les SCV text
+        if(!this.DataScenes){ return this.load_dataScenes() }; // load JSON DataScenes
+
+        // default loader, load les sceneKIT
+        const next = this._sceneKit_queue.shift();
+        if(next){
+            this._scenesLoaded.push(next);
+            this.loadSheets(next);
+        }else{
+            this._isLoading = false;
         };
     };
 
@@ -189,8 +233,11 @@ class _coreLoader {
         if(!this.DataScenes[className]){throw console.error(`Critical Error: JSON dont contains Base structure: [_sheets,_objs,background,lights...]`)}
         const loader = new PIXI.loaders.Loader();
         const sheets = this.DataScenes[className]._sheets;
-    if(!sheets){ console.warn('%cSCENE JSON EMPTY DATA: Use editor for create json template => %c%s', 'font-weight:bold;color:#000 ;background:#721919', 'font-weight:bold;color:#ee5000;background:#fffbe6', ` ${className}`);}
-        for (const name in sheets) { loader.add(name, sheets[name].root) };
+        if(!sheets){ console.warn('%cSCENE JSON EMPTY DATA: Use editor for create json template => %c%s', 'font-weight:bold;color:#000 ;background:#721919', 'font-weight:bold;color:#ee5000;background:#fffbe6', ` ${className}`);}
+        Object.values(sheets).forEach(el => {
+            this.buffers.base[el.name] = el; // formate les sheets en objet
+            loader.add(el.name, el.root); // "data2/Trees/tree1A/tree1.json"
+        });
         loader.load();
         loader.onProgress.add((loader, res) => {
             (res.extension === 'json')? this.buffers.ressources[res.name] = res : void 0;
@@ -206,7 +253,7 @@ class _coreLoader {
             if(name.contains("-0")){
                 const multi_packs = this.buffers.ressources[name].data.meta.related_multi_packs.clone();
                 multi_packs.forEach(fileName => {
-                    loader.add(fileName.replace('.json',''), `${this.DataScenes[className]._sheets[name].dir}/${fileName}`);
+                    loader.add(fileName.replace('.json',''), `${this.buffers.base[name].dir}/${fileName}`);
                 });
             };
         };
@@ -239,42 +286,53 @@ class _coreLoader {
     computeBuffers(className) {
         const data2 = {};
         for ( const key in this.buffers.ressources ) {
+            if(this.Data2[key]){continue;}; // jump if alrealy exist !
             const res = this.buffers.ressources[key];
-            const data = data2[key] = this.createBaseFrom(res,this.DataScenes[className]._sheets[key]);
-            const key_n = data.meta && data.meta.normal_map && key+'_n';
-            const isSpine = !!data.spineData ;
-            const isVideo = !!data.dataVideo ;
-            const isAni   = data.type === 'animationSheet';
-            //FIXME: TODO: WARNING, objAsign spineData remove proto__ SkeletonData are not allowed, will not herit context
-            isSpine? data.spineData = res.spineData : Object.assign(data.textures,res.textures);
-            key_n && Object.assign(data.textures_n, this.createNormals(data, res.textures, this.buffers.normals[key_n].texture));
-            //multiPacks
-            (!isSpine && !isVideo) && data.meta.related_multi_packs && data.meta.related_multi_packs.forEach(keyLink => {
-                keyLink = keyLink.replace('.json','');
-                const keyLink_n = keyLink+'_n';
-                const resLink = this.buffers.multiPacks[keyLink];
-                Object.assign(data.textures, resLink.textures);
-                if(data.animations){
-                    const animations = Object.entries(resLink.data.animations);
-                    animations.forEach(keys => { 
-                        data.animations[keys[0]].push(...keys[1]);
-                        data.animations[keys[0]].sort();
+            const base = data2[key] = this.createBaseFrom(res,this.buffers.base[key]);
+            
+            const isNormal    = !!base.isNormal         ;
+            const isMulti     = !!base.isMultiPacks     ;
+            const isSpine     = !!base.isSpineSheet     ;
+            const isAni       = !!base.isAnimationSheet ;
+            const isVideo     = !!base.isVideo          ;
+            const isTileSheet = !!base.isTileSheet      ;
+            const key_n = isNormal && key+'_n';
+            
+            if(!isSpine && !isVideo){
+                let textures_d = res.textures;
+                let textures_n = isNormal && this.createNormals(base, res.textures, this.buffers.normals[key_n].texture);
+                //multiPacks
+                if(isMulti){
+                    base.data.meta.related_multi_packs.forEach(keyLink => {
+                        keyLink = keyLink.replace('.json','');
+                        const keyLink_n = keyLink+'_n';
+                        const resLink = this.buffers.multiPacks[keyLink];
+                        Object.assign(textures_d, resLink.textures);
+                        if(isAni){
+                            const animations = Object.entries(resLink.data.animations);
+                            animations.forEach(keys => { 
+                                base.data.animations[keys[0]].push(...keys[1]);
+                                base.data.animations[keys[0]].sort();
+                            });
+                        };
+                        isNormal && Object.assign(textures_n, this.createNormals(resLink, resLink.textures, this.buffers.normals[keyLink_n].texture));
                     });
                 };
-                key_n && Object.assign(data.textures_n, this.createNormals(resLink.data, resLink.textures, this.buffers.normals[keyLink_n].texture));
-            });
-            if(isAni){ // cache a map of bach textures animations by name and also bind textures to gpu.
-                let _textures = {};
-                let _textures_n = {};
-                for (const key in data.animations) {
-                    _textures   [key] = data.animations[key].map(a => {const t = data.textures   [a     ]; $app.renderer.bindTexture(t); return t; });
-                    _textures_n [key] = data.animations[key].map(a => {const t = data.textures_n [a+'_n']; $app.renderer.bindTexture(t); return t; });
-                }
-                data.textures   = _textures  ;
-                data.textures_n = _textures_n;
+                if(isAni){ // cache a map of bach textures animations by name and also bind textures to gpu.
+                    const _textures = {},  _textures_n = {}; // temp sub texture pour classer selon les animations 
+                    for (const key in base.data.animations) {
+                        _textures   [key] = base.data.animations[key].map(a => { const t = textures_d[a     ]; $app.renderer.bindTexture(t); return t; });
+                        _textures_n [key] = base.data.animations[key].map(a => {const t = textures_n [a+'_n']; $app.renderer.bindTexture(t); return t; });
+                    }
+                    textures_d = _textures   ;
+                    textures_n = _textures_n ;
+                };
+                Object.assign(base.textures, textures_d);
+                Object.assign(base.textures_n, textures_n);
             };
-            // add only if need
-            !this.Data2[key] && Object.defineProperty(this.Data2, key, { value: data, enumerable: !(this.buffers.className === 'Scene_Boot'), configurable: true });
+            // add to DATA2
+            this.Data2[key] = base;
+            base.perma && Object.defineProperty(this.Data2, key, { enumerable: false });
         };
 
         if(this.options.fromEditor){
@@ -292,10 +350,10 @@ class _coreLoader {
     createScene(){
         const className = this.buffers.className;
         const scene = new (this.getClassScene(className))(this.DataScenes[className],className);
-        this.Scenes[className] = scene;
+        this.scenesLoaded.push(scene);
     };
 
-    createNormals(data, resTextures, baseTexture_n){
+    createNormals(base, resTextures, baseTexture_n){
         // .clone(); ? check if we need clone or just link ?
         const textures_n = {};
         for (const key in resTextures) {
@@ -303,52 +361,30 @@ class _coreLoader {
             const frame = tex.frame && tex.frame; 
             const orig = tex.orig && tex.orig;
             const trim = tex.trim && tex.trim;
-            const rot = data.frames[key].rotated ? 2 : 0; // data.rotated ? 2 : 0 ?
-            textures_n[key+'_n'] = new PIXI.Texture(baseTexture_n, frame, orig, trim, rot, data.frames[key].anchor);
+            const rot = base.data.frames[key].rotated ? 2 : 0; // base.data.rotated ? 2 : 0 ?
+            textures_n[key+'_n'] = new PIXI.Texture(baseTexture_n, frame, orig, trim, rot, base.data.frames[key].anchor);
+            textures_n[key+'_n'].textureCacheIds = [key+'_n']
         };
         return textures_n;
     };
 
     createBaseFrom(res,_base) {
-        const base = {
-            name : res.name,
-            dirArray:_base.dirArray,
-            classType:_base.dirArray[1],
-            groupID:_base.dirArray[2],
-            perma: this.buffers.className === 'Scene_Boot',
-            ...( res.isVideo ?  {dataVideo: res.data} : res.data ),
-            ...( res.data.meta ? {normal: !!res.data.meta.normal_map } : {normal: true } ), //FIXME: find way to check spine normal ?
-            ...( res.spineData ? {meta: {}} : void 0 ),
-            ...( res.spineData ? {spineData: {}} : void 0 ),
-            ...(
-                res.spineData ?       { type:'spineSheet'}:
-                res.data.animations ? { type:'animationSheet'}:
-                res.isVideo?          { type:'video'}:
-                                      { type:'tileSheet'} ),
-            ...(!res.spineData ? {textures: {}, textures_n: {}} : void 0 ),
-        };
+        const type = res.spineData?'spineSheet':res.data.animations?'animationSheet':res.isVideo?'video':'tileSheet';
+        const perma = this.buffers.className === 'Scene_Boot';
+        const base = new _dataBase(_base,res,perma);
+
         if(this.options.fromEditor){
             Object.defineProperty(base, "baseTextures", { value: [], writable:true });
-            //base.baseTextures.push(res.children[res.children.length-1].texture.baseTexture); FIXME: broken in pixi
             const texture = this.utils.TextureCache[`${res.name}_image`] || this.utils.TextureCache[`${res.name}_atlas_page_${res.name}.png`];
             base.baseTextures.push( texture );
-            if(base.meta.related_multi_packs){
-                base.meta.related_multi_packs.forEach(keyLink => {
+            if(base.isMultiPacks){
+                base.data.meta.related_multi_packs.forEach(keyLink => {
                     keyLink = keyLink.replace('.json','');
                     const resLink = this.buffers.multiPacks[keyLink];
-                    //base.baseTextures.push(resLink.spritesheet.baseTexture);
                     base.baseTextures.push( this.utils.TextureCache[`${resLink.name}_image`] );
                 });
             };
         };
-        // descripteur texture 
-        if(!res.spineData){
-            Object.defineProperty(base, 'textures', { enumerable: false });
-            Object.defineProperty(base, 'textures_n', { enumerable: false });
-        }else{
-            Object.defineProperty(base, 'spineData', { enumerable: false });
-        }
-        
         return base;
     };
 

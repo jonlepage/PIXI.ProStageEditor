@@ -10,43 +10,34 @@
 /** @memberof  PIXI.lights.AmbientLight */
 class Container_AmbientLight extends PIXI.lights.AmbientLight {
     constructor(dataObj ,brightness, color) { //TODO: verifier que on peut changer brightness et color dans asignValues sans constructor
-        super(0xFFFFFF,1);
+        super(0xFFFFFF,0.8);
         this.dataObj = dataObj;
+        this.asignDataObjValues();
 
     };
-        // getters for ContainerSpine
-        // get dataValue of AmbientLight
-   getDataValues (def) {
-        const AmbientLight_Data = {
-            // base
-            shaderName      : def? "ambientLightShader" : this.shaderName     , //lock ?
-            blendMode       : def? 1                    : this.blendMode      ,
-            alpha           : def? 1                    : this.alpha          ,
-            // light
-            drawMode        : def? 4                    : this.drawMode       ,
-            lightHeight     : def? 0.075                : this.lightHeight    ,
-            brightness      : def? 1                    : this.brightness     ,
-            falloff         : def? [0.75,3,20]          : this.falloff        ,
-            color           : def? 16777215             : this.color          ,
-            // other
-            //useViewportQuad : def? true                 : this.useViewportQuad,
-            //indices         : def? [0,1,2,0,2,3]        : this.indices        ,
-            //displayOrder    : def? 8                    : this.displayOrder   ,
-        };
-        return AmbientLight_Data;
+
+    // dispatch values asigment
+    asignDataObjValues(dataObj = this.dataObj) {
+        Container_Base.prototype.asignValues.call(this,dataObj.p);
+        this.asignValues(dataObj.l);
     };
 
-
-   asignValues (dataValues, storeValues=true) {
-        this.computeValue(dataValues);
-        if(storeValues){ this.dataValues = dataValues };
+    getDataValues () {
+        return this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
     };
 
-   computeValue (data) {
-        for (const key in data) {
+   asignValues (data) {
+       data && Object.keys(data).forEach(key => {
             const value = data[key];
-            this[key] = value;
-        };
+            switch (key) {
+                case "indices":
+                    this[key].set(value);
+                break;
+                default:
+                    this[key] = value;
+                break;
+            };
+        });
     };
 
 

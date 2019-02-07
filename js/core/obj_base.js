@@ -20,11 +20,13 @@ class dataObj_base{
         this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
         this._spriteID = null;
         this._sceneName = $stage.scene.constructor.name;
+
         this._dataBase = dataValues? dataValues.b.dataName : dataBase.name;
         this._textureName = dataValues? dataValues.b.textureName : textureName;
         this.dataValues = dataValues || this.getDataValuesFrom(false);
     };
-    set register(reg) {this._id = reg._id,this._spriteID = reg._spriteID,this._sceneName = reg._sceneName}; // register id from existed saved data json
+    set register(register) {Object.assign(this,register)}; // register id from existed saved data json
+    get register() { return {_id:this._id, _spriteID:this._spriteID,_sceneName:this._sceneName } };
     get dataBase() { return $Loader.Data2[ this._dataBase ] };
     get b() { return this.dataValues.b };
     get p() { return this.dataValues.p };
@@ -64,11 +66,11 @@ class dataObj_base{
         const dataBase = this.dataBase; // getters
         const textureName = this._textureName || null;
         return {
-            classType  : dataBase    .classType, // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere
+            classType  : dataBase    .dirArray[1], // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere
             type       : textureName && dataBase    .type     , // locked: les type the container , tile,,animation,spine,light..., si pas textureName, aucun class type
             textureName: textureName           , // locked
             dataName   : dataBase    .name     , // locked
-            groupID    : dataBase    .groupID  , // asigner un groupe dapartenance ex: flags
+            groupID    : dataBase    .dirArray[2]  , // asigner un groupe dapartenance ex: flags
             name       : dataBase    .name     , // asigner un nom unique
             description: dataBase    .root     , // un description aide memoire
             normals    : dataBase    .normal   , // flags setter getter normal parentGroup 

@@ -11,17 +11,14 @@ when all initial data are loaded
 Boot
 */
 
-class Scene_Boot extends PIXI.Container {
+class Scene_Boot extends _Scene_Base {
     constructor() {
         super();
-        this.visible = false;
-        this.renderable = false;
     };
 
+    // initialize tous les modules attacher au jeux
     start(){
-            // TODO: refresh on newgame ? certain method pourrait etre depalcer dans newGame ?
-        //$Loader.setPermaCurrentData(); // all loaded from SceneBoot are Perma ressource, protect perma ressource once for avoid destoyed
-        $stage.initialize();
+        super.start();
         $objs.initialize();
         $items.initialize();
         $mouse.initialize(); // initialise mouse core
@@ -41,7 +38,7 @@ class Scene_Boot extends PIXI.Container {
     };
 
     update(delta){
-        $stage.goto(Scene_IntroVideo);
+        $stage.goto('Scene_IntroVideo');
     };
 
     end(){

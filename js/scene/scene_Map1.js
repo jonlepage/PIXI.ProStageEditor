@@ -13,18 +13,19 @@ class Scene_Map1 extends _Scene_Base {
     constructor(sceneData,className) {
         super(sceneData,className);
         this.name = className;
-        
-
     };
 
 
     // prepare and set event for map 1
     start(){ //TODO: on pourrait l'appelelr preload ? prepare ? load bg + obj sprite , et mettre renderable true dans un ready()
+    //TODO: la camera apply la converiton 2.5d, voir pour preconvetir chaque sprite dans les constructor FIXME:
+        super.start();
         $huds.setInteractive(true);
+        this.setupCamera(true);
         this.setupObjs();
         this.setupLights();
         //this.setupPlayer();
-        this.setupCamera(); // TODO: ADD TO SCENE BASE ?
+        
         this.setupEventCases(); // setup interactivity for events case in map1?
         this.visible = true;
         this.renderable = true;
@@ -32,17 +33,9 @@ class Scene_Map1 extends _Scene_Base {
        //$stage.goto();
     };
 
-    update(delta){
-    
-    };
-
-    end(){
-        
-    };
-
     setupObjs(){
         $objs.createSpritesObjsFrom(this.name); //create objs from className json
-        $objs.spritesFromScene.length && this.addChild(...$objs.spritesFromScene);
+        $objs.spritesFromScene.length && this.addChild(...Object.values($objs.spritesFromScene));
     };
 
     setupLights(){
@@ -67,7 +60,7 @@ class Scene_Map1 extends _Scene_Base {
     }
 
     setupCamera(){
-        $camera.initialize(true);
+        
        //$camera.setTarget($player.spine.position);
     }
 
@@ -83,4 +76,12 @@ class Scene_Map1 extends _Scene_Base {
             };*/
         };
     }
+
+    update(delta){
+    
+    };
+
+    end(){
+        
+    };
 };

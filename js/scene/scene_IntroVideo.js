@@ -14,25 +14,21 @@ NOTE AND HELP:
  * 
  * @class Scene_IntroVideo
  * @constructor 
- * @extends PIXI.Container
+ * @extends _Scene_Base
  */
-class Scene_IntroVideo extends PIXI.Container {
-    constructor(nextSceneClass, options) {
+class Scene_IntroVideo extends _Scene_Base {
+    constructor() {
         super();
-        //TODO: FAIRE UN SCENEBASE ?
-        this.visible = false;
-        this.renderable = false;
     };
 
     start(){
-        this.visible = true;
-        this.renderable = true;
+        super.start();
         this.create_IntroVideo();
         this.setupCamera(); //TODO: ADD TO SCENE BASE ? 
     };
 
     update(delta){
-
+        
     };
 
     end(){
@@ -42,7 +38,7 @@ class Scene_IntroVideo extends PIXI.Container {
 
 
     create_IntroVideo () {
-        const dataVideo = $Loader.Data2['vidA1'].dataVideo;
+        const dataVideo = $Loader.Data2['vidA1'].data;
         const texture = PIXI.Texture.fromVideo( dataVideo, 1, void 0, false );
         const videoSprite = new PIXI.Sprite(texture);
         const videoControler = texture.baseTexture.source;

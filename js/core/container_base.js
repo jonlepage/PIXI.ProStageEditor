@@ -10,30 +10,19 @@
 //
 
 /** @memberof PIXI.Container */
-class Container_Base extends PIXI.Container {
-    // si pas de data objet , ce net pas un obj de l'editeur ,mais un obj special
-    constructor(dataObj,needID) { //needID : ces pour un sprite permanent dans une map
+class Container_Base extends PIXI.projection.Container2d {
+    constructor(dataObj) {
         super();
-        // FIXME: deplacer les dossiers window et reformater leur nom et structure
-        //const classLink = dataBase && $objs.classLink[dataBase.dirArray[1]] || dataObj_base; // check si un dataObj existe, sinon utiliser un base
-        //dataObj = new classLink(); // creer un dataObj Vierge sans dataValues
-        //this.getDataValues(dataBase, textureName);
         this.dataObj = dataObj;
         this.Sprites = {};
-        
         this.createBases();
+        this.convertTo2d(); // this.convertSubtreeTo2d this.convertTo2s
         this.asignDataObjValues();
-        
-        
-
-        // if have parameter dataBase, its a "thumbs" from editor or maybe others future
-        //dataBase && this.createBases(dataBase);
     };
-    // getters for CageContainer default
+    // getters
     get d() { return this.Sprites.d };
     get n() { return this.Sprites.n };
 
-    // si pas heritage super(),
     createBases (dataObj = this.dataObj) {
         const dataBase = dataObj.dataBase;
         const textureName = dataObj.b.textureName;
@@ -123,14 +112,13 @@ class Container_Base extends PIXI.Container {
         this.n.parentGroup = normal? PIXI.lights.normalGroup : null;
     };
 
-
-        
-
-
     // default background not affined
     affines (value) {
-        this.d.proj.affine = 0;
-        this.n.proj.affine = 0;
+        // on affine pas les classType case
+        if(this.dataObj.b.classType !== 'case'){
+            this.d.proj.affine = 0;
+            this.n.proj.affine = 0;
+        };
     };
 
 };//END CLASS

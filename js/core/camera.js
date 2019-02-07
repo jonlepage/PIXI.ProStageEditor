@@ -73,7 +73,7 @@ class _camera extends PIXI.projection.Container2d{
     /** initialise the from scene
      * @param {boolean} projected - Need and compute projection for the scene?
      */
-    initialize(projected) {
+    initialize(projected=true) {
         const scene = this.scene = $stage.scene;
         this._projected = !!projected;
         this._sceneW = scene.background? scene.background.d.width  : this._screenW;
@@ -81,11 +81,13 @@ class _camera extends PIXI.projection.Container2d{
         this.addChild(scene);
 
         if(projected){
-            scene.convertSubtreeTo2d();
+            scene.background && scene.background.position.set(this._sceneW/2,this._sceneH);
+            //scene.convertSubtreeTo2d();
             $stage.addChild(this.far);
             this.far.position.set(this._screenW/2,0);
             scene.pivot.set(this._sceneW/2,this._sceneH);
         }else{
+            scene.pivot.set(0);
             this.removeChild(this.far);
         };
     };
@@ -94,6 +96,7 @@ class _camera extends PIXI.projection.Container2d{
     update(){
         if(this._projected && this.scene){
           this.updateProjection();
+          this.scene.update();
           this.debug();//FIXME: DELETEME
         }
         
@@ -117,7 +120,7 @@ class _camera extends PIXI.projection.Container2d{
         const objList =  $objs.spritesFromScene;
         for (let i=1, l= objList.length; i<l; i++) {// 1: evite le background
             const cage = objList[i];
-            if(!(cage.dataObj._dataBase === "cases") && cage.proj){ // TODO: add affine method in container car special pour les case
+            if(cage && cage.proj){
                 cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
             };
         };

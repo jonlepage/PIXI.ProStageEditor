@@ -5,5 +5,5 @@
 //PluginManager.setup($plugins);
 
 window.onload = function() {
-    $stage.run();
+    $app.run();//todo: make a app customise boot options
 };

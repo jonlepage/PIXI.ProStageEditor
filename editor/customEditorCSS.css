@@ -275,8 +275,9 @@ div#dataEditor {
 .container.buttons {
   padding-top: 10px;
   text-align: end;
-  background-color: #2b2b2ba8;
-  border-radius: 0px 0px 25px 122px;
+  background-color: #1f1f1f40;
+  box-sizing: border-box !important;
+  border-radius: 0px 0px 25px 80px;
 }
 
 .input-group-text {
@@ -507,8 +508,19 @@ h3.specialType {
   color: #e1e1e1;
   font-size: 12px;
 }
+.slider-rangeHighlight.category1 {
+  background: #117f07de;
+}
 
-
+.slider-rangeHighlight {
+  background: #248e1a;
+}
+.slider-selection {
+background: #c8c8c8;
+}
+.iziToast-capsule, .iziToast-capsule * {
+  box-sizing: content-box !important;
+}
 option.red    {background-color: #cc0000; font-weight: bold; }
 option.black  {background-color: #000000; font-weight: bold; }
 option.white  {background-color: #ffffff; font-weight: bold; }

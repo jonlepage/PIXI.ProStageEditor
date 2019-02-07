@@ -19,11 +19,13 @@ class dataObj_light{
         // dataValues: from json or new from [dataBase,textureName]
         this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
         this._spriteID = null;
-        this._sceneName = $stage && $stage.scene.constructor.name || null;
+        this._sceneName = $stage.scene && $stage.scene.name || "stage";
+        
         this._type = type || dataValues.b.type;
         this.dataValues = dataValues || this.getDataValuesFrom(false);
     };
-    set register(reg) {this._id = reg._id,this._spriteID = reg._spriteID,this._sceneName = reg._sceneName}; // register id from existed saved data json
+    set register(register) {Object.assign(this,register)}; // register id from existed saved data json
+    get register() { return {_id:this._id, _spriteID:this._spriteID,_sceneName:this._sceneName } };
     get dataBase() { return $Loader.Data2[ this._dataBase ] };
     get b() { return this.dataValues.b };
     get p() { return this.dataValues.p };
@@ -39,7 +41,7 @@ class dataObj_light{
         const dataValues = {
             b:this.getDataBaseValues        (cage),
             p:this.getParentContainerValues (cage),
-            l:this.getLightValue          (cage),
+            l:this.getLightValue            (cage),
         };
         return dataValues;
     };
@@ -49,7 +51,7 @@ class dataObj_light{
         return {
             classType  : 'light', //les class type pour les data objet type: cases, house, door, mapItemp, charactere
             type       : this._type     , // locked: les type the container , tile,,animation,spine,light..., si pas textureName, aucun class type
-           // groupID    : dataBase    .groupID  , // asigner un groupe dapartenance ex: flags
+            groupID    : 'light'  , // asigner un groupe dapartenance ex: flags
            // name       : dataBase    .name     , // asigner un nom unique
            // description: dataBase    .root     , // un description aide memoire
            // normals    : dataBase    .normal   , // flags setter getter normal parentGroup 
@@ -67,10 +69,6 @@ class dataObj_light{
             // transform
             rotation : cage? cage.rotation : 0 ,
             alpha    : cage? cage.alpha    : 1 ,
-            // other
-            autoGroups    : cage? cage.autoGroups          : new Array(7).fill(false) , // permet de changer automatiquement de layers selon player
-            zIndex        : cage? cage.zIndex              : 0                        , // locked
-            parentGroup   : cage&&cage.parentGroup? cage.parentGroup.zIndex  : null                        , //  for editor, need to manual set parentGroup on addMouse
         };
     };
     
@@ -79,15 +77,17 @@ class dataObj_light{
     // les datas pour les spriteAnimations
     getLightValue(cage){ 
         return {
-            shaderName      : cage? this.shaderName      : "directionalLightShader" , //lock ?
-            drawMode        : cage? this.drawMode        : 4                        ,
-            lightHeight     : cage? this.lightHeight     : 0.075                    ,
-            brightness      : cage? this.brightness      : 1                        ,
-            falloff         : cage? this.falloff         : [0.75                    ,3,20],
-            color           : cage? this.color           : 16777215                 ,
-            useViewportQuad : cage? this.useViewportQuad : true                     ,
-            indices         : cage? this.indices         : [0                       ,1,2,0,2,3] ,
-            displayOrder    : cage? this.displayOrder    : 8                        ,
+           // shaderName      : cage? this.shaderName      : "directionalLightShader" , //lock ?
+            displayOrder    : cage? cage.displayOrder    : 0        ,
+            drawMode        : cage? cage.drawMode        : 4        ,
+            blendMode       : cage? cage.blendMode       : 1        ,
+            radius          : cage? cage.radius          : Infinity ,
+            lightHeight     : cage? cage.lightHeight     : 0.075    ,
+            brightness      : cage? cage.brightness      : 1        ,
+            color           : cage? cage.color           : 16777215 ,
+            useViewportQuad : cage? cage.useViewportQuad : true     ,
+            indices         : cage? cage.indices         : [0       ,1,2,0,2,3] ,
+            falloff         : cage? cage.falloff         : [0.75    ,3,20],
         };
     };
 

@@ -10,18 +10,17 @@ NOTE AND HELP:
 
 */
 class Scene_Title extends _Scene_Base {
-    constructor(sceneData,className) {
-        super(null,className);// TODO:: ADD BACKGROUND
-        this.name = className;
+    constructor() {
+        super();// TODO:: ADD BACKGROUND
 
     };
 
 
 
     start(){
+        super.start()
         this.visible = true;
         this.renderable = true;
-        
     };
 
     update(delta){
@@ -50,7 +49,7 @@ class Scene_Title extends _Scene_Base {
        //this.setupObjs(); //FIXME: 
        //this.setupLights();
        $objs.computeNewRandomGame(1);
-        $stage.goto(Scene_Map1);
+        $stage.goto('Scene_Map1');
     };
 
 };

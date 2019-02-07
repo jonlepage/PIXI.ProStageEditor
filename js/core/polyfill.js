@@ -152,16 +152,20 @@ Math.randomInt = function(max) {
  * @param {Number} arguments 
  * @return {Array}
  */
-Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-            this.splice(ax, 1);
-        }
-    }
-    return this;
-};
+
+Object.defineProperty(Array.prototype, 'remove', {
+    value: function() {
+        let what, a = arguments, L = a.length, ax;
+        while (L && this.length) {
+            what = a[--L];
+            while ((ax = this.indexOf(what)) !== -1) {
+                this.splice(ax, 1);
+            }
+        };
+        return this;
+    },
+});
+
 
 // ajouter un system integrity via hashing
 String.prototype.hashCode = function() {

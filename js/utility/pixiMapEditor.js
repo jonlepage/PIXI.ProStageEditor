@@ -9,7 +9,8 @@
 
 document.addEventListener('keydown', (e)=>{
     if(!window.$PME&&e.key=== "F1"){
-        $PME = new _PME();
+        const stageOldValue = $stage.getDataValues();
+        $PME = new _PME(stageOldValue);
         console.log1('$PME: ', $PME);
     };
 });
@@ -17,8 +18,9 @@ document.addEventListener('keydown', (e)=>{
 // GLOBAL $PME CLASS: _PME for SPRITE LIBRARY LOADER
 //└------------------------------------------------------------------------------┘
 class _PME{
-    constructor() {
+    constructor(stageOldValue) {
         console.log1('__________________initializeEditor:__________________ ');
+        this.stageOldValue = stageOldValue;
         this._version = 'v2.0';
         this._debugMode = true;
         this._pathMode = false; // pathMode indicator
@@ -87,6 +89,7 @@ class _PME{
     }
 
     load_Editor(){
+        $stage.interactiveChildren = false;
         iziToast.warning( this.izit_loading1($stage) );
         const loader = new PIXI.loaders.Loader();
         loader.add('editorGui', `editor/pixiMapEditor1.json`).load();
@@ -127,9 +130,11 @@ class _PME{
         }.bind(this);
         fromDir('data2','.json'); //START: startPath, extention.Filter
         const _Loader2 = new _coreLoader();
-        _Loader2.loadFromEditor( $stage.scene.constructor.name ,_tmpData);
+        this.dataSheet = _tmpData; // save DataSheet structure fron nwjs, use when save sheet ref
+        _Loader2.loadFromEditor( $stage.scene.name ,Object.values(_tmpData) );
      };
 
+     //start From $Loader
     startGui (data2) {
         this.data2 = data2;
         $Loader.Data2 = data2; // delete me ?
@@ -198,7 +203,7 @@ class _PME{
         this.refresh_LIBRARY_BASE();
         this.setupScroll();
         this.setupListener();
-
+        $stage.interactiveChildren = true;
     };
 //#endregion
     convertForEditor(){
@@ -462,20 +467,42 @@ class _PME{
 // IZITOAST DATA2 EDITOR 
 // └------------------------------------------------------------------------------┘
     open_dataInspector(cage) {
+        const isStage  = cage === $stage;
         const dataValues = cage.getDataValues();
-        iziToast.info( this.izit_dataObjsEditor(cage) );
-        const _accordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-
-        //const _Falloff = create_sliderFalloff(); // create slider html for pixilight
-        this.create_jsColors(cage, dataValues); // create color box for tint 
+        cage === $stage? iziToast.info( this.izit_saveSetup(dataValues) ) : iziToast.info( this.izit_dataObjsEditor(cage) );
+        new Accordion(document.getElementById("accordion"), { multiple: true });
         const slidersNode = this.create_sliderHeaven(cage, dataValues); // create slider html for pixiHaven
-        this.setHTMLWithData(dataValues,slidersNode); // asign dataValues to HTML inspector
+        this.create_jsColors(cage, dataValues); // create color box for tint 
+        !isStage && this.setHTMLWithData(dataValues,slidersNode); // asign dataValues to HTML inspector
         this.startDataIntepretor(cage,slidersNode); // create the data Interpretor listener for inputs and buttons
-        
+    };
+
+    // Scene Setup and background, descriptions 
+    open_dataInspector_scene(){
+        const dataValues = $stage.getDataValues();
+        const bgList = Object.values(this.data2).filter(data => data.isBackground );
+        iziToast.info( this.izit_SceneSetup(dataValues,bgList) );
+        new Accordion(document.getElementById("accordion"), );
+        const dataIntepretor = document.getElementById("dataIntepretor");
+        dataIntepretor.onchange = (e) => {
+            const div = e.target;
+            const dataBase = this.data2[div.value];
+            $stage.scene.createBackgroundFrom(dataBase);
+            $camera.initialize(true);
+        };
+        dataIntepretor.onclick = (e) => {
+            if(e.target.type === "button"){
+                switch (e.target.id) {
+                    case "apply": this.close_dataInspector(); break;
+                    case "cancel": cage.asignDataObjValues(backUp); this.close_dataInspector(); break;
+                    default:break;
+                };
+            };
+        };
     };
 
     startDataIntepretor(cage,slidersNode){
-        const backUp = cage.dataObj.clone();
+        const backUp = cage.dataObj && cage.dataObj.clone();
         const dataIntepretor = document.getElementById("dataIntepretor");
         dataIntepretor.oninput = (e) => {
             const div = e.target;
@@ -533,12 +560,30 @@ class _PME{
 
     // create multi sliders Heaven
     create_sliderHeaven(cage,dataValues){
+        let options;
+        if(dataValues){
+            options = [
+                {
+                    min: 0,max: 0.75*4, step: 0.01,
+                    rangeHighlights: [{ "start": 0.7, "end": 0.8, "class": "category1" }],
+                },
+                {
+                    min: 0,max: 3*4,step: 0.1,
+                    rangeHighlights: [{ "start": 2.5, "end": 3.5, "class": "category1" }],
+                },
+                {
+                    min: 0,max: 20*4,step: 0.2,
+                    rangeHighlights: [{ "start": 15, "end": 25, "class": "category1" }],
+                },
+            ]
+        }
         let list = {}; // store slider list
         const nodeList = document.getElementsByClassName("sliders");
+        console.log('nodeList: ', nodeList);
         for (let i=0, l=nodeList.length; i<l; i++) {
             const input = nodeList[i];
             const attributID = input.id.split(".");
-            const slider = new Slider(input, { tooltip: 'always'}); // step: 0.1, value:0, min: 0, max: 1,
+            const slider = new Slider(input, { tooltip: 'always', ...options[i]}); // step: 0.1, value:0, min: 0, max: 1,
             slider.tooltip.style.opacity = 1, slider.tooltip.style.opacity = 1, slider.tooltip.style.opacity = 1;
             slider.on("slide",  ()=>{
                 cage.dataObj.dataValues[attributID[0]][attributID[1]][attributID[2]] = slider.getValue();
@@ -560,12 +605,16 @@ class _PME{
                 case "autoGroups":
                 //TODO:
                 break;
+                case "radius":
+                    document.getElementById(id).value = value===Infinity? 0 : value
+                break;
                 case "pathConnexion":
                     document.getElementById(id).value = Object.keys(value).toString();
                 break;
-                case "setDark": case "setLight":
+                case "setDark": case "setLight":case "falloff":
                     for (const [i, v] of value.entries()) {  slidersNode[`${id}.${i}`].setValue(v) };
                 break;
+                // saveSetup
                 default:
                   document.getElementById(id).value = value;
                 break;
@@ -776,12 +825,13 @@ class _PME{
         const slot = ee.slot;
         const name = slot.currentSpriteName;
         switch (name) {
-            case "icon_Save": this.show_saveSetup();break;
-            case "icon_light": this.add_toMouse( this.add_toMap( this.create_light(ee) ) );  ;break;
-            case "icon_showHideSprites": this.toggle_debugMode();  ;break;
-            case "icon_grid": this.create_grids();  ;break;
-            case "icon_pathMaker": this.toggle_drawPathMode(ee);  ;break;
-            case "icon_masterLight": this.open_dataInspector($stage.LIGHTS.ambientLight);  ;break;
+            case "icon_Save" : this.show_saveSetup ( ); break;
+            case "icon_light" : this.add_toMouse ( this.add_toMap( this.create_light(ee) ) ); ;break;
+            case "icon_showHideSprites": this.toggle_debugMode ( ); ;break;
+            case "icon_grid" : this.create_grids ( ); ;break;
+            case "icon_pathMaker" : this.toggle_drawPathMode(ee ); ;break;
+            case "icon_masterLight" : this.open_dataInspector ($stage.LIGHTS.ambientLight ); ;break;
+            case "icon_setup" : this.open_dataInspector_scene ($stage.scene.background); ;break;
             default: throw console.error(' le button name existe pas , TODO'); break;
         }
     };
@@ -841,13 +891,6 @@ class _PME{
             default:break;
         }
         return $objs.newContainer_light(type); //Container_Base
-    };
-
-    show_saveSetup() {
-        $stage.interactiveChildren = false; // disable stage interactive
-        iziToast.info( this.izit_saveSetup() );
-        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-        this.create_dataIntepretor(); // create the data Interpretor listener for inputs and buttons
     };
 
     show_tileSheet(cage) {
@@ -976,7 +1019,7 @@ class _PME{
                 dataObj.sprite.Debug.path.graficConection = [];
                 dataObj.sprite.Debug.path.textID = [];
             };
-            if(this._pathMode){
+            if(isCase && this._pathMode){
                 Object.keys(dataObj.sprite.pathConnexion).forEach(id => { // connextion id to sprite ID
                     const dataObj_c = $objs.LIST[id]; // dataobj conected
                     let point = new PIXI.Point(0,0);
@@ -1284,55 +1327,38 @@ class _PME{
 // ┌------------------------------------------------------------------------------┐
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
-    startSaveDataToJson() { // open_SaveSetup
+    show_saveSetup() {
+        this.open_dataInspector($stage);
+        //$stage.interactiveChildren = false; // disable stage interactive
+        //iziToast.info( this.izit_saveSetup() );
+        //const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        //this.startDataIntepretor() // create the data Interpretor listener for inputs and buttons
+    };
+
+    startSaveDataToJson() { //  from: dataIntepretor save 
         this.close_dataInspector();
         $stage._filters = [this.filters.BlurFilter];
         TweenMax.to(this.filters.BlurFilter, 1.2, {
             blur:0, ease: Power2.easeOut, delay:0.5,
             onComplete: (e) => { $stage._filters = null, this.filters.BlurFilter = 10;}, 
         });
-        //this.close_dataInspector();
-        const useOption = {};
-        // close html editor
-        if(useOption){
-            /*useOption = {
-                _renderParaForRMMV : document.getElementById("_renderParaForRMMV").value,
-                _renderLayersPSD : document.getElementById("_renderLayersPSD").value,
-                _renderEventsPlayers : document.getElementById("_renderEventsPlayers").value,
-                _renderDebugsElements : document.getElementById("_renderDebugsElements").value,
-                _renderingLight : document.getElementById("_renderingLight").value,
-                _renderLayers_n : document.getElementById("_renderLayers_n").value,
-                _renderAnimationsTime0 : document.getElementById("_renderAnimationsTime0").value,
-            }*/
-            // system info data
-            useOption.systemInfo = {
-                //MEMORY USAGES
-                heaps     : +document.getElementById("heaps"    ).innerHTML.replace("MB","").replace("GB",""),
-                heapTotal : +document.getElementById("heapTotal").innerHTML.replace("MB","").replace("GB",""),
-                external  : +document.getElementById("external" ).innerHTML.replace("MB","").replace("GB",""),
-                rss       : +document.getElementById("rss"      ).innerHTML.replace("MB","").replace("GB",""),
-                // generique
-                versionEditor    :  document.getElementById("versionEditor"    ).innerText,
-                SavePath         :  document.getElementById("SavePath"         ).innerText,
-                totalSpines      : +document.getElementById("totalSpines"      ).innerText,
-                totalAnimations  : +document.getElementById("totalAnimations"  ).innerText,
-                totalTileSprites : +document.getElementById("totalTileSprites" ).innerText,
-                totalLight       : +document.getElementById("totalLight"       ).innerText,
-                totalEvents      : +document.getElementById("totalEvents"      ).innerText,
-                totalSheets      : +document.getElementById("totalSheets"      ).innerText,
-            };
-        };
-        this.create_JSON(useOption);
+        this.create_JSON();
         iziToast.warning( $PME.savedComplette() );
     };
 
-    create_JSON(options) {
-        let _lights      ={};// addToSave_Lights      () ; // scene global light
-        let _background  = this.save_background          () ; // scene bg
-        let _objs        = $objs.list // getter objs in current scene only
-        let _sheets      = this.compute_Sheets      (_objs,_background) ; // all cheets used in this scene for load dataBases tuexture
-        const json = { system:options.systemInfo, _lights , _background, _sheets, _objs,   };
-
+    create_JSON() {
+        const dataValues = $stage.getDataValues();
+        let _scene = { // scene setup
+            ambientLight:{},
+            PointLight_mouse:{},
+            DirectionalLight:{},
+        };
+        const _lights      = dataValues.totalByClass.light; // get all lights objets
+        const _objs        = [].concat(...Object.values(dataValues.totalByClass));
+        const _background  = this.save_background          () ; // scene bg
+        const _sheets      = dataValues.totalSheet ; // all cheets used in this scene for load dataBases tuexture
+        const SYSTEM = {memoryUsage:dataValues.memoryUsage,timeElasped:PIXI.ticker.shared.lastTime / 1000, data: new Date().toDateString()};
+        const json = { SYSTEM, _lights , _background, _sheets, _objs, };
         const fs = require('fs');
         function writeFile(path,content){
             // backup current to _old.json with replace() rename()
