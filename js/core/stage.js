@@ -11,23 +11,19 @@ class _stage extends PIXI.display.Stage {
         this.LIGHTS = {ambientLight:{},PointLight_mouse:{}}; //, directionalLight: new PIXI.ContainerDirectionalLight() }; // the global configurable on sceneChange
         
         this.ticker = PIXI.ticker.shared.add(this.update, this);
-
     };
     // change scene in camera viewPort
     set scene(nextScene){
         if(this._scene){ // initialise camera with new scene
-            //this.scene.onStop();
+            this.scene.onStop();
             //this.scene.onEnd();
             //this.scene.unLoad(); // quand on change de scenePack
-            $camera.removeChild(this._scene);
             this._scene = null;
         };
         if(nextScene){
             document.title = document.title+` =>[${nextScene.constructor.name}] `; 
-            $camera.addChildAt(nextScene,0);
             this._scene = nextScene;
             this.nextScene = null;
-            
         };
     };
     get scene(){ return this._scene || false };
@@ -40,6 +36,7 @@ class _stage extends PIXI.display.Stage {
     };
     initialize_Camera(){
         this.addChild($camera); // camera can hold scene with projections
+        $camera.initialize();
     };
     initialize_Layers(){
         this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
@@ -72,10 +69,8 @@ class _stage extends PIXI.display.Stage {
             if(this.nextScene){
                 this.scene = this.nextScene;
             }else if(this.scene._started){
-                // update scene, that update camera
                 this.scene.update(delta);
-                //$camera.update(delta);
-            }else if(this.scene){
+            }else if(this.scene && !this.scene._started){
                 this.scene.start();
             }
         } catch (e) {

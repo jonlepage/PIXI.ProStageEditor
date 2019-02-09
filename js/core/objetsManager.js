@@ -305,5 +305,5 @@ class _objs{
     }
 
 };// END CLASS
-var $objs = new _objs();
+const $objs = new _objs();
 console.log1('$objs: ', $objs);

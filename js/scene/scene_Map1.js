@@ -20,17 +20,18 @@ class Scene_Map1 extends _Scene_Base {
     start(){ //TODO: on pourrait l'appelelr preload ? prepare ? load bg + obj sprite , et mettre renderable true dans un ready()
     //TODO: la camera apply la converiton 2.5d, voir pour preconvetir chaque sprite dans les constructor FIXME:
         super.start();
-        $huds.setInteractive(true);
-        this.setupCamera(true);
         this.setupObjs();
+        setTimeout(()=>this.setupObjs() , 1);
+        $huds.setInteractive(true);
+        //this.setupCamera(true);
+       
         this.setupLights();
         //this.setupPlayer();
         
         this.setupEventCases(); // setup interactivity for events case in map1?
-        this.visible = true;
-        this.renderable = true;
         //$camera.moveToTarget($player);
        //$stage.goto();
+       
     };
 
     setupObjs(){
@@ -78,7 +79,12 @@ class Scene_Map1 extends _Scene_Base {
     }
 
     update(delta){
+       super.update();
+    if(!this._runned){
+     this._runned = true;
     
+     
+    }
     };
 
     end(){

@@ -24,11 +24,11 @@ class Scene_IntroVideo extends _Scene_Base {
     start(){
         super.start();
         this.create_IntroVideo();
-        this.setupCamera(); //TODO: ADD TO SCENE BASE ? 
+        //this.setupCamera(); //TODO: ADD TO SCENE BASE ? 
     };
 
     update(delta){
-        
+
     };
 
     end(){
@@ -59,7 +59,7 @@ class Scene_IntroVideo extends _Scene_Base {
     };
     
     setupCamera(){
-        $camera.initialize();
+        //$camera.initialize();
        //$camera.setTarget($player.spine.position);
     }
 

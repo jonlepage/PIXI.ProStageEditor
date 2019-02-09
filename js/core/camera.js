@@ -26,8 +26,8 @@ class _camera extends PIXI.projection.Container2d{
         this._screenW = $app.screen.width; // 1920
         this._screenH = $app.screen.height; // 1080;
         this.position.set(this._screenW/2,this._screenH/2); // center camera
-        this._sceneW = 0; // scene width
-        this._sceneH = 0; // scene height
+        this._sceneW = $app.screen.width; // scene width
+        this._sceneH = $app.screen.height; // scene height
         this._zoom = 1; //current zoom factor
         this._tZoom = 1; //target zoom for the easing
         /**@description far point to affine projections, est pinner a (0.5,0) mais permet detre piner a un objet */
@@ -62,10 +62,10 @@ class _camera extends PIXI.projection.Container2d{
     set lockCamX(value) { isNaN(value)? this._fpXLock = value && this._fpX || false : this._fpXLock = value }; // $camera.far.toLocal($camera.scene)
     set lockCamY(value) { isNaN(value)? this._fpYLock = value && this._fpY || false : this._fpYLock = value };
 
-    get camToMapX() {return $stage.scene.toLocal(this, null, void 0, void 0, 0).x+($camera._sceneW/2) };//{ return this.pivot._x + (this._sceneW/2)}; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
-    get camToMapY() {return $stage.scene.toLocal($camera, null, void 0, void 0, 0).y+(this._sceneH) }; //{ return this.pivot._y + this._sceneH};
-    get mouseToMapX3D() {return $mouse.pointer&&$stage.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).x+(this._sceneW/2)}//{ return this.camToMapX-(this._sceneW/2*this._fpF) }; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
-    get mouseToMapY3D() {return $mouse.pointer&&$stage.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).y+this._sceneH}//{ return this.camToMapY-(this._sceneH*this._fpF) }; 
+    get camToMapX() {return this.scene.toLocal(this, null, void 0, void 0, 0).x+($camera._sceneW/2) };//{ return this.pivot._x + (this._sceneW/2)}; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
+    get camToMapY() {return this.scene.toLocal($camera, null, void 0, void 0, 0).y+(this._sceneH) }; //{ return this.pivot._y + this._sceneH};
+    get mouseToMapX3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).x+(this._sceneW/2)}//{ return this.camToMapX-(this._sceneW/2*this._fpF) }; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
+    get mouseToMapY3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).y+this._sceneH}//{ return this.camToMapY-(this._sceneH*this._fpF) }; 
     get distFYSY(){ return (this.sp.y-this.far.y)}
 
 
@@ -73,31 +73,31 @@ class _camera extends PIXI.projection.Container2d{
     /** initialise the from scene
      * @param {boolean} projected - Need and compute projection for the scene?
      */
-    initialize(projected=true) {
-        const scene = this.scene = $stage.scene;
-        this._projected = !!projected;
+    initialize() {
+        this._fpF = 0; // far factor
+        this._fpX = 0; // x focus 2d projection (debug with arrow)
+        this._fpY = 0; // y focus 2d projection (debug with arrow)
+        this._screenW = $app.screen.width; // 1920
+        this._screenH = $app.screen.height; // 1080;
+        this.scene = null;
+        this.removeChildren();
+        this.parent.addChild(this.far);
+        this.far.position.set(this._screenW/2,0);
+        this.debug();//FIXME: DELETEME
+    };
+
+    setupToScene(scene,reset) {
+        reset && this.initialize();
+        this.scene = scene;
         this._sceneW = scene.background? scene.background.d.width  : this._screenW;
         this._sceneH = scene.background? scene.background.d.height : this._screenH;
         this.addChild(scene);
-
-        if(projected){
-            scene.background && scene.background.position.set(this._sceneW/2,this._sceneH);
-            //scene.convertSubtreeTo2d();
-            $stage.addChild(this.far);
-            this.far.position.set(this._screenW/2,0);
-            scene.pivot.set(this._sceneW/2,this._sceneH);
-        }else{
-            scene.pivot.set(0);
-            this.removeChild(this.far);
-        };
     };
     
     /**@description update from updateMain in sceneManager */
     update(){
-        if(this._projected && this.scene){
+        if(this.scene && this.scene._started){
           this.updateProjection();
-          this.scene.update();
-          this.debug();//FIXME: DELETEME
         }
         
     };
@@ -117,12 +117,14 @@ class _camera extends PIXI.projection.Container2d{
         pos.y = -pos.y;
         pos.x = -pos.x;
         this.proj.setAxisY(pos, -far.factor);
-        const objList =  $objs.spritesFromScene;
-        for (let i=1, l= objList.length; i<l; i++) {// 1: evite le background
-            const cage = objList[i];
-            if(cage && cage.proj){
-                cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
-            };
+        this.updateAffines();
+    };
+
+    updateAffines(){
+        const lists = $objs.spritesFromScene;
+        for (let i=0, l= lists.length; i<l; i++) {// 1: evite le background
+            const cage = lists[i];
+            cage && cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
         };
     };
 
@@ -140,7 +142,7 @@ class _camera extends PIXI.projection.Container2d{
     }
 
     getLocalTarget(target){
-        return this.toLocal(target, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
+        return this.toLocal(target, this.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
     };
 
     //$camera.moveToTarget(null,f)
@@ -242,8 +244,8 @@ class _camera extends PIXI.projection.Container2d{
             dcontainer.addChild(bdc,...v);
             $stage.addChild(dcontainer);
             let [sX,sY,_sx,_sy,ss,ac] = [0,0,0,0,15,1]; // scroll power and scroll speed
-            $app.ticker.add((delta) => {
-                if(this.moveProgress){return}; // avoid update when camera set to new pivot point
+            PIXI.ticker.shared.add(() => {
+                if(!$stage.scene._started){return}; // avoid update when camera set to new pivot point
                 x.text = 'x:'+~~this.x;
                 y.text = 'y:'+~~this.y;
                 px.text = 'px:'+~~this.pivot.x;
@@ -258,9 +260,7 @@ class _camera extends PIXI.projection.Container2d{
                 fpX.text = `fpX:${~~this.far.x} : (${~~(this.far.x-this._fpX)})`;
                 fpY.text = `fpY:${~~this.far.y} : (${~~(this._fpY)})`;
                 fpf.text = 'fpf:'+this._fpF.toFixed(3)+'';
-               
                 debugFarPoint.clear().lineStyle(3,0x000000).moveTo(this._screenW/2,this._screenH/2).lineTo(this.far.x, this.far.y);
-                
             });
         };
        
@@ -269,7 +269,7 @@ class _camera extends PIXI.projection.Container2d{
 let $camera = new _camera();
 console.log1('$camera.', $camera);
 
-document.onwheel = $camera.onMouseWheel.bind($camera); //TODO: proceder grace au emit, verifier lelement targeted pour diferent zoom de diferent element, aussi compatible pour lediteur
+//document.onwheel = $camera.onMouseWheel.bind($camera); //TODO: proceder grace au emit, verifier lelement targeted pour diferent zoom de diferent element, aussi compatible pour lediteur
 //document.onmousemove = $camera.onMouseCheckBorderCamera.bind($camera); //TODO:
 
 

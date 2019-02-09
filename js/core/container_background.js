@@ -24,10 +24,14 @@ class Container_Background extends Container_Base {
         const textureName = dataObj.b.dataName;
         const td = dataObj.dataBase.textures   [textureName];
         const tn = dataObj.dataBase.textures_n [textureName+'_n'];
-        const d = new PIXI.Sprite(td);
-        const n = new PIXI.Sprite(tn);
+        const d = new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.projection.Sprite2d(tn);
         this.Sprites = {d,n};
         this.addChild(d,n);
+    };
+
+    affines (value) {
+        this.affine = 0;
     };
 };
 

@@ -1092,7 +1092,7 @@ class _PME{
         // hack dataObj 
         dataObj.p.parentGroup = this._displayGroupID;
         const cage = $objs.newContainer_dataObj(dataObj);
-        cage.convertTo2d();
+        //cage.convertTo2d();
         cage.position.set($camera.mouseToMapX3D,$camera.mouseToMapY3D);
         cage.buttonType = "tileMouse";
         $stage.scene.addChild(cage);
@@ -1158,7 +1158,8 @@ class _PME{
             $camera.pivot.y+=(ScrollY- $camera.pivot.y)/(speed);
             // 2.5D affine mouse 
             if( this.inMouse && !(this.inMouse.dataObj._dataBase === "cases") && this.inMouse.proj){ // TODO: add affine method in container car special pour les case
-                this.inMouse.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
+            //    this.inMouse.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
+            this.inMouse.affines(PIXI.projection.AFFINE.AXIS_X);
             };
         });
         //Game_Player.prototype.updateScroll = function(){}//disable scoll character in editor mode

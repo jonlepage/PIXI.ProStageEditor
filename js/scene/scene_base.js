@@ -23,37 +23,12 @@ class _Scene_Base extends PIXI.projection.Container2d {
 
     // prepar seulement le background ? a voir si on eleve car exist dans loader
     prepare(sceneData,className){
-    // register data
      this.setupBackgroundFrom(sceneData._background,className);
-        /*
-let loader = new PIXI.loaders.Loader()
-loader.add('http://mysite.fake/sprite1.json')
-loader.add('http://mysite.fake/sprite2.json')
-loader.add('http://mysite.fake/sprite3.json')
-loader.once('complete', callback)
-loader.load()
+     this._sceneW = this.background? this.background.d.width  :  $app.screen.width; // 1920
+     this._sceneH = this.background? this.background.d.height :  $app.screen.height; // 1080;
+     this.pivot.set(this._sceneW/2,this._sceneH);
+     this.background && this.background.position.set(this._sceneW/2,this._sceneH);
 
-
-function uploadToGPU(resourceName){
-  resourceName = resourceName + '_image'
-  let texture = new PIXI.Texture.fromImage(resourceName)
-  this.renderer.bindTexture(texture)
-}
-
-loadSpriteSheet(function(resource){
-  uploadToGPU('http://mysite.fake/sprite1.json')
-  uploadToGPU('http://mysite.fake/sprite2.json')
-  uploadToGPU('http://mysite.fake/sprite3.json')
-
-  // helper function to get all the frames from multiple textures
-  let frameArray = getFrameFromResource(resource)
-  let animSprite = new PIXI.extras.AnimatedSprite(frameArray)
-  this.stage.addChild(animSprite)
-  animSprite.play()  
-})
-
-
-        */
     };
     setupBackgroundFrom(dataValues,className){
         this.createBackgroundFrom (dataValues);
@@ -92,11 +67,19 @@ loadSpriteSheet(function(resource){
         this._started = true;
         this.visible = true;
         this.renderable = true;
+        $camera.setupToScene(this);
     };
 
     update(delta){
-       
+        $camera.update();
+    };
 
+    onStop(){
+        this._runned = false;
+        this._started = false;
+        this.visible = false;
+        this.renderable = false;
+        $camera.initialize();
     };
     
 

@@ -16,7 +16,6 @@ class Container_Base extends PIXI.projection.Container2d {
         this.dataObj = dataObj;
         this.Sprites = {};
         this.createBases();
-        this.convertTo2d(); // this.convertSubtreeTo2d this.convertTo2s
         this.asignDataObjValues();
     };
     // getters
