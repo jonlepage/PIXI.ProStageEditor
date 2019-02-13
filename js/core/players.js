@@ -14,6 +14,7 @@ dans les class, . pour les objects, function deep (non Json), _ pour les props a
 class _player {
     constructor(dataBase, textureName, dataValues) {
         this.inCase = null; //store the current player case ?
+        this._nextTransferID = 0; // transfer case obj id 
         this.spine;
         this._planetID = null; // player current planet id
         this._dirX = 6;
@@ -55,9 +56,9 @@ class _player {
     
     setupSprites() {
         const database = $Loader.Data2.heroe1_rendered;
-        const cage = new Container_Spine(null,database); // (database,skin)
+        const cage = $objs.newContainer_dataBase(database,'idle');
         //FIXME: A AJOUTER DANS LES DATAVALUES PAR DEFAUT, EDITOR COMPRIT
-        // deleteMe
+        // hack player
         const spine = cage.s;
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
@@ -68,13 +69,13 @@ class _player {
         }, 1250);
         // player transform
         cage.scale.set(0.45,0.45);
-
-        // player layers hackAttachmentGroups set spine.n
-        /*cage.asignParentGroups();
+        cage.proj.affine = 2;
         cage.parentGroup = $displayGroup.group[1];
-        cage.zIndex = 0;*/
         spine.skeleton.setSlotsToSetupPose();
         this.spine = cage;
+        
+        cage.getDataValues(); // get dataValue from sprite
+        cage.asignDataObjValues(); // refresh data from sprite
     };
 
     setupListeners() {
@@ -235,7 +236,7 @@ class _player2 {
 
     setupSprites() {
         const database = $Loader.Data2.heroe2;
-        const cage = new Container_Spine(null,database);
+        const cage = $objs.newContainer_dataBase(database,'idle');
         const spine = cage.s;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
@@ -243,6 +244,7 @@ class _player2 {
         cage.scale.set(0.45,0.45);
         // player layers hackAttachmentGroups set spine.n
         //cage.asignParentGroups();
+        cage.proj.affine = 2;
         cage.parentGroup = $displayGroup.group[2];
         cage.zIndex = 0;
         spine.skeleton.setSlotsToSetupPose();

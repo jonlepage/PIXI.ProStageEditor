@@ -63,9 +63,6 @@ class Container_Animation extends Container_Base {
        };
     };
 
-    affines (value) {
-        this.proj.affine = value;
-    };
 
 };//END CLASS
     

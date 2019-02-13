@@ -36,7 +36,7 @@ class _stage extends PIXI.display.Stage {
     };
     initialize_Camera(){
         this.addChild($camera); // camera can hold scene with projections
-        $camera.initialize();
+       
     };
     initialize_Layers(){
         this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
@@ -93,7 +93,7 @@ class _stage extends PIXI.display.Stage {
             };
         })();
         const totalByClass = (()=>{
-            const r={},l=$objs.list,cl = Object.keys($objs.classDataObjs);
+            const r={},l=$objs.list,cl = Object.keys($objs.dataTypes);
             cl.forEach(cdt => { r[cdt] = l.filter((o) => { return o.dataValues.b.classType === cdt }) });
             r.base = l.filter((o) => { return !cl.contains(o.dataValues.b.classType) });
             return r;

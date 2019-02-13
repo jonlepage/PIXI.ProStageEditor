@@ -53,13 +53,14 @@ class dataObj_case extends dataObj_base{
     // les data du parentContainer pour les dataObj_case  .p
     getParentValues_case(cage){
         return {
-            caseColor        : cage? cage.caseColor        : false , // couleur case
-            caseType         : cage? cage.caseType         : null  , // type event associer (bounty)
+            affine           : cage? cage.proj.affine : PIXI.projection.AFFINE.NONE , // hack Affine
+            caseColor        : cage? cage.caseColor : false , // couleur case
+            caseType         : cage? cage.caseType : null , // type event associer (bounty)
             randomStartColor : cage? cage.randomStartColor : false , // bootGame allow random value based on planet and dificulty
             randomTurnColors : cage? cage.randomTurnColors : false , // allow random color per turn
-            randomStartType  : cage? cage.randomStartType  : false , // bootGame allow random value based on planet and dificulty
-            randomTurnType   : cage? cage.randomTurnType   : false , // allow random type per turn
-            pathConnexion    : cage? cage.pathConnexion    : {}    , // store path connect by id
+            randomStartType  : cage? cage.randomStartType : false , // bootGame allow random value based on planet and dificulty
+            randomTurnType   : cage? cage.randomTurnType : false , // allow random type per turn
+            pathConnexion    : cage? cage.pathConnexion : {} , // store path connect by id
         };
     };
 

@@ -64,8 +64,8 @@ class _camera extends PIXI.projection.Container2d{
 
     get camToMapX() {return this.scene.toLocal(this, null, void 0, void 0, 0).x+($camera._sceneW/2) };//{ return this.pivot._x + (this._sceneW/2)}; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
     get camToMapY() {return this.scene.toLocal($camera, null, void 0, void 0, 0).y+(this._sceneH) }; //{ return this.pivot._y + this._sceneH};
-    get mouseToMapX3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).x+(this._sceneW/2)}//{ return this.camToMapX-(this._sceneW/2*this._fpF) }; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
-    get mouseToMapY3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).y+this._sceneH}//{ return this.camToMapY-(this._sceneH*this._fpF) }; 
+    get mouseToMapX3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).x}//{ return this.camToMapX-(this._sceneW/2*this._fpF) }; // $camera.toLocal($player.spine,$camera,{x:0,y:0})
+    get mouseToMapY3D() {return $mouse.pointer&&this.scene.toLocal($mouse.pointer, null, void 0, void 0, 0).y}//{ return this.camToMapY-(this._sceneH*this._fpF) }; 
     get distFYSY(){ return (this.sp.y-this.far.y)}
 
 
@@ -73,33 +73,33 @@ class _camera extends PIXI.projection.Container2d{
     /** initialise the from scene
      * @param {boolean} projected - Need and compute projection for the scene?
      */
-    initialize() {
-        this._fpF = 0; // far factor
-        this._fpX = 0; // x focus 2d projection (debug with arrow)
-        this._fpY = 0; // y focus 2d projection (debug with arrow)
-        this._screenW = $app.screen.width; // 1920
-        this._screenH = $app.screen.height; // 1080;
-        this.scene = null;
+    initialize(scene) {
+        this.scene = scene || false;
+        this.reset();
+        this._sceneW = scene? this.scene.background.width  : $app.screen.width ; // scene width
+        this._sceneH = scene? this.scene.background.height : $app.screen.height; // scene height
+        // TODO: RENDU ICI, CALCULER LE BOUNDS WIDHT , STOKER DANS UN TEMP ?
         this.removeChildren();
         this.parent.addChild(this.far);
         this.far.position.set(this._screenW/2,0);
+        this.pivot.set(0);
+        scene && this.addChild(scene);
         this.debug();//FIXME: DELETEME
     };
 
-    setupToScene(scene,reset) {
-        reset && this.initialize();
-        this.scene = scene;
-        this._sceneW = scene.background? scene.background.d.width  : this._screenW;
-        this._sceneH = scene.background? scene.background.d.height : this._screenH;
-        this.addChild(scene);
-    };
+    reset(){
+        this._fpF = 0; // far factor
+        this._fpX = 0; // x focus 2d projection (debug with arrow)
+        this._fpY = 0; // y focus 2d projection (debug with arrow)
+        this._zoom = 1;
+    }
+
     
     /**@description update from updateMain in sceneManager */
     update(){
         if(this.scene && this.scene._started){
-          this.updateProjection();
-        }
-        
+            this.updateProjection();
+        };
     };
 
     updateProjection(){
@@ -124,8 +124,9 @@ class _camera extends PIXI.projection.Container2d{
         const lists = $objs.spritesFromScene;
         for (let i=0, l= lists.length; i<l; i++) {// 1: evite le background
             const cage = lists[i];
-            cage && cage.affines(PIXI.projection.AFFINE.AXIS_X); // AXIS_Y test in space navigation
+            cage && cage.affines(); // AXIS_Y test in space navigation
         };
+        $player.spine && $player.spine.affines();
     };
 
     /**@description userfull to find a target with futur camera projection setting */
@@ -207,6 +208,7 @@ class _camera extends PIXI.projection.Container2d{
             this._debug = true;
             const dcontainer = new PIXI.Container();
             dcontainer.x = 80;
+            dcontainer.y = 30;
             let debugLine = new PIXI.Graphics();
             let debugFarPoint = new PIXI.Graphics();// far point factor line
             let bdc = new PIXI.Graphics(); // background
@@ -224,8 +226,8 @@ class _camera extends PIXI.projection.Container2d{
             this.redrawDebugScreen();
 
             
-            $stage.addChildAt(debugLine,6);
-            $stage.addChildAt(debugFarPoint,7);
+            $stage.addChild(debugLine);
+            $stage.addChild(debugFarPoint);
             this.far.anchor.set(0.5);
             this.far.alpha = 0.8;
             this.far.tint = 0x00787c;

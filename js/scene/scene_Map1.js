@@ -21,13 +21,10 @@ class Scene_Map1 extends _Scene_Base {
     //TODO: la camera apply la converiton 2.5d, voir pour preconvetir chaque sprite dans les constructor FIXME:
         super.start();
         this.setupObjs();
-        setTimeout(()=>this.setupObjs() , 1);
         $huds.setInteractive(true);
-        //this.setupCamera(true);
-       
         this.setupLights();
-        //this.setupPlayer();
-        
+        this.setupPlayer();
+        this.setupCamera();
         this.setupEventCases(); // setup interactivity for events case in map1?
         //$camera.moveToTarget($player);
        //$stage.goto();
@@ -48,22 +45,20 @@ class Scene_Map1 extends _Scene_Base {
         this.addChild($player.spine);
         this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
-        const startCase = $objs.cases[0];
-        if( startCase ){
-            $player.x = startCase.x
-            $player.y = startCase.y+20
-            $player.spine.parentGroup = $displayGroup.group[1];
+        const toID = $player._nextTransferID || 0;
+        const toCase = $objs.case[0]; // target case
+        if( toCase ){
+            $player.spine.position.copy(toCase.sprite.position);
             $player.spine.zIndex = $player.y;
-            $player.inCase = startCase; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
+            $player.inCase = toCase; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
         $player2.moveToPlayer();
         
     }
 
     setupCamera(){
-        
-       //$camera.setTarget($player.spine.position);
-    }
+       $camera.moveToTarget($player.spine.position);
+    };
 
     // Events initialisator and hack optimiser
     // setup hack or change context in current map base on global variable

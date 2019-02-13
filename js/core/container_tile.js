@@ -91,13 +91,6 @@ class Container_Tile extends Container_Base {
         this.Sprites.ctn.texture = tn;
     };
 
-    affines (value) {
-        this.proj.affine = value;
-        if(!this._isCase){ // si pas une case
-            //this.d.proj.affine = value;
-            //this.n.proj.affine = value;
-        }
-    };
 
 };//END CLASS
     

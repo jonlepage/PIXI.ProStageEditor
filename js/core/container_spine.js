@@ -55,10 +55,6 @@ class Container_Spine extends Container_Base {
         this.s.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
     };
 
-    affines (value) {
-        this.proj.affine = value;
-    };
-
 
 };
 

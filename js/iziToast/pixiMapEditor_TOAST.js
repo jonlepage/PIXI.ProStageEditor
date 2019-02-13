@@ -68,7 +68,21 @@ _PME.prototype.izit_SceneSetup = function(dataValues,bgList){
     };
 };
 
-
+_PME.prototype.izit_clearScene = function(values){
+    return{
+        transitionOut: 'fadeOutUp',
+        id:'libs_loading',
+        timeout:1600,
+        theme: 'dark',
+        icon: 'icon-person',
+        title: `CLEAR SCENE: ${$stage.scene.constructor.name}`,
+        message: `${values} delete from register`,
+        position: 'topCenter', // bottomRight, bottomLeft, topRight, topLeft, topCenter, bottomCenter
+        progressBarColor: 'rgb(0, 255, 184)',
+        backgroundColor: '#3f3f3f',
+        progressBarColor:'#f44242',
+    };
+};
 
 
 

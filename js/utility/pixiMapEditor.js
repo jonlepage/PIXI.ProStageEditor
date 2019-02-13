@@ -150,7 +150,7 @@ class _PME{
        // asign buttons
        const list = spine.spineData.slots;
        list.forEach(_slot => {
-            if(_slot.name.contains("icon_")){
+            if(_slot.name.contains("icon_") || _slot.name.contains("gb")){
                 const slot = spine.skeleton.findSlot(_slot.name);
                 slot.currentSprite.slot = slot;
                 this.editor.buttons.push( slot.currentSprite );
@@ -204,14 +204,18 @@ class _PME{
         this.setupScroll();
         this.setupListener();
         $stage.interactiveChildren = true;
+        this.changeDisplayGroup(1);
     };
 //#endregion
     convertForEditor(){
         $objs.spritesFromScene.forEach(cage => {
             this.create_Debug(cage);
+            cage.on('pointerover' , this.pIN_tile  , this);
+            cage.on('pointerout'  , this.pOUT_tile , this);
+            cage.on('pointerdown' , this.pDW_tile  , this);
+            cage.on('pointerup'   , this.pUP_tile  , this);
+            cage.on('mouseupoutside'  , this.pUPOUT_tile , this);
             cage.interactive = true;
-            cage.on('pointerdown'      , this.pDW_tile , this);
-            cage.on('pointerup'        , this.pUP_tile , this);
             
         });
     };
@@ -467,6 +471,7 @@ class _PME{
 // IZITOAST DATA2 EDITOR 
 // └------------------------------------------------------------------------------┘
     open_dataInspector(cage) {
+        if(Object.keys(iziToast.children).length){return console.error('Wait, alrealy open')}
         const isStage  = cage === $stage;
         const dataValues = cage.getDataValues();
         cage === $stage? iziToast.info( this.izit_saveSetup(dataValues) ) : iziToast.info( this.izit_dataObjsEditor(cage) );
@@ -479,6 +484,7 @@ class _PME{
 
     // Scene Setup and background, descriptions 
     open_dataInspector_scene(){
+        if(Object.keys(iziToast.children).length){return console.error('Wait, alrealy open')}
         const dataValues = $stage.getDataValues();
         const bgList = Object.values(this.data2).filter(data => data.isBackground );
         iziToast.info( this.izit_SceneSetup(dataValues,bgList) );
@@ -487,12 +493,14 @@ class _PME{
         dataIntepretor.onchange = (e) => {
             const div = e.target;
             const dataBase = this.data2[div.value];
-            $stage.scene.createBackgroundFrom(dataBase);
-            $camera.initialize(true);
+            const dataObj = $objs.newDataObjs_dataBase(dataBase,dataBase.name);
+            $stage.scene.createBackgroundFrom(dataObj);
+            $camera.initialize($stage.scene);
         };
         dataIntepretor.onclick = (e) => {
             if(e.target.type === "button"){
                 switch (e.target.id) {
+                    case "clearScene": this.clear_scene(); break;
                     case "apply": this.close_dataInspector(); break;
                     case "cancel": cage.asignDataObjValues(backUp); this.close_dataInspector(); break;
                     default:break;
@@ -500,11 +508,24 @@ class _PME{
             };
         };
     };
+    
+    clear_scene(){
+        iziToast.info( this.izit_clearScene($stage.scene.length) );
+        $stage.scene.children.forEach(sprite => {
+            const id = sprite.dataObj._id;
+            if (Number.isFinite(id)){
+                delete $objs.LIST[id];
+            };
+        });
+        $stage.scene.clearBackground();
+        $stage.scene.removeChildren();
+    };
 
     startDataIntepretor(cage,slidersNode){
         const backUp = cage.dataObj && cage.dataObj.clone();
         const dataIntepretor = document.getElementById("dataIntepretor");
         dataIntepretor.oninput = (e) => {
+            if(e.data && e.data == '.'){return};
             const div = e.target;
             const value = JSON.parse(div.value);
             const ids = div.id.split('.');
@@ -579,7 +600,6 @@ class _PME{
         }
         let list = {}; // store slider list
         const nodeList = document.getElementsByClassName("sliders");
-        console.log('nodeList: ', nodeList);
         for (let i=0, l=nodeList.length; i<l; i++) {
             const input = nodeList[i];
             const attributID = input.id.split(".");
@@ -724,7 +744,7 @@ class _PME{
 
 /**LIBRARY TILES */
     pDW_Library_tile_mask(e){
-        const ee = e.currentTarget.parent.list;
+        const ee = e.currentTarget.parent.list || this.LIBRARY_TILE.list;
         const callBack = () => {
             ee.interactiveChildren = false; // disable thumbs interactions
         };
@@ -740,12 +760,27 @@ class _PME{
     };
 
     pWEEL_Library_tile_mask(e,ee){
-        const scale = ee.parent.list.scale;
+        const scale = ee.parent.list?ee.parent.list.scale : this.LIBRARY_TILE.list.scale;
         if(e.wheelDeltaY>0 && scale._x<2){
             TweenMax.to(scale, 1, {x:scale._x+0.2,y:scale._y+0.2, ease: Back.easeOut.config(1.4) });
         }else
         if( e.wheelDeltaY<0 && scale._x>0.5){
             TweenMax.to(scale, 1, {x:scale._x-0.2,y:scale._y-0.2, ease: Back.easeOut.config(1.4) });
+        };
+    };
+
+/**TILES SHEETS */
+    pUP_tileSheet(e){
+        // tiles dans le tile sheet, just clone
+        const cLeft   = e.data.button===0; // <== 
+        const cRight  = e.data.button===2; // ==>
+        const cCenter = e.data.button===1; // >|<
+        this.startMouseHold(false);
+        this.hideTileLibs();
+        const ee = e.currentTarget;
+        if(cLeft){
+            this.remove_toMouse(ee); // detach from mouse
+            this.add_toMouse( this.add_toMap(ee) ); // attache to mouse
         };
     };
 
@@ -785,39 +820,64 @@ class _PME{
            return this.disableFastModes(true) 
         };
         if(this._pathMode){ return };
-        if(this.inMouse && cRight){this.showTileLibs();}
         const ee = e.currentTarget;
-        this.remove_toMouse(ee); // detach from mouse
-
-
         if(e.data.originalEvent.ctrlKey && cLeft){
             return this.open_dataInspector(ee);
         }
         // Right click => cancel delete current attach
         if(cRight){
-            $stage.scene.removeChild(ee);
-            this.setObjsInteractive();
-            
+            if(this.inMouse && this.inMouse.isRegistered){
+                // detache and back to zero
+                this.remove_toMouse(ee); // detach from mouse
+                this.showTileLibs();
+                this.showEditor();
+            }else if(this.inMouse && !this.inMouse.isRegistered){
+                // remove and detache
+                this.remove_toMouse(ee); // detach from mouse
+                $stage.scene.removeChild(ee);
+                this.setObjsInteractive(true);
+                this.showTileLibs();
+                this.showEditor();
+            }else if(!this.inMouse){
+                // open menue
+                this.unRegisterToMap(ee); // register in map objs
+            }
         };
         // Left click <= apply
         if(cLeft){
-            this.registerToMap(ee); // register in map objs
-            ee.getDataValues(); // update attached dataValues
-            this.add_toMouse( this.add_toMap(ee) ); // attache to mouse
+            // si dans la sourit et registered ?
+            if(this.inMouse.isRegistered){
+                this.remove_toMouse(ee); // detach from mouse
+                this.showTileLibs();
+                this.showEditor();
+            }else if(this.inMouse){
+                this.registerToMap(ee); // register in map objs
+                this.remove_toMouse(ee); // detach from mouse
+                ee.getDataValues(); // update attached dataValues //FIXME: jaime pas ca
+                this.add_toMouse( this.add_toMap(ee) ); // clone new attach to mouse
+            }else{
+                this.add_toMouse( ee );
+            }
         };
     };
+    pUPOUT_tile(e){
+        this.pUP_tile(e)
+    };
+
+    
 //#endregion
 
     registerToMap(ee){
-        if(ee.parent === $stage.scene && ee.dataObj._id === null){
-            // cherche si des array son undefined, (suprimer) pour remplacer les data au bon id
-            const id = ($objs.LIST.indexOf(void 0)>-1)? $objs.LIST.indexOf(void 0) : $objs.LIST.length;
-            const spriteID = $objs.spritesFromScene.length;
-            ee.dataObj._id = id;
-            ee.dataObj._spriteID = spriteID;
-            $objs.LIST[id] = ee.dataObj;
-            $objs.spritesFromScene[spriteID] = ee;
-        };
+        const reg = $objs.getNewRegisterFrom(ee);
+        ee.dataObj.register = reg; // setter register
+        $objs.LIST[reg._id] = ee.dataObj;
+        $objs.spritesFromScene[reg._spriteID] = ee;
+    };
+    unRegisterToMap(ee){
+        $stage.scene.removeChild(ee);
+        const reg = ee.dataObj.register;
+        delete $objs.LIST[reg._id];
+        delete $objs.spritesFromScene[reg._spriteID];
     };
 
     //dispatch button executor
@@ -832,8 +892,28 @@ class _PME{
             case "icon_pathMaker" : this.toggle_drawPathMode(ee ); ;break;
             case "icon_masterLight" : this.open_dataInspector ($stage.LIGHTS.ambientLight ); ;break;
             case "icon_setup" : this.open_dataInspector_scene ($stage.scene.background); ;break;
+            case"gb0":case"gb1":case"gb2":case"gb3":case"gb4":case"gb5":case"gb6": this.changeDisplayGroup(+name.substr(2)); ;break;
             default: throw console.error(' le button name existe pas , TODO'); break;
-        }
+        };
+    };
+
+    changeDisplayGroup(value){
+        if([0,1,2,3,4,5,6].contains(value)){
+            this._displayGroupID = value; // current display groups selected
+            this.inMouse && (this.inMouse.parentGroup = $displayGroup.group[value]);
+            // change color 
+            const buttons = this.editor.buttons.filter((b)=>b.slot.currentSpriteName.contains("gb"));
+            buttons.forEach(b => {
+                if(b.slot.currentSpriteName.contains(value)){
+                    b.slot.color.set(0,1,0,1);
+                    b.slot.currentSprite.scale.set(1.6,-1.6);
+                    TweenMax.to(b.slot.currentSprite.scale, 0.6, {x:1,y:-1, ease: Back.easeOut.config(2) });
+                    this.editor.gui.state.setAnimation(4, 'shakeDisplay', false);
+                }else{
+                    b.slot.color.set(1,1,1,0.6);
+                };
+            });
+        };
     };
 
     // toggle , hide show debug mode
@@ -857,8 +937,8 @@ class _PME{
             $stage.scene.debugGrid.destroy()
             return $stage.scene.debugGrid = false;
         };
-        const w = $stage.scene.background? $stage.scene.background.width  : $stage.width ; // map width + zoom
-        const h = $stage.scene.background? $stage.scene.background.height : $stage.height; // map width + zoom
+        const w = $camera._sceneW; // map width + zoom
+        const h = $camera._sceneH;
         const color = [0xffffff,0x000000,0xff0000,0x0000ff,0xffd800,0xcb42f4][~~(Math.random()*6)];
         const graphics = new PIXI.Graphics();
             graphics.lineStyle(2, color, 0.5);
@@ -874,7 +954,7 @@ class _PME{
         };
         const sprite = new PIXI.Sprite( $app.renderer.generateTexture(graphics) );
         sprite.anchor.set(0.5,1);
-        sprite.position.set(w/2,h);
+        //sprite.position.set(w/2,h);
         sprite.scale.set(1.1);
         sprite.convertTo2d();
         $stage.scene.addChild(sprite);
@@ -896,7 +976,7 @@ class _PME{
     show_tileSheet(cage) {
         const dataBase = cage.dataObj.dataBase;
         if(this.LIBRARY_TILE._dataName === dataBase.name){return this.hideTileLibs()};
-        Object.keys(dataBase.textures || dataBase.skins).forEach(textureName => {
+        Object.keys(dataBase.textures || dataBase.data.skins).forEach(textureName => {
           const cage = $objs.newContainer_dataBase(dataBase,textureName);
           cage.buttonType = "tileLibs";
           this.create_Debug(cage,dataBase);
@@ -905,10 +985,13 @@ class _PME{
           cage.n.renderable = false; // disable normal
           // interactions
           cage.interactive = true;
-          cage.on('pointerdown', this.pDW_tile , this);
+          cage.on('pointerdown', this.pDW_Library_tile_mask , this);
           cage.on('pointerover', this.pIN_tile , this);
           cage.on('pointerout' , this.pOUT_tile, this);
-          cage.on('pointerup'  , this.pUP_tile , this);
+          cage.on('pointerup'  , this.pUP_tileSheet , this);
+          cage.on('mousewheel'     , this.pWEEL_Library_tile_mask , this);
+          
+          
         });
         this.LIBRARY_TILE
         const cache = this.LIBRARY_TILE.cache;
@@ -925,7 +1008,23 @@ class _PME{
         this.LIBRARY_TILE.list
         this.LIBRARY_TILE._dataName = dataBase.name;
         !this.LIBRARY_TILE.renderable && this.showTileLibs();
-        this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures||dataBase.skins).length}): ${dataBase.name}.json`; // update title 
+        this.editor.gui.skeleton.findSlot("TileBarLeft").txt.text = `(${Object.keys(dataBase.textures||dataBase.data.skins).length}): ${dataBase.name}.json`; // update title 
+    };
+
+    showEditor(){
+        this.LIBRARY_BASE.interactiveChildren = true;
+        this.LIBRARY_BASE.renderable = true;
+        TweenMax.to(this.LIBRARY_BASE, 1, {alpha:1, ease: Power4.easeOut });
+        if(this.editor.gui.state.tracks[1].animation.name!=='showTileBase'){
+            this.editor.gui.state.setAnimation(1, 'showTileBase', false);
+        }
+    };
+    hideEditor(){
+        this.LIBRARY_BASE.interactiveChildren = false;
+        this.LIBRARY_BASE.renderable = false;
+        if(this.editor.gui.state.tracks[1].animation.name!=='hidetileBase'){
+            this.editor.gui.state.setAnimation(1, 'hidetileBase', false);
+        };
     };
 
     showTileLibs(){
@@ -934,7 +1033,6 @@ class _PME{
         this.LIBRARY_TILE.renderable = true;
         this.LIBRARY_TILE.interactiveChildren = true;
         this.editor.gui.state.setAnimation(2, 'showTileSheets', false);
-        
     };
     hideTileLibs(){
         this.LIBRARY_TILE._dataName = null;
@@ -988,6 +1086,7 @@ class _PME{
         this._pathMode = !this._pathMode;
         //SHOW PATH
         if(this._pathMode){
+            $camera.reset();
             this.hideTileLibs();
             this.editor.gui.state.setAnimation(3, 'pathMode', false);
             this.LIBRARY_BASE.renderable = false;
@@ -999,14 +1098,14 @@ class _PME{
                 dataObj.sprite.interactive = isCase;
                 dataObj.sprite.alpha = isCase?1:0.1;
             });
-           this.refreshPath();
         }else{
             this.LIBRARY_BASE.renderable = true;
             this.LIBRARY_BASE.interactiveChildren = true;
             this.editor.gui.state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
             ee.slot.color.set(1,1,1,1); // (r, g, b, a)
             ee.scale.set(1.25,-1.25);
-        }
+        };
+        this.refreshPath();
     };
 
     refreshPath() {
@@ -1023,10 +1122,10 @@ class _PME{
                 Object.keys(dataObj.sprite.pathConnexion).forEach(id => { // connextion id to sprite ID
                     const dataObj_c = $objs.LIST[id]; // dataobj conected
                     let point = new PIXI.Point(0,0);
-                    const xy   = dataObj  .sprite.toGlobal(point)
-                    const xy_c = dataObj_c.sprite.toGlobal(point)
-                    const dX = xy_c.x-xy.x
-                    const dY = xy_c.y-xy.y;
+                    const xy   = $camera.toLocal(dataObj.sprite, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);//dataObj  .sprite.toGlobal(point)
+                    const xy_c = $camera.toLocal(dataObj_c.sprite, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ); //dataObj_c.sprite.toGlobal(point)
+                    const dX = (xy_c.x-xy.x)*$camera._zoom;
+                    const dY = (xy_c.y-xy.y)*$camera._zoom;
                     const path = new PIXI.Graphics();
                     path.lineStyle(4, 0x4286f4, 1);
                     path.moveTo(0,0).lineTo(dX, dY).endFill();
@@ -1102,19 +1201,24 @@ class _PME{
         cage.on('pointerout'  , this.pOUT_tile , this);
         cage.on('pointerdown' , this.pDW_tile  , this);
         cage.on('pointerup'   , this.pUP_tile  , this);
+        cage.on('mouseupoutside'  , this.pUPOUT_tile , this);
         return cage;
     };
 
     add_toMouse(cage){ // attache to mouse update
+        this.setObjsInteractive(false);
         this.enlargeHitZone(cage);
-        this.inMouse = cage;
-        this.setObjsInteractive(cage);
         this.hideTileLibs();
+        this.hideEditor();
+        this.inMouse = cage;
+        //force current sprite inMouse interactivity
+        cage.interactive = true;
     };
     remove_toMouse(cage){ // detach from mouse 
         this.enlargeHitZone(cage,'remove');
-        this.inMouse = null;
+        this.inMouse = false;
         cage.Debug.hitZone.tint = 0x000000;
+        this.setObjsInteractive(true);
     };
 
     enlargeHitZone(cage,remove){
@@ -1124,14 +1228,13 @@ class _PME{
             cage.Debug.hitZone.clear();
             cage.Debug.hitZone.lineStyle(2, 0xff0000, 1).drawRect(LB.x, LB.y, LB.width, LB.height);
             LB.pad(1920,1080);
-            cage.hitArea = LB;//new PIXI.Rectangle(0,0, cage.width,cage.height);
+            cage.hitArea = LB;
         }else{
             cage.hitArea = null;
         }
     };
 
-    setObjsInteractive(protect){ // detach from mouse
-        const value = !this.inMouse;
+    setObjsInteractive(value){
         $objs.LIST.forEach(dataObj => {
             dataObj.sprite.interactive = value;
         });
@@ -1279,25 +1382,26 @@ class _PME{
 
     setupListener(){
         document.onwheel = null;
-        document.addEventListener('keydown', (event) => {
+        document.addEventListener('keydown', (e) => {
             // key for FASTMODES
             if(this.FASTMODES.renderable){
-                if(event.key === event.key.toUpperCase()){ throw console.error('ERREUR LES CAPITAL SON ACTIVER!')}
-                if(["p","y","w","s","r","u"].contains(event.key)){
-                    this.FASTMODES._mode = event.key;
+                if(e.key === e.key.toUpperCase()){ throw console.error('ERREUR LES CAPITAL SON ACTIVER!')}
+                if(["p","y","w","s","r","u"].contains(e.key)){
+                    this.FASTMODES._mode = e.key;
                     this.activeFastModes(this.FASTMODES.target);
                 }
-            };
+            }else if(!e.target.type && !e.code.contains('Numpad')){ // si pas focus dans un input, autoriser number
+                this.changeDisplayGroup(+e.key)
+            }
         });
 
         document.addEventListener('wheel',(e) => {
             // autorize zoom just quand sourit dans canvas
             if (e.path.contains($app.renderer.view)) {
                 const hitTest = $mouse.interaction.hitTest($mouse.pointer.position);
-                console.log('hitTest: ', hitTest);
                 // Dispatch scroll event
                 if (hitTest) { 
-                    hitTest._events.mousewheel && hitTest.emit('mousewheel',e,hitTest);
+                    hitTest._events.mousewheel && hitTest.emit('mousewheel',e,hitTest) || $camera.onMouseWheel.call($camera,e);
                 }else{
                     $camera.onMouseWheel.call($camera,e);
                 }
@@ -1338,10 +1442,10 @@ class _PME{
 
     startSaveDataToJson() { //  from: dataIntepretor save 
         this.close_dataInspector();
-        $stage._filters = [this.filters.BlurFilter];
+        $displayGroup._layer_diffuseGroup._filters = [this.filters.BlurFilter];
         TweenMax.to(this.filters.BlurFilter, 1.2, {
             blur:0, ease: Power2.easeOut, delay:0.5,
-            onComplete: (e) => { $stage._filters = null, this.filters.BlurFilter = 10;}, 
+            onComplete: (e) => { $displayGroup._layer_diffuseGroup._filters = null, this.filters.BlurFilter = 10;}, 
         });
         this.create_JSON();
         iziToast.warning( $PME.savedComplette() );
@@ -1356,7 +1460,7 @@ class _PME{
         };
         const _lights      = dataValues.totalByClass.light; // get all lights objets
         const _objs        = [].concat(...Object.values(dataValues.totalByClass));
-        const _background  = this.save_background          () ; // scene bg
+        const _background  = $stage.scene.background.dataObj ; // scene bg
         const _sheets      = dataValues.totalSheet ; // all cheets used in this scene for load dataBases tuexture
         const SYSTEM = {memoryUsage:dataValues.memoryUsage,timeElasped:PIXI.ticker.shared.lastTime / 1000, data: new Date().toDateString()};
         const json = { SYSTEM, _lights , _background, _sheets, _objs, };
@@ -1374,25 +1478,6 @@ class _PME{
             };      
             writeFile(`data/${$stage.scene.constructor.name}.json` , JSON.stringify(json, null, '\t') );
         };
-
-    // save objs sprites from map
-    save_background() {
-        return $stage.scene.background? $stage.scene.background.dataObj.dataValues : null;
-    };
-
-        
-    // add dataBase sheets need for this scene
-    compute_Sheets(_objs,_background) {
-        const sheets = {};
-        if(_background){
-            const background = $stage.scene.background;
-            sheets[background.dataObj._dataBase] = background.dataObj.dataBase;
-        };
-        _objs.forEach(dataObj => {
-            sheets[dataObj._dataBase] = dataObj.dataBase;
-        });
-        return sheets;
-    };
 
 //#endregion
 };//END 

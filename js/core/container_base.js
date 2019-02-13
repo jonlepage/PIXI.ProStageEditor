@@ -21,6 +21,7 @@ class Container_Base extends PIXI.projection.Container2d {
     // getters
     get d() { return this.Sprites.d };
     get n() { return this.Sprites.n };
+    get isRegistered() { return this.dataObj._registered };
 
     createBases (dataObj = this.dataObj) {
         const dataBase = dataObj.dataBase;
@@ -64,7 +65,7 @@ class Container_Base extends PIXI.projection.Container2d {
                 case "parentGroup": // if parentGroup, also asign diffuseGroup,normalGroup to childs
                     if(Number.isFinite(value)){
                         this.parentGroup = $displayGroup.group[value];
-                        this.asignChildParentGroups(this.dataObj.b.normals);
+                        this.asignChildParentGroups(this.dataObj.dataBase.isNormal);
                     };
                 break;
                 case "color":
@@ -113,11 +114,7 @@ class Container_Base extends PIXI.projection.Container2d {
 
     // default background not affined
     affines (value) {
-        // on affine pas les classType case
-        if(this.dataObj.b.classType !== 'case'){
-            this.d.proj.affine = 0;
-            this.n.proj.affine = 0;
-        };
+        this.proj.affine = this.dataObj.dataValues.p.affine;
     };
 
 };//END CLASS

@@ -45,6 +45,8 @@ Object.defineProperty(_dataBase.prototype, 'isAnimationSheet', { get:function() 
 Object.defineProperty(_dataBase.prototype, 'isTileSheet'     , { get:function() { return this.type === "tileSheet"                         } });
 Object.defineProperty(_dataBase.prototype, 'isNormal'        , { get:function() { return this.isSpineSheet || !this.isVideo && !!this.data.meta.normal_map  } }); // TODO: voir si on peut ajouter un skins
 Object.defineProperty(_dataBase.prototype, 'isBackground'    , { get:function() { return this.dirArray.contains("backgrounds")  } });
+Object.defineProperty(_dataBase.prototype, 'dataType'    , { get:function() { return this.dirArray[1]  } });
+Object.defineProperty(_dataBase.prototype, 'containerType'    , { get:function() { return this.type  } });
 
 
 class _coreLoader {

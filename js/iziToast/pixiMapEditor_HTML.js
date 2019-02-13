@@ -392,6 +392,7 @@ function HTML_DATA_UI(cage){
                                 <th scope="col">select</th>
                             </tr>
                         </thead>
+                        <tbody>${ new_HTML_content(dataObj,"affine"  ,"select", Object.keys(PIXI.projection.AFFINE),{ color:bcolor.next }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"parentGroup" ,"number",[],{step:1 , min:0, max:6,color:bcolor.next }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"zIndex"      ,"number",[],{step:1 ,              color:bcolor.next }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"zHeight"      ,"number",[],{step:1 ,              color:bcolor.next }) }</tbody>
@@ -560,7 +561,8 @@ function HTML_BG_SCENE_UI(dataValues,bgList){
                 </div>
             </div><!--accordion item END-->
             </div>
-        <div class="container buttons"> 
+        <div class="container buttons">
+        <button id="clearScene" type="button" class="btn btn-outline-warning btn-sm col-md-6">clearScene</button>
             <button id="apply" type="button" class="btn btn-outline-success btn-sm col-md-6">Apply</button>
             <button id="cancel" type="button" class="btn btn-outline-danger btn-sm col-md-4">Cancel</button>
         </div>

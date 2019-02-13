@@ -1,7 +1,4 @@
-
-/**@class */
 class _app extends PIXI.Application {
-    /** The title of the book. */
     constructor() {
         super({
             width: 1920, 
@@ -123,7 +120,7 @@ class _app extends PIXI.Application {
 
 }; //END CLASS
 
-let $app = new _app(); // new PIXI.Application
+const $app = new _app(); // new PIXI.Application
 //Add the canvas that Pixi automatically created for you to the HTML document
 document.body.appendChild($app.view);
 
@@ -134,6 +131,7 @@ document.addEventListener('contextmenu', event => {
 }); 
 // disable nwjs right click
 document.addEventListener('keydown', (event) => {
+    if(event.target.type){return}; // si dans un div input, cancel
     if(event.keyCode === 115){ // F4
         return $app._fullScreen && $app.cancelFullScreen() || $app.requestFullScreen();
     };
@@ -210,7 +208,7 @@ document.addEventListener('keydown', (event) => {
         event.keyCode===104 && TweenLite.to($camera, 0.7, { _fpY:fpY+25, ease: Power4.easeOut });
         event.keyCode === 98 && TweenLite.to($camera, 0.7, { _fpY:fpY-25, ease: Power4.easeOut });
     }
-    if(event.keyCode === 101){ // numpad 5 reverse lock _fpY,_fpX
+    if(event.keyCode === 101){ // numpad 5 copy
         window.prompt("Copy this to $camera.cameraSetup", 
         `{_fpX:${$camera._fpX.toFixed(2)},_fpY:${$camera._fpY.toFixed(2)},_fpF:${$camera._fpF.toFixed(2)},_zoom:${$camera._zoom.toFixed(2)}}`
         );

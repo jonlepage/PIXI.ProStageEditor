@@ -166,6 +166,18 @@ Object.defineProperty(Array.prototype, 'remove', {
     },
 });
 
+/**
+ * find first avaible slot index in Array
+ *
+ * @static
+ * @method Array.prototype.findEmptyIndex
+ * @return {Number}
+ */
+Array.prototype.findEmptyIndex = function() {
+    for (let i=0, l=this.length+1; i<l; i++) {
+        if(!this[i]){return i};
+    };
+};
 
 // ajouter un system integrity via hashing
 String.prototype.hashCode = function() {

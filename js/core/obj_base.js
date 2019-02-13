@@ -15,19 +15,28 @@ Voir le Stages
 // GLOBAL $objs CLASS: _objs
 //└------------------------------------------------------------------------------┘
 class dataObj_base{
-    constructor(dataValues,dataBase,textureName) {
-        // dataValues: from json or new from [dataBase,textureName]
-        this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
-        this._spriteID = null;
-        this._sceneName = $stage.scene.constructor.name;
+    constructor(dataBaseName,registerType) {
+        this._dataBase = dataBaseName; // link dataBase to loader
+        this._registerType = registerType; // link registerType
+        //this.dataValues = dataValues || this.getDataValuesFrom(false);
+        this.reg = {
+            _id:null,
+            _spriteID:null,
+            _sceneName:null,
+            _dataBase:null,
+            _textureName:null,
+            _registerType:null, // null:GC, 1:LIST 2:TMPLIST
+        };
+       //this._id = null; // when linked to a sprite? {spriteID,sceneID,dataObjID}
+       //this._spriteID = null;
+       //this._sceneName = $stage.scene.constructor.name;//FIXME: PLUTOT AJOUTER via  REGISTER
 
-        this._dataBase = dataValues? dataValues.b.dataName : dataBase.name;
-        this._textureName = dataValues? dataValues.b.textureName : textureName;
-        this.dataValues = dataValues || this.getDataValuesFrom(false);
+       //this._dataBase = dataValues? dataValues.b.dataName : dataBase? dataBase.name : null;
+       //this._textureName = dataValues? dataValues.b.textureName : textureName;
     };
     set register(register) {Object.assign(this,register)}; // register id from existed saved data json
     get register() { return {_id:this._id, _spriteID:this._spriteID,_sceneName:this._sceneName } };
-    get dataBase() { return $Loader.Data2[ this._dataBase ] };
+    get dataBase() { return this._dataBase && $Loader.Data2[ this._dataBase ] };
     get b() { return this.dataValues.b };
     get p() { return this.dataValues.p };
     get d() { return this.dataValues.d };
@@ -46,7 +55,7 @@ class dataObj_base{
     //TODO: RENDU ICI , a,s sont creer pour les thumps ???
     getDataValuesFrom (cage) {
         const dataValues = {
-            b:this.getDataBaseValues        (cage),
+            b:this.getDataBaseValues        (this.dataBase),
             p:this.getParentContainerValues (cage),
             d:this.getSpriteValues          (cage&&cage.d),
             n:this.getSpriteValues          (cage&&cage.n),
@@ -62,24 +71,21 @@ class dataObj_base{
     };
 
     // get important dataValue from de base
-    getDataBaseValues(cage){
-        const dataBase = this.dataBase; // getters
-        const textureName = this._textureName || null;
+    getDataBaseValues(dataBase){
         return {
-            classType  : dataBase    .dirArray[1], // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere
-            type       : textureName && dataBase    .type     , // locked: les type the container , tile,,animation,spine,light..., si pas textureName, aucun class type
-            textureName: textureName           , // locked
-            dataName   : dataBase    .name     , // locked
-            groupID    : dataBase    .dirArray[2]  , // asigner un groupe dapartenance ex: flags
-            name       : dataBase    .name     , // asigner un nom unique
-            description: dataBase    .root     , // un description aide memoire
-            normals    : dataBase    .normal   , // flags setter getter normal parentGroup 
+            classType  : dataBase? dataBase .dirArray   [1]                :'base' , // TODO: les class type pour les data objet type: cases, house, door, mapItemp, charactere
+            type       : dataBase?           this._textureName && dataBase .type : null, // locked: les type the container , tile,,animation,spine,light..., si pas textureName, aucun class type
+            textureName: dataBase?           this._textureName                   : null, // locked
+            dataName   : dataBase? dataBase .name                          : null, // locked
+            groupID    : dataBase? dataBase .dirArray   [2]                : null, // asigner un groupe dapartenance ex: flags
+            name       : dataBase? dataBase .name                          : null, // asigner un nom unique
+            description: dataBase? dataBase .root                          : 'obj sans data', // un description aide memoire
+            normals    : dataBase? dataBase .normal                        : null, // flags setter getter normal parentGroup 
         };
     };
 
     // les datas Du container parent CAGE
     getParentContainerValues(cage){ // .p
-        const isAnimations = !!this.dataBase.animations && this.dataBase;
         return {
             // observable point
             position : cage? [cage.position._x,cage.position ._y ] : [0,0] ,
@@ -94,11 +100,12 @@ class dataObj_base{
             zIndex      : cage                  ? cage.zIndex             : 0                        , // locked
             parentGroup : cage&&cage.parentGroup? cage.parentGroup.zIndex : null                     , //  for editor, need to manual set parentGroup on addMouse
             zHeight     : cage                  ? cage.zHeight             : 0                        , // ajust height layers from sort pivot+ zHeight
+            affine : cage? cage.proj.affine : PIXI.projection.AFFINE.AXIS_X, // 2
             // conditionInteractive TODO:
         };
     };
     
-    getSpriteValues(sprite, dataBase,textureName){ // .d .n
+    getSpriteValues(sprite){ // .d .n
         if(sprite instanceof Array){return {}}; // si spine, this.d,n sont des array, rien faire pour le moment TODO:
         return {
             // observable point

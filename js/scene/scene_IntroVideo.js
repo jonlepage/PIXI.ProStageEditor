@@ -23,6 +23,7 @@ class Scene_IntroVideo extends _Scene_Base {
 
     start(){
         super.start();
+        $camera.pivot.y = -$camera._sceneH/2
         this.create_IntroVideo();
         //this.setupCamera(); //TODO: ADD TO SCENE BASE ? 
     };
@@ -42,6 +43,7 @@ class Scene_IntroVideo extends _Scene_Base {
         const texture = PIXI.Texture.fromVideo( dataVideo, 1, void 0, false );
         const videoSprite = new PIXI.Sprite(texture);
         const videoControler = texture.baseTexture.source;
+        videoSprite.anchor.set(0.5,1)
     
         videoSprite.width = 1920;
         videoSprite.height = 1080;

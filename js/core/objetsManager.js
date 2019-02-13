@@ -16,12 +16,14 @@ Voir le Stages
 //└------------------------------------------------------------------------------┘
 class _objs{
     constructor() {
-        this.LIST = []; // master list objets, see small list getter for get list in current scene
+        // TODO: renomer objBuffers[], spriteBuffers[]
+        this.LIST = []; // PERMA ID les id son fiable et ne changeron jamais, creer via editeur
+        this.TMPLIST = []; // DYNAMIC ID peuve etre suprimer les id ne son pas fiable dans la progression, 
         this._sceneName = null; // nom de la scene actuelement rendu
         this.spritesFromScene = []; // contien les sprites container par scene
-        this.dataObjsFromScenes = {}; // contients les datas pour les sprites par scene, EVOLUTIF
+        this.sceneList = {}; // contients les datas pour les sprites par scene, EVOLUTIF
         this.pathBuffer = null; // buffer path to move 
-        this.classDataObjs = {
+        this.dataTypes = {
             case   : dataObj_case    ,
             door   : dataObj_door    ,
             chara  : dataObj_chara   ,
@@ -74,15 +76,26 @@ class _objs{
     };
     /**@description get sprites case list from dataObjsFromScenes id */
     get list () { return this.LIST.filter( obj => { return obj && (obj._sceneName === $objs._sceneName) }) };
-    get cases () { return Array.from(this.dataObjsFromScenes[this._sceneName]._casesID , id => this.spritesFromScene[id]) };
+    /**@description GLOBAL LIST of objs CASE in game */
+    get CASES () { return this.LIST.filter( obj => { return obj instanceof dataObj_case })};
+    /**@description LOCAL list of objs case in scene */
+    get case () { return this.list.filter( obj => { return obj instanceof dataObj_case })};
     get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
     get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
     get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
     get items () { return Array.from(this.dataObjsFromScenes[this._sceneName]._itemsID , id => this.spritesFromScene[id]) };
     get decors() { return Array.from(this.dataObjsFromScenes[this._sceneName]._decors  , id => this.spritesFromScene[id]) };
     
+     // TODO: si utilise sa dans loader pour generer des objet aleatoire, trouver une facon de relier _sceneName _spriteID, ou mettre dans un autre register special
+    getNewRegisterFrom(cage){
+        const _id = this.LIST.findEmptyIndex();
+        const _spriteID = this.spritesFromScene.findEmptyIndex();
+        const _sceneName = this._sceneName;
+        return {_id, _spriteID, _sceneName, _registered:true };
+    };
+
     getClassDataObjs(type){
-        return this.classDataObjs[type] || this.classDataObjs.base
+        return this.dataTypes[type] || this.dataTypes.base
     };
     getClassContainers(type){
         return this.classContainers[type] || this.classContainers.base
@@ -185,27 +198,47 @@ class _objs{
     // dataValues or from new empty [dataBase,textureName]
     newDataObjsFrom(dataValues,dataBase,textureName){//
         const classType = dataValues? dataValues.b.classType : dataBase.classType;
-        const dataClassType = this.classDataObjs[classType] || dataObj_base;
+        const dataClassType = this.getClassDataObjs(classType)
         return new dataClassType(dataValues,dataBase,textureName);
     };
 
     // creer une nouveau dataObjs avec dataValues stringnifier
     newDataObjs_dataValues(dataValues){
-        const class_data = this.getClassDataObjs(dataValues.b.classType);
+        const classType = dataValues? dataValues.b.classType : 'base';
+        const class_data = this.getClassDataObjs(classType);
         return new class_data(dataValues);
     };
 
     // creer une nouveau dataObjs 
     newDataObjs_dataBase(dataBase,textureName){
-        const class_data = this.getClassDataObjs(dataBase.classType);
+        const class_data = this.getClassDataObjs(dataBase.dataType);
         return new class_data(null,dataBase,textureName);
     };
 
+    // creer un registre de base, 
+    newContainer_dataObj(dataBaseName,textureName,registerType){
+        //registerType:[null:gc][1:LIST][2:TMP]
+        const rt = registerType;
+        const _id = rt===1?this.LIST.findEmptyIndex():rt===2?this.TMPLIST.findEmptyIndex():false
+        const _spriteID = rt===1?this.spritesFromScene.findEmptyIndex():false; 
+        return {
+            _id:_id,
+            _spriteID:_spriteID,
+            _dataBase:dataBaseName,
+            _textureName:textureName,
+            _sceneName:null,
+            _registerType:registerType||0,
+        };
+    };
     // create un nouveau type container , from dataBase [pour l'editeur ]
-    newContainer_dataBase(dataBase,textureName){
-        const dataObj = this.newDataObjs_dataBase(dataBase,textureName);
-        const class_container = this.getClassContainers(dataObj.b.type);
-        return new class_container (dataObj);
+    //register: permet de stoker dans les registre permanent, sinon dans le registre dynamique
+    newContainer_dataBase(dataBase,textureName,registerType){
+        const class_container = this.getClassContainers(dataBase.containerType);
+        const class_data = this.getClassDataObjs(dataBase.dataType);
+        const register = this.getNewRegister(dataBase.name,textureName,registerType);
+        const dataObj = new class_data(dataBase.name); // les dataObj doivent etre dans un register
+        const cage = new class_container (dataObj);
+        return cage;
     };
 
     // create new container type from existed dataObj
@@ -229,14 +262,6 @@ class _objs{
             return new class_container(dataObj);
         }else{ throw console.error('light type not exist!: ',type) };
     };
-
-    // get a new sprite ID reference from local current scene
-    //TODO: POUR LEDITEUR, il faut un verificateur index , scan tous les sprites a nouveau et reindexer les id des dataObjets
-    getNewLocalSpriteID(){
-        const id = this.spritesFromScene.length;
-        return id;
-    };
-
 
     
     
