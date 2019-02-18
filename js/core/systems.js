@@ -30,7 +30,7 @@ class _systems{
                 chara  : dataObj_chara   ,
                 tree   : dataObj_tree    ,
                 mapItem: dataObj_mapItem ,
-                light  : dataObj_light   ,
+                Light  : dataObj_light   ,
                 base   : dataObj_base    ,
             },
             /**@description list des containerType pour $objs*/
@@ -42,6 +42,7 @@ class _systems{
                 AmbientLight     :Container_AmbientLight     ,
                 DirectionalLight :Container_DirectionalLight ,
                 background       :Container_Background       ,
+                light            :Container_light            ,
                 base             :Container_Base             ,
             }
         }

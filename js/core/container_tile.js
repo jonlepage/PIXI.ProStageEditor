@@ -22,8 +22,8 @@ class Container_Tile extends Container_Base {
         const textureName = dataObj.textureName;
         const td = dataObj.dataBase.textures   [textureName.d ];
         const tn = dataObj.dataBase.textures_n [textureName.n ];
-        const d = new PIXI.projection.Sprite2d(td);
-        const n = new PIXI.projection.Sprite2d(tn);
+        const d = new PIXI.Sprite(td) //new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.Sprite(tn)//new PIXI.projection.Sprite2d(tn);
         this.addChild(d,n);
         this.Sprites = {d,n};
         // certain type objet on des sprites special et config special, verifier dans les method du dataObj

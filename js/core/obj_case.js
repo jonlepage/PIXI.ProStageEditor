@@ -14,9 +14,9 @@ class dataObj_case extends dataObj_base{
     constructor(dataBaseName,textureName,dataValues,register) {
         super(dataBaseName,textureName,dataValues,register);
         /**@description la couleur type selon les reference couleur des gemDices. Use setter .colorType */
-        this._colorType = null;
-        this._actionType = null;
-        this._visited = false; // indique si la case actionType a deja eter executer ?
+       // this._colorType = null;
+       // this._actionType = null;
+       // this._visited = false; // indique si la case actionType a deja eter executer ?
     };
 
     set caseColor(color){ };

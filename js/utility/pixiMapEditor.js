@@ -460,14 +460,16 @@ class _PME{
             c.addChild(...Object.values(c.Debug));
             c.addChildAt(bg,0);
         }else 
-        if(["PointLight"].contains(type)){
+        if(["light"].contains(type)){
             // create visual debug elements
             const ico = create_ico();
+            const piv = createPivot(w,h); 
+            const an = createAnchor();
             const bg = createBackground(ico.width,ico.height,0.3);
             const hitZone = createHitzone(c.color);
-            c.Debug = {bg,ico,hitZone};
+            c.Debug = {bg,ico,an,piv,hitZone};
+            c.addChild(...Object.values(c.Debug));
             c.addChildAt(bg,0);
-            c.addChild(ico,hitZone);
      
         }
     };
@@ -478,8 +480,9 @@ class _PME{
 // └------------------------------------------------------------------------------┘
     open_dataInspector(cage) {
         if(Object.keys(iziToast.children).length){return console.error('Wait, alrealy open')}
-        const isStage  = cage === $stage;
-        const dataValues = cage.getDataValues();
+        this.hideEditor();
+        const isStage = (cage === $stage);
+        const dataValues = cage.getDataValues(true);
         cage === $stage? iziToast.info( this.izit_saveSetup(dataValues) ) : iziToast.info( this.izit_dataObjsEditor(cage) );
         new Accordion(document.getElementById("accordion"), { multiple: true });
         const slidersNode = this.create_sliderHeaven(cage, dataValues); // create slider html for pixiHaven
@@ -533,8 +536,9 @@ class _PME{
         const dataIntepretor = document.getElementById("dataIntepretor");
         dataIntepretor.oninput = (e) => {
             if(e.data && e.data == '.'){return};
+            if(e.target.type === "checkbox"){ e.target.value = e.target.checked };
             const div = e.target;
-            const value = JSON.parse(div.value);
+            const value = (Boolean(div.value) || Number(div.value))? JSON.parse(div.value) : div.value;
             const ids = div.id.split('.');
             const att = ids.pop();
             let path = cage.dataObj;
@@ -547,12 +551,7 @@ class _PME{
             cage.asignDataObjValues(); // refresh value
         };
 
-        dataIntepretor.onchange = (e) => {
-            if(e.target.type === "checkbox"){
-                e.target.value = e.target.checked;
-                dataIntepretor.oninput(e);
-            };
-        };
+
 
         dataIntepretor.onclick = (e) => {
             if(e.target.type === "button"){
@@ -858,31 +857,12 @@ class _PME{
         };
         if(this._pathMode){ return };
         const ee = e.currentTarget;
-        if(e.data.originalEvent.ctrlKey && cRight){
-           // return this.open_dataInspector(ee);
-        }
+  
         // Right click => cancel delete current attach
         if(cRight){
+            if(!this.inMouse && ee.register && !ctrlKey){ return this.open_dataInspector(ee) };
             this.remove_toMouse(ee) && ee.asignDataObjValues();
             (ctrlKey || !ee.register) && this.remove_toMap(ee);
-            // si inMouse et a un register? detach from mouse only
-            /*if(this.inMouse && this.inMouse.isRegistered){
-                // detache and back to zero
-                this.remove_toMouse(ee); // detach from mouse
-                this.showTileLibs();
-                this.showEditor();
-            }else if(this.inMouse && !this.inMouse.isRegistered){
-                // remove and detache
-                this.remove_toMouse(ee); // detach from mouse
-                $stage.scene.removeChild(ee);
-                this.setObjsInteractive(true);
-                this.showTileLibs();
-                this.showEditor();
-            }else if(!this.inMouse){
-                // open menue
-                this.unRegisterToMap(ee); // register in map objs
-            }*/
-
         };
         // Left click <= 
         if(cLeft){
@@ -912,6 +892,12 @@ class _PME{
         delete $objs.LIST[reg._id];
         delete $objs.spritesFromScene[reg._spriteID];
     };
+    add_light(ee){
+        const dataBase = $Loader.Data2.lightCone83f;
+        const textureName = 'Ellipse 1'; // le type de light TODO:
+        const cage = $objs.newContainer_dataBase(dataBase,textureName,true);
+        this.add_toMouse ( this.add_toMap( cage ) );
+    };
 
     //dispatch button executor
     execute_buttons(ee) {
@@ -919,7 +905,7 @@ class _PME{
         const name = slot.currentSpriteName;
         switch (name) {
             case "icon_Save" : this.show_saveSetup ( ); break;
-            case "icon_light" : this.add_toMouse ( this.add_toMap( this.create_light(ee) ) ); ;break;
+            case "icon_light" : this.add_light(ee) ;break;
             case "icon_showHideSprites": this.toggle_debugMode ( ); ;break;
             case "icon_grid" : this.create_grids ( ); ;break;
             case "icon_pathMaker" : this.toggle_drawPathMode(ee ); ;break;
@@ -1016,17 +1002,6 @@ class _PME{
         $stage.scene.addChild(sprite);
         sprite.parentGroup = $displayGroup.group[0];
         $stage.scene.debugGrid = sprite;
-    };
-
-    // create light from icons type
-    create_light(ee){
-        const slot = ee.slot;
-        let type;
-        switch (slot.currentSpriteName) {
-            case "icon_light": type = 'PointLight';break;
-            default:break;
-        }
-        return $objs.newContainer_light(type); //Container_Base
     };
 
     show_tileSheet(cage) {
@@ -1245,8 +1220,8 @@ class _PME{
         dataObj.p.parentGroup = this._displayGroupID;
         const cage = $objs.newContainer_dataObj(dataObj);
         cage.position.set($camera.mouseToMapX3D,$camera.mouseToMapY3D);
-        $stage.scene.addChild(cage);
         this.create_Debug(cage);
+        $stage.scene.addChild(cage);
         cage.interactive = true;
         cage.on('pointerover' , this.pIN_tile  , this);
         cage.on('pointerout'  , this.pOUT_tile , this);
@@ -1420,7 +1395,9 @@ class _PME{
                 this.FASTMODES.infoTarget.text = `r:${cage.rotation.toFixed(3)} \ndeg°:${(cage.rotation*180/Math.PI).toFixed(2)}`;
             break;
             case "u": // Rotation textures
-                // TODO:
+                cage.d.rotation = this.FASTMODES.zero.rotation-(diff.x/100);
+                cage.n.rotation = this.FASTMODES.zero.rotation-(diff.x/100);
+                this.FASTMODES.infoTarget.text = `r:${cage.d.rotation.toFixed(3)} \ndeg°:${(cage.d.rotation*180/Math.PI).toFixed(2)}`;
             break;
         }
     };
@@ -1499,10 +1476,10 @@ class _PME{
 // └------------------------------------------------------------------------------┘
     show_saveSetup() {
         this.open_dataInspector($stage);
-        //$stage.interactiveChildren = false; // disable stage interactive
-        //iziToast.info( this.izit_saveSetup() );
-        //const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-        //this.startDataIntepretor() // create the data Interpretor listener for inputs and buttons
+        $stage.interactiveChildren = false; // disable stage interactive
+        iziToast.info( this.izit_saveSetup() );
+        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
+        this.startDataIntepretor() // create the data Interpretor listener for inputs and buttons
     };
 
     startSaveDataToJson() { //  from: dataIntepretor save 

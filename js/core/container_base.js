@@ -59,7 +59,7 @@ class Container_Base extends PIXI.projection.Container2d {
 
     getDataValues (fromCage) {
         fromCage = fromCage && this || false;
-        return this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
+        return this.dataObj.dataValues = this.dataObj.getDataValues(this);
     };
 
 
@@ -109,6 +109,13 @@ class Container_Base extends PIXI.projection.Container2d {
                 case "startTime": // update animation to specific time
                     this.startTime = value;
                     this.update(value);
+                break;
+                // light
+                case "indices": // update animation to specific time
+                    this[key].set(value);
+                break;
+                case "radius": // update animation to specific time
+                    this[key] = value || Infinity;
                 break;
                 default:
                     this[key] = value;

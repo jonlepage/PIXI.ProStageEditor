@@ -333,13 +333,10 @@ function HTML_DATA_UI(cage){
                             </tr>
                         </thead>
                         <tbody>
-                            ${ new_HTML_content(dataObj,"classType"  ,"text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"type"       ,"text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"textureName","text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"dataName"   ,"text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"groupID"    ,"text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"normals"    ,"text",['lock'],{}) }
-                            ${ new_HTML_content(dataObj,"name"       ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"containerType"  ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"dataType"       ,"text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"multiPacks","text",['lock'],{}) }
+                            ${ new_HTML_content(dataObj,"normals"   ,"text",['lock'],{}) }
                             ${ new_HTML_content(dataObj,"description","textarea",[],{}) }
                         </tbody>
                     </table>
@@ -454,8 +451,8 @@ function HTML_DATA_UI(cage){
                             </tr>
                         </thead>
                         ${ new_HTML_content(dataObj,"pathConnexion"  ,"text",['lock'],{}) }
-                        <tbody>${ new_HTML_content(dataObj,"caseColor" ,"select",$objs.colorsSystem           , { color:bcolor.next }) }</tbody>
-                        <tbody>${ new_HTML_content(dataObj,"caseType"  ,"select",$objs.actionsCasesSystem.list, { color:bcolor.current }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"caseColor" ,"select",$systems.colorsSystem           , { color:bcolor.next }) }</tbody>
+                        <tbody>${ new_HTML_content(dataObj,"caseType"  ,"select",$systems.caseTypes.list, { color:bcolor.current }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"randomStartColor" ,"select",[false,true],{ color:bcolor.next    }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"randomTurnColors" ,"select",[false,true],{ color:bcolor.current }) }</tbody>
                         <tbody>${ new_HTML_content(dataObj,"randomStartType"  ,"select",[false,true],{ color:bcolor.next    }) }</tbody>

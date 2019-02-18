@@ -6,7 +6,6 @@
 * License:© M.I.T
 └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
-
 /** @memberof  PIXI.lights.PointLight */
 class Container_PointLight extends PIXI.lights.PointLight {
     constructor(dataObj ,brightness, color) {

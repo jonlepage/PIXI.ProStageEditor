@@ -40,6 +40,7 @@ class dataObj_base{
     get n() { return this.dataValues.n || false };
     get a() { return this.dataValues.a || false };
     get s() { return this.dataValues.s || false };
+    get l() { return this.dataValues.l || false };
     
     // link cage display objet container when asigned, les data peuvent etre accesible partout, mes pas les sprites
     get attache() { return this.register? $objs.list_s[this.register._sID] : false };

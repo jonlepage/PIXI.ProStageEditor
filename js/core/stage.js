@@ -50,9 +50,9 @@ class _stage extends PIXI.display.Stage {
         );
     };
     initialize_lights(){
-       this.LIGHTS.ambientLight     = $objs.newContainer_light('AmbientLight'    );
-       this.LIGHTS.PointLight_mouse = $objs.newContainer_light('PointLight'      );
-       this.LIGHTS.DirectionalLight = $objs.newContainer_light('DirectionalLight');
+       this.LIGHTS.ambientLight     = new PIXI.lights.AmbientLight();//$objs.newContainer_light('AmbientLight'    );
+       this.LIGHTS.PointLight_mouse = new PIXI.lights.PointLight();//$objs.newContainer_light('PointLight'      );
+      // this.LIGHTS.DirectionalLight = new PIXI.lights.DirectionalLight();//$objs.newContainer_light('DirectionalLight');
        this.addChild(...Object.values(this.LIGHTS) );
     };
     
