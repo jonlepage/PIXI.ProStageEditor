@@ -18,14 +18,13 @@ class _Scene_Base extends PIXI.projection.Container2d {
         this._started   = false ;
         this.visible    = false ;
         this.renderable = false ;
-        //this.prepare(sceneData,className);TODO:
+        sceneData && this.prepare(sceneData,className);
+       
     };
 
     // prepar in GPU all baseTexture and texture
     prepare(sceneData,className){
-        const dataValues = sceneData && sceneData._background.dataValues;
-        const dataObj = dataValues && $objs.newDataObjs_dataValues(sceneData._background.dataValues);
-        this.createBackgroundFrom(dataObj);
+        this.createBackgroundFrom(sceneData._background);
     };
     
     /*** clear and creat Background, from dataValues or dataBase editor select
@@ -35,10 +34,9 @@ class _Scene_Base extends PIXI.projection.Container2d {
    createBackgroundFrom(dataObj) {
         this.clearBackground();
         if(dataObj){
-            this.background = new Container_Background(dataObj);
+            this.background = $objs.newContainer_dataObj(dataObj,'idle',true); 
         }else{
-            this.background = new Container_Background();
-           
+            this.background = $objs.newContainer_type('background');
         }
         this.addChildAt(this.background,0);
         /*if(dataBase && dataBase instanceof _dataBase){

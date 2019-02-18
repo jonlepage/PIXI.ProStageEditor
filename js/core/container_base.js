@@ -15,17 +15,25 @@ class Container_Base extends PIXI.projection.Container2d {
         super();
         this.dataObj = dataObj;
         this.Sprites = {};
+        dataObj.isValid && this.initialize();
+    };
+    // getters
+    //get dataObj() { return $objs.LIST_D[this.register._bufferID][this.register._dID] };
+    get p() { return this };
+    get d() { return this.Sprites.d || false };
+    get n() { return this.Sprites.n || false };
+    get register() { return this.dataObj.register || false };
+    set register(value) { value? $objs.addToRegister(this)  : $objs.removeToRegister(this) }; // 0 ou 1
+
+    initialize(){
         this.createBases();
         this.asignDataObjValues();
     };
-    // getters
-    get d() { return this.Sprites.d };
-    get n() { return this.Sprites.n };
-    get isRegistered() { return this.dataObj._registered };
 
-    createBases (dataObj = this.dataObj) {
+    createBases() {
+        const dataObj = this.dataObj;
         const dataBase = dataObj.dataBase;
-        const textureName = dataObj.b.textureName;
+        const textureName = dataObj.textureName;
         // si pas de textureName, utiliser baseTextures: thumbs
         if(!textureName){
             const d = new PIXI.Sprite(dataBase.baseTextures[0]); // thumbs [0]
@@ -37,22 +45,26 @@ class Container_Base extends PIXI.projection.Container2d {
     };
 
     // dispatch values asigment
-    asignDataObjValues(dataObj = this.dataObj) {
-        this.asignValues(dataObj.p);
-        if(!this.dataObj.s){
-            this.d && this.asignValues.call(this.d, dataObj.d);
-            this.n && this.asignValues.call(this.n, dataObj.n);
-        };
-        this.asignValues(dataObj.a); // animatedSprite
-        this.asignValues(dataObj.s); // SprineSprites
+    asignDataObjValues(dataValues) {
+        dataValues = dataValues || this.dataObj.dataValues;
+        Object.keys(dataValues).forEach(key => {
+            this.asignValues.call(this[key], dataValues[key],key);
+        });
     };
 
-    getDataValues () {
+    setDataValues (dataValues) {
+        dataValues = dataValues || true;
+        this.dataObj.setDataValues(dataValues,this);
+    };
+
+    getDataValues (fromCage) {
+        fromCage = fromCage && this || false;
         return this.dataObj.dataValues = this.dataObj.getDataValuesFrom(this);
     };
 
 
-    asignValues (data) {
+    asignValues (data,k) {
+        if(!this){return};
         data && Object.keys(data).forEach(key => {
             const value = data[key];
             switch (key) {
@@ -89,14 +101,14 @@ class Container_Base extends PIXI.projection.Container2d {
                 break;
                 //spine
                 case "defaultAnimation": // for cases, change color
-                    this.s.state.setAnimation(0, value, true);
+                    this.state.setAnimation(0, value, true);
                 break;
                 case "timeScale": // for cases, change color
-                    this.s.state.tracks[0].timeScale = value;
+                    this.state.tracks[0].timeScale = value;
                 break;
                 case "startTime": // update animation to specific time
-                    this.s.startTime = value;
-                    this.s.update(value);
+                    this.startTime = value;
+                    this.update(value);
                 break;
                 default:
                     this[key] = value;

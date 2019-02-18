@@ -249,7 +249,7 @@ function new_HTML_content_Table(id, dataValues ,dataValues_old ){
     const target = dataValues[id];
     let contents = ``;
    Object.keys(target).forEach(subID => {
-        const value = +target[subID];
+        const value = +target[subID].length;
         const oldValue = +target[subID];
         const description = `${id}.${subID}`;
         const diff = ~~((+oldValue)-(+value));
@@ -622,7 +622,7 @@ function html_izit_saveSetup(dataValues){
                             </tr>
                         </thead>
                         <td><p class="specialMessage">Total By ObjData_ClassType</p></td>
-                        <tbody>${ new_HTML_content_Table('totalByClass', dataValues ,dataValues_old ) }</tbody>
+                        <tbody>${ new_HTML_content_Table('total_dataType', dataValues ,dataValues_old ) }</tbody>
                     </table>
                     <table class="table table-hover table-dark table-sm">
                         <thead style="background-color: #393939" >
@@ -633,7 +633,7 @@ function html_izit_saveSetup(dataValues){
                             </tr>
                         </thead>
                         <td><p class="specialMessage">Total General</p></td>
-                        <tbody>${ new_HTML_content_Table('totalBySheetsType', dataValues ,dataValues_old ) }</tbody>
+                        <tbody>${ new_HTML_content_Table('total_containerType', dataValues ,dataValues_old ) }</tbody>
                     </table>
                 </div>
             </div><!--accordion item END-->

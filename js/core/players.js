@@ -56,8 +56,9 @@ class _player {
     
     setupSprites() {
         const database = $Loader.Data2.heroe1_rendered;
-        const cage = $objs.newContainer_dataBase(database,'idle');
-        //FIXME: A AJOUTER DANS LES DATAVALUES PAR DEFAUT, EDITOR COMPRIT
+        const cage = $objs.newContainer_dataBase(database,'idle',true); // dataBase,textureName,dataValues //FIXME: enlever true
+
+    
         // hack player
         const spine = cage.s;
         spine.stateData.defaultMix = 0.2;
@@ -73,9 +74,9 @@ class _player {
         cage.parentGroup = $displayGroup.group[1];
         spine.skeleton.setSlotsToSetupPose();
         this.spine = cage;
-        
-        cage.getDataValues(); // get dataValue from sprite
-        cage.asignDataObjValues(); // refresh data from sprite
+        spine.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+       //cage.setDataValues(); // FIXME: PAS de attach car pas register, trouver une solutions
+       //cage.asignDataObjValues();
     };
 
     setupListeners() {
@@ -236,8 +237,9 @@ class _player2 {
 
     setupSprites() {
         const database = $Loader.Data2.heroe2;
-        const cage = $objs.newContainer_dataBase(database,'idle');
-        const spine = cage.s;//FIXME: RENDU ICI, add getter .d.n or change spine by Cage ? 
+        const cage = $objs.newContainer_dataBase(database,'idle',true); // dataBase,textureName,dataValues //FIXME: enlever true
+        // hack sprite
+        const spine = cage.s;
         spine.stateData.defaultMix = 0.2;
         spine.state.setAnimation(0, "idle", true);
         // player transform
@@ -249,6 +251,8 @@ class _player2 {
         cage.zIndex = 0;
         spine.skeleton.setSlotsToSetupPose();
         this.spine = cage;
+
+        cage.setDataValues(); // set dataValue from sprite
     };
 
     moveToPlayer(){

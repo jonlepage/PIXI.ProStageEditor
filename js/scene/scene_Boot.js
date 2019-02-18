@@ -19,12 +19,12 @@ class Scene_Boot extends _Scene_Base {
     // initialize tous les modules attacher au jeux
     start(){
         super.start();
-       //$objs.initialize();
+        $objs.initialize();
        //$items.initialize();
-       //$mouse.initialize(); // initialise mouse core
+        $mouse.initialize(); // initialise mouse core
         $player.initialize(); // create game player
-       //$player2.initialize(); // create game player
-       //$huds.initialize();
+        $player2.initialize(); // create game player
+        $huds.initialize();
         //$player2.initialize();
         //$items.initialize();
         //$huds.initialize(); // initialise all hubs

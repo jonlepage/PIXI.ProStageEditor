@@ -82,46 +82,37 @@ class _stage extends PIXI.display.Stage {
 
     // get stage system informations
     getDataValues () {
-        // TODO: total sheet et objet doi etre par scene et non par scenePack
-        const sceneObjs = $objs.list; // getter Obj from current scene
-        const totalBySheetsType = (()=>{
-            return {
-                totalSpines:$objs.list.filter((o) => { return o.dataValues.b.type === "spineSheet" }),
-                totalTileSprites:$objs.list.filter((o) => { return o.dataValues.b.type === "tileSheet" }),
-                totalAnimationSprites:$objs.list.filter((o) => { return o.dataValues.b.type === "animationSheet" }),
-                totalLight:$objs.list.filter((o) => { return o.dataValues.b.type === "light" }),
-            };
-        })();
-        const totalByClass = (()=>{
-            const r={},l=$objs.list,cl = Object.keys($objs.dataTypes);
-            cl.forEach(cdt => { r[cdt] = l.filter((o) => { return o.dataValues.b.classType === cdt }) });
-            r.base = l.filter((o) => { return !cl.contains(o.dataValues.b.classType) });
-            return r;
-        })();
-        const memoryUsage = (()=>{
-            const m = process.memoryUsage();
-            Object.keys(m).map((i)=>{ return m[i] = (m[i]/ 1024 / 1024).toFixed(2) });
-            return m;
-        })();
-        const totalSheet = (()=>{
-            const list = {};
-            $objs.list.forEach(dataObj => { list[dataObj.dataBase.name] = dataObj.dataBase });
-            if($stage.scene.background){
-                const bg = $stage.scene.background.dataObj;
-                list[bg.dataBase.name] = $stage.scene.background.dataObj.dataBase;
-            }
-            return list;
-        })();
-        return {
-            memoryUsage,
-            currentScene : this.scene.name,
-            savePath : `data/${this.scene.name}.json`,
-            totalBySheetsType,
-            totalByClass,
-            totalSheet,
-            totalObjs : $objs.list.length,
-            
-        };
+       const list = $objs.get_list; // getter Obj from current scene
+       // lister objet par containerType
+       const total_containerType = {};
+       Object.keys($systems.classType.containers).forEach(ctype => {
+            total_containerType[ctype] = list.filter((o) => { return o.dataValues.b.containerType === ctype });
+       });
+       const total_dataType = {};
+       Object.keys($systems.classType.datas).forEach(dtype => {
+            total_dataType[dtype] = list.filter((o) => { return o.dataValues.b.dataType === dtype });
+       });
+       const total_sheets = {};
+       list.forEach(dataObj => {
+            total_sheets[dataObj._dataBaseName] = dataObj.dataBase;
+       });
+       if( this.scene.background.dataObj._dataBaseName ){ // also add bg
+            total_sheets[this.scene.background.dataObj._dataBaseName] = this.scene.background.dataObj.dataBase;
+       };
+       const memoryUsage = (()=>{
+           const m = process.memoryUsage();
+           Object.keys(m).map((i)=>{ return m[i] = (m[i]/ 1024 / 1024).toFixed(2) });
+           return m;
+       })();
+       return {
+           memoryUsage,
+           currentScene : this.scene.name,
+           savePath : `data/${this.scene.name}.json`,
+           total_containerType,
+           total_dataType,
+           total_sheets,
+           totalObjs : list.length,
+       };
     };
 };
 

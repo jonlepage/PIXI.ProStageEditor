@@ -16,90 +16,27 @@ Voir le Stages
 //└------------------------------------------------------------------------------┘
 class _objs{
     constructor() {
-        // TODO: renomer objBuffers[], spriteBuffers[]
-        this.LIST = []; // PERMA ID les id son fiable et ne changeron jamais, creer via editeur
-        this.TMPLIST = []; // DYNAMIC ID peuve etre suprimer les id ne son pas fiable dans la progression, 
-        this._sceneName = null; // nom de la scene actuelement rendu
-        this.spritesFromScene = []; // contien les sprites container par scene
-        this.sceneList = {}; // contients les datas pour les sprites par scene, EVOLUTIF
-        this.pathBuffer = null; // buffer path to move 
-        this.dataTypes = {
-            case   : dataObj_case    ,
-            door   : dataObj_door    ,
-            chara  : dataObj_chara   ,
-            tree   : dataObj_tree    ,
-            mapItem: dataObj_mapItem ,
-            light  : dataObj_light   ,
-            base   : dataObj_base    ,
-        };
-        // avaible type of container class link
-        this.classContainers = {
-            animationSheet   :Container_Animation        ,
-            spineSheet       :Container_Spine            ,
-            tileSheet        :Container_Tile             ,
-            base             :Container_Base             ,
-            PointLight       :Container_PointLight       ,
-            AmbientLight     :Container_AmbientLight     ,
-            DirectionalLight :Container_DirectionalLight ,
-            background       :Container_Background       ,
-        };
-        // game case types possibility data2\Divers\caseEvents\caseEvents.png
-        this.actionsCasesSystem  = {
-            actions:[ // allowed random computing
-                'caseEvent_gold', //data2\Divers\caseEvents\SOURCE\images\caseEvent_gold.png
-                'caseEvent_teleport', //data2\Divers\caseEvents\SOURCE\images\caseEvent_teleport.png
-                'caseEvent_map', //data2\Divers\caseEvents\SOURCE\images\caseEvent_map.png
-                'caseEvent_timeTravel', //data2\Divers\caseEvents\SOURCE\images\caseEvent_timeTravel.png
-                'caseEvent_buffers', //data2\Divers\caseEvents\SOURCE\images\caseEvent_buffers.png
-                'caseEvent_miniGames', //data2\Divers\caseEvents\SOURCE\images\caseEvent_miniGames.png
-                'caseEvent_monsters', //data2\Divers\caseEvents\SOURCE\images\caseEvent_monsters.png
-            ],
-            perma:[ // case logique, random not allowed
-                'caseEvent_quests', //data2\Divers\caseEvents\SOURCE\images\caseEvent_quests.png
-                'caseEvent_exitV', //data2\Divers\caseEvents\SOURCE\images\caseEvent_exitV.png
-                'caseEvent_exitH', //data2\Divers\caseEvents\SOURCE\images\caseEvent_exitH.png
-                'caseEvent_door', //data2\Divers\caseEvents\SOURCE\images\caseEvent_door.png
-            ],
-            get list() { return this.actions.concat(this.perma) },
-        };
-        // game system colors possibility
-        this.colorsSystem = [
-            'white'  , //:0xffffff, #ffffff
-            'red'    , //:0xff0000, #ff0000
-            'green'  , //:0x00ff3c, #00ff3c
-            'blue'   , //:0x003cff, #003cff
-            'pink'   , //:0xf600ff, #f600ff
-            'purple' , //:0x452d95, #452d95
-            'yellow' , //:0xfcff00, #fcff00
-            'black'  , //:0x000000, #000000
-        ];
-    };
-    /**@description get sprites case list from dataObjsFromScenes id */
-    get list () { return this.LIST.filter( obj => { return obj && (obj._sceneName === $objs._sceneName) }) };
-    /**@description GLOBAL LIST of objs CASE in game */
-    get CASES () { return this.LIST.filter( obj => { return obj instanceof dataObj_case })};
-    /**@description LOCAL list of objs case in scene */
-    get case () { return this.list.filter( obj => { return obj instanceof dataObj_case })};
-    get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
-    get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
-    get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
-    get items () { return Array.from(this.dataObjsFromScenes[this._sceneName]._itemsID , id => this.spritesFromScene[id]) };
-    get decors() { return Array.from(this.dataObjsFromScenes[this._sceneName]._decors  , id => this.spritesFromScene[id]) };
-    
-     // TODO: si utilise sa dans loader pour generer des objet aleatoire, trouver une facon de relier _sceneName _spriteID, ou mettre dans un autre register special
-    getNewRegisterFrom(cage){
-        const _id = this.LIST.findEmptyIndex();
-        const _spriteID = this.spritesFromScene.findEmptyIndex();
-        const _sceneName = this._sceneName;
-        return {_id, _spriteID, _sceneName, _registered:true };
-    };
+        // buffersx2 [perma,dyna]
+        this.LIST = []; // full Game objet index ID
+        this.list = []; // scene temp ID
+        this.list_s = []; // scene temp containers displayobjet ID
 
-    getClassDataObjs(type){
-        return this.dataTypes[type] || this.dataTypes.base
+       
+        this._sceneName = null; // nom de la scene actuelement rendu
     };
-    getClassContainers(type){
-        return this.classContainers[type] || this.classContainers.base
-    };
+    /**@description getter list by filter */ // utiles pour editeur car la creation obj est plus dynamic
+    get get_list () { return this.LIST.filter( obj => { return obj && (obj.register._sceneName === this._sceneName) }) };
+    // /**@description GLOBAL LIST of objs CASE in game */
+    // get CASES () { return this.LIST.filter( obj => { return obj instanceof dataObj_case })};
+    // /**@description LOCAL list of objs case in scene */
+    get case () { return this.list.filter( obj => { return obj instanceof dataObj_case })};
+    // get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
+    // get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
+    // get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
+    // get items () { return Array.from(this.dataObjsFromScenes[this._sceneName]._itemsID , id => this.spritesFromScene[id]) };
+    // get decors() { return Array.from(this.dataObjsFromScenes[this._sceneName]._decors  , id => this.spritesFromScene[id]) };
+
+
 
     /** Prepare les datas pour tous les cases random procedural events, */
     initialize(){
@@ -110,12 +47,10 @@ class _objs{
             // conversion des dataValues en dataObjs exploitable
             const dataSaved = dataScenes[sceneName]._objs || [];
             for (let i=0, l=dataSaved.length; i<l; i++) {
-                const data = dataSaved[i];
-                const register = { _id:data._id, _spriteID:data._id, _sceneName:data._sceneName }; // existed permat game id registery from editor
-                if(this.LIST[register._id]){ throw console.error('ID dataObjs exist deja!, check integrity for id: '+id) }; //FIXME: DEBUG only
-                const dataObj = this.newDataObjs_dataValues(data.dataValues, register);
-                dataObj.register = register; // setter asign register
-                this.LIST[register._id] = dataObj;
+                const jdataObj = dataSaved[i];
+                if(this.LIST[jdataObj.register._dID]){ throw console.error('ID dataObjs exist deja!, check integrity for id: '+id) }; //FIXME: DEBUG only
+                const dataObj = this.newDataObjs_jsonData(jdataObj);
+                this.LIST[jdataObj.register._dID] = dataObj;
             };
         });
         
@@ -172,16 +107,16 @@ class _objs{
             };
         });
     };
-
     
     // map1 start
     createSpritesObjsFrom(sceneName) {
         this._sceneName = sceneName;
+        this.list = this.get_list; // update by getter 
         const dataObjs = this.list;
         for (let i=0, l=dataObjs.length; i<l; i++) {
             const dataObj = dataObjs[i];
             const cage = this.newContainer_dataObj(dataObj);
-            this.spritesFromScene[dataObj._spriteID] = cage;
+            this.list_s[dataObj.register._sID] = cage;
         }
     };
 
@@ -195,68 +130,90 @@ class _objs{
         };
     };
 
-    // dataValues or from new empty [dataBase,textureName]
-    newDataObjsFrom(dataValues,dataBase,textureName){//
-        const classType = dataValues? dataValues.b.classType : dataBase.classType;
-        const dataClassType = this.getClassDataObjs(classType)
-        return new dataClassType(dataValues,dataBase,textureName);
-    };
 
     // creer une nouveau dataObjs avec dataValues stringnifier
     newDataObjs_dataValues(dataValues){
         const classType = dataValues? dataValues.b.classType : 'base';
-        const class_data = this.getClassDataObjs(classType);
+        const class_data = $systems.getClassDataObjs(classType);
         return new class_data(dataValues);
     };
 
     // creer une nouveau dataObjs 
-    newDataObjs_dataBase(dataBase,textureName){
-        const class_data = this.getClassDataObjs(dataBase.dataType);
-        return new class_data(null,dataBase,textureName);
+    newDataObjs_dataBase(dataBase,textureName,dataValues){
+        const class_data      = $systems.getClassDataObjs  (dataBase.dataType     );
+        return new class_data(dataBase.name,textureName,dataValues); // les dataObj doivent etre dans un register
     };
 
-    // creer un registre de base, 
-    newContainer_dataObj(dataBaseName,textureName,registerType){
+    // creer un registre de base, permet de linker les buffers
+    //TODO: creer un suivi hash32 pour verifier integrity? JSON.stringify(dataBase).hashCode()
+    getNewRegister(){
         //registerType:[null:gc][1:LIST][2:TMP]
-        const rt = registerType;
-        const _id = rt===1?this.LIST.findEmptyIndex():rt===2?this.TMPLIST.findEmptyIndex():false
-        const _spriteID = rt===1?this.spritesFromScene.findEmptyIndex():false; 
         return {
-            _id:_id,
-            _spriteID:_spriteID,
-            _dataBase:dataBaseName,
-            _textureName:textureName,
-            _sceneName:null,
-            _registerType:registerType||0,
+            _dID:this.LIST.findEmptyIndex(),
+            _sID:this.list_s.findEmptyIndex(),
+            _sceneName:$stage.scene.constructor.name,
         };
     };
+    removeToRegister(cage){
+        const reg = cage.register;
+        delete this.LIST[reg._dID];
+        delete this.list_s[reg._sID];
+        cage.dataObj.register = null;
+    };
+
+    addToRegister(cage,bufferID){
+        const reg = this.getNewRegister();
+        if( this.LIST.contains(cage.dataObj) || this.list_s.contains(cage) ){
+            throw console.error(`dataObj alrealy in buffer!: ${reg}`);//TODO: removeMe : debug only
+        }else{
+            this.LIST[reg._dID] = cage.dataObj;
+            this.list_s[reg._sID] = cage;
+        };
+        cage.dataObj.register = reg;
+    };
+
+    // les light ont besoin de creer un dataBase, qui n'est pas dans le loader
+    newDataObjs_jsonData(jdataObj){
+        const class_data = $systems.getClassDataObjs(jdataObj.dataValues.b.dataType);
+        return new class_data(jdataObj._dataBaseName, jdataObj._textureName, jdataObj.dataValues, jdataObj.register);
+    };
+        
     // create un nouveau type container , from dataBase [pour l'editeur ]
     //register: permet de stoker dans les registre permanent, sinon dans le registre dynamique
-    newContainer_dataBase(dataBase,textureName,registerType){
-        const class_container = this.getClassContainers(dataBase.containerType);
-        const class_data = this.getClassDataObjs(dataBase.dataType);
-        const register = this.getNewRegister(dataBase.name,textureName,registerType);
-        const dataObj = new class_data(dataBase.name); // les dataObj doivent etre dans un register
-        const cage = new class_container (dataObj);
+    newContainer_dataBase(dataBase,textureName,dataValues){
+        const class_container = $systems.getClassContainers(dataBase.containerType);
+        const class_data      = $systems.getClassDataObjs  (dataBase.dataType     );
+        const dataObj = new class_data(dataBase.name,textureName,dataValues); // les dataObj doivent etre dans un register
+        const cage = new class_container(dataObj);
+        return cage;
+    };
+
+    newContainer_type(containerType,dataType){
+        const class_container = $systems.getClassContainers(containerType);
+        const class_data      = $systems.getClassDataObjs  (dataType);
+        const dataObj = new class_data(null,null,true); // les dataObj doivent etre dans un register
+        const cage = new class_container(dataObj);
         return cage;
     };
 
     // create new container type from existed dataObj
     newContainer_dataObj(dataObj){
-        const class_container = this.getClassContainers(dataObj.b.type);
+        !(dataObj instanceof dataObj_base)?dataObj = this.newDataObjs_jsonData(dataObj) : void 0; // si provien du loader json
+        const class_container = $systems.getClassContainers(dataObj.dataBase.containerType);
+        const cage = new class_container(dataObj);
         return new class_container (dataObj);
     };
 
     // create new container type from existed dataObj
     newContainer_dataValues(dataValues){
         const dataObj = this.newDataObjs_dataValues(dataValues);
-        const class_container = this.getClassContainers(dataObj.b.type);
+        const class_container = $systems.getClassContainers(dataObj.b.type);
         return new class_container (dataObj);
     };
 
     // les light ont besoin de creer un dataBase, qui n'est pas dans le loader
     newContainer_light(type){
-        const class_container = this.classContainers[type];
+        const class_container = $systems.classType.containers[type];
         if(class_container){
             const dataObj = new dataObj_light(null,type);
             return new class_container(dataObj);
@@ -304,7 +261,7 @@ class _objs{
             TweenLite.to(this.skew, 1, { ease: Power1.easeOut, y: 0 });
             TweenLite.to(this.scale, 1, { ease: Power1.easeOut, x: 0.9 });
             //TODO: DELEME, TEST MESSAGE BOX
-            $messages.intitialize('pancart_p1m1_01'); // shew messages events
+            $messages.initialize('pancart_p1m1_01'); // shew messages events
         }else{
             TweenLite.to(this.skew, 3, { ease: Elastic.easeOut.config(1, 0.3), y: -0.8 }) ;
             TweenLite.to(this.scale, 0.5, { ease: Power1.easeOut, x: 1.2 });

@@ -12,9 +12,12 @@
 class Container_Spine extends Container_Base {
     constructor(dataObj) {
         super(dataObj);
+        this.spriteSlots = []; // spine stock les spriteSlots diffuse normal par array, voir:hackAttachmentGroups
     };
     // getters for ContainerSpine TODO: faire pareille que Container_Animation pour les getters
-    get s() { return this.Sprites.s };
+    get s() { return this.Sprites.s || false };
+    get slots_d() { return this.spriteSlots[0] || false }; // return list des spriteSlots Diffuse
+    get slots_n() { return this.spriteSlots[1] || false }; // return list des spriteSlots Normal
 
 
     // add more data called from base getDataValues
@@ -31,15 +34,12 @@ class Container_Spine extends Container_Base {
     };*/
 
     //TODO: hackAttachmentGroups parent crash et verifier le sprite dans spine ! 
-    createBases (dataObj = this.dataObj) {
-        const dataBase = dataObj.dataBase; // getter
+    createBases () {
+        const dataBase = this.dataObj.dataBase; // getter
         const s = new PIXI.projection.Spine2d(dataBase.spineData); //new PIXI.spine.Spine(sd);
-        const [d,n] = s.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
-        //s.state.setAnimation(0, dataObj.dataValues.p.defaultAnimation , true); // default animation 'idle' TODO:  add more in getDataValues_spine
-        //s.skeleton.setSlotsToSetupPose();
-        this.Sprites = {s,d,n};
+        this.spriteSlots = s.hackAttachmentGroups("_n",null,null); // (nameSuffix, group)
+        this.Sprites = {s};
         this.addChild(s);
-        
     };
 
     // dispatch values asigment for spine

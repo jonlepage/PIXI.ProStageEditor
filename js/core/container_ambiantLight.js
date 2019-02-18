@@ -18,8 +18,8 @@ class Container_AmbientLight extends PIXI.lights.AmbientLight {
 
     // dispatch values asigment
     asignDataObjValues(dataObj = this.dataObj) {
-        Container_Base.prototype.asignValues.call(this,dataObj.p);
-        this.asignValues(dataObj.l);
+        //Container_Base.prototype.asignValues.call(this,dataObj.p);
+       // this.asignValues(dataObj.l);
     };
 
     getDataValues () {

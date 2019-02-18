@@ -11,8 +11,8 @@
 // GLOBALFROM $objs CLASS: dataObj_case HERITAGE:dataObj_base
 //└------------------------------------------------------------------------------┘
 class dataObj_case extends dataObj_base{
-    constructor(dataValues,dataBase,textureName) {
-        super(dataValues,dataBase,textureName);
+    constructor(dataBaseName,textureName,dataValues,register) {
+        super(dataBaseName,textureName,dataValues,register);
         /**@description la couleur type selon les reference couleur des gemDices. Use setter .colorType */
         this._colorType = null;
         this._actionType = null;
@@ -24,8 +24,8 @@ class dataObj_case extends dataObj_base{
     set caseType (type ){ };
     get caseType (){ };
     
-    // extend create sprite from Container_Tile
-    createBases(){
+    // extend callback create sprite from Container_Tile
+    on_createBases(cage){
         const dataBase = this.dataBase; // getter
         //color
         const cd = new PIXI.Sprite(dataBase.textures.cColor);
@@ -44,14 +44,15 @@ class dataObj_case extends dataObj_base{
         return {cd,cn,td,tn};
     };
 
-    getDataValuesFrom (cage) {
-        const dataValues = super.getDataValuesFrom(cage); // get default dataValues
-        Object.assign(dataValues.p, this.getParentValues_case (cage) )
+    getDataValues (fromCage) {
+        const dataValues = super.getDataValues(fromCage); // get default dataValues
+        Object.assign(dataValues.p, this.getParentValues_case (fromCage) )
         return dataValues;
     };  
     
     // les data du parentContainer pour les dataObj_case  .p
-    getParentValues_case(cage){
+    getParentValues_case(fromCage){
+        const cage = fromCage? this.attache : false;
         return {
             affine           : cage? cage.proj.affine : PIXI.projection.AFFINE.NONE , // hack Affine
             caseColor        : cage? cage.caseColor : false , // couleur case

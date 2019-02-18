@@ -29,11 +29,7 @@ class _app extends PIXI.Application {
         let dh = 600 - window.innerHeight;
         let gui = require('nw.gui');
         let win = gui.Window.get();
-        //FIXME: TRY FOCUSING ON THE APP, bug with vscode and chromium dev tool !
-        //win.show();
         win.focus();
-        //win.restore();
-        //win.appWindow.focus();
         window.moveBy(-dw / 2, -dh / 2);
         window.resizeBy(dw, dh);
         if (process.platform === 'darwin' && !win.menu) {

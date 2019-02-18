@@ -16,20 +16,24 @@ class Container_Tile extends Container_Base {
         super(dataObj); // dataObj_base selon dirArray TODO: refaire le system de random
     };
 
-    createBases (dataObj = this.dataObj) {
-        const textureName = dataObj.b.textureName;
-        const td = dataObj.dataBase.textures   [textureName     ];
-        const tn = dataObj.dataBase.textures_n [textureName+'_n'];
-        const d = new PIXI.Sprite(td);//new PIXI.projection.Sprite2d(td);
-        const n = new PIXI.Sprite(tn);//new PIXI.projection.Sprite2d(tn);
+    createBases () {
+        const dataObj = this.dataObj;
+        const dataBase = dataObj.dataBase;
+        const textureName = dataObj.textureName;
+        const td = dataObj.dataBase.textures   [textureName.d ];
+        const tn = dataObj.dataBase.textures_n [textureName.n ];
+        const d = new PIXI.projection.Sprite2d(td);
+        const n = new PIXI.projection.Sprite2d(tn);
         this.addChild(d,n);
         this.Sprites = {d,n};
         // certain type objet on des sprites special et config special, verifier dans les method du dataObj
-        if(dataObj.createBases){
+        // voir les callBack on
+       // dataObj.on_createBases && dataObj.on_createBases(this); //TODO: CASES
+        /*if(){
             const _bases = dataObj.createBases();
             this.addChild(...Object.values(_bases)); //TODO: VERIFIER SI L'INDEX EST OK
             Object.assign(this.Sprites,_bases);
-        };
+        };*/
     };
 
     // extend special Base sprites type: cases

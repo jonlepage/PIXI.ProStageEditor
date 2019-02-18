@@ -76,8 +76,8 @@ class _camera extends PIXI.projection.Container2d{
     initialize(scene) {
         this.scene = scene || false;
         this.reset();
-        this._sceneW = scene? this.scene.background.width  : $app.screen.width ; // scene width
-        this._sceneH = scene? this.scene.background.height : $app.screen.height; // scene height
+        this._sceneW = scene && this.scene.background? this.scene.background.width  : $app.screen.width ; // scene width
+        this._sceneH = scene && this.scene.background? this.scene.background.height : $app.screen.height; // scene height
         // TODO: RENDU ICI, CALCULER LE BOUNDS WIDHT , STOKER DANS UN TEMP ?
         this.removeChildren();
         this.parent.addChild(this.far);
@@ -121,7 +121,7 @@ class _camera extends PIXI.projection.Container2d{
     };
 
     updateAffines(){
-        const lists = $objs.spritesFromScene;
+        const lists = $objs.list_s;
         for (let i=0, l= lists.length; i<l; i++) {// 1: evite le background
             const cage = lists[i];
             cage && cage.affines(); // AXIS_Y test in space navigation

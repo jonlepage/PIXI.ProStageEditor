@@ -28,10 +28,12 @@ class Container_Animation extends Container_Base {
 
 
  // create,build basic textures need for ContainerAnimations
-    createBases (dataObj = this.dataObj) {
-        const textureName = dataObj.b.textureName;
-        const td = dataObj.dataBase.textures   [textureName ];
-        const tn = dataObj.dataBase.textures_n [textureName ];
+    createBases () {
+        const dataObj = this.dataObj;
+        const dataBase = dataObj.dataBase;
+        const textureName = dataObj._textureName;
+        const td = dataObj.dataBase.textures[textureName];
+        const tn = dataObj.dataBase.textures[textureName];
         const d = new PIXI.extras.AnimatedSprite(td);
         const n = new PIXI.Sprite(tn[0]);
         this.Sprites = {d,n};
