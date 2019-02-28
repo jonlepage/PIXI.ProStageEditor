@@ -1,51 +1,113 @@
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $combats CLASS: _combats
 //└------------------------------------------------------------------------------┘
-class _huds_combats{
+// prepare les grafics huds pour combats, quand start, ajoute a la camera et scene car ya des affines
+class _huds_combats extends PIXI.Container{
     constructor() {
-        this.dataBase = $Loader.Data2.hud_combats;
+        super();
         this.sprites = {};
-        this.intitialize();
-        this.setInteractive(true,true);
     };
 
-    intitialize(){
-        // combats shadow slot
-        const cshadow = new PIXI.Sprite(this.dataBase.textures.combat_shadowSlots); //data2\Hubs\combats\SOURCE\images\combat_shadowSlots.png
-        cshadow.anchor.set(0.5,0.5);
-        cshadow.parentGroup = $displayGroup.group[1];
-        this.sprites.csha = cshadow;
-
+    initialize(){
         // combats items slots
-        this.sprites.cs = [];
-        const pivMatrix = [[-cshadow.width/2,0],[0,-cshadow.height/2],[cshadow.width/2,0]]
+        const cs =  new PIXI.projection.Container2d(); //TODO: container 2D ? car affine ?
+        cs.proj._affine = 2; // test 3,4 ?
+        const x = [-100,0,100];
+        const y = [0,40,0];
         for (let i=0; i<3; i++) {
-            const cslots = new combat_slots(this.dataBase.textures.combat_itemSlot); //data2\Hubs\combats\SOURCE\images\combat_itemSlot.png
-            cslots.pivot.xx = pivMatrix[i][0];
-            cslots.pivot.yy = pivMatrix[i][1];
-            this.sprites.cs[i] = cslots;
+            const csC = new PIXI.Container(); //TODO: container 2D ? car affine ?
+            const cs_d = csC.d = new PIXI.Sprite($Loader.Data2.hud_displacement.textures.hudS_itemSlots);
+            const cs_n = csC.n = new PIXI.Sprite($Loader.Data2.hud_displacement.textures_n.hudS_itemSlots_n);
+            csC.scale.set(0.6);
+            cs_d.anchor.set(0.5);
+            cs_n.anchor.set(0.5);
+            csC.parentGroup = $displayGroup.group[2];
+            cs_d.parentGroup = PIXI.lights.diffuseGroup;
+            cs_n.parentGroup = PIXI.lights.normalGroup;
+            csC.slots = {cs_d,cs_n};
+            csC.addChild(cs_d,cs_n);
+            cs.addChild(csC);
+            csC.position.set(x[i],y[i]);
         };
+         // dmgBox
+        const lineBox = {pos:null,neg:null};
+        const lineData = []; // contien
 
-        // combats arrow
-        const carw = new PIXI.Sprite(this.dataBase.textures.combat_arrow); //data2\Hubs\combats\SOURCE\images\combat_shadowSlots.png
-        carw.anchor.set(0.5,1);
-        carw.scale.set(0.4);
-        carw.parentGroup = $displayGroup.group[1];
-        this.sprites.carw = carw;
+        const dmgBoxC = new PIXI.projection.Container2d();
+        dmgBoxC.proj._affine = 2; // test 3,4 ?
+        dmgBoxC.parentGroup = $displayGroup.group[2];
+        // black box black background
+        const blackBG = new PIXI.Sprite(PIXI.Texture.WHITE);
+        blackBG._filters = [$systems.filtersList.OutlineFilterx4white];
+        blackBG.tint = 0x000000;
+        blackBG.alpha = 0.92;
+        blackBG.width = 400; blackBG.height = 400;//FIXME: AT END
+        dmgBoxC.addChild(blackBG);
+        // title texts 
+       
+        const resultTxt = new PIXI.Text('( 18<=>279 )'  ,{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:32,strokeThickness:10});
+        const statusTxt = new PIXI.Text('passive status',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});
+        resultTxt.position.set(100,50); //FIXME: dynamic a la fin
+        statusTxt.y = 100;
+       // dmgBoxC.addChild(passiveDmgTxt,resultTxt,statusTxt);
 
+        // header icon
+        let xx = 0; // X traking when go =>
+        const header = new PIXI.Container();
+            // logo
+            const atkLogo = new PIXI.Sprite($Loader.Data2.combatIcons.textures.atack_logo);
+            atkLogo.anchor.set(0.5);
+            // title name
+            const titleName = new PIXI.Text('ATTACK',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});
+            titleName.anchor.y = 0.5;
+            //small orbsType: les indicateur d'influence du type d'attaque ou magie
+            const orbTypes = [];
+            [0,1,2].forEach((id)=>{ //TODO:
+                const orbType = new PIXI.Sprite($Loader.Data2.combatIcons.textures['combatOrbTyp_'+id]);
+                orbType.anchor.set(0.5);
+                orbTypes.push(orbType)
                 
-        // left black rectangle for show combats magic
-        const lRec = new PIXI.Sprite(PIXI.Texture.WHITE); // 10x10 size
-        lRec.tint = 0x000000;
-        lRec.alpha = 0.75;
-        lRec.width = 270;
-        lRec.height = $app.renderer.height;
-        //lRec.parentGroup = $displayGroup.group[0];
-        this.sprites.lRec = lRec;
-
-       // this.createMathDmgBox();
-        
+            });
+        header.addChild(atkLogo,titleName,...orbTypes);
+       
+        // compute fake formula FIXME: remove and add in method
+        // creer les icon dans system ? avec textId deswcriptor
+        const slotsItemID = [4,6,7];
+        const sL = 10; // space Lateral _
+        const sV = 10; // space Vertical |
+        // body passive dammage
+        const bodyPassiveDmg = new PIXI.Container(); // passive damage container
+            const bodyPassiveDmg_txt    = new PIXI.Text('Passive damage',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});
+            // slots x3 +1 base
+            const fakeSlotItem = [1,2,4]; // TODO:
+            const dmgSlots = [];
+            const atkSlot = new PIXI.Sprite($Loader.Data2.statsIcons_d23.textures.sIcon_atk);// data2/Icons/statsIcons/SOURCE/images/sIcon_atk.png
+                atkSlot.position.y = 40; //TODO: metre dans les icons ?
+                dmgSlots.push(atkSlot);
+            for (let i=0, l=fakeSlotItem.length; i<l; i++) {
+                const iID = fakeSlotItem[i];
+                const slot = new PIXI.Sprite($Loader.Data2.gameItems.textures[iID]); // data2/Objets/gameItems/SOURCE/images/3.png
+                slot.position.x = slot.width*(i+1);
+                slot.position.y = 40
+                dmgSlots.push(slot);
+            };
+        bodyPassiveDmg.addChild(bodyPassiveDmg_txt,...dmgSlots);
+        bodyPassiveDmg.y = 80
+        //end
+        dmgBoxC.addChild(header,bodyPassiveDmg);
+        this.sprites = {header,bodyPassiveDmg};
+            
+        setTimeout(function(){  //TODO: DELET ME , DEBUG 
+            $stage.scene.addChild(cs,dmgBoxC);
+            cs.x = $player.s.x;
+            cs.y = $player.s.y;
+            dmgBoxC.pivot.set(0,dmgBoxC.height);
+           dmgBoxC.x = $player.s.x+$player.s.width;
+           dmgBoxC.y = $player.s.y;
+           dmgBoxC.scale.set(0.6);
+        }, 1500);
     };
+    
 
     // mathBox thats show statistic dmg
     createMathDmgBox(){

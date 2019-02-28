@@ -13,12 +13,15 @@
 class Container_Base extends PIXI.projection.Container2d {
     constructor(dataObj) {
         super();
-        this.dataObj = dataObj;
+        this.dataObj = dataObj; // attache dataObj
         this.Sprites = {};
         dataObj.isValid && this.initialize();
     };
     // getters
     //get dataObj() { return $objs.LIST_D[this.register._bufferID][this.register._dID] };
+    get dataObj() { return this._dataObj };
+    set dataObj(dataObj) { this._dataObj = dataObj; dataObj.attache = this; };
+
     get p() { return this };
     get d() { return this.Sprites.d || false };
     get n() { return this.Sprites.n || false };
@@ -28,6 +31,7 @@ class Container_Base extends PIXI.projection.Container2d {
     initialize(){
         this.createBases();
         this.asignDataObjValues();
+       // this.setupInterative();
     };
 
     createBases() {
@@ -42,6 +46,10 @@ class Container_Base extends PIXI.projection.Container2d {
         }else{
 
         }
+    };
+    
+    setupObjetInteractive(){
+        $objs.setupObjetInteractive(); //create objs from className json
     };
 
     // dispatch values asigment
@@ -116,6 +124,10 @@ class Container_Base extends PIXI.projection.Container2d {
                 break;
                 case "radius": // update animation to specific time
                     this[key] = value || Infinity;
+                break;
+                // CASES
+                case "caseType":case "caseColor": 
+                    this.dataObj[key] = value; // setter
                 break;
                 default:
                     this[key] = value;

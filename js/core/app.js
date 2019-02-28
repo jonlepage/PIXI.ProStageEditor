@@ -123,7 +123,7 @@ document.body.appendChild($app.view);
 
 
 document.addEventListener('contextmenu', event => {
-    event.path[0] === $app.renderer.view && event.preventDefault(); // FIXME: premet enpecher right click dans editeur ,mais autorise les html
+   event.path[0] === $app.renderer.view && event.preventDefault(); // FIXME: premet enpecher right click dans editeur ,mais autorise les html
 }); 
 // disable nwjs right click
 document.addEventListener('keydown', (event) => {

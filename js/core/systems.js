@@ -76,6 +76,47 @@ class _systems{
             'yellow' , //:0xfcff00, #fcff00
             'black'  , //:0x000000, #000000
         ];
+
+        /**@description list des filters preConfigurer*/
+        this.filtersList = {
+            noiseGame             : new PIXI.filters.NoiseFilter     (0.1, 1         ),
+            OutlineFilterx8Green  : new PIXI.filters.OutlineFilter   (4, 0x16b50e, 1),
+            OutlineFilterx4white : new PIXI.filters.OutlineFilter   (4, 0xffffff, 1),
+            OutlineFilterx8Red    : new PIXI.filters.OutlineFilter   (4, 0xdb3d2b, 1),
+            OutlineFilterx8Yellow : new PIXI.filters.OutlineFilter   (20, 0xd6d022, 1),
+            OutlineFilterx8Pink   : new PIXI.filters.OutlineFilter   (20, 0xc722d6, 1),
+            TiltShiftFilterBlur   : new PIXI.filters.TiltShiftFilter (               )
+        }
+
+        /**@description influence math attribuer a chaque map 'scene' generer par new game*/
+        this.mapsInfluence = {
+            Scene_Map1:{
+                caseColors: {
+                    'red'    :{rate:10,min:0,max: 4 ,count:0} , //#ff0000
+                    'green'  :{rate:5 ,min:0,max:-1 ,count:0} , //#00ff3c
+                    'blue'   :{rate:10,min:0,max: 10,count:0} , //#003cff
+                    'pink'   :{rate:20,min:0,max:-1 ,count:0} , //#f600ff
+                    'purple' :{rate:10,min:0,max: 4 ,count:0} , //#452d95
+                    'yellow' :{rate:10,min:0,max: 10,count:0} , //#fcff00
+                    'black'  :{rate:10,min:0,max:-1 ,count:0} , //#000000
+                    'white'  :{rate:75,min:0,max: 0 ,count:0} , //#ffffff
+                },
+                mapActionInfluencer: { // separer par planet id
+                    'caseEvent_gold'       :{rate:85 ,min: 10,max:  40 ,count:0} ,
+                    'caseEvent_teleport'   :{rate:5  ,min: 1 ,max:- 1  ,count:0} ,
+                    'caseEvent_map'        :{rate:5  ,min: 1 ,max: -1  ,count:0} ,
+                    'caseEvent_timeTravel' :{rate:10 ,min:-1 ,max:  5  ,count:0} ,
+                    'caseEvent_buffers'    :{rate:15 ,min:-1 ,max:  10 ,count:0} ,
+                    'caseEvent_miniGames'  :{rate:10 ,min:-1 ,max:  10 ,count:0} ,
+                    'caseEvent_monsters'   :{rate:40 ,min:-1 ,max:- 1  ,count:0} , 
+                }
+            }
+
+        };
+
+
+        /**@description store active path when mouse hover computePathTo*/
+        this.activePath = null;
     };
 
     /**@description indique si on est dans une phase de combats */
@@ -101,7 +142,6 @@ class _systems{
     getClassContainers(type){
         return this.classType.containers[type] || this.classType.containers.base;
     };
-
 
 
 };

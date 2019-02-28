@@ -21,10 +21,10 @@ class Scene_Map1 extends _Scene_Base {
     //TODO: la camera apply la converiton 2.5d, voir pour preconvetir chaque sprite dans les constructor FIXME:
         super.start();
         this.setupObjs();
-        $huds.setInteractive(true);
         this.setupLights();
         this.setupPlayer();
         this.setupCamera();
+        this.setupObjetInteractive(); // creer les listeners des objet click pour la map
         this.setupEventCases(); // setup interactivity for events case in map1?
         //$camera.moveToTarget($player);
        //$stage.goto();
@@ -37,7 +37,7 @@ class Scene_Map1 extends _Scene_Base {
     };
 
     setupLights(){
-        const dataValues = $Loader.DataScenes[this.name]._lights.ambientLight;
+        //const dataValues = $Loader.DataScenes[this.name]._lights.ambientLight;
         //$stage.LIGHTS.ambientLight.asignValues(dataValues, true);
     }
 
@@ -46,11 +46,11 @@ class Scene_Map1 extends _Scene_Base {
         this.addChild($player2.spine);
         // TODO: stoker le case id de transfer dans $player
         const toID = $player._nextTransferID || 0;
-        const toCase = $objs.case[0]; // target case
+        const toCase = $objs.cases_s[0]; // target case
         if( toCase ){
-            $player.spine.position.copy(toCase.attache.position);
-            $player.spine.zIndex = $player.y;
-            $player.inCase = toCase; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
+            $player.s.position.copy(toCase.position);
+            $player.s.zIndex = $player.s.y;
+            $player.inCase = toCase.dataObj; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
         $player2.moveToPlayer();
         
@@ -72,6 +72,11 @@ class Scene_Map1 extends _Scene_Base {
             };*/
         };
     }
+
+    // active les interactions sur cette map ? , les interaction exist deja
+    setupObjetInteractive(){
+       // $huds.setInteractive(true);
+    };
 
     update(delta){
        super.update();

@@ -19,6 +19,7 @@ class dataObj_base{
         //this.dataValues = dataValues || this.getDataValuesFrom(false);
         //Object.defineProperty(this, 'register', { value: register });
         // si Boolean, creer dataValues, si Objet asigner, ou false, 
+        Object.defineProperty(this, '_attache', { value: false, writable: true });
         this._dataBaseName = dataBaseName ;
         this._textureName  = textureName  ;
         this.dataValues = {};
@@ -43,7 +44,8 @@ class dataObj_base{
     get l() { return this.dataValues.l || false };
     
     // link cage display objet container when asigned, les data peuvent etre accesible partout, mes pas les sprites
-    get attache() { return this.register? $objs.list_s[this.register._sID] : false };
+    get attache() { return this._attache }; // this.register? $objs.list_s[this.register._sID] : false 
+    set attache(cage) { this._attache = cage }; // TODO: verifier et fait unregister
     get isValid() {return !!this.dataValues.p }; // check if dataObj initialised with dataValue
 
     // set les dataValues ou creer par default ou selon le container connecter

@@ -4,14 +4,7 @@
 
 // NOTE: FIXME: Le group1,2 pourrait detectet automatique selon la hauteur du pivot , en rapport au height de lobjet.
 // un objet a 32Height qui aurai un pivot a 33 serai automatiquement transferer dans le groups 2, et inferieur.. group 1 , a tester
-$Filters = {
-    noiseGame: new PIXI.filters.NoiseFilter (0.1, 1),
-    OutlineFilterx8Green: new PIXI.filters.OutlineFilter (20, 0x16b50e, 1),
-    OutlineFilterx8Red: new PIXI.filters.OutlineFilter (20, 0xdb3d2b, 1),
-    OutlineFilterx8Yellow: new PIXI.filters.OutlineFilter (20, 0xd6d022, 1),
-    OutlineFilterx8Pink: new PIXI.filters.OutlineFilter (20, 0xc722d6, 1),
-    TiltShiftFilterBlur : new PIXI.filters.TiltShiftFilter ()
-}
+
 
 class _DisplayGoup {
     constructor() {

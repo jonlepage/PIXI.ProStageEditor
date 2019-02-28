@@ -138,29 +138,26 @@ class _monsters {
     get isReverse( ){ return this.sprite.scale._x<0     };
 
     initialize() {
-        const cage = new PIXI.ContainerSpine(this.database); // (database,skin)
-        cage.convertTo2d();
-        cage.d.stateData.defaultMix = 0.1;
-        cage.d.state.setAnimation(0, "apear", false).timeScale = (Math.random()*0.6)+0.6;
-        cage.d.state.addAnimation(0, "idle", true);
+        const cage = $objs.newContainer_dataBase(this.database,'idle',true) // (database,skin)
         cage.parentGroup = $displayGroup.group[1];
+        cage.proj._affine = 2;
+        cage.s.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
+       
         this.sprite = cage;
-        cage.scale.set(0.2,0.2);
+        const spine = cage.s;
+        spine.stateData.defaultMix = 0.1;
+        spine.state.setAnimation(0, "apear", false).timeScale = (Math.random()*0.6)+0.6;
+        spine.state.addAnimation(0, "idle", true);
+        spine.scale.set(0.2,0.2);
         // player layers hackAttachmentGroups set spine.n
-        cage.asignParentGroups();
-        this.setInteractive(true,true);
+        // interactiviy
+        cage.hitArea = cage.getLocalBounds(); // empeche interaction avec mesh presision
+        cage.on ('pointerover' , this.pointer_inMonster  ,cage );
+        cage.on ('pointerout'  , this.pointer_outMonster ,cage );
+        cage.on ('pointerdown' , this.pointer_dwMonster  ,cage );
+        cage.on ('pointerup'   , this.pointer_upMonster  ,cage );
     };
     
-    setInteractive(value,addOn) {
-        this.sprite.interactive = value;
-        if(addOn){
-            this.sprite.hitArea = this.sprite.getLocalBounds(); // empeche interaction avec mesh presision
-            this.sprite.on('pointerover' , this.pointer_inMonster ,this);
-            this.sprite.on('pointerout'  , this.pointer_outMonster,this);
-            this.sprite.on('pointerdown'   , this.pointer_dwMonster ,this);
-            this.sprite.on('pointerup'   , this.pointer_upMonster ,this);
-        }
-    };
 
     pointer_inMonster (e) {
         const c = e.currentTarget;

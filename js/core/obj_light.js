@@ -26,9 +26,11 @@ class dataObj_light extends dataObj_base{
     };
 
     // les datas pour les spriteAnimations
-    getParentValues_light(cage){ 
+    getParentValues_light(cage){
+        cage = cage && cage.l;
         return {
            // shaderName      : cage? this.shaderName      : "directionalLightShader" , //lock ?
+            pivot           : cage? [cage.pivot._x,cage.pivot._y ] : [0,150] ,
             displayOrder    : cage? cage.displayOrder    : 0        ,
             drawMode        : cage? cage.drawMode        : 4        ,
             blendMode       : cage? cage.blendMode       : 1        ,

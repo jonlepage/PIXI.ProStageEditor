@@ -29,7 +29,9 @@ class _objs{
     // /**@description GLOBAL LIST of objs CASE in game */
     // get CASES () { return this.LIST.filter( obj => { return obj instanceof dataObj_case })};
     // /**@description LOCAL list of objs case in scene */
-    get case () { return this.list.filter( obj => { return obj instanceof dataObj_case })};
+    get CASES_d () { return this.LIST.filter( obj => { return obj instanceof dataObj_case })}; // global game
+    get cases_d () { return this.list.filter( obj => { return obj instanceof dataObj_case })}; // local scene
+    get cases_s () { return this.list_s.filter( obj => { return obj.dataObj instanceof dataObj_case })};  // local scene
     // get doors () { return Array.from(this.dataObjsFromScenes[this._sceneName]._doorsID , id => this.spritesFromScene[id]) };
     // get charas() { return Array.from(this.dataObjsFromScenes[this._sceneName]._charasID, id => this.spritesFromScene[id]) };
     // get trees () { return Array.from(this.dataObjsFromScenes[this._sceneName]._treesID , id => this.spritesFromScene[id]) };
@@ -59,53 +61,30 @@ class _objs{
     // create new random game with options dificulty , generate random
     computeNewRandomGame(dificulty) {
         // randomize case events TODO: add more math logic to percent % global game dificulty
-        
-        Object.keys(this.dataObjsFromScenes).forEach(sceneName => {
-            const sceneData = this.dataObjsFromScenes[sceneName];
-            const cases = sceneData.cases; // getter cases lists
-            if(cases.length){
-                // TODO: Stocker ici les valeur qui influenceront la generations des objs et case par map
-                //TODO: goodValue:1 : facteur de valorisation dynamics selon le nombre de gemDice de la meme couleur posseder et la luck du joueur ?
-                const mapColorInfluencer = { // separer par planet id
-                    'red'   :{rate:10,min:0,max:4,count:0} , //:0xff0000, #ff0000
-                    'green' :{rate:5,min:0,max:-1,count:0} , //:0x00ff3c, #00ff3c
-                    'blue'  :{rate:10,min:0,max:10,count:0} , //:0x003cff, #003cff
-                    'pink'  :{rate:20,min:0,max:-1,count:0} , //:0xf600ff, #f600ff
-                    'purple':{rate:10,min:0,max:4,count:0} , //:0x452d95, #452d95
-                    'yellow':{rate:10,min:0,max:10,count:0} , //:0xfcff00, #fcff00
-                    'black' :{rate:10,min:0,max:-1,count:0} , //:0x000000, #000000
-                    'white' :{rate:75,min:0,max:0,count:0} , //:0xffffff, #ffffff
-                };
-                const mapActionInfluencer = { // separer par planet id
-                    'caseEvent_gold'       :{rate:85,min:10,max: 40 ,count:0} ,
-                    'caseEvent_teleport'   :{rate:5 ,min:1,max:-1 ,count:0} ,
-                    'caseEvent_map'        :{rate:5,min:1,max: -1,count:0} ,
-                    'caseEvent_timeTravel' :{rate:10,min:-1,max:5 ,count:0} ,
-                    'caseEvent_buffers'    :{rate:15,min:-1,max: 10 ,count:0} ,
-                    'caseEvent_miniGames'  :{rate:10,min:-1,max: 10,count:0} ,
-                    'caseEvent_monsters'   :{rate:40,min:-1,max:-1 ,count:0} , 
-                };
-                function knuthfisheryates2(arr) {
-                    var temp, j, i = arr.length;
-                    while (--i) {
-                        j = ~~(Math.random() * (i + 1));
-                        temp = arr[i];
-                        arr[i] = arr[j];
-                        arr[j] = temp;
-                    }
-                    return arr;
-                };
-                function range(start, end) {
-                    if(start === end) return [start];
-                    return [start, ...range(start + 1, end)];
-                };
-                const ranIndex = knuthfisheryates2(range(0,cases.length-1)); // map id range with random seed
-                for (let i=0, l=ranIndex.length; i<l; i++) {
-                    const id = ranIndex[i];
-                    cases[id].initialize(mapColorInfluencer,mapActionInfluencer,l,dificulty);
-                };
+        // TODO: FIXME: A ajouter dans editeur , plutot fair un json pour le map Influence de base, qui sera random selon dificulter
+        $systems.mapsInfluence.Scene_Map1._totalCase = this.CASES_d.length; //FIXME: par map
+
+        const CLIST = this.CASES_d; // getter global case for all games
+        //Fisher–Yates shuffle: permet de sortir random un array
+            function knuthfisheryates2(arr) {
+                let temp, j, i = arr.length;
+                while (--i) {
+                    j = ~~(Math.random() * (i + 1));
+                    temp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temp;
+                }
+                return arr;
             };
-        });
+            function range(start, end) {
+                if(start === end) return [start];
+                return [start, ...range(start + 1, end)];
+            };
+            const ranIndex = knuthfisheryates2(range(0,CLIST.length-1)); // map id range with random seed
+            for (let i=0, l=ranIndex.length; i<l; i++) {
+                const id = ranIndex[i];
+                CLIST[id].initialize();
+            };
     };
     
     // map1 start
@@ -117,19 +96,10 @@ class _objs{
             const dataObj = dataObjs[i];
             const cage = this.newContainer_dataObj(dataObj);
             this.list_s[dataObj.register._sID] = cage;
+            // interactive: quand on creer les sprite et registe, on creer ces interactive.
+            dataObj.setupInteractive && dataObj.setupInteractive(true);
         }
     };
-
-    // selon les type de data , ajouter les interactiviters GLOBAL
-    setInteractive(value,addOn) {
-        // cases
-        for (let i=0, l=this.spritesFromScene.length; i<l; i++) {
-            if ( this.spritesFromScene[i].DataLink.setInteractive ){
-                this.spritesFromScene[i].DataLink.setInteractive(value,addOn);
-            }
-        };
-    };
-
 
     // creer une nouveau dataObjs avec dataValues stringnifier
     newDataObjs_dataValues(dataValues){
@@ -177,7 +147,6 @@ class _objs{
         const class_data = $systems.getClassDataObjs(jdataObj.dataValues.b.dataType);
         return new class_data(jdataObj._dataBaseName, jdataObj._textureName, jdataObj.dataValues, jdataObj.register);
     };
-        
     // create un nouveau type container , from dataBase [pour l'editeur ]
     //register: permet de stoker dans les registre permanent, sinon dans le registre dynamique
     newContainer_dataBase(dataBase,textureName,dataValues){
@@ -222,11 +191,11 @@ class _objs{
 
     
     
-
+    //TODO: FIXME: REVOIR LES ID DU PATHFINDING LOCAL , dans editeur avant
     getDirXFromId (id1,id2) {
         if (Number.isFinite(id1) && Number.isFinite(id2) ){
-            const c1 = this.cases[id1].x;
-            const c2 = this.cases[id2].x;
+            const c1 = this.LIST[id1].attache.x //this.cases[id1].x;
+            const c2 = this.LIST[id2].attache.x //this.cases[id2].x;
             return c1<c2 && 6 || c2<c1 && 4 || false;
         };
         return false;

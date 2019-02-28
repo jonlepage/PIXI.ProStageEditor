@@ -19,12 +19,23 @@ class _combats{
         this.cmtID = null; // current monsters targeted ID ? 
     };
 
-    intitialize(dataCase){
+    // initialise combat, creer monstre et huds
+    intitialize(fromDataObj){
         $systems._inCombat = true;
-        $objs.setInteractive(false);
-        TweenLite.to($objs.list_master, 1, { alpha:0, ease: Expo.easeOut });
-        $camera.moveToTarget($player,3)
-
+        // map les objet que on garde visible pour combat.
+         //TODO: ajouter dans editeur visibleInCombat et deplacer folder "Grass"
+         // FIXME: probleme lumiere alpha 0;
+        const listHideCombat = [];
+        const listkeepCombat = [];
+        $objs.list_s.forEach(c => {
+            c.dataObj.p.visibleInCombat || c.dataObj.b.dataType === "Grass"?listkeepCombat.push(c) : listHideCombat.push(c);
+        });
+        TweenLite.to(listHideCombat, 2, { alpha:0, ease: Expo.easeOut });
+        // filter blur fx
+        const kBlur =  new PIXI.filters.KawaseBlurFilter (0, 12, true) //60, 12, false
+        $stage.scene.background.d._filters = [kBlur];
+        $stage.scene.background.n._filters = [kBlur];
+        TweenLite.to(kBlur, 3, {  blur:8, ease: Expo.easeOut });
         
         for (let i=0, l=3; i<l; i++) {
             this.monsters[i] = new _monsters(1,2,i);
@@ -38,13 +49,16 @@ class _combats{
             return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width && ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
         };
         
-        const pX = $player.x;
-        const pY = $player.y;
+        const pX = $player.s.x;
+        const pY = $player.s.y;
         const inDistX = 1920/2*0.5;//0.6: the combat good zoom
         const inDistY = 1080/2*0.5;
         $player.spine.getBounds();
         // map un array list avec les case potentiel pour afficher les ennemy
-        const potentialCase = $objs.list_cases.filter(c => Math.abs(c.x-pX)<inDistX && Math.abs(c.y-pY)<inDistY );
+        const potentialCase = $objs.cases_s.filter(c => Math.abs(c.x-pX)<inDistX && Math.abs(c.y-pY)<inDistY );
+        potentialCase.forEach(pc => {
+            TweenLite.to(pc, 2, { alpha:1, ease: Expo.easeOut });
+        });
         const ran = ~~(Math.random()*potentialCase.lenght);
         let usePotentialCase = [];
         this.monsters.forEach(m => {
@@ -67,15 +81,17 @@ class _combats{
                 m.z = m.y;
                 if(m.x<pX){m.sprite.scale.x*=-1} // need reverse
         });
-            
-        $huds.combats.setupToScene(); // add child and setup to current scene.
-        // filter blur fx
-        const kBlur =  new PIXI.filters.KawaseBlurFilter (0, 12, true) //60, 12, false
-        $stage.scene.background.d.filters = [kBlur];
-        $stage.scene.background.n.filters = [kBlur];
-        TweenLite.to(kBlur, 3, { 
-            blur:8, ease: Expo.easeOut 
-        });
+        
+        // initalise Combats huds 
+        const combatSlot =  $huds.combats.sprites.cs;
+
+        
+        $stage.scene.addChild(combatSlot);
+       combatSlot.x = $player.s.x;
+       combatSlot.y = $player.s.y;
+        console.log('combatSlot: ', combatSlot);
+      //  $huds.combats.setupToScene(); // add child and setup to current scene.
+
     };
 
 

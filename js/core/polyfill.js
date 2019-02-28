@@ -145,7 +145,7 @@ Math.randomInt = function(max) {
 
 
 /**
- * remove specific element in array by filters
+ * remove specific element in array by indexOf
  *
  * @static
  * @method Array.prototype.remove

@@ -13,6 +13,7 @@ dans les class, . pour les objects, function deep (non Json), _ pour les props a
 //└------------------------------------------------------------------------------┘
 class _player {
     constructor(dataBase, textureName, dataValues) {
+        Object.defineProperty(this, 'spine', { value: false, writable: true });
         this.inCase = null; //store the current player case ?
         this._nextTransferID = 0; // transfer case obj id 
         this.spine;
@@ -22,9 +23,9 @@ class _player {
         this._scaleXY = 0.45; // default player scale, also help compute reverse
         //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
         //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
-        this.states = {
+        this.stats = {
             _level : 1    ,
-            _hp    : 100  ,//data2\Hubs\stats\SOURCE\images\hp_icon.png
+            _hp    : 100  ,//data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
             _mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
             _hg    : 100  ,//data2\Hubs\stats\SOURCE\images\hg_icon.png
             _hy    : 100  ,//data2\Hubs\stats\SOURCE\images\hy_icon.png
@@ -37,22 +38,56 @@ class _player {
             _mic   : 0    ,//data2\Hubs\stats\SOURCE\images\mic_icon.png
             _miw   : 0    ,//data2\Hubs\stats\SOURCE\images\miw_icon.png
             _orb   : 'red',
-            _bp   : 10, // bonus point
+            _bp    : 10   , // bonus point
+            // affectera le huds stats ?
+            /**get current level */
+            get level(){return this._level},
+            get hp   (){return this._hp   },
+            get mp   (){return this._mp   },
+            get hg   (){return this._hg   },
+            get hy   (){return this._hy   },
+            get atk  (){return this._atk  },
+            get def  (){return this._def  },
+            get sta  (){return this._sta  },
+            get lck  (){return this._lck  },
+            get exp  (){return this._exp  },
+            get int  (){return this._int  },
+            get mic  (){return this._mic  },
+            get miw  (){return this._miw  },
+            get orb  (){return this._orb  },
+            get bp   (){return this._bp   },
         };
     };
-    get x(){ return this.spine.x }
-    get y(){ return this.spine.y }
-    set x(x){ return this.spine.x = x }
-    set y(y){ return this.spine.y = y }
+    get s(){ return this.spine }
 
     initialize() {
         this.setupSprites();
         this.setupListeners();
         //this.setupTweens();
-        //this.setupInteractions();
+        this.addInteractive();
     };
 
+    addInteractive(value) {
+        this.spine.interactive = true;
+        this.spine.on('pointerover' , this.pIN_player  ,this);
+        this.spine.on('pointerout'  , this.pOUT_player ,this);
+        this.spine.on('pointerup'   , this.pUP_player  ,this);
+    };
+
+    pIN_player(e) {
+        const ee = e.currentTarget;
+        $huds.stats.show();
+    };
     
+    pOUT_player(e) {
+        const ee = e.currentTarget;
+        $huds.stats.hide();
+
+    };
+    
+    pUP_player(e) {
+    
+    };
     
     setupSprites() {
         const database = $Loader.Data2.heroe1_rendered;
@@ -81,26 +116,30 @@ class _player {
 
     setupListeners() {
         const checkEvent = (entry, event) => {
-            switch (event.data.name) {
-                case 'startMove':
-                    this.moveToNextCaseID(entry);
-                    break;
-                case 'nextMove':
-                    this.updateNextPath(true,entry);
-                    break;
-                case 'reversX':
-                    this.reversX();
-                    break;
-                case 'endingHit': // combat commence le retour verse la case principal
-                  this.moveBackToCase();
-                    break;
-                case 'hit': // combat commence le retour verse la case principal
-                $combats.hitTo(null);
-                    break;
-            
-                default:
-                    break;
-            }
+          switch (event.data.name) {
+              case 'startMove': // lorsque entame le saut, move si besoin
+                  this.event_move();
+                break;
+             case 'nextMove': // lorsque atterie, regarder la suite
+                    this.event_checkEventCase();
+                    this.event_updateNextPath();
+               break;
+            case 'reversX':
+                this.reversX();
+            break;
+            case 'hitCase':
+                this.event_hitCase();
+            break;
+            // case 'endingHit': // combat commence le retour verse la case principal
+            //   this.moveBackToCase();
+            //   break;
+            // case 'hit': // combat commence le retour verse la case principal
+            // $combats.hitTo(null);
+            //   break;
+          
+              default:
+                  break;
+          }
         };
     
         this.spine.s.state.addListener({
@@ -109,38 +148,60 @@ class _player {
 
 
     };
+
+    //initialisation dun parcour via un click 
     initialisePath(pathBuffer) {
         this._isMoving = true;
+        this._autoMove = true; 
         this.pathBuffer = pathBuffer;
-        this._currentPath = 0;
-        this._startCaseID = pathBuffer[this._currentPath];
-        this._currentCaseID = pathBuffer[this._currentPath];
-        this._nextCaseID = pathBuffer[this._currentPath+1];
-        if(Number.isFinite(this._nextCaseID)){
-            this.updateNextPath(false); // checkCaseEvents: false car on start
-        }else{
-            // a click sur la case du player donc pas de move!
-        }
+        this._pathID = 0; // progression of path moving
+        this.spine.s.state.timeScale = 1.2; //TODO: sycroniser avec les states du player
+        this.moveToNextPath();
     };
 
-    updateNextPath(checkCaseEvents) {
-        this.inCase = $objs.cases[this._nextCaseID];
-        this._currentCaseID = this.pathBuffer[this._currentPath];
-        this._nextCaseID = this.pathBuffer[++this._currentPath];
-        checkCaseEvents && this.checkCaseEvents(false);
-         //si on peut bouger, add next animation
-        if (this.canMove()){
-            this.addAnimationMove();
-        }else{
-            // peut pas bouger
-            this.addAnimationMove(true);
-            this._isMoving = false;
-            this.checkCaseEvents(true);
-            // si plus stamina
-            if($huds.displacement._stamina === 0){
-                $huds.displacement.clearRoll(); //FIXME: efface le 0 trop rapidement
+    moveToNextPath() {
+        const cList = $objs.cases_s;
+        this.fromCase = cList[this.pathBuffer[this._pathID]];
+        this.toCase = cList[this.pathBuffer[this._pathID+1]];
+        this._dirX = this.toCase.x>this.fromCase.x ? 6 : 4;
+        this.needReversX() &&  this.spine.s.state.addAnimation(3, "reversX", false);
+        this._pathID++;
+        const ranJump = ['jump1','jump2','jump3'][~~(3*Math.random())];
+        this.spine.s.state.addAnimation(3, ranJump, false);
+    };
+
+    event_move() {
+        this.toCase && TweenLite.to(this.spine.position, 0.8, { x:this.toCase.x, y:this.toCase.y, ease: Power3.easeOut });
+        this.toCase && TweenLite.to(this.spine, 0.4, { zIndex:this.toCase.y, ease: Power3.easeOut });
+    };
+
+    event_hitCase(){
+        $huds.stamina.addStamina(-1);
+        !this.toCase.scale.zero && this.toCase.scale.zeroSet(); // FIXME:  a mettre au debut
+        TweenMax.to(this.toCase.scale, 0.35, {
+            x:this.toCase.scale.zero.x+0.16, ease: Expo.easeOut, repeat: 1, yoyo: true, yoyoEase:Elastic.easeOut.config(1.5, 0.6),
+        });
+    };
+    event_checkEventCase() {
+        this.inCase = this.toCase;
+        $player2.moveToPlayer();
+        $camera.moveToTarget($player,6);
+       // execute des action avant
+       //this.checkCaseEvents(false);
+       // aussi regarder si ya des sprite ou event entre, ex: gazon pour fair un wouisshh
+    };
+
+    event_updateNextPath() {
+        if(this._autoMove){
+            if(this.canMove()){
+                this.moveToNextPath();
+            }else{
+                // peut pas bouger
+                this.spine.s.state.addEmptyAnimation(3,0.2);
+                this.inCase.dataObj.executeCaseType();
             };
-        };
+        }
+
     };
 
     addAnimationMove(ending) {
@@ -155,46 +216,36 @@ class _player {
         }
 
     };
-    canMove() {
-        return $huds.displacement._stamina && Number.isFinite(this._nextCaseID);
+    canMove() {//FIXME:
+        return $huds.stamina._stamina &&  Number.isFinite(this.pathBuffer[this._pathID+1]);
     };
-    needReversX(nextDirection) {
-        return nextDirection !== this._dirX;
+    needReversX() {
+        return (this._dirX===4 && this.spine.scale.x>0) || (this._dirX===6 && this.spine.scale.x<0);
     };
     reversX() {
-        this._dirX = 10-this._dirX;
         const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
         TweenLite.to(this.spine.scale, 0.7, { x:xx, ease: Power3.easeOut });
     };
-    
-    // easing update x,y to this._nextCaseID
-    moveToNextCaseID(entry) { // from jump1...
-        const toCase = $objs.cases[this._nextCaseID];
-        // tween
-        TweenLite.to(this.spine.position, 1, { x:toCase.x, y:toCase.y+20, ease: Power3.easeOut });
-        // update setup
-        this.spine.zIndex = toCase.y;
-    };
-    
+        
     // when player jump to a case, do all stuff here, ending is the last_nextCaseID, or end stamina
     checkCaseEvents(ending) {
         $player2.moveToPlayer();
        // stamina, sfx,fx , check auto-break cases ....
         //play audio ...
-        $camera.moveToTarget($player,0)//$camera.moveToTarget(6);
-       this.inCase.DataLink.playFX_landing();
-        if(ending){
-            !this.stopFromBadColorCase && this.inCase.DataLink.executeCaseType();
-            this.stopFromBadColorCase = false; // reset
-        } else {// if not endCase
-            //check if autorised color in displacement huds
-            if(this.inCase.DataLink._colorType !== 'white' && !$huds.displacement.diceColors.contains(this.inCase.DataLink._colorType)){
-                $huds.displacement.setStamina(0);
-                this.stopFromBadColorCase = true; // when stop from bad color case, dont allow recive bonus case eventType
-            }else{
-                $huds.displacement.addStamina(-1);
-            }
-        };
+        //$camera.moveToTarget(6);
+      // this.inCase.playFX_landing();
+       //if(ending){
+       //    !this.stopFromBadColorCase && this.inCase.DataLink.executeCaseType();
+       //    this.stopFromBadColorCase = false; // reset
+       //} else {// if not endCase
+       //    //check if autorised color in displacement huds
+       //    if(this.inCase.DataLink._colorType !== 'white' && !$huds.displacement.diceColors.contains(this.inCase.DataLink._colorType)){
+       //        $huds.displacement.setStamina(0);
+       //        this.stopFromBadColorCase = true; // when stop from bad color case, dont allow recive bonus case eventType
+       //    }else{
+       //        $huds.displacement.addStamina(-1);
+       //    }
+       //};
     };
 
     // le joueur a donner ces coup, il return a sa case initial (combat mode)
@@ -232,7 +283,7 @@ class _player2 {
         this.setupSprites();
         //this.setupListeners();
         //this.setupTweens();
-        //this.setupInteractions();
+        //this.addInteractive();
     };
 
     setupSprites() {
@@ -260,7 +311,7 @@ class _player2 {
         needReverse && this.reversX();
         const distXFromPDir = this._dirX===4?100:-100;
         TweenLite.to(this.spine.position, needReverse&&3||7, {
-            x:$player.x+distXFromPDir,y:$player.y-200, 
+            x:$player.s.x+distXFromPDir,y:$player.s.y-200, 
             ease: Elastic.easeOut.config(1, 1),
         });
         const r = this.spine.rotation;
@@ -268,7 +319,7 @@ class _player2 {
             rotation:r===0&&0.1||0, 
             ease: Elastic.easeOut.config(1, 1),
         });
-        this.spine.zIndex = $player.y;
+        this.spine.zIndex = $player.s.y;
     }
 
     needReversX(nextDirection) {

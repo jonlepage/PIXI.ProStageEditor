@@ -1,13 +1,12 @@
 {
     "compilerOptions": {
         "target": "es6"
-
     },
     "include": [
-        "src/**/*",
+        "js/**/*",
+        
     ],
     "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
+        "node_modules"
     ]
 }

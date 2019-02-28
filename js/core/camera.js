@@ -55,7 +55,9 @@ class _camera extends PIXI.projection.Container2d{
             {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_tZoom:1},
             {_fpX:440.00,_fpY:-1290.00,_fpF:0.55,_tZoom:5.00},
             {_fpX:1010.00,_fpY:-2810.00,_fpF:0.55,_tZoom:7.50},
-            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_tZoom:1.85}
+            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_tZoom:1.85},
+            {_fpX:-50.00,_fpY:-657.58,_fpF:0.04,_zoom:1.48},
+            {_fpX:-371.94,_fpY:-1011.77,_fpF:0.20,_zoom:2.48}
         ];
     };
 
@@ -129,6 +131,7 @@ class _camera extends PIXI.projection.Container2d{
         $player.spine && $player.spine.affines();
     };
 
+
     /**@description userfull to find a target with futur camera projection setting */
     applyCameraSetup(setup){
         const props = Object.keys(setup);
@@ -155,9 +158,9 @@ class _camera extends PIXI.projection.Container2d{
             const before = setup? this.applyCameraSetup(setup) : null;
             const to = this.getLocalTarget(target);
             before && this.applyCameraSetup(before);
-            TweenLite.to(this.pivot, 2, {
+            TweenLite.to(this.pivot, 3, {
                 x:to.x, y:to.y, 
-                ease: Power4.easeOut,
+                ease: Elastic.easeOut.config(1, 0.6),
                 onComplete: () => {},
             });
         }
@@ -165,7 +168,7 @@ class _camera extends PIXI.projection.Container2d{
         Object.entries(setup).forEach(prop => {
             TweenLite.to(this, 2, {
                 [prop[0]]:prop[1],
-                ease: Power4.easeOut,
+                ease: Elastic.easeOut.config(1, 0.6),
             });
         });
     };

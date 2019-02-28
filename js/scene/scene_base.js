@@ -32,33 +32,20 @@ class _Scene_Base extends PIXI.projection.Container2d {
     */
     //TODO: trouver un meilleur system pour obtenir dataValue des Background ? refair lediteur bg
    createBackgroundFrom(dataObj) {
-        this.clearBackground();
+        this.clearBackground(!dataObj);
         if(dataObj){
             this.background = $objs.newContainer_dataObj(dataObj,'idle',true); 
-        }else{
-            this.background = $objs.newContainer_type('background');
-        }
+        };
         this.addChildAt(this.background,0);
-        /*if(dataBase && dataBase instanceof _dataBase){
-            this.background = $objs.newContainer_dataBase(dataBase, dataBase.name);
-            // setup BG
-            this.background.parentGroup = $displayGroup.group[1];
-            this.background.d.parentGroup = PIXI.lights.diffuseGroup;
-            this.background.n.parentGroup = PIXI.lights.normalGroup;
-            this.addChildAt(this.background,0);
-        }else if(dataBase){
-            this.background = $objs.newContainer_dataValues(dataBase);
-            this.background.parentGroup = $displayGroup.group[1];
-            this.background.d.parentGroup = PIXI.lights.diffuseGroup;
-            this.background.n.parentGroup = PIXI.lights.normalGroup;
-            this.addChildAt(this.background,0);
-        }*/
     };
-
-    clearBackground() {
+    
+    clearBackground(makeEmpty) {
         if(this.background){
             this.removeChild(this.background);
             this.background = null;
+        };
+        if(makeEmpty){
+            this.background = $objs.newContainer_type('background');
         }
     };
 

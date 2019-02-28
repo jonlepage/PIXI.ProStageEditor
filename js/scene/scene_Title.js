@@ -15,8 +15,6 @@ class Scene_Title extends _Scene_Base {
 
     };
 
-
-
     start(){
         super.start()
         this.visible = true;
@@ -48,7 +46,7 @@ class Scene_Title extends _Scene_Base {
         //TODO : GENERATE ALL RANDOM MAP, BUT KEEP   STORY SCRYPTED CASE EVENTS
        //this.setupObjs(); //FIXME: 
        //this.setupLights();
-       //$objs.computeNewRandomGame(1);//TODO:
+       $objs.computeNewRandomGame(1);//TODO:
         $stage.goto('Scene_Map1');
     };
 

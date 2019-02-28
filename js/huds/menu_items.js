@@ -40,9 +40,8 @@ class _menu_items extends PIXI.Container {
         this.slots = []; // sortable buffer for items slots
         this.sortIndexBuffer = [...Array($items.totalGameItems).keys()]; // buffer pour les id slots a sortir
         this.position.set(1050, 680);
-        this.parentGroup = $displayGroup.group[4];
         this.renderable = false;
-        this.initialize();
+        
     };
 //#region [rgba(255, 255, 255, 0.07)]
     // add basic proprety
@@ -283,8 +282,11 @@ https://greensock.com/docs/Core/Animation
     };
 
     show(duration) {
-        $objs.setInteractive(false); // disable objs map interactivity
-        $huds.displacement.setInteractive(false);
+        this._isActive = true;
+        $stage.scene.interactiveChildren = false;
+        $huds.stamina.setDisable(true); // temp disahble stamina hud
+       //$objs.setInteractive(false); // disable objs map interactivity
+
         this.setInteractive(true);
         this.renderable = true;
         this.visible = true;
@@ -292,11 +294,14 @@ https://greensock.com/docs/Core/Animation
     };
 
     hide(duration) {
+        $stage.scene.interactiveChildren = true;
+        this._isActive = false;
+        $huds.stamina.setDisable(false); // temp disahble stamina hud
         this.renderable = false;
         this.visible = false;
         this.setInteractive(false);
-        $objs.setInteractive(true); // disable objs map interactivity
-        $huds.displacement.setInteractive(true);
+        //$objs.setInteractive(true); // disable objs map interactivity
+        //$huds.displacement.setInteractive(true);
     };
     //#endregion
 
@@ -417,19 +422,9 @@ pointerIN, pointerOUT, pointerUP
     };
 
     UP_itemSlot(e) {
-        $mouse.holdingItem = this._id; // setter
-        const newItem = $mouse.holdingItem;
-        newItem.scale.set(0.1);
-        newItem.rotation = (Math.PI/2)+Math.random();
-        TweenLite.to(newItem.scale, 2, {
-            x: 1,
-            y: 1,
-            ease: Elastic.easeOut.config(1.2, 0.4)
-        });
-        TweenLite.to(newItem, 3, { 
-            rotation: 0,
-            ease: Elastic.easeOut.config(1.2, 0.4)
-        });
+        //$mouse.holdingItem = this._id; // setter
+        $mouse.setItemId(this._id);
+   
     };
 
     IN_sortBox(e) {
@@ -483,7 +478,7 @@ pointerIN, pointerOUT, pointerUP
         fFrame.d.blendMode = 1;
         fFrame.n.blendMode = 2;
         fFrame._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-        TweenLite.to(fFrame.d.scale, 0.5, {
+        TweenLite.to(fFrame.d.scale, 0.3, {
             x: 1.2,
             y: 1.2,
             ease: Expo.easeOut
@@ -492,21 +487,21 @@ pointerIN, pointerOUT, pointerUP
             x: 85,
             ease: Expo.easeOut
         });
-        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.6, {
+        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.3, {
             x: 1.2,
             y: 1.15,
             ease: Expo.easeInOut
         });
-        TweenLite.to(fText.scale, 3, {
+        TweenLite.to(fText.scale, 0.2, {
             x: 1.2,
             y: 1.2,
             ease: Expo.easeOut
         });
-        TweenLite.to(fQTY.position, 0.5, {
+        TweenLite.to(fQTY.position, 0.2, {
             x: fFrame.d.pivot.x + 40,
             ease: Expo.easeOut
         });
-        TweenLite.to(fQTY.scale, 0.5, {
+        TweenLite.to(fQTY.scale, 0.2, {
             x: 1.2,
             y: 1.2,
             ease: Expo.easeOut
@@ -522,30 +517,30 @@ pointerIN, pointerOUT, pointerUP
 
         fFrame.d.blendMode = 0;
         fFrame._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-        TweenLite.to(fFrame.d.scale, 1, {
+        TweenLite.to(fFrame.d.scale, 0.2, {
             x: 1,
             y: 1,
             ease: Expo.easeOut
         });
-        TweenLite.to(fFrame.n.position, 1, {
+        TweenLite.to(fFrame.n.position, 0.2, {
             x: 0,
             ease: Expo.easeOut
         });
-        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.5, {
+        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.1, {
             x: 1,
             y: 1,
             ease: Expo.easeOut
         });
-        TweenLite.to(fText.scale, 1, {
+        TweenLite.to(fText.scale, 0.2, {
             x: 1,
             y: 1,
             ease: Expo.easeOut
         });
-        TweenLite.to(fQTY.position, 0.5, {
+        TweenLite.to(fQTY.position, 0.3, {
             x: fFrame.d.pivot.x,
             ease: Expo.easeOut
         });
-        TweenLite.to(fQTY.scale, 0.5, {
+        TweenLite.to(fQTY.scale, 0.2, {
             x: 1,
             y: 1,
             ease: Expo.easeOut

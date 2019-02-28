@@ -56,9 +56,10 @@ class _items {
     // getters,setters
     get id() { return this.list };
 
+
 };
 
-$items = new _items();
+const $items = new _items();
 console.log1('$items', $items);
 
 // initialise items and builds //TODO: verifier si la memoire ce vide , les parentGroup pourrait empecher le garbage collector
@@ -66,13 +67,15 @@ _items.prototype.createItemsSpriteByID = function(id) {
     const cage = new PIXI.Container();
     const d = new PIXI.Sprite($Loader.Data2.gameItems.textures[id]);
     const n = new PIXI.Sprite($Loader.Data2.gameItems.textures[id+'_n']);
-    d.parentGroup = PIXI.lights.diffuseGroup;
-    n.parentGroup = PIXI.lights.normalGroup;
+    d.anchor.set(0.5)
+    n.anchor.set(0.5)
+    //d.parentGroup = PIXI.lights.diffuseGroup;
+    //n.parentGroup = PIXI.lights.normalGroup;
     cage.d = d; cage.n = n;
     cage._id = id;
-    cage.parentGroup = $displayGroup.group[4]; 
+    //cage.parentGroup = $displayGroup.group[4]; 
     cage.addChild(d,n);
-    cage.pivot.set(cage.width/2,cage.height/2);
+    //cage.pivot.set(cage.width/2,cage.height/2);
     return cage;
 };
 
@@ -137,7 +140,7 @@ _items.prototype.initialize = function() {
             ...addDiceData([6,12]),
             _colorType:'red',
         },
-        // url("data2/Objets/gameItems/SOURCE/images/2.png");
+        //data2/Objets/gameItems/SOURCE/images/2.png
         {
             ...addBase(2,'Red marquiz','diceGem'),
             ...addValues(50,2,100),

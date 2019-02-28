@@ -27,13 +27,8 @@ class Container_Tile extends Container_Base {
         this.addChild(d,n);
         this.Sprites = {d,n};
         // certain type objet on des sprites special et config special, verifier dans les method du dataObj
-        // voir les callBack on
-       // dataObj.on_createBases && dataObj.on_createBases(this); //TODO: CASES
-        /*if(){
-            const _bases = dataObj.createBases();
-            this.addChild(...Object.values(_bases)); //TODO: VERIFIER SI L'INDEX EST OK
-            Object.assign(this.Sprites,_bases);
-        };*/
+        //dataObj.on_createBases && dataObj.on_createBases(this); //TODO: CASES
+        dataObj.on_createBases && dataObj.on_createBases(this,dataBase);
     };
 
     // extend special Base sprites type: cases
@@ -93,6 +88,7 @@ class Container_Tile extends Container_Base {
         this.caseEventType = type;
         this.Sprites.ctd.texture = td;
         this.Sprites.ctn.texture = tn;
+ 
     };
 
 

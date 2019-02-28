@@ -40,7 +40,9 @@ class _stage extends PIXI.display.Stage {
     };
     initialize_Layers(){
         this.addChild(this.CAGE_GUI, this.CAGE_MESSAGE, this.CAGE_MOUSE);
-        this.CAGE_MOUSE.parentGroup = $displayGroup.group[4];
+        this.CAGE_MOUSE.parentGroup = $displayGroup.group[6];
+        //this.CAGE_MOUSE.parentLayer = $displayGroup.layersGroup[0]; //FIXME: EXPERIMENTAL
+        this.CAGE_GUI.parentGroup = $displayGroup.group[4];
         this.addChild( // lights groups
             $displayGroup._spriteBlack_d,
             $displayGroup._layer_diffuseGroup,
@@ -70,6 +72,7 @@ class _stage extends PIXI.display.Stage {
                 this.scene = this.nextScene;
             }else if(this.scene._started){
                 this.scene.update(delta);
+                $mouse.update(); // FIXME: mettre dans scene udpate ? permetra etre controler par les event de scene ?
             }else if(this.scene && !this.scene._started){
                 this.scene.start();
             }

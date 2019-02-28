@@ -6,6 +6,7 @@
 * License:© M.I.T
 └────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
+
 document.addEventListener('keydown', (e)=>{
     if(!window.$PME&&e.key=== "F1"){
         const stageOldValue = null//$stage.getDataValues();
@@ -38,9 +39,10 @@ class _PME{
     };
 
     prepareScene(){
-        $huds.displacement.hide();
-        $huds.pinBar.hide();
-        $huds.pinBar.hide();
+        $huds.stamina.renderable = false;
+        $huds.stamina.visible = false;
+        $huds.pinBar.renderable = false;
+        $huds.pinBar.visible = false;
     }
 
     load_Js(){
@@ -210,6 +212,9 @@ class _PME{
     convertForEditor(){
         $objs.list_s.forEach(cage => {
             this.create_Debug(cage);
+            // remove game event
+            cage._events = {};
+            cage._eventsCount = 0;
             cage.on('pointerover' , this.pIN_tile  , this);
             cage.on('pointerout'  , this.pOUT_tile , this);
             cage.on('pointerdown' , this.pDW_tile  , this);
@@ -479,7 +484,9 @@ class _PME{
 // IZITOAST DATA2 EDITOR 
 // └------------------------------------------------------------------------------┘
     open_dataInspector(cage) {
-        if(Object.keys(iziToast.children).length){return console.error('Wait, alrealy open')}
+        if(iziToast.busy){return console.error('Wait, alrealy open')}
+        $stage.interactiveChildren = false; // disable stage interactive
+        iziToast.busy = true;
         this.hideEditor();
         const isStage = (cage === $stage);
         const dataValues = cage.getDataValues(true);
@@ -522,12 +529,16 @@ class _PME{
     clear_scene(){
         iziToast.info( this.izit_clearScene($stage.scene.length) );
         $stage.scene.children.forEach(sprite => {
-            const id = sprite.dataObj._id;
-            if (Number.isFinite(id)){
-                delete $objs.LIST[id];
+            const register = sprite.dataObj && sprite.dataObj.register;
+            if (register){
+                const dID = register._dID
+                const sID = register._sID
+                delete $objs.LIST[dID];
+                delete $objs.list_s[sID];
             };
         });
-        $stage.scene.clearBackground();
+        $objs.list = [];
+        $stage.scene.clearBackground(true); // makeEmpty true
         $stage.scene.removeChildren();
     };
 
@@ -657,7 +668,7 @@ class _PME{
     
     // close the data HTML inspector
     close_dataInspector(){
-        iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.opened = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
+        iziToast.hide({transitionOut: 'flipOutX',onClosed:() => {iziToast.busy = false;}}, document.getElementById("dataEditor") ); // hide HTML data Inspector
         $stage.interactiveChildren = true;
     };
     // close the data HTML inspector
@@ -725,7 +736,7 @@ class _PME{
     pDW_buttons(e){};
     pUP_buttons(e){
         const ee = e.currentTarget;
-        this.execute_buttons(ee);
+        this.execute_buttons(e);
     };
     pUPOUT_buttons(e){};
 
@@ -894,21 +905,22 @@ class _PME{
     };
     add_light(ee){
         const dataBase = $Loader.Data2.lightCone83f;
-        const textureName = 'Ellipse 1'; // le type de light TODO:
+        const textureName = 'Polygone 1'; // le type de light TODO:
         const cage = $objs.newContainer_dataBase(dataBase,textureName,true);
         this.add_toMouse ( this.add_toMap( cage ) );
     };
 
     //dispatch button executor
-    execute_buttons(ee) {
+    execute_buttons(e) {
+        const ee = e.currentTarget;
         const slot = ee.slot;
         const name = slot.currentSpriteName;
         switch (name) {
-            case "icon_Save" : this.show_saveSetup ( ); break;
+            case "icon_Save" : this.open_dataInspector($stage); break;
             case "icon_light" : this.add_light(ee) ;break;
             case "icon_showHideSprites": this.toggle_debugMode ( ); ;break;
             case "icon_grid" : this.create_grids ( ); ;break;
-            case "icon_pathMaker" : this.toggle_drawPathMode(ee ); ;break;
+            case "icon_pathMaker" : this.toggle_drawPathMode(e ); ;break;
             case "icon_masterLight" : this.open_dataInspector ($stage.LIGHTS.ambientLight ); ;break;
             case "icon_setup" : this.open_dataInspector_scene ($stage.scene.background); ;break;
             case"gb0":case"gb1":case"gb2":case"gb3":case"gb4":case"gb5":case"gb6": this.changeDisplayGroup(+name.substr(2)); ;break;
@@ -1110,11 +1122,20 @@ class _PME{
     // EVENTS INTERACTION LISTENERS
     // └------------------------------------------------------------------------------┘
     // start or close the path mode
-    toggle_drawPathMode(ee) {
+    toggle_drawPathMode(e) {
+        const ee = e.currentTarget;
+        // si click droite, permet effacer tous les pathConnexion
+        if(e.data.button === 2){
+            const ask = confirm("DELETE ALL pathConnexion?");
+            if (ask) {
+                $objs.cases_s.forEach(c => { c.pathConnexion = {}, c.dataObj.p.pathConnexion = {} });
+                iziToast.warning( $PME.message('pathConnexion cleared') );
+            };
+            return;
+        }
         this._pathMode = !this._pathMode;
         //SHOW PATH
         if(this._pathMode){
-            $camera.reset();
             this.hideTileLibs();
             this.editor.gui.state.setAnimation(3, 'pathMode', false);
             this.LIBRARY_BASE.renderable = false;
@@ -1124,7 +1145,7 @@ class _PME{
             $objs.LIST.forEach(dataObj => {
                 const isCase = dataObj.b.dataType === "case";
                 dataObj.attache.interactive = isCase;
-                dataObj.attache.alpha = isCase?1:0.1;
+                dataObj.attache.renderable = isCase?true:false;
             });
         }else{
             this.LIBRARY_BASE.renderable = true;
@@ -1132,36 +1153,42 @@ class _PME{
             this.editor.gui.state.addEmptyAnimation(3,0.2); //(trackIndex, mixDuration, delay)
             ee.slot.color.set(1,1,1,1); // (r, g, b, a)
             ee.scale.set(1.25,-1.25);
+            $objs.LIST.forEach(dataObj => {
+                dataObj.attache.interactive = true;
+                dataObj.attache.renderable = true;
+            });
         };
         this.refreshPath();
     };
 
     refreshPath() {
-        $objs.LIST.forEach(dataObj => {
-            const isCase = dataObj.b.dataType === "case";
-            // clear reset grafic path
-            if(isCase){
-                //dataObj.attache.Debug.path.forEach(p => { dataObj.attache.removeChild(p) }); // remove path grafics
-                dataObj.attache.Debug.path.removeChildren();
-                dataObj.attache.Debug.path.graficConection = [];
-                dataObj.attache.Debug.path.texts = [];
-            };
-            if(isCase && this._pathMode){
-                Object.keys(dataObj.attache.pathConnexion).forEach(id => { // connextion id to sprite ID
-                    const dataObj_c = $objs.LIST[id]; // dataobj conected
+        $objs.cases_s.forEach(c => {
+            //dataObj.attache.Debug.path.forEach(p => { dataObj.attache.removeChild(p) }); // remove path grafics
+            c.Debug.path.removeChildren();
+            c.Debug.path.graficConection = [];
+            c.Debug.path.texts = [];
+            if(this._pathMode){
+                const _txtID = `G: ${c.dataObj.register._dID} \nL: ${$objs.cases_s.indexOf(c)}`;
+                const txtID = new PIXI.Text(_txtID,{fontSize:38,fill:0xff0000,strokeThickness:8,stroke:0x000000});
+                txtID.convertTo2d();
+                txtID.proj._affine = 2
+                txtID.pivot.y = c.height;
+                c.Debug.path.addChild(txtID);
+                Object.keys(c.pathConnexion).forEach(id => { // connextion id to sprite ID
+                    const cc = $objs.cases_s[id]; // dataobj conected
                     let point = new PIXI.Point(0,0);
-                    const xy   = $camera.toLocal(dataObj.attache, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);//dataObj  .sprite.toGlobal(point)
-                    const xy_c = $camera.toLocal(dataObj_c.attache, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ); //dataObj_c.sprite.toGlobal(point)
+                    const xy   = c.position//$camera.toLocal(c, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);//dataObj  .sprite.toGlobal(point)
+                    const xy_c = cc.position//$camera.toLocal(cc, $stage.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ); //dataObj_c.sprite.toGlobal(point)
                     const dX = (xy_c.x-xy.x)*$camera._zoom;
                     const dY = (xy_c.y-xy.y)*$camera._zoom;
                     const path = new PIXI.Graphics();
                     path.lineStyle(4, 0x4286f4, 1);
                     path.moveTo(0,0).lineTo(dX, dY).endFill();
-                    const scaleXY = new PIXI.Point(~~1/dataObj.attache.scale.x,~~1/dataObj.attache.scale.y);
+                    const scaleXY = new PIXI.Point(~~1/c.scale.x/$camera._zoom,~~1/c.scale.y/$camera._zoom);
                     path.scale.copy(scaleXY);
-                    dataObj.attache.addChild(path);
-                    dataObj.attache.Debug.path.graficConection.push(path);
-                    dataObj.attache.Debug.path.addChild(path);
+                    c.addChild(path);
+                    c.Debug.path.graficConection.push(path);
+                    c.Debug.path.addChild(path);
                 });
             }
         });
@@ -1169,12 +1196,11 @@ class _PME{
 
     // lorsque MouseHold, on ajoute les casesIn dans un buffer, lorsque mouseHold release, on Compute le buffer
     checkPathMode(cage) {
-        const buffer = this._pathBuffer;
         // si pas deja dans buffer: ajouter les connextion
-        if(!buffer.contains(cage)){
-            buffer.push(cage);
+        if(!this._pathBuffer.contains(cage)){
+            this._pathBuffer.push(cage);
             // create debug number
-            const txt = new PIXI.Text(buffer.length,{fontSize:42,fill:0xff0000,strokeThickness:8,stroke:0x000000});
+            const txt = new PIXI.Text(this._pathBuffer.length,{fontSize:42,fill:0xff0000,strokeThickness:8,stroke:0x000000});
             txt.pivot.y = txt.height;txt.alpha = 0;
             TweenMax.to(txt.pivot, 0.6, {y:txt.height+cage.Debug.bg.height, ease: Back.easeOut.config(3) });
             TweenMax.to(txt, 1, {alpha:1, ease: Back.easeOut.config(2.5) });
@@ -1185,17 +1211,18 @@ class _PME{
         };
     };
 
-    // finalise compute path draw in buffers
+    // finalise compute path draw in buffers, convert buffer in pathConnexion
     computeDrawPathBuffers() {
         const buffer = this._pathBuffer;
         let preview,current,next;
+        const cList = $objs.cases_s;
         for (let i=0, l=buffer.length; i<l; i++) {
             const preview = buffer[i-1];
             const current = buffer[i  ];
             const next    = buffer[i+1];
-            const preview_id = preview && preview.dataObj.register._sID;
-            const current_id = current && current.dataObj.register._sID;
-            const next_id    = next    && next   .dataObj.register._sID;
+            const preview_id = preview && cList.indexOf(preview);
+            const current_id = current && cList.indexOf(current);
+            const next_id    = next    && cList.indexOf(next);
             //TODO: FIXME: compute distance via global position for Math.hypot
             if(preview){
                 current.pathConnexion[String(preview_id)] = Math.hypot(preview.x-current.x, preview.y-current.y);
@@ -1465,22 +1492,13 @@ class _PME{
                 this.computeDrawPathBuffers()
             };
         });
-
-
     };
-    
 
 //#region [rgba(100, 5, 0,0.2)]
 // ┌------------------------------------------------------------------------------┐
 // SAVE COMPUTE JSON
 // └------------------------------------------------------------------------------┘
-    show_saveSetup() {
-        this.open_dataInspector($stage);
-        $stage.interactiveChildren = false; // disable stage interactive
-        iziToast.info( this.izit_saveSetup() );
-        const myAccordion = new Accordion(document.getElementById("accordion"), { multiple: true });
-        this.startDataIntepretor() // create the data Interpretor listener for inputs and buttons
-    };
+
 
     startSaveDataToJson() { //  from: dataIntepretor save 
         this.close_dataInspector();
@@ -1514,6 +1532,7 @@ class _PME{
                 if ( err ) { console.log('ERROR:rename ' + err) };
                 fs.writeFile(path, content, 'utf8', function (err) { 
                     if(err){return console.error(path,err) }
+                    $stage.interactiveChildren = true; // disable stage interactive
                     return console.log9("WriteFile Complette: "+path,JSON.parse(content));
                 });
             });

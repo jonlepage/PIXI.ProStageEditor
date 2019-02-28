@@ -11,6 +11,7 @@
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $text CLASS: _texts
 //└------------------------------------------------------------------------------┘
+/** generer du text mais egalement des icons dinamic */
 class _texts{
     constructor(localisation='frCA') {
         this.zoomFactor = ~~1/2.5; // 2.5 is max zoom, 1 is default , factor:0.4
@@ -132,5 +133,5 @@ class _texts{
 
 
 };
-$texts = new _texts();
+const $texts = new _texts();
 console.log1('$texts', $texts);

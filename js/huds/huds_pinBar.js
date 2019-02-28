@@ -19,9 +19,6 @@ class _huds_pinBar extends PIXI.Container {
       this.slots = []; // store slots pinners for interactions
       this.masterBar = null; //masterBar ref
       this.rotator = null; // rotator ref 
-      this.position.set(1830, 1050);
-      this.parentGroup = $displayGroup.group[4];
-      this.initialize();
 
   };
   // getters,setters
@@ -31,6 +28,7 @@ class _huds_pinBar extends PIXI.Container {
   //#region [rgba(255, 255, 255, 0.07)]
   // add basic proprety
   initialize() {
+    this.position.set(1830, 1050);
     this.setupSprites();
     this.setupTweens();
     this.setupInteractions();
@@ -52,8 +50,8 @@ class _huds_pinBar extends PIXI.Container {
 
       // url("data2/Hubs/pinBar/SOURCE/images/rotator.png"); 
       const rotator = new PIXI.Container();
-      const rotator_d = new PIXI.Sprite(dataBase.textures.rotator);
-      const rotator_n = new PIXI.Sprite(dataBase.textures_n.rotator_n);
+      const rotator_d = rotator.d = new PIXI.Sprite(dataBase.textures.rotator);
+      const rotator_n = rotator.n = new PIXI.Sprite(dataBase.textures_n.rotator_n);
         rotator_d.parentGroup = PIXI.lights.diffuseGroup;
         rotator_n.parentGroup = PIXI.lights.normalGroup;
         rotator.addChild(rotator_d, rotator_n);
@@ -258,24 +256,7 @@ class _huds_pinBar extends PIXI.Container {
               })
       });
   };
-  scalePinGem(pinGem, large) {
 
-  };
-  scaleRotator(rotator, large) {
-      if (large) {
-          TweenLite.to(rotator.scale, 0.8, {
-              x: 1.05,
-              y: -1.05,
-              ease: Back.easeOut.config(4)
-          });
-      } else {
-          TweenLite.to(rotator.scale, 0.5, {
-              x: 1,
-              y: -1,
-              ease: Back.easeOut.config(4)
-          });
-      };
-  };
   //#endregion
   /*#region [rgba(0, 0, 0, 0.4)]
   ┌------------------------------------------------------------------------------┐
@@ -285,68 +266,60 @@ class _huds_pinBar extends PIXI.Container {
   */
     setupInteractions() {
         // rotator: controle la rotation showHide du hud
+        this.rotator.interactive = true;
         this.rotator.on('pointerover', this.IN_rotator, this);
         this.rotator.on('pointerout', this.OUT_rotator, this);
         this.rotator.on('pointerup', this.UP_rotator, this);
         // pinGem
         this.slots.forEach(slot => {
+            slot.pinGem.interactive = true;
             slot.pinGem.on('pointerover', this.IN_pinGem, slot);
             slot.pinGem.on('pointerout', this.OUT_pinGem, slot);
             slot.pinGem.on('pointerup', this.UP_pinGem, this);
         });
     };
 
-    setInteractive(value) {
-        this.rotator.interactive = value;
-        for (let i=0, l=this.slots.length; i<l; i++) {
-            this.slots[i].pinGem.interactive = value;
-        };
-    };
 
   IN_pinGem(e) {
-      this.pinGem.d._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-      if($mouse.holdingItem){
-        TweenLite.to(this.pinGem.scale, 0.3, {
-          x: 1,
-          ease: Back.easeOut.config(4)
-        });
-      }
+      this.pinGem.d._filters = [new PIXI.filters.OutlineFilter(3, 0x000000, 1)]; // TODO:  make a filters managers cache
+      if($mouse.isHoldItem){
+        TweenLite.to(this.pinGem.scale, 0.3, { x: 1, ease: Back.easeOut.config(4) });
+      };
   };
 
   OUT_pinGem(e) {
       this.pinGem.d._filters = null;
       if(!this.item && this.pinGem.scale._x>0.4){
-        TweenLite.to(this.pinGem.scale, 0.4, {
-            x: 0.4,
-            ease: Elastic.easeOut.config(1.2, 0.8),
-        });
+        TweenLite.to(this.pinGem.scale, 0.4, { x: 0.4, ease: Elastic.easeOut.config(1.2, 0.8) });
       };
 
   };
   // TODO: faire un sytem global event manager et interaction dans mouse
   UP_pinGem(e) {
-      const pinGem = e.currentTarget;
-      const slot = this.slots[pinGem._id];
+    const pinGem = e.currentTarget;
+    const isClickL = e.data.button === 0; // clickLeft <==
+    const isClickR = e.data.button === 2; // clickRight ==>
+    const isClickM = e.data.button === 1; // clickMiddle =|=
+    const isInMenuItem = $huds.menuItems._isActive; // si dans le menue item
 
-      if (e.data.button === 0) { // clickLeft_ <==
-        if ($mouse.holdingItem && $huds.menuItems.renderable) { // si item dans mouse et mode menu
-            const itemMouseGXY = $mouse.holdingItem.getGlobalPosition(); // get global XY from item in mouse
-            slot.item = $mouse.holdingItem._id; //setter
-            $mouse.holdingItem = null; //setter
-            const slotItemGXY = slot.item.getGlobalPosition();
-            const xy = new PIXI.Point(itemMouseGXY.x-slotItemGXY.x, itemMouseGXY.y-slotItemGXY.y);
+    if(isClickR && $mouse.isHoldItem){return;}; // si click R et avai un items, cancel item
+    if(isClickL){
+        if($mouse.isHoldItem && isInMenuItem){
+            const slot = this.slots[pinGem._id];
+            slot.item = $mouse._holdItemID; // setter\
+            const mXY = $mouse.holdItem.getGlobalPosition(); // get global XY from item in mouse
+            const sXY = slot.item.getGlobalPosition(); // get global XY from item in mouse
+            $mouse.setItemId(null); // remove mouse item
+            const xy = new PIXI.Point(mXY.x-sXY.x, mXY.y-sXY.y);
             slot.item.position.copy(xy);
-            TweenLite.to(slot.item.position, 1, {
-                x: 0, ease: Elastic.easeOut.config(1.2, 0.8),
-            });
-            TweenLite.to(slot.item.position, 0.6, {
-                y: 0, ease: Bounce.easeOut,
-            });
-          }else if(slot.item){ // si rien dans mouse et items dans le slot 
-            $mouse.holdingItem = slot.item._id;
-          }
-      } else
-      if (e.data.button === 2) { // _clickRight ==>
+            TweenLite.to(slot.item.position, 1, {x: 0, ease: Elastic.easeOut.config(1.2, 0.8)});
+            TweenLite.to(slot.item.position, 0.6, {y: 0, ease: Bounce.easeOut });
+        }else{
+            const slot = this.slots[pinGem._id];
+            slot.item && $mouse.setItemId(slot.item._id);
+        };
+    };
+    if(isClickR){
         if(!$huds.menuItems.renderable){ // si menu est desactive, Activer menuItem
             return $huds.menuItems.show();
         };
@@ -354,23 +327,44 @@ class _huds_pinBar extends PIXI.Container {
            // $Objs.activeInteractive(); TODO:
             return $huds.menuItems.hide();
         };
+    };
 
-      } else
-      if (e.data.button === 1) { // click_Middle =>|<=
-      }
+  
+    //  if (e.data.button === 0) { 
+    //    if ($mouse.holdingItem && $huds.menuItems.renderable) { // si item dans mouse et mode menu
+    //        const itemMouseGXY = $mouse.holdingItem.getGlobalPosition(); // get global XY from item in mouse
+    //        slot.item = $mouse.holdingItem._id; //setter
+    //        $mouse.holdingItem = null; //setter
+    //        const slotItemGXY = slot.item.getGlobalPosition();
+    //        const xy = new PIXI.Point(itemMouseGXY.x-slotItemGXY.x, itemMouseGXY.y-slotItemGXY.y);
+    //        slot.item.position.copy(xy);
+    //        TweenLite.to(slot.item.position, 1, {
+    //            x: 0, ease: Elastic.easeOut.config(1.2, 0.8),
+    //        });
+    //        TweenLite.to(slot.item.position, 0.6, {
+    //            y: 0, ease: Bounce.easeOut,
+    //        });
+    //      }else if(slot.item){ // si rien dans mouse et items dans le slot 
+    //        $mouse.holdingItem = slot.item._id;
+    //      }
+    //  }
+
+ 
   };
 
 
 
   IN_rotator(e) {
       const rotator = e.currentTarget;
-      rotator._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-      this.scaleRotator(rotator, true);
+      rotator.d._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
+      TweenLite.to(rotator.scale, 0.2, { x:1,y:1 ,ease: Power4.easeOut, });
+     
   };
   OUT_rotator(e) {
       const rotator = e.currentTarget;
-      rotator._filters = null;
-      this.scaleRotator(rotator, false);
+      rotator.d._filters = null;
+      TweenLite.to(rotator.scale, 0.2, { x:0.9,y:0.9 ,ease: Power4.easeOut, });
+   
   };
   // TODO: faire un sytem global event manager et interaction dans mouse
   UP_rotator(e) {
