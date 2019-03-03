@@ -1,12 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es6"
+        "target": "ES6"
     },
-    "include": [
-        "js/**/*",
-        
-    ],
     "exclude": [
-        "node_modules"
+        "node_modules","bower_components","temp","tmp","jspm_packages",
+        "./js/__old/","./js/libs/"
     ]
 }

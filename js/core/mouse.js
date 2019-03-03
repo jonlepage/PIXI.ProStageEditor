@@ -8,12 +8,9 @@
 Controle tous ce qui est associer a la sourits, interaction avec player et camera engine
 Initialise avantr le loader , seulement pendant la sceneBOOT
 */
-
 // ┌-----------------------------------------------------------------------------┐
 // GLOBAL $mouse CLASS: _mouse
 //└------------------------------------------------------------------------------┘
-//Graphics._renderer.plugins.interaction
-//document.getElementById("GameCanvas").style.cursor = "none";
 class _mouse {
     constructor() {
         this.pointer      = null; // store spine sprite pointer
@@ -202,17 +199,12 @@ class _mouse {
     };
 };// end class
 
-//$mouse.sprite
 let $mouse = new _mouse();
 console.log1('$mouse. ', $mouse);
 
 
-
-
  _mouse.prototype.mouseMove = function(e) {
-
-     this.mPos.x = this.interaction.mouse.global.x;
-     this.mPos.y = this.interaction.mouse.global.y;
-
- }
+    this.mPos.x = this.interaction.mouse.global.x;
+    this.mPos.y = this.interaction.mouse.global.y;
+ };
 

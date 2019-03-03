@@ -20,7 +20,7 @@ class _huds_stats extends PIXI.Container {
       this._statsLarge = ['hp','mp','hg','hy','miw','mic'];
       //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
       this._statsSmall = ['atk','def','sta','lck','exp','int'];
-      this._states = ['hp','mp','hg','hy','miw','mic','atk','def','sta','lck','exp','int']
+      this._states = ['hp','mp','hg','hy','miw','mic','atk','def','sta','lck','expl','int']
   };
   // getters,setters
   get d() { return this.Sprites.d };
@@ -31,11 +31,12 @@ class _huds_stats extends PIXI.Container {
     this.position.zeroSet();
     this.setupSprites();
     this.addInteractive();
+    
   };
-
+  
   setupSprites() {
     const dataBase = $Loader.Data2.hudStats;
-    const dataBaseIcons = $Loader.Data2.statsIcons_d23;
+    const dataBaseIcons = $Loader.Data2.states;
     const bars = {};
     const colors = [0xff0000,0x3f89ff,0x55ff3f,0x3ff5ff]
     // creer les bars pour chaque stats

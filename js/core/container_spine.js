@@ -12,7 +12,6 @@
 class Container_Spine extends Container_Base {
     constructor(dataObj) {
         super(dataObj);
-        this.spriteSlots = []; // spine stock les spriteSlots diffuse normal par array, voir:hackAttachmentGroups
     };
     // getters for ContainerSpine TODO: faire pareille que Container_Animation pour les getters
     get s() { return this.Sprites.s || false };

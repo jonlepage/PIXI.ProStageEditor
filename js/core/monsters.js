@@ -151,33 +151,33 @@ class _monsters {
         spine.scale.set(0.2,0.2);
         // player layers hackAttachmentGroups set spine.n
         // interactiviy
+        cage.interactive = true;
         cage.hitArea = cage.getLocalBounds(); // empeche interaction avec mesh presision
-        cage.on ('pointerover' , this.pointer_inMonster  ,cage );
-        cage.on ('pointerout'  , this.pointer_outMonster ,cage );
-        cage.on ('pointerdown' , this.pointer_dwMonster  ,cage );
-        cage.on ('pointerup'   , this.pointer_upMonster  ,cage );
+        cage.on ('pointerover' , this.pointer_inMonster  ,this );
+        cage.on ('pointerout'  , this.pointer_outMonster ,this );
+        cage.on ('pointerdown' , this.pointer_dwMonster  ,this );
+        cage.on ('pointerup'   , this.pointer_upMonster  ,this );
     };
     
 
     pointer_inMonster (e) {
         const c = e.currentTarget;
         const f = new PIXI.filters.OutlineFilter (4, 0xff0000, 5);
-        c.n[0].forEach(spineSprite => {
-            spineSprite._filters = [f];
-        });
-        this.moveArrowTo(c);
-        this.moveMathBox(c);
+        c.slots_d.forEach(spineSprite => { spineSprite._filters = [f] });
+        //this.moveArrowTo(c);
+        //this.moveMathBox(c);
         this.needReversePlayer(c);
-        $combats.cmtID = this._bID;
+        $combats.selectedMonster = this; // asign la selection du monstre general
+        
     };
   
     pointer_outMonster(e) {
         const c = e.currentTarget;
-        c.n[0].forEach(spineSprite => {
+        c.slots_d.forEach(spineSprite => {
             spineSprite._filters = null;
         });
-        const cage_dsb = $huds.combats.sprites.cage_dsb;
-        cage_dsb.renderable = false;
+       // const cage_dsb = $huds.combats.sprites.cage_dsb;
+       // cage_dsb.renderable = false;
     };
     
     pointer_dwMonster(e) {

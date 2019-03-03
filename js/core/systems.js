@@ -125,8 +125,9 @@ class _systems{
     /**@description indique si un objet est tenu par la sourit */
     get holdItem() { return this.status._holdItem };
     set holdItem(value) { this.status._holdItem = value };
-    /**@description indique si un objet est tenu par la sourit */
-
+    /**@description renvoi le state powerOrbType attribuer pour le tour */
+    get powerType() { return this.status._powerType || [] }; //TODO: quand joue un tours , calculer les slots gemDice pour asigner power type
+    set powerType(value) {  };
 
 
     intitialize(){

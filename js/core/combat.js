@@ -16,11 +16,19 @@ class _combats{
         this._active = false; // in combat mode indicator
         this.monsters = []; // store current reference of monster
         this.tikers = null; // the combat ticker update ?
-        this.cmtID = null; // current monsters targeted ID ? 
+        this._selectedMonster = null;
     };
-
+    set selectedMonster(cage){
+        this._selectedMonster = cage;
+        $huds.combats.refreshDisplaySetup()
+    };
+    get selectedMonster(){
+        return this._selectedMonster;
+    };
     // initialise combat, creer monstre et huds
     intitialize(fromDataObj){
+        $systems.inCombat = true;
+        $stage.interactiveChildren = true;
         $systems._inCombat = true;
         // map les objet que on garde visible pour combat.
          //TODO: ajouter dans editeur visibleInCombat et deplacer folder "Grass"
@@ -82,15 +90,9 @@ class _combats{
                 if(m.x<pX){m.sprite.scale.x*=-1} // need reverse
         });
         
-        // initalise Combats huds 
-        const combatSlot =  $huds.combats.sprites.cs;
+        // start Combats huds to asign
+        const combatSlot =  $huds.combats.start(); 
 
-        
-        $stage.scene.addChild(combatSlot);
-       combatSlot.x = $player.s.x;
-       combatSlot.y = $player.s.y;
-        console.log('combatSlot: ', combatSlot);
-      //  $huds.combats.setupToScene(); // add child and setup to current scene.
 
     };
 

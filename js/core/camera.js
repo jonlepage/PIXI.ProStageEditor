@@ -50,14 +50,15 @@ class _camera extends PIXI.projection.Container2d{
         this._target = $player.spine && $player || null; // atache a target for the camera 
         /**@description preset setup for camera */
         this.cameraSetup = [
-            {_fpX:0,_fpY:0,_fpF:0,_zoom:1}, // default setup
-            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_tZoom:0.2},
-            {_fpX:520.00,_fpY:-320.00,_fpF:0.40,_tZoom:1},
-            {_fpX:440.00,_fpY:-1290.00,_fpF:0.55,_tZoom:5.00},
-            {_fpX:1010.00,_fpY:-2810.00,_fpF:0.55,_tZoom:7.50},
-            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_tZoom:1.85},
-            {_fpX:-50.00,_fpY:-657.58,_fpF:0.04,_zoom:1.48},
-            {_fpX:-371.94,_fpY:-1011.77,_fpF:0.20,_zoom:2.48}
+            {_fpX: 0      ,_fpY: 0      ,_fpF:0   ,_zoom :1   },//0 default
+            {_fpX: 520.00 ,_fpY:-320.00 ,_fpF:0.40,_tZoom:0.2 },//1
+            {_fpX: 520.00 ,_fpY:-320.00 ,_fpF:0.40,_tZoom:1   },//2
+            {_fpX: 440.00 ,_fpY:-1290.00,_fpF:0.55,_tZoom:5.00},//3
+            {_fpX: 1010.00,_fpY:-2810.00,_fpF:0.55,_tZoom:7.50},//4
+            {_fpX:-4260.00,_fpY:-5020.00,_fpF:0.85,_tZoom:1.85},//5
+            {_fpX:-50.00  ,_fpY:-657.58 ,_fpF:0.04,_zoom :1.48},//6
+            {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.48},//7
+            {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.07},//8 combat modes
         ];
     };
 

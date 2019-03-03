@@ -138,7 +138,7 @@ class dataObj_case extends dataObj_base{
     // verify une list pour autoriser l'interactive ?
     checkConditionInteractive(){
         // si .. variable x est a ... si ...// if $huds.displacement._stamina && 
-        return $huds.stamina._stamina > 0;
+        return $huds.stamina._stamina > 0 && !$systems.inCombat;
     }
 
     pointer_In (e) {
