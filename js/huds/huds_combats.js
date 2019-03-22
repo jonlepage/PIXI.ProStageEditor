@@ -5,38 +5,68 @@
 class _huds_combats extends PIXI.Container{
     constructor() {
         super();
-        /** combatSlots,combatIcons,combatBox*/
-        this.sprites = {};
+        /** list ref des container pour add a la scene et au stage lorsque combat start combatSlots,combatIcons,combatBox*/
+        this.childList = {
+            ccs:null,//initialize_combatSlots
+            cci:null,//initialize_combatIcons
+            BOX:null,//initialize_combatBox
+            /** les container a mettre dans scene */
+            get scene(){return [this.ccs,this.cci,this.BOX]},
+            /** les container a mettre dans stage ou camera */
+            get stage(){return []},
+        };
         /** list des modes */
         this.combatMode = ['attack','defense','move','run','magic'];
         this._mode = null; // quand choisi un mode
     };
     set mode(mode){ this._mode = mode ; this.refreshDisplaySetup() };
     /** return array list des container dispo */
-    get list_c(){ return Object.values(this.sprites) };
+    get list_c(){ return Object.values(this.childs) };
     /** return le container des slots items pour combat */
-    get combatSlots() {return this.sprites.cs};
+    get combatSlots() {return this.childList.ccs};
     /** return le container des icons pour selectionner le mode combat */
-    get combatIcons() {return this.sprites.ci};
+    get combatIcons() {return this.childList.cci};
     /** return le container qui affiche et calcul les info lors selection d'une cible */
-    get combatBox() {return this.sprites.cb};
+    get combatBox() {return this.childList.BOX};
+    /** return la derniere cible survoller par la sourit */
+    get targetSelected(){
+       return $combats.selectedMonster;
+    }
+    get slotsItems(){
+        return this.combatSlots.children.filter(c => Number.isFinite(c._iID));
+    };
+
 
     initialize(){
         this.initialize_combatSlots(); // creer les slots sosu le player
         this.initialize_combatIcons(); // creer les icons de choix de combat pour les players 
-        this.initialize_damageBox(); // preparle la boite indicatrice de damage
+        this.initialize_combatBox(); // preparle la boite indicatrice de damage
     };
 
     initialize_combatSlots(){
         // combats items slots
-        const cs =  new PIXI.projection.Container2d(); //TODO: container 2D ? car affine ?
-        cs.proj._affine = 2; // test 3,4 ?
+        const ccs =  new PIXI.projection.Container2d(); // combat container slot
+        ccs.proj._affine = 2; // test 3,4 ?
         const x = [-70,0,70];
-        const y = [0,40,0];
+        const y = [0,70,0];
         for (let i=0; i<3; i++) {
             const csC = new PIXI.Container();
             const cs_d = csC.d = new PIXI.Sprite($Loader.Data2.hud_combats.textures.hudS_itemSlots);
             //const cs_n = csC.n = new PIXI.Sprite($Loader.Data2.hud_combats.textures_n.hudS_itemSlots_n);
+            csC.setItemId = (id)=>{
+                if(csC.item){
+                  csC.removeChild(csC.item);
+                  csC.item = null;
+                  csC._iID = null;
+                };
+                if(Number.isFinite(id)){
+                  const newItem = $items.list[id].createSprites(true);
+                  csC.item = newItem;
+                  csC.addChild(newItem);
+                  csC._iID = id;
+                  csC.item = newItem;
+                };
+            };
             csC.scale.set(0.6);
             csC.position.set(x[i],y[i]);
             csC.scale.zeroSet();
@@ -48,11 +78,9 @@ class _huds_combats extends PIXI.Container{
             //cs_n.parentGroup = PIXI.lights.normalGroup;
             csC.slots = {cs_d};
             csC.addChild(cs_d);
-            cs.addChild(csC);
-            
+            ccs.addChild(csC);
         };
-        cs.renderable = false;
-        this.sprites.cs = cs;
+        this.childList.ccs = ccs;
     };
 
     // les icon pour selectioner le mode combat
@@ -69,161 +97,180 @@ class _huds_combats extends PIXI.Container{
             iconMode.anchor.set(0.5);
             iconMode.scale.set(0.8);
             iconMode.scale.zeroSet();
+            iconMode.position.zeroSet();
             cci.addChild(iconMode);
             x+=iconMode.width+4;
         };
         const bounds = cci.getBounds();
-        cci.pivot.set((bounds.width+bounds.x)/2,bounds.height+bounds.y+$player.s.height);
-        this.sprites.ci = cci;
-        cci.renderable = false;
+        cci.pivot.set((bounds.width+bounds.x)/2, $player.p.height);
+        this.childList.cci = cci;
     };
 
-    initialize_damageBox(){
-        const ccB = new PIXI.projection.Container2d(); // combat container BOX
-        ccB.proj._affine = 2; // test 3,4 ?
-        ccB.parentGroup = $displayGroup.group[2];
+    initialize_combatBox(){
+        const BOX = new PIXI.projection.Container2d(); // combat container BOX
+            BOX.proj._affine = 2; // test 3,4 ?
+            BOX.parentGroup = $displayGroup.group[2];
         // black box black background __________
         const bg = new PIXI.Sprite(PIXI.Texture.WHITE);
-        bg._filters = [$systems.filtersList.OutlineFilterx4white];
-        bg.tint = 0x000000;
-        bg.alpha = 0.92;
-       // title container _____________________
-       const cct = new PIXI.Container(); // combat container title
-       const iconMode = this._mode? new PIXI.Sprite($Loader.Data2.hud_combats.textures[`cbi_${this._mode}`]) : new PIXI.Sprite();
-        iconMode.anchor.set(0.5);
-       const ttxt = new PIXI.Text('Attack',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});//title text
-       ttxt.anchor.set(0,0.5);
-       ttxt.x = 40;
-       // powerOrb
-       const powerOrbs = new PIXI.Container();
-       const pt = $systems.powerType;// TODO: quand le joueur jour son tour, asigner dans $system le powerType pour acceder
-       for (let i=0, l=pt.length; i<l; i++) {
-           const slot = sslots[i];
-           if(slot.item){  }
-       };
-       cct.addChild(iconMode,ttxt,powerOrbs);
-       cct.child = {iconMode,ttxt,powerOrbs};
-       // dammage container ____________________
-       const ccd = new PIXI.Container(); // combat container dammage
-       const icons = [];
-       const dtext = new PIXI.Text('Dammage',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});//damage text
-       for (let i=0,x=0,y=dtext.height, l=[0,2,3,6,7].length; i<l; i++) {
-           //TODO: asigner les objets et verifier si elle inflige aussi des states.
-           const icon = new PIXI.Sprite(PIXI.Texture.WHITE);
-           icon.width = 60; // TODO: DELETE ME FOR DEBUG
-           icon.height = 60; // TODO: DELETE ME FOR DEBUG
-           icon.position.set(x,y);
-           x+=60+4;
-           icons.push(icon);
-       };
-       ccd.addChild(dtext,...icons);
-       ccd.child = {dtext,icons};
-        // passive status container ____________________
-        const ccs = new PIXI.Container(); // combat container status
-        ccs.statusIcon = [];
-        const stext = new PIXI.Text('Passive Status',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});//damage text
-        for (let i=0,x=0,y=stext.height, l=[0,2,3,6,7].length; i<l; i++) {
-            //TODO: asigner les objets et verifier si elle inflige aussi des states.
-            const statusIcon = new PIXI.Sprite(PIXI.Texture.WHITE);
-            statusIcon.width = 60; // TODO: DELETE ME FOR DEBUG
-            statusIcon.height = 60; // TODO: DELETE ME FOR DEBUG
-            statusIcon.position.set(x,y);
-            x+=60+4;
-            ccs.statusIcon.push(statusIcon);
-        };
-        ccs.addChild(stext,...ccs.statusIcon);
-        // math result ____________________
-        const ccr = new PIXI.Container(); // combat container result
-        const splitLineTop = new PIXI.Sprite($Loader.Data2.hud_combats.textures.cb_mathLine);
-        splitLineTop.anchor.set(0.5);
-        const resultTxt = new PIXI.Text('(180 <=> 486)',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});//damage text
-            resultTxt.anchor.set(0.5);
-            resultTxt.y = resultTxt.height/2;
-        const splitLineBot = new PIXI.Sprite($Loader.Data2.hud_combats.textures.cb_mathLine);
-        splitLineBot.anchor.set(0.5);
-        splitLineBot.y = resultTxt.height;
-        ccr.addChild(splitLineTop,resultTxt,splitLineBot);
-
+            bg.parentGroup = PIXI.lights.diffuseGroup
+            bg.width = 100, bg.height=100;
+            bg.tint = 0x000000;
+            bg.alpha = 0.8;
+       //! TITLE CONTAINER_____________________
+       const title = new PIXI.Container();
+        title.logo = new PIXI.Sprite(PIXI.Texture.WHITE);
+        title.titleTxt = new PIXI.Text('Attack',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:18,strokeThickness:4});// data2/Hubs/combats/SOURCE/images/cbi_attack.png
+        title.titleTxt.x = 40;
+        title.logo.anchor.set(0.5);
+        title.titleTxt.anchor.y = 0.5;
+        title.addChild(title.logo,title.titleTxt);
+        //! TITLE RIGHT ORBS CONTAINER_____________________
+       const titleOrbs = new PIXI.Container();
+         //! INFLIGEUR CONTAINER_____________________
+       const infliger = new PIXI.Container(); // combat container dammage
+        infliger.txt = new PIXI.Text('Infliger',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:18,strokeThickness:4});//damage text
+        infliger.txt.anchor.y = 1;
+        infliger.list = [];
+        infliger.addChild(infliger.txt);
+       //! INFLUEUR CONTAINER_____________________
+       const influer = new PIXI.Container(); // combat container dammage
+        influer.txt = new PIXI.Text('Influer',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:18,strokeThickness:4});//damage text
+        influer.txt.anchor.y = 1;
+        infliger.list = [];
+        influer.addChild(influer.txt);
+       //! RESULTE CONTAINER_____________________
+       const resulter = new PIXI.Container(); // combat container result
+        resulter.line1 = new PIXI.Sprite($Loader.Data2.hud_combats.textures.cb_mathLine);
+        resulter.line2 = new PIXI.Sprite($Loader.Data2.hud_combats.textures.cb_mathLine);
+        resulter.txt = new PIXI.Text('(180 <=> 486)',{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:24,strokeThickness:4});
+        resulter.addChild( resulter.line1, resulter.line2, resulter.txt);
+        //# RESULTE CONTAINER_____________________
         //end
-        ccB.addChild(bg,cct,ccd,ccs,ccr);
-        ccd.position.y = 40;
-        ccs.position.y = 150;
-        ccr.position.y = ccs.position.y+ccs.height+40;
-        ccr.position.x =(ccB.width/3);
-        
-        ccB.child = {cct,ccd,ccr,ccs,bg};
-        this.sprites.cb = ccB;
-        // temp enlarge la black box a container
-        bg.width = ccB.width;
-        bg.height = ccB.height;
-        ccB.pivot.set(ccB.width,ccB.height); // selon la directin du player
-        ccB.scale.set(0.8);
-        ccB.renderable = false;
+        BOX.addChild(bg,title,titleOrbs,infliger,influer,resulter);
+        BOX.C = {bg,title,titleOrbs,infliger,influer,resulter};
+        this.childList.BOX = BOX;
     };
 
     //#region [rgba(40, 0, 0, 0.2)]
     // ┌------------------------------------------------------------------------------┐
     // EVENTS INTERACTION LISTENERS
     // └------------------------------------------------------------------------------┘
-    setInteractive() {
+    initialize_Interactive() {
         //combatIcons
-        const cci = this.combatIcons;
-        cci.children.forEach(cIcon => { // each sprite icon
+        this.combatIcons.interactiveChildren = false;
+        this.combatIcons.children.forEach(cIcon => {
             cIcon.interactive = true;
             cIcon.on('pointerover' , this.pIN_cIcon  ,this);
             cIcon.on('pointerout'  , this.pOUT_cIcon ,this);
             cIcon.on('pointerup'   , this.pUP_cIcon  ,this);
         });
+        // combat slots items
+        this.combatSlots.interactiveChildren = false;
+        this.combatSlots.children.forEach(slot => {
+            slot.interactive = true;
+            slot.on('pointerover', this.pIN_slots , this);
+            slot.on('pointerout' , this.pOUT_slots, this);
+            slot.on('pointerup'  , this.pUP_slots , this);
+        });
     };
 
+    //!combatIcons________
     pIN_cIcon(e){
         const ee = e.currentTarget;
-        TweenMax.to(ee.scale, 0.3, {x:1,y:1, ease: Power4.easeOut });
-        TweenMax.to(ee.parent.scale, 1, {x:1.1,y:1.05, ease: Elastic.easeOut.config(0.8, 0.75) });
-        ee._filters = [$systems.filtersList.OutlineFilterx4white];
+        if(!this._mode){
+            TweenMax.to(ee.scale, 0.3, {x:1,y:1, ease: Power4.easeOut });
+            TweenMax.to(ee.parent.scale, 1, {x:1.1,y:1.05, ease: Elastic.easeOut.config(0.8, 0.75) });
+            ee._filters = [$systems.filtersList.OutlineFilterx4white];
+        };
     };
     
     pOUT_cIcon(e){
         const ee = e.currentTarget;
-        TweenMax.to(ee.scale, 0.3, {x:ee.scale.zero.x,y:ee.scale.zero.y, ease: Power4.easeOut });
-        TweenMax.to(ee.parent.scale, 1, {x:1,y:1, ease: Power4.easeOut });
-        ee._filters = null;
+        if(!this._mode){
+            TweenMax.to(ee.scale, 0.3, {x:ee.scale.zero.x,y:ee.scale.zero.y, ease: Power4.easeOut });
+            TweenMax.to(ee.parent.scale, 1, {x:1,y:1, ease: Power4.easeOut });
+            ee._filters = null;
+        };
     };
     
     pUP_cIcon(e){
         const ee = e.currentTarget;
-        ee._filters = [$systems.filtersList.OutlineFilterx8Green];
-        this.mode = ee._mode;
-        
+        if(!this._mode){
+            ee._filters = null;
+            this.setCombatModeTo(ee._mode);
+           
+        };
+    };
+
+    //!combatSlots________
+    pIN_slots(e){
+        const ee = e.currentTarget;;
+        ee.d._filters = [$systems.filtersList.OutlineFilterx4white];
+    };
+    
+    pOUT_slots(e){
+        const ee = e.currentTarget;
+        ee.d._filters = null;
+    };
+    pUP_slots(e){
+        const ee = e.currentTarget;
+        if(e.data.button === 0){
+            if ($mouse.isHoldItem) { // si item dans mouse et mode menu
+                ee.setItemId($mouse._holdItemID);
+                $mouse.setItemId(null);
+                ee.scale.set(1);
+                TweenLite.to(ee.scale, 0.2, { x: ee.scale.zero.x, y: ee.scale.zero.y, ease: Power4.easeOut });
+                // recalcule la dmgBox si cible un target ?
+                if($combats._selectedTarget){
+                    this.show_combatBox($combats._selectedTarget)
+                };
+                
+            };
+        };
     };
     //#endregion 
 
-    /**combat start, setup */
-    start(){
-        const containers = this.list_c;
-       $stage.scene.addChild(...containers);
-       containers.forEach(c => {
-           c.position.set($player.s.x,$player.s.y);
-           c.renderable = true;
-       });
-       this.setInteractive(); // build interactive
-       this.refreshDisplaySetup();
-      //  $huds.combats.setupToScene(); // add child and setup to current scene.
+    /** Initialize et position les huds sur un target du nouveau tour */
+    setupToTargetTurn(target){
+        // position les hud sur le target turn
+        const cci = this.combatIcons;
+        cci.interactiveChildren = true;
+        cci.position.copy(target.p.position);
+        const ccs =  this.combatSlots;
+        ccs.interactiveChildren = true;
+        ccs.position.copy(target.p.position);
     };
 
-    // rafres les element affiche selon la configuration
-    refreshDisplaySetup(){
-        if(this._mode === this.combatMode[0]){ // attack mode
+    /** redefenie le mode combat du current player et applique transitions */
+    setCombatModeTo(mode){
+        this._mode = mode;
+        // position combat icon selon le mode
+        this.combatIcons.children.forEach(cIcon => {
+            if(cIcon._mode === mode){ // focus
+               // $player.s.scale.set();
+                const toXY = this.combatIcons.pivot; // parent pivot
+                cIcon.scale.set(0.5);
+                TweenLite.to(cIcon.position, 0.4, { x:toXY.x, y:toXY.y, ease:  Back.easeOut.config(1.7) });
+                TweenLite.to(cIcon.scale, 0.5, { x:1, y:1, ease:  Back.easeInOut.config(1.7) });
+                TweenLite.to(cIcon, 0.5, { alpha:0.5, ease: Power4.easeOut });
+            }else if(mode){ // hide et si mode
+                TweenLite.to(cIcon.pivot, 0.3, { y:48, ease: Power4.easeOut });
+                TweenLite.to(cIcon, 0.3, { alpha:0, ease: Power4.easeOut });
+            }else{ // cancel mode null , back to zero
+                TweenLite.to(cIcon.pivot, 1, { y:0, ease: Power4.easeOut });
+                TweenLite.to(cIcon, 1, { alpha:1, ease: Power4.easeOut });
+                TweenLite.to(cIcon.scale, 1, { x:cIcon.scale.zero.x, y:cIcon.scale.zero.y, ease: Power4.easeOut });
+                TweenLite.to(cIcon.position, 1, { x:cIcon.position.zero.x, y:cIcon.position.zero.y, ease: Power4.easeOut });
+            };
+        });
+        if(mode===this.combatMode[0] || mode===this.combatMode[1]){ //si mode attack ou defense? affiche les slots 
             this.show_combatSlots();
-            $camera.moveToTarget($player,8);
-            if($combats.selectedMonster){this.show_combatBox($combats.selectedMonster)}
-        }else{
-            this.hide_combatBox();
+        }else{// si null 
             this.hide_combatSlots();
-            $camera.moveToTarget($player,7);
-        }
-    };
-
+        };
+        $combats.setCombatModeTo(mode);
+        
+    }
 
     show_combatSlots(){
         const cs = this.combatSlots;
@@ -243,7 +290,7 @@ class _huds_combats extends PIXI.Container{
            //     ease: Power4.easeOut,
            // });
         };
-    }
+    };
 
     hide_combatSlots(){
         const cs = this.combatSlots;
@@ -265,9 +312,13 @@ class _huds_combats extends PIXI.Container{
 
     show_combatBox(target){
         const cb = this.combatBox;
-        cb.alpha = 0;
-        this.refreshCombatBox();
-        cb.position.set(target.x,target.y);
+        this.setupCombatBox(target);
+        if(target.isReverse){
+            cb.position.set(target.x-cb.width-(target.p.width/2),target.y-cb.height);            
+        }else{
+            cb.position.set(target.x+target.p.width/2,target.y-cb.height);
+        }
+        
         TweenLite.to(cb, 0.2, {
             alpha:1, ease:Power4.easeOut,
         });
@@ -281,27 +332,73 @@ class _huds_combats extends PIXI.Container{
     }
 
     // recalcule les element grafic dans la BOX
-    refreshCombatBox(){
-        const cb = this.combatBox;
-        // title container
-        const cct = cb.child.cct;
-        cct.child.iconMode._texture = $Loader.Data2.hud_combats.textures[`cbi_${this._mode}`];
-        // dammage container
-        const ccd = cb.child.ccd;
-        const items = this.combatSlots._items || []; // tous les item id
-        for (let i=0,x=0,l=items.length; i<l; i++) {
-            //TODO: asigner les objets et verifier si elle inflige aussi des states.
-            const icon = new PIXI.Sprite(PIXI.Texture.WHITE);
-            icon.width = 60; // TODO: DELETE ME FOR DEBUG
-            icon.height = 60; // TODO: DELETE ME FOR DEBUG
-            icon.position.set(x,y);
-            x+=60+4;
-            icons.push(icon);
-        };
-        ccd.addChild(dtext,...icons);
-    };
-    
+    setupCombatBox(target){
+        const BOX = this.combatBox;
+        const source = $player; //? le personnage tour
+        const mode = this._mode; //? Le mode choisis
+        
+        const infliger = $states.getInfligersFrom(source, target, this.slotsItems, mode);
+        const influer  = $states.getInfluerFrom  (source, target, infliger);
+        
+        
 
+        console.log('infliger: ', infliger);
+        console.log('influer: ', influer);
+        //! infliger container
+        BOX.C.infliger.list = infliger;
+        for (let i=0, x=0, l=infliger.length; i<l; i++) {
+            const ico = infliger[i];
+            ico.position.set(x,0);
+            BOX.C.infliger.addChild(ico);
+            x+=48;
+        };
+        //! infliger container
+        BOX.C.influer.list = influer;
+        for (let i=0, x=0, l=influer.length; i<l; i++) {
+            const ico = influer[i];
+            ico.position.set(x,0);
+            BOX.C.influer.addChild(ico);
+            x+=48;
+        };
+        //! Resulta
+        const values = this.evalResultDMG(infliger,influer);
+        BOX.C.resulter.txt.text = `( ${values[0]} <=> ${values[1]} )`;
+        // logo title
+        BOX.C.title.logo.texture = $Loader.Data2.hud_combats.textures[`cbi_${mode}`]; // swap texture mode
+        
+        // posisionning
+        let yy = 0;
+        BOX.C.title.y = yy;
+            yy+=BOX.C.title.height;
+        BOX.C.infliger.y = yy;
+            yy+=BOX.C.infliger.height;
+        BOX.C.influer.y = yy;
+            yy+=BOX.C.influer.height;
+        BOX.C.resulter.y = yy;
+        BOX.C.bg.width  = 1, BOX.C.bg.width  = BOX.width ;
+        BOX.C.bg.height = 1, BOX.C.bg.height = BOX.height;
+
+        console.log('target: ', target.p.scale);
+        console.log('target: ', target.s.scale);
+        
+        
+        
+        
+
+
+    };
+
+    /**return une valeur minimal de dammage */
+    evalResultDMG(infliger,influer){
+        // TODO: verifier si ont doi proceder ainsi, tester en real time
+        let valueMin = 0;
+        let valueMax = 0;
+        infliger.forEach(state => {
+            valueMin+=state.computeValue(valueMin,true,true,false); // value,useContext,min,max
+            valueMax+=state.computeValue(valueMax,true,false,true);
+        });
+        return [valueMin,valueMax];
+    }
 
     
     // when combat start, call this for add sprites to scenes

@@ -441,13 +441,17 @@ class dataObj_case extends dataObj_base{
         td.parentGroup = $displayGroup.group[4];
         TweenLite.to(td.position, 2.5, { y:td.y-300, ease: Expo.easeOut, onComplete:()=>executeEvent() });
         TweenLite.to(td.scale, 1.4, { x:2,y:2, delay:0.3,ease: Elastic.easeOut.config(1, 0.3), });
-        function executeEvent(){
+        const dataMonsterList = _dataMonsters.getRanDataMonsterList(); //TODO: generer dans le boot.
+        $combats.intitialize(dataMonsterList);
+        const executeEvent = ()=>{
             // set to taked
             td.renderable = false;
             tn.renderable = false;
             $player.spine.s.state.addEmptyAnimation(3,0.4);
-            $camera.moveToTarget($player,7);
-            $combats.intitialize(this);
+            $camera.moveToTarget($player,7,4);
+            $combats.start();
+          
+            
             /*if(inCase.caseEventType === "caseEvent_gold"){
                 console.log('recive gold:', ~~(Math.random(100)*100));
             }

@@ -1,7 +1,8 @@
 //=============================================================================
 // hack JsExtensions snippet polyfill to class
 //=============================================================================
-
+// see: C:\Users\InformatiqueLepage\AppData\Local\Programs\Microsoft VS Code\resources\app\extensions\node_modules\typescript\lib\lib.es5.d.ts
+// C:\Users\InformatiqueLepage\Documents\Dev\anft_1.6.1\js\index.d.ts
 /**
  * Returns a number whose value is limited to the given range.
  *
@@ -130,18 +131,18 @@ String.prototype.contains = function(string) {
 };
 
 /**
- * Generates a random integer in the range (0, max-1).
+ * Generates a random integer in the range 
  *
  * @static
  * @method Math.randomInt
- * @param {Number} max The upper boundary (excluded)
+ * @param {Number} min 
+ * @param {Number} max 
  * @return {Number} A random integer
  */
-Math.randomInt = function(max) {
-    return Math.floor(max * Math.random());
-};
-
-
+Math.randomFrom = function(min=0,max=1) // min and max included
+{
+    return ~~(Math.random()*(max-min+1)+min);
+}
 
 
 /**

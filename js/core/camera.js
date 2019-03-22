@@ -59,6 +59,7 @@ class _camera extends PIXI.projection.Container2d{
             {_fpX:-50.00  ,_fpY:-657.58 ,_fpF:0.04,_zoom :1.48},//6
             {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.48},//7
             {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.07},//8 combat modes
+            {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :1.5},//9 combat modes attack
         ];
     };
 
@@ -151,7 +152,7 @@ class _camera extends PIXI.projection.Container2d{
     };
 
     //$camera.moveToTarget(null,f)
-    moveToTarget(target,setup) { // camera objet setup {x,y,z,focal{x,y}
+    moveToTarget(target,setup,speed=3) { // camera objet setup {x,y,z,focal{x,y}
         target = target? target.spine || target : this._target; // allow pass global $var obj, or default player
         setup = Number.isInteger(setup)? this.cameraSetup[setup] : setup || this.cameraSetup[0]; // pass setup id? or create new one
         if(target){
@@ -159,7 +160,7 @@ class _camera extends PIXI.projection.Container2d{
             const before = setup? this.applyCameraSetup(setup) : null;
             const to = this.getLocalTarget(target);
             before && this.applyCameraSetup(before);
-            TweenLite.to(this.pivot, 3, {
+            TweenLite.to(this.pivot, speed, {
                 x:to.x, y:to.y, 
                 ease: Elastic.easeOut.config(1, 0.6),
                 onComplete: () => {},
@@ -167,33 +168,32 @@ class _camera extends PIXI.projection.Container2d{
         }
         // apply setup camera
         Object.entries(setup).forEach(prop => {
-            TweenLite.to(this, 2, {
+            TweenLite.to(this, speed-speed/10, {
                 [prop[0]]:prop[1],
                 ease: Elastic.easeOut.config(1, 0.6),
             });
         });
     };
 
-    setZoom(value,refactor) {
-        const z = this._zoom;
-        const zz = this._zoom+=value;
+    /** setZoom, ou add valeur au zoom */
+    setZoom(value,add,speed=3) {
+        const memZ = this._zoom;
         const target = this._target || {x:this.camToMapX,y:this.camToMapY};
-        this._zoom = zz;
+        this._zoom = add? memZ+value : value;
         this.updateProjection();
-        const to = this._target ? this.getLocalTarget(this._target) :
+        const to = this._target ? this.getLocalTarget(target) :
         {
-            x:this.pivot.x, //+ (target.x-this.camToMapX),
-            y:this.pivot.y, //+ (target.y+this.camToMapY)
+            x:this.pivot.x+(target.x-this.camToMapX), //+ (target.x-this.camToMapX),
+            y:this.pivot.y+(target.y-this.camToMapY), //+ (target.y+this.camToMapY)
         };
-        this._zoom = z;
+        // back to origin
+        this._zoom = memZ;
         this.updateProjection();
         
-        TweenLite.to(this, 3, {
-            _zoom:zz,
+        TweenLite.to(this, speed, {
+            _zoom:add? memZ+value : value,
             ease: Elastic.easeOut.config(0.4, 0.4),
         });
-
-       //this.moveToTarget();
     };
 
     onMouseWheel(e){
@@ -203,7 +203,7 @@ class _camera extends PIXI.projection.Container2d{
         //if(this._zoom+value>2.5 || this._zoom+value<1 ){return};
         //value = this._fpF && value*((this._fpF*10)) || value;
         if(this._zoom+value<0){return};
-        this.setZoom(value);  //ratio,speed,ease
+        this.setZoom(value,true);  //ratio,speed,ease
     };
     
     /**@description debug camera for test pixi-projections, also need move ticker and update to $app update */

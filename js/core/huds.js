@@ -29,8 +29,7 @@ class _huds {
     initialize () {
         Object.values(this).forEach(hud => {
             hud.initialize();
-            $stage.addChild( hud );
-            hud.parentGroup =  $displayGroup.group[4];
+            $stage.CAGE_GUI.addChild( hud );
         });
         // initialize all avaible huds class
        // if(typeof _huds_displacement === "function"){ this.hudsList.displacements = new _huds_displacement () };
@@ -48,6 +47,7 @@ class _huds {
         this.pinBar.setInteractive(value);
         this.stats.setInteractive(value);
     }
+
 };
 
 let $huds = new _huds();

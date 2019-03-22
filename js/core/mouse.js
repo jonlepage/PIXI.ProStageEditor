@@ -51,7 +51,6 @@ class _mouse {
         this.setupTrailsFX();
         this.debug();//FIXME: DELETE ME
 
-        
         $stage.CAGE_MOUSE.addChild( this.mouseTrails, this.pointer );
         this._isEnable = true; // active mouse
     };
@@ -63,21 +62,19 @@ class _mouse {
         pointer.state.setAnimation(0, 'point', true);
        // pointer.pivot.set(5,5);
         this.pointer = pointer;
-
         // create light pointer for mouse
         const pointerLight = $stage.LIGHTS.PointLight_mouse;
         pointerLight.lightHeight = 0.02;
         pointerLight.brightness = 0.8;
         pointer.addChild(pointerLight);
         this.pointerLight = pointerLight;
-
     };
 
     setupInteraction(){// TODO: GLOBAL INTERACTION.. voir si on en a besoin
-      // GLOBAL INTERACTIONS ?
-     this.interaction.on('pointerover' , this.pIN_global  ,this);
-     this.interaction.on('pointerout'  , this.pOUT_global ,this);
-     this.interaction.on('pointerup'   , this.pUP_global  ,this);
+        // GLOBAL INTERACTIONS ?
+        this.interaction.on('pointerover' , this.pIN_global  ,this);
+        this.interaction.on('pointerout'  , this.pOUT_global ,this);
+        this.interaction.on('pointerup'   , this.pUP_global  ,this);
     };
 
     // initialise une trainner FX pour la souris
@@ -141,6 +138,8 @@ class _mouse {
         const isClickR = e.data.button === 2; // clickRight ==>
         const isClickM = e.data.button === 1; // clickMiddle =|=
         if(isClickR && this.isHoldItem){ return this.setItemId(null) }; // remove item in mouse
+        if(isClickR && $systems.status._inCombat){ return $combats.pUP_global(e) }; // si en combat et mode selectionner.
+
     };
 
     // update spine mouse display only
@@ -171,7 +170,7 @@ class _mouse {
         };
         // si id valid, hack spriteSlot de spine pour asigne la texture item
         if(Number.isFinite(id)){
-            const newItem = $items.createItemsSpriteByID(id);
+            const newItem = $items.list[id].createSprites(true);
             this._holdItemID = id;
             this.s.state.setAnimation(0, 'take', false);
             this.s.state.addAnimation(0, 'take_idle', true);

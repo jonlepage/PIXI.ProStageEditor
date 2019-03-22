@@ -48,8 +48,8 @@ class Scene_Map1 extends _Scene_Base {
         const toID = $player._nextTransferID || 0;
         const toCase = $objs.cases_s[0]; // target case
         if( toCase ){
-            $player.s.position.copy(toCase.position);
-            $player.s.zIndex = $player.s.y;
+            $player.p.position.copy(toCase.position);
+            $player.p.zIndex = $player.s.y;
             $player.inCase = toCase.dataObj; //TODO: add from arg, utiliser pour transferer d'une map a lautre, le id de la procahien case.
         };
         $player2.moveToPlayer();

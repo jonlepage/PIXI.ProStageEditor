@@ -78,7 +78,7 @@ class _huds_displacement extends PIXI.Container{
           slotC._iID = null;
         };
         if(Number.isFinite(id)){
-          const newItem = $items.createItemsSpriteByID(id);
+          const newItem = $items.list[id].createSprites(true);
           slotC.item = newItem;
           slotC.addChild(newItem);
           slotC._iID = id;
@@ -255,7 +255,7 @@ class _huds_displacement extends PIXI.Container{
     }else{ this.position.set(x,y) };
   };
 
-  // temp disable when in menuItem or other interaction ?
+  /** disable hud interactive and anime to disable */
   setDisable(value){
     this.interactiveChildren = !value;
     TweenMax.to(this, 0.4, {alpha:value?0.4:1, ease: Power4.easeOut });
@@ -438,11 +438,9 @@ class _huds_displacement extends PIXI.Container{
     let totalStamina = 0;
     let diceColors = [];
     for (let i=0, l=itemsDataSlots.length; i<l; i++) {
-      const item = itemsDataSlots[i]; 
-      if(item && item.diceFactor){
-        const min = item.diceFactor[0];
-        const max = item.diceFactor[1];
-        diceResults[i] = ~~( Math.random() * (max - min + 1) ) + min;
+      const item = itemsDataSlots[i];
+      if(item){
+        diceResults[i] = item.dmg;
         diceColors[i] = item._colorType; // add color autorisation
       }else{
         diceResults[i] = 0;

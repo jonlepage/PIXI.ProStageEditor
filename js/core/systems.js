@@ -19,6 +19,11 @@ class _systems{
             _inCombat : false,
             _holdItem : false,
         };
+        /**@description Options defenir pour le jeux et combat dans le huds options*/
+        this.gameOptions = {
+             /**@description vitesse du tiks dans les combats pour attribuer tour*/
+            _combatSpeed : 60,// 1sec
+        };
         /**@description list des global switch, variable*/
         this.var = [];
         /**@description list des class disponible du jeux*/
@@ -79,13 +84,14 @@ class _systems{
 
         /**@description list des filters preConfigurer*/
         this.filtersList = {
-            noiseGame             : new PIXI.filters.NoiseFilter     (0.1, 1         ),
-            OutlineFilterx8Green  : new PIXI.filters.OutlineFilter   (4, 0x16b50e, 1),
-            OutlineFilterx4white : new PIXI.filters.OutlineFilter   (4, 0xffffff, 1),
-            OutlineFilterx8Red    : new PIXI.filters.OutlineFilter   (4, 0xdb3d2b, 1),
-            OutlineFilterx8Yellow : new PIXI.filters.OutlineFilter   (20, 0xd6d022, 1),
-            OutlineFilterx8Pink   : new PIXI.filters.OutlineFilter   (20, 0xc722d6, 1),
-            TiltShiftFilterBlur   : new PIXI.filters.TiltShiftFilter (               )
+            noiseGame                 : new PIXI.filters.NoiseFilter      (0.1, 1         ),
+            OutlineFilterx8Green      : new PIXI.filters.OutlineFilter    (4, 0x16b50e, 1 ),
+            OutlineFilterx4white      : new PIXI.filters.OutlineFilter    (4, 0xffffff, 1 ),
+            OutlineFilterx8Red        : new PIXI.filters.OutlineFilter    (4, 0xdb3d2b, 1 ),
+            OutlineFilterx8Yellow     : new PIXI.filters.OutlineFilter    (20, 0xd6d022, 1),
+            OutlineFilterx8Pink       : new PIXI.filters.OutlineFilter    (20, 0xc722d6, 1),
+            TiltShiftFilterBlur       : new PIXI.filters.TiltShiftFilter  (               ),
+            KawaseBlurFilter_combatBG : new PIXI.filters.KawaseBlurFilter (0, 12, true    ) //pour combat bg
         }
 
         /**@description influence math attribuer a chaque map 'scene' generer par new game*/
@@ -144,6 +150,13 @@ class _systems{
         return this.classType.containers[type] || this.classType.containers.base;
     };
 
+
+    /** comput hit check between a and b bounds */
+    hitCheck(a, b){ // colision
+        var ab = a._boundsRect;
+        var bb = b._boundsRect;
+        return ab.x + ab.width > bb.x && ab.x < bb.x + bb.width && ab.y + ab.height > bb.y && ab.y < bb.y + bb.height;
+    };
 
 };
 let $systems = new _systems();

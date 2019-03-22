@@ -13,11 +13,11 @@
     },
     "_comment": "--disable-gpu-vsync --limit-fps=60 --disable-devtools --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers --enable-zero-copy --enable-gpu-async-worker-context",
     "dependencies": {
-        "pixi-display": "^1.1.1",
-        "pixi-filters": "^2.7.0",
-        "pixi-lights": "^2.0.3",
-        "pixi-projection": "^0.2.6",
-        "pixi-spine": "^1.5.19",
-        "pixi.js": "^5.0.0-rc.2"
+        "@types/gsap": "^1.20.0",
+        "package-merge": "^0.1.2",
+        "papaparse": "^4.6.3"
+    },
+    "devDependencies": {
+        "@types/pixi.js": "^4.8.5"
     }
 }

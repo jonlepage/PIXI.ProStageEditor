@@ -8,7 +8,7 @@
 /*#region [rgba(255, 255, 255, 0.1)]
 ┌------------------------------------------------------------------------------┐
   GLOBAL $huds.stats CLASS: _huds_stats
-  huds qui affiche les states general
+  huds qui affiche les states general sur player1 et 2
 └------------------------------------------------------------------------------┘
 */
 class _huds_stats extends PIXI.Container {
@@ -31,7 +31,6 @@ class _huds_stats extends PIXI.Container {
     this.position.zeroSet();
     this.setupSprites();
     this.addInteractive();
-    
   };
   
   setupSprites() {

@@ -28,242 +28,150 @@ builder  : materieux permetant de fabriquer , des ponts, routes, arme, ... updat
 tools    : outils pour les interaction et les action dans l'environements, certain outils seron limiter par leur nombre
 keys     : objet collection unique permetant la progressio ndu storyboard.
 */
+//TODO: rendu ici , refaire le sorter et l'integrations des items, stoker a lavance tous les items
 class _menu_items extends PIXI.Container {
     constructor() {
         super();
-        this.sortList = ["id", "name", "recent", "weigth", "quantity", "value", "rarity"]; // Liste des sort
-        this._currentSort = 0; // Le sort Actif
+        /** Indicateur active */
+        this._isActive = false;
+        /** liste des possibiliter pour sort item afficher */
+        this.sortList = ["id", "name", "recent", "weigth", "quantity", "value", "rarity","dammage"]; // Liste des sort
+        /** Le sort actuel, index de .sortList*/
+        this._currentSort = 0;
+        /** filtre active pour les items, affiche seulement les items tagger  */
+        this._currentFilter = false;
+        /** le buffer des slots lorsque show, filtrer par possed a l'ouvertur du menue*/
+        this.slotsBuffer = [];
+
         this.sortBox = null; // ref to sortBox
         this.filtersSlots = []; // Liste des filters et pinGems
-        this.filterTintList = Object.values($items.types).map(obj => obj.tint); // Liste des tints pour les filters et pinGems
-        this._currentFilter = false; // Le filtre Actif False:='all'
-        this.slots = []; // sortable buffer for items slots
-        this.sortIndexBuffer = [...Array($items.totalGameItems).keys()]; // buffer pour les id slots a sortir
-        this.position.set(1050, 680);
-        this.renderable = false;
+       // this.filterTintList = Object.values($items.types).map(obj => obj.tint); // Liste des tints pour les filters et pinGems
         
+        this.sortIndexBuffer = [...Array($items.totalGameItems).keys()]; // buffer pour les id slots a sortir
+        this.position.set(260, 390);
+       
     };
+    get slots(){return this.child.cItems.children};
+    get filters(){return this.child.cFilters.children};
+
 //#region [rgba(255, 255, 255, 0.07)]
     // add basic proprety
     initialize() {
-        this.setupSprites();
-        this.setupTweens();
-        this.setupInteractions();
+        this.initialize_sprites();
+        this.initialize_Interactions();
     };
 
-    setupSprites() {
+    initialize_sprites() {
         const dataBase = $Loader.Data2.menueItems;
-        // url("data2/Hubs/menueItems/SOURCE/images/menueItemFrame.png"); 
-        //contour frame du menue.
-        const frames = new PIXI.Container();
-        const frames_d = new PIXI.Sprite(dataBase.textures.menueItemFrame);
-        const frames_n = new PIXI.Sprite(dataBase.textures_n.menueItemFrame_n);
-        frames_d.parentGroup = PIXI.lights.diffuseGroup;
-        frames_n.parentGroup = PIXI.lights.normalGroup;
-        frames.addChild(frames_d, frames_n);
-
-        //MASK Master Container D,N for all masked elements
-        let w = frames_d.width,
-            h = frames_d.height;
-        const masked_d = new PIXI.Container(); // difuse menu mask limit 
-        const masked_n = new PIXI.Container(); // normal menu mask limit
-        const mask = new PIXI.Sprite(PIXI.Texture.WHITE);
-        masked_d.parentGroup = PIXI.lights.diffuseGroup;
-        masked_n.parentGroup = PIXI.lights.normalGroup;
-        mask.width = w - 42;
-        mask.height = h - 45;
         
-        mask.position.set(15, 20);
-        masked_d.mask = mask;
-        masked_n.mask = mask;
+        //! contour frame du menue.
+        const cframe = new PIXI.Container(); //data2\Hubs\menueItems\SOURCE\images\menueItemFrame.png
+        cframe.d = new PIXI.Sprite(dataBase.textures.menueItemFrame);
+        cframe.n = new PIXI.Sprite(dataBase.textures_n.menueItemFrame_n);
+        cframe.d.parentGroup = PIXI.lights.diffuseGroup;
+        cframe.n.parentGroup = PIXI.lights.normalGroup;
+        cframe.addChild(cframe.d, cframe.n);
 
-        //Backgrouds.
-        //url("data2/Hubs/menueItems/SOURCE/images/bgMaster.png"); 
-        const bg1_d = new PIXI.Sprite(dataBase.textures.bgMaster);
-        const bg1_n = new PIXI.Sprite(dataBase.textures_n.bgMaster_n);
-        //url("data2/Hubs/menueItems/SOURCE/images/bgDiag.png");
-        const bg2_d = new PIXI.Sprite(dataBase.textures.bgDiag);
-        const bg2_n = new PIXI.Sprite(dataBase.textures_n.bgDiag_n);
-        bg2_d.alpha = 0.2;
-        bg2_n.alpha = 0.8;
-        masked_d.addChild(bg1_d, bg2_d);
-        masked_n.addChild(bg1_n, bg2_n);
-        this.backgrounds = {
-            bg1: {
-                d: bg1_d,
-                n: bg1_n
-            },
-            bg2: {
-                d: bg2_d,
-                n: bg2_n
-            },
-        };
+        //! container Background
+        //data2\Hubs\menueItems\SOURCE\images\bgDiag.png
+        const bg = new PIXI.Container();
+        bg.d1 = new PIXI.Sprite(dataBase.textures.bgDiag);
+        bg.n1 = new PIXI.Sprite(dataBase.textures_n.bgDiag_n);
+        bg.d1.parentGroup = PIXI.lights.diffuseGroup;
+        bg.n1.parentGroup = PIXI.lights.normalGroup;
+        //data2\Hubs\menueItems\SOURCE\images\bgMaster.png
+        bg.d2 = new PIXI.Sprite(dataBase.textures.bgMaster);
+        bg.d2.parentGroup = PIXI.lights.diffuseGroup;
+        bg.d2.position.x = 30;
+        bg.d2.scale.x = 1.2;
+        bg.addChild(bg.d1,bg.n1,bg.d2);
 
-        //filters pinGems. note: not in mask
-        const filterList = Object.keys($items.types);
-
-        function setPivotCenter(d, n) {
-            d && d.pivot.set(d.width / 2, d.height / 2);
-            n && n.pivot.set(d.width / 2, d.height / 2)
-        };
-        for (let i = 0, x = 100, y = 55, l = filterList.length; i < l; i++, y += 48) {
-            const type = filterList[i];
-            const cage = new PIXI.Container();
-            //url("data2/Hubs/menueItems/SOURCE/images/filters_frame.png");
-            const fFrame_d = new PIXI.Sprite(dataBase.textures.filters_frame);
-            const fFrame_n = new PIXI.Sprite(dataBase.textures_n.filters_frame_n);
-            setPivotCenter(fFrame_d, fFrame_n);
-            fFrame_d.parentGroup = PIXI.lights.diffuseGroup;
-            fFrame_n.parentGroup = PIXI.lights.normalGroup;
-
-            // Colored Gem inside frame
-            //url("data2/Hubs/menueItems/SOURCE/images/filters_button.png"); 
-            const fGem_d = new PIXI.Sprite(dataBase.textures.filters_button);
-            const fGem_n = new PIXI.Sprite(dataBase.textures_n.filters_button_n);
-            setPivotCenter(fGem_d, fGem_n);
-            fGem_d.parentGroup = PIXI.lights.diffuseGroup;
-            fGem_n.parentGroup = PIXI.lights.normalGroup;
-            fGem_d.tint = $items.types[type].tint;
-
-            // gem text gem txt quantity
-            const fText = new PIXI.Text(type.toUpperCase(), {
-                fontSize: 18,
-                fill: 0xffffff,
-                strokeThickness: 4,
-                stroke: 0x000000,
-                fontFamily: "ArchitectsDaughter",
-                fontWeight: "bold"
-            });
-            setPivotCenter(fText);
-            const fQTY = new PIXI.Text('*' + $items.pinGemsPossed[type], {
-                fontSize: 18,
-                fill: 0xffffff,
-                strokeThickness: 4,
-                stroke: 0x000000,
-                fontFamily: "ArchitectsDaughter",
-                fontWeight: "bold"
-            });
-            setPivotCenter(fQTY);
-            fQTY.position.set(fFrame_d.pivot.x, 0)
-
-            cage.addChild(fFrame_d, fFrame_n, fGem_d, fGem_n, fText, fQTY);
-            cage.position.set(x, y);
-            //references
-            this.filtersSlots[i] = cage;
-            cage.fFrame = {
-                d: fFrame_d,
-                n: fFrame_n
-            };
-            cage.fGem = {
-                d: fGem_d,
-                n: fGem_n
-            };
-            cage.fText = fText;
-            cage.fQTY = fQTY;
-            cage.fType = type;
-        };
-
-        //sorters sortBox, not in mask
-        //url("data2/Hubs/menueItems/SOURCE/images/buttonFilterBy.png");
-        const sortCage = new PIXI.Container();
-        const sort_d = new PIXI.Sprite(dataBase.textures.buttonFilterBy);
-        const sort_n = new PIXI.Sprite(dataBase.textures_n.buttonFilterBy_n);
-        sort_d.parentGroup = PIXI.lights.diffuseGroup;
-        sort_n.parentGroup = PIXI.lights.normalGroup;
-        setPivotCenter(sort_d, sort_n);
-        // sort text
-        const sortTxt = new PIXI.Text(`Sort By: ${this.sortList[0].toUpperCase()}`, {
-            fontSize: 18,
-            fill: 0xffffff,
-            strokeThickness: 2,
-            stroke: 0x000000,
-            fontFamily: "ArchitectsDaughter",
-            fontWeight: "bold"
+        //! container Filters et pinColor
+        const cFilters = new PIXI.Container();
+        Object.keys($items.types).forEach(ftype => { // pour chaque filter type creer un button filter
+            const c = new PIXI.Container(); //data2\Hubs\menueItems\SOURCE\images\filters_frame.png
+            const d1 = c.d1 = new PIXI.Sprite(dataBase.textures.filters_frame);
+            const n1 = c.n1 = new PIXI.Sprite(dataBase.textures_n.filters_frame_n);
+            d1.parentGroup = PIXI.lights.diffuseGroup;
+            n1.parentGroup = PIXI.lights.normalGroup;
+            d1.anchor.set(0.5);
+            n1.anchor.set(0.5);
+            //data2\Hubs\menueItems\SOURCE\images\filters_button.png
+            const d2 = c.d2 = new PIXI.Sprite(dataBase.textures.filters_button);
+            const n2 = c.n2 = new PIXI.Sprite(dataBase.textures_n.filters_button_n);
+            d2.parentGroup = PIXI.lights.diffuseGroup;
+            n2.parentGroup = PIXI.lights.normalGroup;
+            d2.anchor.set(0.5);
+            n2.anchor.set(0.5);
+            d2.tint = $items.types[ftype].tint;
+            // text indique le nombre de pinColor
+            const style = { fontSize: 18,fill: 0xffffff,strokeThickness: 4,stroke: 0x000000,fontFamily: "ArchitectsDaughter",fontWeight: "bold" };
+            const txt_filterName  = c.txt_filterName  = new PIXI.Text(ftype.toUpperCase(),style);
+            const txt_pinColorQty = c.txt_pinColorQty = new PIXI.Text('*' + $items.pinColorPossed[ftype],style);
+            txt_filterName.anchor.set(0.5);
+            txt_pinColorQty.position.set(137/2,-25);
+            c.ftype = ftype;
+            c.addChild(d1,n1,d2,n2,txt_filterName,txt_pinColorQty);
+            cFilters.addChild(c);
         });
-        setPivotCenter(sortTxt);
-        sortCage.addChild(sort_d, sort_n, sortTxt);
-        sortCage.position.set(800, 20);
-        sortCage.sortTxt = sortTxt;
-        this.sortBox = sortCage;
+        cFilters.position.set(100,50)
 
-        //slots and items
-        for (let i = 0, l = $items.totalGameItems; i < l; i++) {
-            // items frames containers
-            //url("data2/Hubs/menueItems/SOURCE/images/itemsFrame.png");
+        //! sort container
+        const cSorter = new PIXI.Container();//data2\Hubs\menueItems\SOURCE\images\buttonFilterBy.png
+        cSorter.d = new PIXI.Sprite(dataBase.textures.buttonFilterBy);
+        cSorter.n = new PIXI.Sprite(dataBase.textures_n.buttonFilterBy_n);
+        cSorter.d.parentGroup = PIXI.lights.diffuseGroup;
+        cSorter.n.parentGroup = PIXI.lights.normalGroup;
+        cSorter.d.anchor.set(0.5);
+        cSorter.n.anchor.set(0.5);
+        const style = { fontSize: 16,fill: 0xffffff,strokeThickness: 8,stroke: 0x000000,fontFamily: "ArchitectsDaughter",fontWeight: "bold" };
+        cSorter.txt = new PIXI.Text(`Sort By: ${this.sortList[0].toUpperCase()}`,style);
+        cSorter.txt.anchor.set(0.5);
+        cSorter.addChild(cSorter.d,cSorter.n,cSorter.txt);
+        cSorter.position.set(750,10);
 
-            const itemsFrame_d = new PIXI.Sprite(dataBase.textures.itemsFrame);
-            const itemsFrame_n = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
-            setPivotCenter(itemsFrame_d, itemsFrame_n);
-
-            // items buffers
-            //url("data2/Objets/gameItems/gameItems.png");
-            const dataBase_items = $Loader.Data2.gameItems;
-            const items_d = new PIXI.Sprite(dataBase_items.textures[i]);
-            const items_n = new PIXI.Sprite(dataBase_items.textures_n[i + 'n']);
-            setPivotCenter(items_d, items_n);
-
-            // FX for background text
-            //url("data2/Hubs/menueItems/SOURCE/images/bgTxtFocus.png");
-            const txtFx_d = new PIXI.Sprite(dataBase.textures.bgTxtFocus);
-            const txtFx_n = new PIXI.Sprite(dataBase.textures_n.bgTxtFocus_n);
-            txtFx_d.blendMode = 1;
-            txtFx_n.blendMode = 2;
-            txtFx_d.alpha = 0.3;
-            txtFx_d.pivot.set(40);
-            txtFx_n.pivot.set(40);
-
-            // add text item informations TODO: 
-            const itemTxt = new PIXI.Text(`${$items.list[i]._name}\n *:6(2)\n [12]`, //TODO:
-                {
-                    fontSize: 16,
-                    fill: 0x000000,
-                    strokeThickness: 2,
-                    stroke: 0xffffff,
-                    fontFamily: "ArchitectsDaughter",
-                    letterSpacing: -1,
-                    fontWeight: "bold",
-                    lineHeight: 20
-                });
-            itemTxt.pivot.set(-40, 35);
-            // create reference controler
-            this.slots[i] = {
-                itemsFrame: {
-                    d: itemsFrame_d,
-                    n: itemsFrame_n
-                },
-                items: {
-                    d: items_d,
-                    n: items_n
-                },
-                txtFx: {
-                    d: txtFx_d,
-                    n: txtFx_n
-                },
-                itemTxt: itemTxt,
-            };
-            Object.defineProperties(this.slots[i], {
-                "setRenderable": { // hide from filters
-                    set: function (b) {
-                        for (const key in this) {
-                            const ref = this[key];
-                            ref.d ? (ref.d.renderable = b, ref.n.renderable = b) : ref.renderable = b;
-                        };
-                        this.renderStatus = b;
-                    },
-                    enumerable: false,
-                },
-                // cache information
-                _id: {value: i},
-                renderStatus: {value: true, writable: true},
-                name: {value: $items.getNames(i)},
-                type: {value: $items.getTypes(i)},
-            });
-            masked_d.addChild(txtFx_d, itemsFrame_d, items_d, itemTxt);
-            masked_n.addChild(txtFx_n, itemsFrame_n, items_n);
+        //! container items and  items
+        const cItems = new PIXI.Container(); // container qui contiens les frames items
+        for (let i = 0, minX=240, minY=70, l = $items.list.length; i < l; i++) { // minX,minY: ces le start line par default
+            const iframe = new PIXI.Container();
+            iframe.renderable = false;
+            iframe._id = i;
+            //data2\Hubs\menueItems\SOURCE\images\itemsFrame.png
+            iframe.d1 = new PIXI.Sprite(dataBase.textures.itemsFrame);
+            iframe.n1 = new PIXI.Sprite(dataBase.textures_n.itemsFrame_n);
+            iframe.d1.parentGroup = PIXI.lights.diffuseGroup;
+            iframe.n1.parentGroup = PIXI.lights.normalGroup;
+            iframe.d1.anchor.set(0.5);
+            iframe.n1.anchor.set(0.5);
+            //data2\Hubs\menueItems\SOURCE\images\bgTxtFocus.png
+            iframe.d2 = new PIXI.Sprite(dataBase.textures.bgTxtFocus);
+            iframe.d2.parentGroup = PIXI.lights.diffuseGroup;
+            iframe.d2.anchor.set(0,0.5);
+            iframe.d2.alpha = 0.5;
+             //data2\Objets\gameItems\gameItems.png
+            const item = iframe.item = $items.list[i].createSprites(true);
+            const style = { fontSize: 16,fill: 0xffffff,strokeThickness: 8,stroke: 0x000000,fontFamily: "ArchitectsDaughter",fontWeight: "bold" };
+            iframe.txt = new PIXI.Text(`${item.dataLink.name}\n *${item.dataLink.qty}`, style);
+            iframe.txt.position.set(40,-40);
+            iframe.position.set(minX,minY);
+            iframe.addChild(iframe.d1,iframe.n1,iframe.d2,iframe.txt,item); //FIXME: CREER UN SPRITE ITEMS? voir createSprites
+            cItems.addChild(iframe);
         };
+        cItems.position.set(10,10);
 
-        this.addChild(mask, masked_d, masked_n, frames, ...this.filtersSlots, sortCage);
-        this.pivot.set(frames.width / 2, frames.height / 2);
+        // !mask items , les mask doivent etre asigner a chaque sprite parentGroup , mais mauvais performance
+        const mask = new PIXI.Sprite(PIXI.Texture.WHITE);
+        mask.width  = cframe.width-10-10;
+        mask.height = cframe.height-10-10;
+        mask.position.set(10,10);
+        mask.alpha = 1; //DEBUG HELPER
+        bg.d1.mask = mask;
+        bg.n1.mask = mask;
+        bg.d2.mask = mask;
+        cItems.mask = mask;
+        this.addChild(mask);
+        this.addChild(bg,cItems,cframe,cFilters,cSorter);
+        this.child = {bg,cItems,cFilters,cframe,cSorter};
     };
 //#endregion
 
@@ -273,24 +181,33 @@ TWEENS EASINGS DISPLACEMENTS mix with spine2D core
 https://greensock.com/docs/Core/Animation
 └------------------------------------------------------------------------------┘
 */
-    // setup and cache all thning need for easing tweens
-    setupTweens() {
-        this.tweens = {
-            Elastic1: Elastic.easeOut.config(0.5, 1),
-            Elastic2: Elastic.easeInOut.config(0.5, 1),
-        };
-    };
 
     show(duration) {
         this._isActive = true;
+        this.slotsBuffer = this.updateSlotsFinded();
         $stage.scene.interactiveChildren = false;
         $huds.stamina.setDisable(true); // temp disahble stamina hud
-       //$objs.setInteractive(false); // disable objs map interactivity
 
         this.setInteractive(true);
         this.renderable = true;
         this.visible = true;
+        this.show_filters();
         this.sortById();
+    };
+
+    /** affiche les filters buttons animations */
+    show_filters(){
+        const filters = this.filters;
+        const startX = 0, startY = 0;
+        for (let i = 0, x = startX, y = startY, l = filters.length; i < l; i++) {
+            const filter = filters[i];
+            TweenLite.to(filter, 1 + Math.random(), {
+                x: x,
+                y: y,
+                ease: Power4.easeOut
+            });
+            y+=filter.height;
+        };
     };
 
     hide(duration) {
@@ -310,249 +227,149 @@ https://greensock.com/docs/Core/Animation
 INTERACTIONs EVENTS LISTENERS
 pointerIN, pointerOUT, pointerUP
 └------------------------------------------------------------------------------┘
-*/
-    setupInteractions() {
-        this.filtersSlots.forEach(filterGem => {
-            filterGem.on('pointerover', this.IN_filterGem, this);
-            filterGem.on('pointerout', this.OUT_filterGem, this);
-            filterGem.on('pointerup', this.UP_filterGem, this);
+*/  
+    /** initialisation setup des element interactif */
+    initialize_Interactions(destroy) {
+        // slots
+        this.slots.forEach( slot => {
+            slot.on('pointerover' , this.pIN_iSlots ,this);
+            slot.on('pointerout'  , this.pOUT_iSlots,this);
+            slot.on('pointerup'   , this.pUP_iSlots ,this);
         });
-        this.slots.forEach(slot => {
-            slot.itemsFrame.d.on('pointerover', this.IN_itemSlot, slot);
-            slot.itemsFrame.d.on('pointerout', this.OUT_itemSlot, slot);
-            slot.itemsFrame.d.on('pointerup', this.UP_itemSlot, slot);
+        // filters
+        this.child.cFilters.children.forEach(filter => {
+           filter.on('pointerover' , this.pIN_filter  , this);
+           filter.on('pointerout'  , this.pOUT_filter , this);
+           filter.on('pointerup'   , this.pUP_filter  , this);
         });
-        this.sortBox.on('pointerover', this.IN_sortBox, this);
-        this.sortBox.on('pointerout', this.OUT_sortBox, this);
-        this.sortBox.on('pointerup', this.UP_sortBox, this);
+        // sortBox
+        this.child.cSorter.on('pointerover', this.pIN_sorter , this);
+        this.child.cSorter.on('pointerout' , this.pOUT_sorter, this);
+        this.child.cSorter.on('pointerup'  , this.pUP_sorter , this);
     };
 
+    /** activation/desactivation des elements interactif */
     setInteractive(value) {
-        for (let i=0, l=this.filtersSlots.length; i<l; i++) {
-            this.filtersSlots[i].interactive = value;
-            this.filtersSlots[i].visible = value;
-        };
-        for (let i=0, l=this.slots.length; i<l; i++) {
-            this.slots[i].itemsFrame.d.interactive = value;
-            this.slots[i].itemsFrame.d.visible = value;
-        };
-        this.sortBox.interactive = value;
+        // Slots items
+        this.slotsBuffer.forEach(s => {
+            s.interactive = value;
+        });
+        // Slots items
+        this.child.cFilters.children.forEach(f => {
+            f.interactive = value;
+        });
+        this.child.cSorter.interactive = true;
     };
 
-    IN_itemSlot(e) {
-        this.itemsFrame.d.displayOrder = 9999999;
-        const itemsFrame = this.itemsFrame;
-        const items = this.items;
-        const itemTxt = this.itemTxt;
-        const txtFx = this.txtFx;
-        itemsFrame.d.blendMode = 1;
-        itemsFrame.n.blendMode = 1;
-
+    pIN_iSlots(e) {
+        const ee = e.currentTarget;
+        ee.d1.blendMode = 1;
+        ee.n1.blendMode = 1;
         const rot = 0.15;
-        itemsFrame.d.rotation = -rot;
-        itemsFrame.n.rotation = rot;
-        TweenLite.killTweensOf(itemsFrame.d);
-        TweenLite.killTweensOf(itemsFrame.n);
-        TweenMax.to(itemsFrame.d, 2, {
+        ee.d1.rotation = -rot;
+        ee.n1.rotation = rot;
+        TweenMax.to(ee.d1, 2, {
             rotation: rot,
             ease: Power1.easeInOut,
             repeat: -1,
             yoyoEase: true
         });
-        TweenMax.to(itemsFrame.n, 2, {
+        TweenMax.to(ee.n1, 2, {
             rotation: -rot,
             ease: Power1.easeInOut,
             repeat: -1,
             yoyoEase: true
         });
-        TweenLite.to(itemsFrame.d.scale, 0.8, {
-            x: 1.5,
-            y: 1.5,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(itemsFrame.n.scale, 0.8, {
-            x: 1.1,
-            y: 1.1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to([items.d.scale, items.n.scale], 0.8, {
-            x: 1.2,
-            y: 1.2,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(itemTxt.scale, 2, {
-            x: 1.2,
-            y: 1.2,
-            ease: Expo.easeOut
-        });
+        TweenLite.to(ee.d1  .scale, 0.8, {x: 1.5,y: 1.5,ease: Expo.easeOut});
+        TweenLite.to(ee.n1  .scale, 0.8, {x: 1.1,y: 1.1,ease: Expo.easeOut});
+        TweenLite.to(ee.item.scale, 1.4, {x: 1.2,y: 1.2,ease: Expo.easeOut});
+        TweenLite.to(ee.txt .scale, 1.2, {x: 1.2,y: 1.2,ease: Expo.easeOut});
     };
 
-    OUT_itemSlot(e) {
-        const itemsFrame = this.itemsFrame;
-        const items = this.items;
-        const itemTxt = this.itemTxt;
-        const txtFx = this.txtFx;
-        itemsFrame.d.blendMode = 0;
-        itemsFrame.n.blendMode = 0;
-
-        TweenLite.to([itemsFrame.d, itemsFrame.n], 0.9, {
-            rotation: 0,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(itemsFrame.d.scale, 0.8, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(itemsFrame.n.scale, 0.8, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to([items.d.scale, items.n.scale], 0.8, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(itemTxt.scale, 1, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
+    pOUT_iSlots(e) {
+        const ee = e.currentTarget;
+        ee.d1.blendMode = 0;
+        ee.n1.blendMode = 0;
+        TweenLite.killTweensOf(ee.d1);
+        TweenLite.killTweensOf(ee.n1);
+        TweenLite.to([ee.d1,ee.n1], 0.2, {rotation: 0,ease: Expo.easeOut});
+        TweenLite.to([ee.d1.scale,ee.n1.scale], 0.4, {x: 1,y: 1,ease: Elastic.easeOut.config(0.9, 0.75)  });
+        TweenLite.to(ee.item.scale, 0.8, {x: 1,y: 1, ease: Elastic.easeOut.config(1, 0.75) });
+        TweenLite.to(ee.txt .scale, 1  , {x: 1,y: 1, ease: Elastic.easeOut.config(1, 0.75) });
     };
 
-    UP_itemSlot(e) {
-        //$mouse.holdingItem = this._id; // setter
-        $mouse.setItemId(this._id);
+    pUP_iSlots(e) {
+        const ee = e.currentTarget;
+        //$mouse.holdingItem = ee._id; // setter
+        $mouse.setItemId(ee._id);
    
     };
 
-    IN_sortBox(e) {
-        const sortBox = e.currentTarget;
-        TweenLite.to(sortBox.scale, 1, {
-            x: 1,
-            y: 1,
-            ease: this.tweens.Elastic1
-        });
+    pIN_sorter(e) {
+        const ee = e.currentTarget;
+        TweenLite.to(ee.scale, 1, {x: 1,y: 1,ease: Elastic.easeOut.config(1, 0.75) });
     };
-    OUT_sortBox(e) {
-        const sortBox = e.currentTarget;
-        TweenLite.to(sortBox.scale, 1, {
-            x: 0.9,
-            y: 0.9,
-            ease: this.tweens.Elastic1
-        });
+    pOUT_sorter(e) {
+        const ee = e.currentTarget;
+        TweenLite.to(ee.scale, 1, {x: 0.9,y: 0.9,ease: Elastic.easeOut.config(1, 0.75) });
     };
 
-    UP_sortBox(e) {
-        const sortBox = e.currentTarget;
-        this.nextSortValue(e.data.button && -1 || 1);
-        TweenLite.to(sortBox.scale, 0.1, {
-            x: 1.15,
-            y: 1.05,
-            ease: Power4.easeOut
-        });
-        TweenLite.to(sortBox.scale, 0.4, {
-            x: 1,
-            y: 1,
-            ease: Power4.easeOut,
-            delay: 0.1
-        });
+    pUP_sorter(e) {
+        const ee = e.currentTarget;
+        const value = (e.data.button === 0) && 1 || -1; // clickL +1 | clickR -1
+        const length = this.sortList.length-1;
+        const next = this._currentSort+value;
+        (next>length)? this._currentSort = 0 : (next<0)? this._currentSort = length : this._currentSort+=value;
 
-        sortBox.sortTxt.text = `Sort By: ${this.sortList[this._currentSort].toUpperCase()}`;
-        sortBox.sortTxt.pivot.x = sortBox.sortTxt.width / 2;
-        if (this._currentSort === 0) {
-            this.sortById();
-        } else {
-            this.sortByName();
-        }
+        TweenLite.to(ee.scale, 0.1, {x: 1.15,y: 1.05,ease: Power4.easeOut});
+        TweenLite.to(ee.scale, 0.4, {x: 1,y: 1,ease: Power4.easeOut,delay: 0.1});
+        // update sort text
+        ee.txt.text = `Sort By: ${this.sortList[this._currentSort].toUpperCase()}`;
+        switch (this.sortList[this._currentSort]) {
+            case 'id'       : this.sortById();   break;
+            case 'name'     : this.sortByName(); break;
+            case 'recent'   :                    break;
+            case 'weigth'   :  this.sortByWeigth(); break;
+            case 'quantity' : this.sortByQTY();  break;
+            case 'value'    : this.sortByValue(); break;
+            case 'rarity'   :                    break;
+            case 'dammage'   :this.sortByDMG();break;
+        };
     };
 
-    IN_filterGem(e) {
-        const pinGem = e.currentTarget;
-        const fFrame = pinGem.fFrame;
-        const fGem = pinGem.fGem;
-        const fText = pinGem.fText;
-        const fQTY = pinGem.fQTY;
-
-        fFrame.d.blendMode = 1;
-        fFrame.n.blendMode = 2;
-        fFrame._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-        TweenLite.to(fFrame.d.scale, 0.3, {
-            x: 1.2,
-            y: 1.2,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fFrame.n.position, 0.2, {
-            x: 85,
-            ease: Expo.easeOut
-        });
-        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.3, {
-            x: 1.2,
-            y: 1.15,
-            ease: Expo.easeInOut
-        });
-        TweenLite.to(fText.scale, 0.2, {
-            x: 1.2,
-            y: 1.2,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fQTY.position, 0.2, {
-            x: fFrame.d.pivot.x + 40,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fQTY.scale, 0.2, {
-            x: 1.2,
-            y: 1.2,
-            ease: Expo.easeOut
-        });
+    pIN_filter(e) {
+        const ee = e.currentTarget;
+        ee.d1.blendMode = 1;
+        ee.n1.blendMode = 2;
+        ee.n2.blendMode = 1;
+        ee._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
+        TweenLite.to([ee.d1.scale], 0.3, {x: 1.1,y: 1.2,ease: Expo.easeOut});
+        TweenLite.to([ee.d2.scale,ee.n2.scale], 0.3, {x: 1.1,y: 1.2,ease: Expo.easeOut});
+        TweenLite.to(ee.d1.position, 0.4, {x: 80,ease: Expo.easeOut});
+        TweenLite.to(ee.txt_filterName.scale, 1, {x: 1.2,y: 1.2,ease: Elastic.easeOut.config(1.2, 0.4) });
+        TweenLite.to(ee.txt_pinColorQty.scale, 0.2, {x: 1.2,y: 1.2,ease: Expo.easeOut});
+        TweenLite.to(ee.txt_pinColorQty, 0.2, {alpha: 1,ease: Expo.easeOut});
     };
 
-    OUT_filterGem(e) {
-        const pinGem = e.currentTarget;
-        const fFrame = pinGem.fFrame;
-        const fGem = pinGem.fGem;
-        const fText = pinGem.fText;
-        const fQTY = pinGem.fQTY;
-
-        fFrame.d.blendMode = 0;
-        fFrame._filters = [new PIXI.filters.OutlineFilter(2, 0x000000, 1)]; // TODO:  make a filters managers cache
-        TweenLite.to(fFrame.d.scale, 0.2, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fFrame.n.position, 0.2, {
-            x: 0,
-            ease: Expo.easeOut
-        });
-        TweenLite.to([fGem.d.scale, fGem.n.scale], 0.1, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fText.scale, 0.2, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fQTY.position, 0.3, {
-            x: fFrame.d.pivot.x,
-            ease: Expo.easeOut
-        });
-        TweenLite.to(fQTY.scale, 0.2, {
-            x: 1,
-            y: 1,
-            ease: Expo.easeOut
-        });
+    pOUT_filter(e) {
+        const ee = e.currentTarget;
+        ee.d1.blendMode = 0;
+        ee.n1.blendMode = 0;
+        ee.n2.blendMode = 0;
+        ee._filters = null;
+        TweenLite.to([ee.d1.scale], 0.3, {x: 1,y: 1,ease: Expo.easeOut});
+        TweenLite.to([ee.d2.scale,ee.n2.scale], 0.3, {x: 1,y: 1,ease: Expo.easeOut});
+        TweenLite.to(ee.d1.position, 0.2, {x: 0,ease: Expo.easeOut});
+        TweenLite.to(ee.txt_filterName.scale, 0.6, {x: 1,y: 1,ease: Elastic.easeOut.config(2, 0.95)});
+        TweenLite.to(ee.txt_pinColorQty.scale, 0.2, {x: 1,y: 1,ease: Expo.easeOut});
+        TweenLite.to(ee.txt_pinColorQty, 0.2, {alpha: 0.5,ease: Expo.easeOut});
     };
 
     // filtrer les items selon le pinGem choisi "all" == no filter
-    UP_filterGem(e) {
-        const filterGem = e.currentTarget;
+    pUP_filter(e) {
+        const ee = e.currentTarget;
         if (e.data.button === 0) { // clickLeft_ <==
-            const newFilter = filterGem.fType !== "all" && filterGem.fType || false;
-            this._currentFilter = newFilter;
+            this.setFilterTo(ee.ftype)
             this.refreshItemsGrid();
         } else
         if (e.data.button === 2) { // _clickRight ==>
@@ -563,109 +380,87 @@ pointerIN, pointerOUT, pointerUP
         }
     };
     //#endregion
+    /** obtier les slots seulement deja trouver */
+    updateSlotsFinded(){
+        return this.slots.filter( (s,i)=> {
+            if($items.itemPossed.hasOwnProperty(i)){
+                return s.renderable = true
+            }
+        } ); 
+    };
 
+    /** defenie un nouveau filtre et applique sur le slotsBuffer */
+    setFilterTo(filter){
+        if(this._currentFilter === filter){return false};
+        this._currentFilter = filter;
+        this.slotsBuffer.forEach(slot => {
+            const type = slot.item.dataLink._iType;
+            (filter=== 'all' || type === filter) ? slot.renderable = true : slot.renderable = false;
+        });
+    }
 
 
     // positionne les items et les sort
     refreshItemsGrid() {
-        const x = 300,
-            y = 110;
-        const margeX = 240;
+        const startX = 290, startY = 90;
+        const margeX = 260;
         const margeY = 100;
-        console.log('this.slots.: ', this.slots);
-        for (let i = 0, xx = x, yy = y, ii = 0, l = this.slots.length; i < l; i++) {
-            
-            const slot = this.slots[i];
-            /*if(![1,5,6,8,7,12,24,56].contains(slot.id)){ //TODO: ajouter le system items pour players
-                slot.renderables = false;
-                continue;
-            };*/
-            if (this._currentFilter && this._currentFilter !== slot.type) {
-                slot.setRenderable = false;
-                continue;
+        const slots = this.slotsBuffer;
+        for (let i = 0, xx = startX, yy = startY, ii = 0, l = slots.length; i < l; i++) {
+            const slot = slots[i];
+            if(slot.renderable){ // renderable defeni par button filters
+                TweenLite.to(slot, 1 + Math.random(), {x: xx,y: yy,ease: Power4.easeOut });
+                ii++ === 4 ? (xx = startX, yy += margeY, ii = 0) : xx += margeX;
             };
-            !slot.renderStatus && (slot.setRenderable = true);
-            const itemsFrame = slot.itemsFrame;
-            const items = slot.items;
-            const itemTxt = slot.itemTxt;
-            const txtFx = slot.txtFx;
-            TweenLite.to([itemsFrame.d.position, itemsFrame.n.position], 1 + Math.random(), {
-                x: xx,
-                y: yy,
-                ease: Power4.easeOut
-            });
-            TweenLite.to([items.d.position, items.n.position], 1 + Math.random(), {
-                x: xx,
-                y: yy,
-                ease: Power4.easeOut
-            });
-            TweenLite.to([txtFx.d.position, txtFx.n.position], 1 + Math.random(), {
-                x: xx,
-                y: yy,
-                ease: Power4.easeOut
-            });
-            TweenLite.to(itemTxt.position, 1 + Math.random(), {
-                x: xx,
-                y: yy,
-                ease: Power4.easeOut
-            });
-            ii++ === 4 ? (xx = x, yy += margeY, ii = 0) : xx += margeX;
+
         };
     };
 
     // positionner les items et les sort
     // $huds.menuItems.sortById()
     sortById() {
-        this.slots.sort(function (a, b) {
+        this.slotsBuffer.sort(function (a, b) {
             return a._id - b._id;
         });
         this.refreshItemsGrid();
     };
     // $huds.menuItems.sortByName()
     sortByName() {
-        this.slots.sort(function (a, b) {
-            return ('' + a.name).localeCompare(b.name)
+        this.slotsBuffer.sort(function (a, b) {
+            return ('' + a.item.dataLink._idn).localeCompare(b.item.dataLink._idn)
         });
         this.refreshItemsGrid();
     };
-
-    // change sorting value
-    nextSortValue(value = 1) {
-        const nextValue = this._currentSort + value;
-        if (nextValue > this.sortList.length - 1) {
-            this._currentSort = 0
-        } else if (nextValue < 0) {
-            this._currentSort = this.sortList.length - 1
-        } else {
-            this._currentSort += value
-        };
+    sortByQTY() {
+        this.slotsBuffer.sort(function (a, b) {
+            return b.item.dataLink.qty - a.item.dataLink.qty;
+        });
+        this.refreshItemsGrid();
     };
-
-    // temp test , interaction mouse du menu
-    makeInteractiveFX() {
-
-        /*//TODO: DELETE ME 
-        setInterval((function(){ 
-            this.bgFX1.d.position.set(-($mouse.x/5)+100,($mouse.y/50));
-            this.bgFX1.d.scale.x = 1+($mouse.x/10000);
-            this.bgFX2.d.position.set((($mouse.x/100)-40)*-1,(($mouse.y/45)));
-        }).bind(this), 20);
-         //TODO: DELETE ME
-        function testingwheel(e) {
-            itemsFrames.forEach(item => {
-                const yy = item.d.position.y+e.deltaY;
-                const speed = ~~((Math.random() * 10) + 1)/100;
-                TweenLite.to(item.d.position, 1+speed, {y:yy, ease:Power4.easeOut});
-                TweenLite.to(item.n.position, 1+speed, {y:yy, ease:Power4.easeOut});
-            });
-            bgTxtFocus.forEach(item => {
-                const yy = item.d.position.y+e.deltaY;
-                TweenLite.to(item.d.position, 1.5, {y:yy, ease:Power4.easeOut});
-                TweenLite.to(item.n.position, 1.2, {y:yy, ease:Power4.easeOut});
-            });
-        }
-        document.addEventListener('wheel', testingwheel.bind(this));*/
-
+    /** sort selon leur valeur marchande */
+    sortByValue() {
+        this.slotsBuffer.sort(function (a, b) {
+            return b.item.dataLink.value - a.item.dataLink.value;
+        });
+        this.refreshItemsGrid();
+    };
+    /** sort selon le poid des items */
+    sortByWeigth() {
+        this.slotsBuffer.sort(function (a, b) {
+            return b.item.dataLink.weight - a.item.dataLink.weight;
+        });
+        this.refreshItemsGrid();
+    };
+    /** sort selon les dammage minimal de l'item */
+    sortByDMG() {
+        this.slotsBuffer.sort(function (a, b) {
+            const aa = a.item.dataLink._dmg;
+            const bb = b.item.dataLink._dmg;
+            const minA = Array.isArray(aa) ? Math.min(...aa) : aa;
+            const minB = Array.isArray(bb) ? Math.min(...bb) : bb;
+            return minB - minA;
+        });
+        this.refreshItemsGrid();
     };
 
 }; // END CLASS

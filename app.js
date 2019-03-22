@@ -78,25 +78,25 @@ class _app extends PIXI.Application {
         canvas.style.transformOrigin = "0 0";
         canvas.style.transform = "scale(" + scale + ")";
         if (canvas.offsetWidth > canvas.offsetHeight) {
-          if (canvas.offsetWidth * scale < window.innerWidth) { center = "horizontally" } 
-          else { center = "vertically" };
+        if (canvas.offsetWidth * scale < window.innerWidth) { center = "horizontally" }
+        else { center = "vertically" };
         } else {
-            if (canvas.offsetHeight * scale < window.innerHeight) { center = "vertically" } 
-            else { center = "horizontally"; };
+        if (canvas.offsetHeight * scale < window.innerHeight) { center = "vertically" }
+        else { center = "horizontally"; };
         };
         let margin;
         if (center === "horizontally") {
-          margin = (window.innerWidth - canvas.offsetWidth * scale) / 2;
-          canvas.style .marginTop = 0 + "px";canvas.style .marginBottom = 0 + "px";
-          canvas.style .marginLeft = margin + "px";canvas.style .marginRight = margin + "px";
+            margin = (window.innerWidth - canvas.offsetWidth * scale) / 2;
+            canvas.style .marginTop = 0 + "px";canvas.style .marginBottom = 0 + "px";
+            canvas.style .marginLeft = margin + "px";canvas.style .marginRight = margin + "px";
         };
         if (center === "vertically") {
-          margin = (window.innerHeight - canvas.offsetHeight * scale) / 2;
-          canvas.style .marginTop = margin + "px";canvas.style .marginBottom = margin + "px";
-          canvas.style .marginLeft = 0 + "px";canvas.style .marginRight = 0 + "px";
+            margin = (window.innerHeight - canvas.offsetHeight * scale) / 2;
+            canvas.style .marginTop  = margin + "px";canvas.style .marginBottom = margin + "px";
+            canvas.style .marginLeft = 0      + "px";canvas.style .marginRight  = 0      + "px";
         };
-        canvas.style.paddingLeft = 0 + "px";canvas.style.paddingRight = 0 + "px";
-        canvas.style.paddingTop = 0 + "px";canvas.style.paddingBottom = 0 + "px";
+        canvas.style.paddingLeft = 0 + "px";canvas.style.paddingRight  = 0 + "px";
+        canvas.style.paddingTop  = 0 + "px";canvas.style.paddingBottom = 0 + "px";
         canvas.style.display = "-webkit-inline-box";
         return scale;
     }; 
@@ -134,8 +134,7 @@ document.addEventListener('keydown', (event) => {
     if(event.keyCode === 116){ // F5 refresh
         document.location.reload(true);
     };
-
-
+    
     //TODO: REMOVE ME , is for debug pixi-projections
     const fpX = $camera._fpX;
     const fpY = $camera._fpY;

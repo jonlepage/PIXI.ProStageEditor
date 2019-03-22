@@ -111,7 +111,7 @@ class _huds_pinBar extends PIXI.Container {
                       this.pinItem.removeChild(this.currentItem);
                     };
                     if(Number.isFinite(id)){
-                      const newItem = $items.createItemsSpriteByID(id);
+                      const newItem = $items.list[id].createSprites(true);
                       this.currentItem = newItem;
                       this.pinItem.addChild(newItem);
                     }else{
@@ -320,10 +320,10 @@ class _huds_pinBar extends PIXI.Container {
         };
     };
     if(isClickR){
-        if(!$huds.menuItems.renderable){ // si menu est desactive, Activer menuItem
+        if(!$huds.menuItems._isActive){ // si menu est desactive, Activer menuItem
             return $huds.menuItems.show();
         };
-        if($huds.menuItems.renderable){// si menu est activer, desactiver menuItem
+        if($huds.menuItems._isActive){// si menu est activer, desactiver menuItem
            // $Objs.activeInteractive(); TODO:
             return $huds.menuItems.hide();
         };
@@ -384,11 +384,12 @@ class _huds_pinBar extends PIXI.Container {
   };
   //#endregion
   // rendering player posseded pinSlots 
+  //TODO: REMOVE ME 
   setPinSlotsAvaible() {
       const posseded = $items.pinSlotPossed;
       const slots = this.slots;
       for (let i = 0, l = slots.length; i < l; i++) {
-          const pinSlot = slots[i].pinner.renderable = i < posseded;
+          const pinSlot = slots[i].pinner.renderable = true;
       };
   };
 

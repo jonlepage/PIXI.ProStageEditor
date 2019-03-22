@@ -60,6 +60,7 @@ class _coreLoader {
         this._textsSCVLoaded = null; // is textsSCV loaded
         this.loaderBuffers = [];
         this._isLoading = false;
+        this.SCV = {}; //store papaParse CSV
 
         this.sceneKits = []; // buffering scene kits for loader progress
         this.currentLoaded = []; // buffering scene kits for loader progress
@@ -160,15 +161,19 @@ class _coreLoader {
     load_textsSCV(){
         const loader = new PIXI.loaders.Loader();
         loader.add('eventMessagesData', `data/eventMessage.csv`)
-        .add('monsterDataBase', `data/monsterDataBase.csv`);
+        .add('monsterDataBase', `data/monsterDataBase.csv`)
+        .add('dataItems', `data/dataItems.csv`);
         loader.load();
         loader.onProgress.add((loader, res) => {
             if(res.name==='eventMessagesData'){
                 $texts.initializeFromData( Papa.parse(res.data) );
             }else
             if(res.name==='monsterDataBase'){
-                $dataMonsters.initializeFromData( Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true}) ); // compute monster data structure
-            };
+               // $dataMonsters.initializeFromData( Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true}) ); // compute monster data structure
+            }else 
+            if(res.name==='dataItems'){
+                this.SCV.dataItems = Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true});
+             };
             
         });
         loader.onComplete.add((loader, res) => {
@@ -403,6 +408,6 @@ class _coreLoader {
 
 };//END CLASS
 
-   
+/**@class _coreLoader*/
 const $Loader = new _coreLoader();
 console.log1('$Loader.', $Loader);

@@ -21,44 +21,49 @@ class _player {
         this._dirX = 6;
         this.radius = null; // radius player range interactions
         this._scaleXY = 0.45; // default player scale, also help compute reverse
+        this._name = "Crysentelle";
+        this._battleturnSta = 0; // lorsque =< 0 , a droite de jouer en combat , baser sur le sta max de tous les monstres
         //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
         //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
-        this.stats = {
-            _level : 1    ,
-            _hp    : 100  ,//data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
-            _mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
-            _hg    : 100  ,//data2\Hubs\stats\SOURCE\images\hg_icon.png
-            _hy    : 100  ,//data2\Hubs\stats\SOURCE\images\hy_icon.png
-            _atk   : 0    ,//data2\Hubs\stats\SOURCE\images\atk_icon.png
-            _def   : 0    ,//data2\Hubs\stats\SOURCE\images\def_icon.png
-            _sta   : 0    ,//data2\Hubs\stats\SOURCE\images\sta_icon.png
-            _lck   : 0    ,//data2\Hubs\stats\SOURCE\images\lck_icon.png
-            _exp   : 0    ,//data2\Hubs\stats\SOURCE\images\exp_icon.png
-            _int   : 0    ,//data2\Hubs\stats\SOURCE\images\int_icon.png
-            _mic   : 0    ,//data2\Hubs\stats\SOURCE\images\mic_icon.png
-            _miw   : 0    ,//data2\Hubs\stats\SOURCE\images\miw_icon.png
-            _orb   : 'red',
-            _bp    : 10   , // bonus point
+        this.st = {
+            level : 1    ,
+            hp    : 100  ,//data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
+            mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
+            hg    : 100  ,//data2\Hubs\stats\SOURCE\images\hg_icon.png
+            hy    : 100  ,//data2\Hubs\stats\SOURCE\images\hy_icon.png
+            atk   : 2    ,//data2\Hubs\stats\SOURCE\images\atk_icon.png
+            def   : 0    ,//data2\Hubs\stats\SOURCE\images\def_icon.png
+            sta   : 12    ,//data2\Hubs\stats\SOURCE\images\sta_icon.png
+            lck   : 0    ,//data2\Hubs\stats\SOURCE\images\lck_icon.png
+            exp   : 0    ,//data2\Hubs\stats\SOURCE\images\exp_icon.png
+            int   : 0    ,//data2\Hubs\stats\SOURCE\images\int_icon.png
+            mic   : 0    ,//data2\Hubs\stats\SOURCE\images\mic_icon.png
+            miw   : 0    ,//data2\Hubs\stats\SOURCE\images\miw_icon.png
+            orb   : 'red',
+            bp    : 10   , // bonus point
             // affectera le huds stats ?
             /**get current level */
-            get level(){return this._level},
-            get hp   (){return this._hp   },
-            get mp   (){return this._mp   },
-            get hg   (){return this._hg   },
-            get hy   (){return this._hy   },
-            get atk  (){return this._atk  },
-            get def  (){return this._def  },
-            get sta  (){return this._sta  },
-            get lck  (){return this._lck  },
-            get exp  (){return this._exp  },
-            get int  (){return this._int  },
-            get mic  (){return this._mic  },
-            get miw  (){return this._miw  },
-            get orb  (){return this._orb  },
-            get bp   (){return this._bp   },
+           //get level(){return this._level},
+           //get hp   (){return this._hp   },
+           //get mp   (){return this._mp   },
+           //get hg   (){return this._hg   },
+           //get hy   (){return this._hy   },
+           //get atk  (){return this._atk  },
+           //get def  (){return this._def  },
+           //get sta  (){return this._sta  },
+           //get lck  (){return this._lck  },
+           //get exp  (){return this._exp  },
+           //get int  (){return this._int  },
+           //get mic  (){return this._mic  },
+           //get miw  (){return this._miw  },
+           //get orb  (){return this._orb  },
+           //get bp   (){return this._bp   },
         };
     };
-    get s(){ return this.spine }
+    get s(){ return this.spine.s }
+    get p(){ return this.spine.p }
+    get d(){ return this.spine.d }
+    get n(){ return this.spine.n }
 
     initialize() {
         this.setupSprites();
@@ -164,7 +169,7 @@ class _player {
         this.fromCase = cList[this.pathBuffer[this._pathID]];
         this.toCase = cList[this.pathBuffer[this._pathID+1]];
         this._dirX = this.toCase.x>this.fromCase.x ? 6 : 4;
-        this.needReversX() &&  this.spine.s.state.addAnimation(3, "reversX", false);
+        this.needReversX() &&  this.s.state.addAnimation(3, "reversX", false);
         this._pathID++;
         const ranJump = ['jump1','jump2','jump3'][~~(3*Math.random())];
         this.spine.s.state.addAnimation(3, ranJump, false);
@@ -226,6 +231,16 @@ class _player {
         const xx = this._dirX === 6 && this._scaleXY || this._scaleXY*-1;
         TweenLite.to(this.spine.scale, 0.7, { x:xx, ease: Power3.easeOut });
     };
+    /** set and play reverse animation and easing is need from a target */
+    setReversXFrom(target) {
+        const value = target.p.x<this.p.x && 4 || 6;
+        if(this._dirX !==value){
+            this._dirX = value;
+            this.reversX();
+            this.s.state.setAnimation(3, 'reversX', false);
+            this.s.state.addEmptyAnimation(3,0.4);
+        };
+    };
         
     // when player jump to a case, do all stuff here, ending is the last_nextCaseID, or end stamina
     checkCaseEvents(ending) {
@@ -274,6 +289,11 @@ class _player2 {
         this._scaleXY = 0.45; // default player scale, also help compute reverse
 
     };
+    get s(){ return this.spine.s }
+    get p(){ return this.spine.p }
+    get d(){ return this.spine.d }
+    get n(){ return this.spine.n }
+    
     get x(){ return this.spine.x }
     get y(){ return this.spine.y }
     set x(x){ return this.spine.x = x }
@@ -311,7 +331,7 @@ class _player2 {
         needReverse && this.reversX();
         const distXFromPDir = this._dirX===4?100:-100;
         TweenLite.to(this.spine.position, needReverse&&3||7, {
-            x:$player.s.x+distXFromPDir,y:$player.s.y-200, 
+            x:$player.p.x+distXFromPDir,y:$player.p.y-200, 
             ease: Elastic.easeOut.config(1, 1),
         });
         const r = this.spine.rotation;
