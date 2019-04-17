@@ -139,13 +139,24 @@ var pixi_projection;
         var ta = this;
         var pwid = parentTransform._worldID;
         var lt = ta.localTransform;
+        var scaleAfterAffine = proj.scaleAfterAffine && proj.affine >= 2;
         if (ta._localID !== ta._currentLocalID) {
-            lt.a = ta._cx * ta.scale._x;
-            lt.b = ta._sx * ta.scale._x;
-            lt.c = ta._cy * ta.scale._y;
-            lt.d = ta._sy * ta.scale._y;
-            lt.tx = ta.position._x - ((ta.pivot._x * lt.a) + (ta.pivot._y * lt.c));
-            lt.ty = ta.position._y - ((ta.pivot._x * lt.b) + (ta.pivot._y * lt.d));
+            if (scaleAfterAffine) {
+                lt.a = ta._cx;
+                lt.b = ta._sx;
+                lt.c = ta._cy;
+                lt.d = ta._sy;
+                lt.tx = ta.position._x;
+                lt.ty = ta.position._y;
+            }
+            else {
+                lt.a = ta._cx * ta.scale._x;
+                lt.b = ta._sx * ta.scale._x;
+                lt.c = ta._cy * ta.scale._y;
+                lt.d = ta._sy * ta.scale._y;
+                lt.tx = ta.position._x - ((ta.pivot._x * lt.a) + (ta.pivot._y * lt.c));
+                lt.ty = ta.position._y - ((ta.pivot._x * lt.b) + (ta.pivot._y * lt.d));
+            }
             ta._currentLocalID = ta._localID;
             proj._currentProjID = -1;
         }
@@ -163,7 +174,16 @@ var pixi_projection;
             else {
                 proj.world.setToMultLegacy(parentTransform.worldTransform, proj.local);
             }
-            proj.world.copy(ta.worldTransform, proj._affine, proj.affinePreserveOrientation);
+            var wa = ta.worldTransform;
+            proj.world.copy(wa, proj._affine, proj.affinePreserveOrientation);
+            if (scaleAfterAffine) {
+                wa.a *= ta.scale._x;
+                wa.b *= ta.scale._x;
+                wa.c *= ta.scale._y;
+                wa.d *= ta.scale._y;
+                wa.tx -= ((ta.pivot._x * wa.a) + (ta.pivot._y * wa.c));
+                wa.ty -= ((ta.pivot._x * wa.b) + (ta.pivot._y * wa.d));
+            }
             ta._parentID = pwid;
             ta._worldID++;
         }
@@ -175,7 +195,8 @@ var pixi_projection;
             _this._projID = 0;
             _this._currentProjID = -1;
             _this._affine = pixi_projection.AFFINE.NONE;
-            _this.affinePreserveOrientation = true;
+            _this.affinePreserveOrientation = false;
+            _this.scaleAfterAffine = true;
             return _this;
         }
         LinearProjection.prototype.updateLocalTransform = function (lt) {
@@ -189,6 +210,7 @@ var pixi_projection;
                     return;
                 this._affine = value;
                 this._currentProjID = -1;
+                this.legacy._currentLocalID = -1;
             },
             enumerable: true,
             configurable: true
@@ -1423,9 +1445,9 @@ var pixi_projection;
                     this.displayObjectUpdateTransform();
                 }
                 if (this.proj.affine) {
-                    return this.transform.worldTransform.applyInverse(point, point);
+                    return this.transform.worldTransform.applyInverse(position, point);
                 }
-                return this.proj.world.applyInverse(point, point);
+                return this.proj.world.applyInverse(position, point);
             }
             if (this.parent) {
                 point = this.parent.worldTransform.applyInverse(position, point);
@@ -1461,6 +1483,7 @@ var pixi_projection;
         AFFINE[AFFINE["AXIS_X"] = 2] = "AXIS_X";
         AFFINE[AFFINE["AXIS_Y"] = 3] = "AXIS_Y";
         AFFINE[AFFINE["POINT"] = 4] = "POINT";
+        AFFINE[AFFINE["AXIS_XR"] = 5] = "AXIS_XR"; // hybride bwtween AXIS_X without rot iso skew
     })(AFFINE = pixi_projection.AFFINE || (pixi_projection.AFFINE = {}));
     var Matrix2d = (function () {
         function Matrix2d(backingArray) {
@@ -1671,6 +1694,9 @@ var pixi_projection;
             ar2[8] = mat3[8];
             return matrix;
         };
+        Matrix2d.prototype.copyTo2dOr3d = function (matrix) {
+            return this.copyTo(matrix);
+        };
         Matrix2d.prototype.copy = function (matrix, affine, preserveOrientation) {
             var mat3 = this.mat3;
             var d = 1.0 / mat3[8];
@@ -1682,28 +1708,36 @@ var pixi_projection;
             matrix.tx = tx;
             matrix.ty = ty;
             if (affine >= 2) {
-                var D = 0;
-                if (preserveOrientation) {
-                    D = matrix.a * matrix.d - matrix.b * matrix.c;
-                    if (D >= 0.0)
-                        D = 1;
-                    else
-                        D = -1;
+                var D = matrix.a * matrix.d - matrix.b * matrix.c;
+                if (!preserveOrientation) {
+                    D = Math.abs(D);
                 }
                 if (affine === AFFINE.POINT) {
-                    matrix.a = 1;
+                    if (D > 0) {
+                        D = 1;
+                    }
+                    else
+                        D = -1;
+                    matrix.a = D;
                     matrix.b = 0;
                     matrix.c = 0;
                     matrix.d = D;
                 }
                 else if (affine === AFFINE.AXIS_X) {
-                    matrix.c = -matrix.b * D;
-                    matrix.d = matrix.a * D;
+                    D /= Math.sqrt(matrix.b * matrix.b + matrix.d * matrix.d);
+                    matrix.c = 0;
+                    matrix.d = D;
                 }
                 else if (affine === AFFINE.AXIS_Y) {
-                    matrix.a = matrix.d * D;
-                    matrix.c = -matrix.b * D;
+                    D /= Math.sqrt(matrix.a * matrix.a + matrix.c * matrix.c);
+                    matrix.a = D;
+                    matrix.c = 0;
                 }
+                else if (affine === AFFINE.AXIS_XR) {
+                    matrix.a = matrix.d;
+					matrix.c = -matrix.b;
+                }
+                
             }
         };
         Matrix2d.prototype.copyFrom = function (matrix) {
@@ -1766,10 +1800,10 @@ var pixi_projection;
         };
         Matrix2d.prototype.prepend = function (lt) {
             if (lt.mat3) {
-                this.setToMult(lt, this);
+                return this.setToMult(lt, this);
             }
             else {
-                this.setToMultLegacy(lt, this);
+                return this.setToMultLegacy(lt, this);
             }
         };
         Matrix2d.IDENTITY = new Matrix2d();
@@ -2362,7 +2396,7 @@ var pixi_projection;
 var pixi_projection;
 (function (pixi_projection) {
     var spriteMaskVert = "\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 otherMatrix;\n\nvarying vec3 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n\tgl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n\tvTextureCoord = aTextureCoord;\n\tvMaskCoord = otherMatrix * vec3( aTextureCoord, 1.0);\n}\n";
-    var spriteMaskFrag = "\nvarying vec3 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float alpha;\nuniform sampler2D mask;\n\nvoid main(void)\n{\n    vec2 uv = vMaskCoord.xy / vMaskCoord.z;\n    \n    vec2 text = abs( uv - 0.5 );\n    text = step(0.5, text);\n\n    float clip = 1.0 - max(text.y, text.x);\n    vec4 original = texture2D(uSampler, vTextureCoord);\n    vec4 masky = texture2D(mask, uv);\n\n    original *= (masky.r * masky.a * alpha * clip);\n\n    gl_FragColor = original;\n}\n";
+    var spriteMaskFrag = "\nvarying vec3 vMaskCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform sampler2D mask;\nuniform float alpha;\nuniform vec4 maskClamp;\n\nvoid main(void)\n{\n    vec2 uv = vMaskCoord.xy / vMaskCoord.z;\n    \n    float clip = step(3.5,\n        step(maskClamp.x, uv.x) +\n        step(maskClamp.y, uv.y) +\n        step(uv.x, maskClamp.z) +\n        step(uv.y, maskClamp.w));\n\n    vec4 original = texture2D(uSampler, vTextureCoord);\n    vec4 masky = texture2D(mask, uv);\n    \n    original *= (masky.r * masky.a * alpha * clip);\n\n    gl_FragColor = original;\n}\n";
     var tempMat = new pixi_projection.Matrix2d();
     var SpriteMaskFilter2d = (function (_super) {
         __extends(SpriteMaskFilter2d, _super);
@@ -2375,16 +2409,26 @@ var pixi_projection;
         }
         SpriteMaskFilter2d.prototype.apply = function (filterManager, input, output, clear, currentState) {
             var maskSprite = this.maskSprite;
+            var tex = this.maskSprite.texture;
+            if (!tex.valid) {
+                return;
+            }
+            if (!tex.transform) {
+                tex.transform = new PIXI.TextureMatrix(tex, 0.0);
+            }
+            tex.transform.update();
             this.uniforms.mask = maskSprite.texture;
-            this.uniforms.otherMatrix = SpriteMaskFilter2d.calculateSpriteMatrix(currentState, this.maskMatrix, maskSprite);
+            this.uniforms.otherMatrix = SpriteMaskFilter2d.calculateSpriteMatrix(currentState, this.maskMatrix, maskSprite)
+                .prepend(tex.transform.mapCoord);
             this.uniforms.alpha = maskSprite.worldAlpha;
+            this.uniforms.maskClamp = tex.transform.uClampFrame;
             filterManager.applyFilter(this, input, output);
         };
         SpriteMaskFilter2d.calculateSpriteMatrix = function (currentState, mappedMatrix, sprite) {
             var proj = sprite.proj;
             var filterArea = currentState.sourceFrame;
             var textureSize = currentState.renderTarget.size;
-            var worldTransform = proj && !proj._affine ? proj.world.copyTo(tempMat) : tempMat.copyFrom(sprite.transform.worldTransform);
+            var worldTransform = proj && !proj._affine ? proj.world.copyTo2dOr3d(tempMat) : tempMat.copyFrom(sprite.transform.worldTransform);
             var texture = sprite.texture.orig;
             mappedMatrix.set(textureSize.width, 0, 0, textureSize.height, filterArea.x, filterArea.y);
             worldTransform.invert();
@@ -3037,6 +3081,28 @@ var pixi_projection;
             ar2[8] = mat3[8];
             return matrix;
         };
+        Matrix3d.prototype.copyTo2d = function (matrix) {
+            var mat3 = this.mat4;
+            var ar2 = matrix.mat3;
+            ar2[0] = mat3[0];
+            ar2[1] = mat3[1];
+            ar2[2] = mat3[3];
+            ar2[3] = mat3[4];
+            ar2[4] = mat3[5];
+            ar2[5] = mat3[7];
+            ar2[6] = mat3[12];
+            ar2[7] = mat3[13];
+            ar2[8] = mat3[15];
+            return matrix;
+        };
+        Matrix3d.prototype.copyTo2dOr3d = function (matrix) {
+            if (matrix instanceof pixi_projection.Matrix2d) {
+                return this.copyTo2d(matrix);
+            }
+            else {
+                return this.copyTo(matrix);
+            }
+        };
         Matrix3d.prototype.copy = function (matrix, affine, preserveOrientation) {
             var mat3 = this.mat4;
             var d = 1.0 / mat3[15];
@@ -3048,27 +3114,30 @@ var pixi_projection;
             matrix.tx = tx;
             matrix.ty = ty;
             if (affine >= 2) {
-                var D = 0;
-                if (preserveOrientation) {
-                    D = matrix.a * matrix.d - matrix.b * matrix.c;
-                    if (D >= 0.0)
-                        D = 1;
-                    else
-                        D = -1;
+                var D = matrix.a * matrix.d - matrix.b * matrix.c;
+                if (!preserveOrientation) {
+                    D = Math.abs(D);
                 }
                 if (affine === pixi_projection.AFFINE.POINT) {
-                    matrix.a = 1;
+                    if (D > 0) {
+                        D = 1;
+                    }
+                    else
+                        D = -1;
+                    matrix.a = D;
                     matrix.b = 0;
                     matrix.c = 0;
                     matrix.d = D;
                 }
                 else if (affine === pixi_projection.AFFINE.AXIS_X) {
-                    matrix.c = -matrix.b * D;
-                    matrix.d = matrix.a * D;
+                    D /= Math.sqrt(matrix.b * matrix.b + matrix.d * matrix.d);
+                    matrix.c = 0;
+                    matrix.d = D;
                 }
                 else if (affine === pixi_projection.AFFINE.AXIS_Y) {
-                    matrix.a = matrix.d * D;
-                    matrix.c = -matrix.b * D;
+                    D /= Math.sqrt(matrix.a * matrix.a + matrix.c * matrix.c);
+                    matrix.a = D;
+                    matrix.c = 0;
                 }
             }
         };

@@ -7,7 +7,7 @@
 * License:© M.I.T
 └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
-//
+//TODO: FIXME: LE Conainter base devrai contenir le container tile,light,animaiton,spine
 
 /** @memberof PIXI.Container */
 class Container_Base extends PIXI.projection.Container2d {
@@ -27,6 +27,7 @@ class Container_Base extends PIXI.projection.Container2d {
     get n() { return this.Sprites.n || false };
     get register() { return this.dataObj.register || false };
     set register(value) { value? $objs.addToRegister(this)  : $objs.removeToRegister(this) }; // 0 ou 1
+    get isReverse() { return this.s?this.s.scale._x < 0 : this.scale._x < 0 }; // TODO: probleme avec spine et animations
 
     initialize(){
         this.createBases();
@@ -147,5 +148,10 @@ class Container_Base extends PIXI.projection.Container2d {
     affines (value) {
         this.proj.affine = this.dataObj.dataValues.p.affine;
     };
+
+    /** verifie si a besoin des reverse selon 2 position */
+    needReverseFrom(target){
+        return this.x>target.x;
+    }
 
 };//END CLASS

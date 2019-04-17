@@ -1,3 +1,4 @@
+//PIXI.settings.PRECISION_FRAGMENT=PIXI.PRECISION.HIGH
 class _app extends PIXI.Application {
     constructor() {
         super({

@@ -21,15 +21,15 @@ class _messages{
     };
 
     intitialize(textID){
-        if(!$texts[textID]){throw console.error(`show id text event id: ${id} not exist !!!`)};
-        this.data = $texts[textID];
+        if(!$txt[textID]){throw console.error(`show id text event id: ${id} not exist !!!`)};
+        this.data = $txt[textID];
         this._txtDataBaseID = textID;
         this._bubbleID = -1;
         this._eventLenght = this.data.length;
         this.nextBubble();
     };
 
-    // show new events messages with $texts id events
+    // show new events messages with $txt id events
     nextBubble() {
         const bID = ++this._bubbleID;
         if(bID<this._eventLenght){ // discution events inProgress
@@ -191,7 +191,7 @@ class _bubbleTxt{
         messages.spritesTxt = [];
         for (let i=0, l=dataPage.length; i<l; i++) {
             const data = dataPage[i];
-            const spriteTxt = messages.spritesTxt[i] = new PIXI.Text(data._txt, $texts.styles[data._styleID]);
+            const spriteTxt = messages.spritesTxt[i] = new PIXI.Text(data._txt, $txt.styles[data._styleID]);
             spriteTxt.position.set(data._x, data._y);
         };
         messages.addChild(...messages.spritesTxt);

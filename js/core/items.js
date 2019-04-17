@@ -60,11 +60,10 @@ class _items {
 
     /** initialise the dataBase items */
     initialize(id){
-        const data = $Loader.SCV.dataItems.data;
+        const data = $Loader.CSV.dataBase_items.data;
         const header = data[1]; // index du header ["_id", "_idn", "_iType", "_cType", "_value", "_weight", "_dmg", "note"]
         for (let i=2, l=data.length; i<l; i++) { this.list.push( new _item_base(...data[i])) };
     };
-
 
 };
 
@@ -91,6 +90,8 @@ class _item_base {
         this.child = {};
         this.initialize();
     };
+    get descBase(){return `[#B24387]${$txt._[`N_ITEM_${this._id}`]}[#]:${$txt._[`D_ITEM_${this._id}`]}`};
+    get descDMG(){return Array.isArray(this._dmg)? this._dmg.join(' <=> ') : this._dmg };
     get p() {return this.child.c};
     get d() {return this.child.d};
     get n() {return this.child.n};
@@ -120,7 +121,7 @@ class _item_base {
     createSprites(clone){ // clone permet de creer un nouvelle item sprite en cache
         const c = new PIXI.Container();
         const d = c.d = new PIXI.Sprite($Loader.Data2.gameItems.textures[this._id]);
-        const n = c.n = new PIXI.Sprite($Loader.Data2.gameItems.textures[this._id+'_n']);
+        const n = c.n = new PIXI.Sprite($Loader.Data2.gameItems.textures_n[this._id+'_n']);
         d.anchor.set(0.5),n.anchor.set(0.5);
         //c.parentGroup = $displayGroup.group[4];
         d.parentGroup = PIXI.lights.diffuseGroup;

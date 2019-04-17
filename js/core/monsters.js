@@ -15,33 +15,14 @@ class _dataMonsters {
         this.data = [
             { //data2\Characteres\monster\m0\m0.png
                 _id: 0,
-                _name: "Salviarum Divinurum", //? link les text id au debut, ensuite pendant boot initialise, on remplace id par text
-                _desc: "日陰に生息する多年生の植物の種, 日陰に生息する多年 日陰に生息する多年生の植物の種 生の植物の種",
+                evo: {}, //! from initialise
+                master: {chance:2,rate:20}, // ! A 2%chance detre master, Les Master augment tous de 20%
                 type: { // chance heritage typeOrbs 
-                    master: 20, // ! les monstre master augment de 20% les chance de force, et reduit de 20% les chance de faible
-                    force: {
-                        'green': 100,
-                        'red': 40,
-                        'red': 40,
-                    },
-                    faible: {
-                        'blue': 50,
-                    }
+                    'green': 100,
+                    'red': 40,
+                    'red': 40,
                 },// TODO: Do it with excel dataManager see loader
-                evo: { // base:rate:flat
-                    hp : { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
-                    mp : { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
-                    hg : { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hg.png
-                    hy : { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hy.png
-                    atk: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_atk.png
-                    def: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_def.png
-                    sta: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_sta.png
-                    lck: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_lck.png
-                    int: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_int.png
-                    exp: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_exp.png
-                    mic: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_mic.png // ? max item possible monster
-                    miw: { b: 10, r: 1, f: 1 }, //data2\Icons\statsIcons\SOURCE\images\sIcon_miw.png // ? max wieght du monster
-                },// store base,rate,flat states per level from initializeFromData
+                
                 capacity: { // les capaciter possible en heritage  TODO: fair une class dataCapacity
                     'headTackle': { r: 90, lv: 4 }, // rate 90% heriter headTackle si >lv 4
                 },
@@ -63,52 +44,62 @@ class _dataMonsters {
         ];
     };
 
+    /** initialize data from boot when excel CSV ready, appliquer sur tous les monster*/
+    initialize(){
+        const DATA = $Loader.CSV.dataBase_monster.data;
+        for (let i=0, l=this.data.length; i<l; i++) {
+            const e = this.data[i];
+            const evo = DATA[i+1]; // evolution base:rate:flat
+            let ii = 1;
+            e.evo = {// base:rate:flat from intialize CSV
+                hp  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
+                mp  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
+                hg  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hg.png
+                hy  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hy.png
+                atk : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_atk.png
+                def : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_def.png
+                sta : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_sta.png
+                lck : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_lck.png
+                int : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_int.png
+                exp : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_exp.png
+            }
+        };
+    };
+
     /**generation dune data list de monstre asigner a une case 
      * @argument mapInfluence passer des stats d'influence pour generer les data attache a la case monster
     */
     static getRanDataMonsterList(mapInfluence) {
         const monstersData = []; // a attachera une case, strigniflyable
-        if (!mapInfluence) {
+        if (!mapInfluence) { //TODO:
             const mIdList = [0, 0, 0, 0]; // monster list by id allowed
             const mNb = ~~(Math.random() * 3) + 1; // nombre de monstre max
             for (let i = 0, l = mNb; i < l; i++) {
-                const mID = mIdList[~~(Math.random() * mIdList.length)];
-                const lv = ~~(Math.random() * 1) + 1; // TODO: max level algo
-                monstersData.push({ mID, lv });
+                const id = mIdList[~~(Math.random() * mIdList.length)];
+                const lv = Math.randomFrom(1,4);//TODO:
+                monstersData.push({ id, lv, master:false });  //TODO: MASTER: monstre speciaux plus fort
             };
         }
         return monstersData;
     };
 
-    /**@description generate a random data monsters for map */
-    generateDataForMap(id, lv) {
-        const data = this.id[id];
-        const hp = data.evo.hp;
-        const states = {
-            hp: hp.base * (1 + (lv - 1) * hp.rate) + (hp.flat * (lv - 1)),
-        };
-        return { id, lv, states };
-    };
-
-
-
 };
-
+/** DATABASE DES MONSTRES */
 const $dataMonsters = new _dataMonsters();
 
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $monsters: _monsters
 // create new monster battler
 //└------------------------------------------------------------------------------┘
-class _monsters {
-    constructor(id, lv) {
-        this._id = id; // monster data id
-        this._lv = lv; // monster level
+class _monsters extends _battler{
+    constructor(id,level,dataBase) {
+        super();
+        /** id du dataBase connecter */
+        this._id = id;
         this.child = null;
         /** store la case du monstre */
         this.inCase = null;
-        this._battleturnSta = 0;
-        this.initialize();
+        this.initialize(level,dataBase);
     };
     get database() { return $Loader.Data2['m' + this._id] };
     get dataLink() { return $dataMonsters.data[this._id] };
@@ -126,12 +117,15 @@ class _monsters {
     set z(z) { return this.child.zIndex = z };
     get w() { return this.child.width };
     get h() { return this.child.height };
-    get isReverse() { return this.s.scale._x < 0 };
 
-    initialize() {
+
+    /** initialise a monster */
+    initialize(level,dataBase) {
+        this.initialize_battler(level, dataBase.evo)
         this.initialize_data();
         this.initialize_sprites();
         this.initialize_interactive();
+        this.initialize_statesTxtIcons();
     };
 
     /** create random data for monser*/
@@ -139,29 +133,9 @@ class _monsters {
         const db = this.dataLink;
         const ran = (Math.random()*100); // valeur aleatoir sur 100
         const lv = this._lv;
-        const compute = (ev)=>{return ev.b*(1+(lv-1)*ev.r) + (ev.f*(lv-1))};
-        this.st = {
-            mhp : compute(db.evo.hp ), //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
-            hp  : compute(db.evo.hp ), //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
-            mmp : compute(db.evo.mp ), //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
-            mp  : compute(db.evo.mp ), //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
-            hg  : compute(db.evo.hg ), //data2\Icons\statsIcons\SOURCE\images\sIcon_hg.png
-            hy  : compute(db.evo.hy ), //data2\Icons\statsIcons\SOURCE\images\sIcon_hy.png
-            atk : compute(db.evo.atk), //data2\Icons\statsIcons\SOURCE\images\sIcon_atk.png
-            def : compute(db.evo.def), //data2\Icons\statsIcons\SOURCE\images\sIcon_def.png
-            sta : compute(db.evo.sta), //data2\Icons\statsIcons\SOURCE\images\sIcon_sta.png
-            lck : compute(db.evo.lck), //data2\Icons\statsIcons\SOURCE\images\sIcon_lck.png
-            int : compute(db.evo.int), //data2\Icons\statsIcons\SOURCE\images\sIcon_int.png
-            exp : compute(db.evo.exp), //data2\Icons\statsIcons\SOURCE\images\sIcon_exp.png
-            mic : compute(db.evo.mic), //data2\Icons\statsIcons\SOURCE\images\sIcon_mic.png // ? max item possible monster
-            miw : compute(db.evo.miw), //data2\Icons\statsIcons\SOURCE\images\sIcon_miw.png // ? max wieght du monster
-        };
-        this.type = [[],[]];
-        Object.entries(db.type.force).forEach((e)=>{
-            ran < e[1] && this.type[0].push(e[0]);
-        });
-        Object.entries(db.type.faible).forEach((e)=>{
-            ran < e[1] && this.type[1].push(e[0]);
+        this.type = [];
+        Object.entries(db.type).forEach((e)=>{
+            ran < e[1] && this.type.push(e);
         });
         // capacity
         this.capacity = ['attack','defense'];
@@ -189,17 +163,18 @@ class _monsters {
     initialize_sprites() {
         const dataBase = this.database;
         const cage = $objs.newContainer_dataBase(dataBase, 'idle', true) // (database,skin)
-        cage.scale.set(0.2, 0.2);
         cage.parentGroup = $displayGroup.group[1];
         cage.proj._affine = 2;
         cage.s.hackAttachmentGroups("_n", PIXI.lights.normalGroup, PIXI.lights.diffuseGroup); // (nameSuffix, group)
 
         this.child = cage;
+        cage.parentClass = this;
         // FIXME: remove pour setup dans combat + camera control event
         const spine = cage.s;
         spine.stateData.defaultMix = 0.1;
         spine.state.setAnimation(0, "apear", false).timeScale = (Math.random() * 0.6) + 0.6;
         spine.state.addAnimation(0, "idle", true);
+        spine.scale.set(0.2);
     };
 
     /** initialise monster interactivity */
@@ -214,6 +189,20 @@ class _monsters {
         cage.on('pointerup', this.pointer_upMonster, this);
     };
 
+    /** Initialise l'emplacement des states icons */
+    initialize_statesTxtIcons(){
+        this.statesTxt = $txt.area();
+        this.statesTxt.pivot.y = this.p.height;
+        this.statesTxt.pivot.zeroApply();
+        this.statesTxt.alpha = 0;
+        this.statesTxt.scale.set(0.8);
+        this.p.addChild(this.statesTxt);
+    };
+
+//#region [rgba(40, 0, 0, 0.2)]
+    // ┌------------------------------------------------------------------------------┐
+    // EVENTS INTERACTION LISTENERS
+    // └------------------------------------------------------------------------------┘
     pointer_inMonster(e) {
         const c = e.currentTarget;
         const f = $systems.filtersList.OutlineFilterx4white; //new PIXI.filters.OutlineFilter(4, 0xff0000, 5);
@@ -221,13 +210,20 @@ class _monsters {
         //this.moveArrowTo(c);
         //this.moveMathBox(c);
         this.needReversePlayer(c);
+        // si mode attack, affiche les states base
+        if($combats._mode === $combats.combatMode[0]){
+            this.showStatesHover();
+        }
     };
 
     pointer_outMonster(e) {
-        const c = e.currentTarget;
-        c.slots_d.forEach(spineSprite => {
-            spineSprite._filters = null;
-        });
+        const c = e.currentTarget || e;
+        if(c.parentClass !== $combats._selectedTarget ){
+            c.slots_d.forEach(spineSprite => {
+                spineSprite._filters = null;
+            });
+        }
+        this.hideStateHover();
     };
 
     pointer_dwMonster(e) {
@@ -236,32 +232,11 @@ class _monsters {
         const _clickRight = e.data.button === 2;
         const click_Middle = e.data.button === 1;
         if (clickLeft_) {
-            if ($combats._selectedMonster !== this) {
-                return $combats.selectedMonster(this); // asign la selection du monstre general
+            if ($combats._selectedTarget !== this) {
+                return $combats.setSelectTarget(this); // asign la selection du monstre general
             };
-            return; //TODO: RENDU ICI
-            $player.s.state.setAnimation(3, "preparAtk", false);
-            this.tweenHoldClick && this.tweenHoldClick.kill();
-            //$huds.combats.sprites.carw.position.y = c.y - (c.height);
-            const cHitLow = Math.random(); //critical green hit, start to be green after 1+chl
-            const cHitEnd = 1 * 0.5; // % duration green hit
-            const carw = $huds.combats.sprites.carw; // arrow
-            this.tweenHoldClick = TweenMax.to(carw.position, 2 + cHitLow + cHitEnd, {
-                y: c.y - (c.height - 40),
-                ease: Expo.easeOut,
-                onComplete: () => {
-                    TweenMax.to($huds.combats.sprites.carw.position, 1, { y: c.y - c.height, ease: Elastic.easeOut.config(1.2, 0.1) });
-                    //this.StartRoll();
-                },
-                onUpdate: () => {
-                    const t = this.tweenHoldClick._time;
-                    if (t > 1) { this.startHit = true; }
-                    if (this.startHit) {
-                        t > (1 + cHitLow) && t < (1 + cHitLow + cHitEnd) ? carw.tint = 0x00ff00 : carw.tint = 0xff0000;
-                    }
+            $combats.startFocusAttack();
 
-                }
-            });
         } else
         if (_clickRight) {
             $camera.moveToTarget(this.sprite, 3);
@@ -272,34 +247,39 @@ class _monsters {
     pointer_upMonster(e) {
         const c = e.currentTarget;
         if (this.tweenHoldClick) {
-            if (!this.startHit) {
+            if (!this.startHit) { // cancel
                 this.tweenHoldClick.reverse();
                 $player.spine.d.state.setEmptyAnimation(3, 0.2);
-                const carw = $huds.combats.sprites.carw; // arrow
+                const carw = $huds.combats.sprites.carw; // arrow TODO:
                 carw.tint = 0xffffff;
             } else {
-                const carw = $huds.combats.sprites.carw; // arrow
-                this.tweenHoldClick.kill();
-                const doubleHit = carw.tint === 0x00ff00; // green
-
-                $player.spine.d.state.setAnimation(3, "atk1", false);
-                doubleHit && $player.spine.d.state.addAnimation(3, "atk2", false);
-                $player.spine.d.state.addAnimation(3, "backAfterAtk", false);
-                $player.spine.d.state.addEmptyAnimation(3, 1);
-
-                //TODO: // RENDU ICI , creer des events spines pour des animations coerente, refactoriser players js et les listener ?
-                $player.p.zIndex = c.y + 1;
-                TweenMax.to($player, 0.8, {
-                    x: c.x - this.w / 1.5,
-                    y: c.y,
-                    ease: Expo.easeOut,
-                    onComplete: () => {
-                        carw.tint = 0xffffff;
-
-                    },
-                });
+                this.hideStateHover();
             }
         }
+    };
+//endRegion
+    /**Initialise l'IA sequensiel pour le turn du monstre. Effectut diferent step desisionelle */
+    startBattleIA(){
+        //Step1: creation des multi-tread pour l'IA
+        //?step2: verifi les distances des item food, verifi si il doi manger quelque chose ?
+        //?step3: verifi les distances et evalue si dois ce raproche ou seloinger selon sa desc ?
+        //?step4: verifi la meilleur action disponible selon ces states, son inteligence permet de mieux fair ces choix ?
+        const action_eatFood = (()=>{
+            $combats.foodItemMap.forEach(item => {
+               // condition et math...
+                return item;
+            });
+        })();
+        const action_move = false; // store un endroit pour ce deplacer
+        const action_atk = $combats.combatMode[0]; // store un mode action; 'attack'
+        const action_target = $player; // store la cible la plus logique selon le setup
+        setTimeout(()=>{
+            const action = {type:'attack',source:this,target:$player,items:null}; // on creer un objet actions qui stock des para
+            $combats.actionsTimeLine = [];
+            $combats.actionsTimeLine.push(action); // will .shift() from combat update
+         }, 300);
+
+
     };
 
     moveArrowTo(target) {
@@ -335,6 +315,35 @@ class _monsters {
         this.sprite.d.state.setAnimation(1, `hit${ran}`, false);
         this.sprite.d.state.addEmptyAnimation(1, 1);
     }
+
+    /** affiche les states base au dessu du monstre */
+    showStatesHover(){
+        const statesTxt =`[IsIcon_hp]${this.hp}/${this.mhp}`
+        this.statesTxt.computeTag(statesTxt);
+        this.statesTxt.pivot.x = this.statesTxt.width/2;
+        this.statesTxt._filters = [$systems.filtersList.OutlineFilterx4Black];
+        const zero = this.statesTxt.pivot.zero;
+        TweenLite.to(this.statesTxt.pivot, 0.4, { y:zero.y+this.statesTxt.height, ease: Expo.easeOut });
+        TweenLite.to(this.statesTxt, 0.4, { alpha:1, ease: Expo.easeOut });
+       
+    }
+    /** cache les state important au dessu du monstre */
+    hideStateHover(){
+        this.statesTxt._filters = null;
+        const zero = this.statesTxt.pivot.zero;
+        TweenLite.to(this.statesTxt.pivot, 0.2, { y:zero.y, ease: Expo.easeOut });
+        TweenLite.to(this.statesTxt, 0.2, { alpha:0, ease: Expo.easeOut });
+    }
+
+        /** initialise a monster */
+        initialize(level,dataBase) {
+            this.initialize_battler(level, dataBase.evo)
+            this.initialize_data();
+            this.initialize_sprites();
+            this.initialize_interactive();
+            this.initialize_statesTxtIcons();
+        };
+    
 };
 
 

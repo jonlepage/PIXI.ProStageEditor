@@ -13,7 +13,8 @@
     },
     "_comment": "--disable-gpu-vsync --limit-fps=60 --disable-devtools --enable-gpu-rasterization --enable-gpu-memory-buffer-video-frames --enable-native-gpu-memory-buffers --enable-zero-copy --enable-gpu-async-worker-context",
     "dependencies": {
-        "@types/gsap": "^1.20.0",
+        "@types/gsap": "^1.20.2",
+        "gsap": "^2.1.2",
         "package-merge": "^0.1.2",
         "papaparse": "^4.6.3"
     },

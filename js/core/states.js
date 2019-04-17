@@ -1,156 +1,156 @@
-
-/**Le states manager permet de creer asigner distribruer les states */
-//generate des sprites states
-
-
-class _statesManager {
-    constructor() {
-        this.tipsBox = null; // asignaytion d'une tips box au survole d'icon
-        this.contexts = {
-            '_stateAttack':[
-                //! defense
-
-            ]
-        }
-    };
-
-    /**Return un states base selon modes "attack,def,magic": _stateAttack, _stateDefense, _stateMagic */
-    getBaseFromMode(source,target,mode){
-        switch (mode) {
-            case $combats.modes[0]: return new _stateAttack (source,target,mode) ; break;
-            case $combats.modes[1]: return new _stateDefense(source,target,mode) ; break;
-            case $combats.modes[2]: return new _stateMagic  (source,target,mode) ; break;
-            default:break;
-        }
-    };
-
-    /** scan tous les status et verifi si a besoin de passive */
-    getInfligersFrom(source,target,slotsItems,mode){
-        const base = this.getBaseFromMode(source,target,mode);
-        const item = slotsItems.map((item)=> new _stateItem(source,target,mode,item._iID) )
-
-        return [base,...item]; // renvoi la lister des infligeur
-    };
-    getInfluerFrom(source,target,infliger){
-        let list = [];
-        infliger.forEach(state => {
-            state.createContext(source,target); // creer les context
-            list.push(...state.linkedContext); // store les context linked
-        });
-        return list; // renvoi la liste des influeur
-    };
-
-    /** pass a data json state to convert */
-    createFromJson(json){
-        
-    }
-};
-
-/**@description Les states son les status temporaire ou asigner en jeux qui contienne des methods 
- * On leur pass une value 'dmg','def' qui return ensuite une valeur moduler.
- * @class _statesManager
-*/
-const $states = new _statesManager();
-
 //#region [rgba(20, 40, 0, 0.3)]
 // ┌------------------------------------------------------------------------------┐
 // _stateBase
 // └------------------------------------------------------------------------------┘
 
-class _stateBase extends PIXI.Container {
-    constructor(source,target,originState){
-        super();
-        this.originState = originState;
+class _stateBase { // extends PIXI.Container
+    constructor(source,target,contextName,base,textureName){
+        /**Nom et raison du context constructeur du state */
+        this.contextName = contextName;
+        /** Liste des context enfant associer */
+        this.childContext = [];
+         /**List des context parent associer */
+        this.parentContext = [];
+        /** source des infligers */
         this.source = source;
+        /** cible des infligers */
         this.target = target;
+        /** le timeOut mouseHover au survole d'une states */
         this._timeOut = null; // manage timeout hover
+        /** List des context associer descriptions pour hover*/
+        this.contextsDescriptions = [];
+        this.addContext_descriptions(contextName);
+        this.createSprites(textureName);
+        this.attacheContext(base);
         this.setupInteractive();
-       
     };
-    get d(){this.sprites.d}
-    get n(){this.sprites.n}
+    /** la description de base du state Nom+Description */
+    get descBase(){return `[#B24387]${$txt._[`N_STATE${this.constructor.name}`]}[#]:${$txt._[`D_STATE${this.constructor.name}`]}`};
+    get p(){return this.sprites.p}
+    get d(){return this.sprites.d}
+    get n(){return this.sprites.n}
 
-    createSprites(td,tn){
+    /** */
+    initialize(){
+
+    };
+
+    /** creation du container du states */
+    createSprites(textureName){
         const dataBase = $Loader.Data2.states;
-        const d = new PIXI.Sprite(dataBase.textures   [td] );
-        const n = new PIXI.Sprite(dataBase.textures_n [tn] );
-        this.addChild(d,n);
-        this.sprites = {d,n};
-        // displayGroup
-        //this.parentGroup = $displayGroup.group[4];
+        const p = new PIXI.Container();
+        const d = new PIXI.Sprite(dataBase.textures   [textureName] );
+        const n = new PIXI.Sprite(dataBase.textures_n [textureName+'_n'] );
+        p.parentGroup = $displayGroup.group[4];
         d.parentGroup = PIXI.lights.diffuseGroup;
         n.parentGroup = PIXI.lights.normalGroup ;
+        p.addChild(d,n);
+        this.sprites = {p,d,n};
         // FIXME: normaliser le size dans photoshop
-        this.width  = 48;
-        this.height = 48;
+        this.width  = 32;
+        this.height = 32;
     };
 
-    setupInteractive(){
-        this.interactive = true;
-        this.on("pointerover",this._pIN ,this);
-        this.on("mouseout"   ,this._pOUT,this);
+    /** setup des interaction */
+    setupInteractive(destroy){
+        const p = this.p;
+        p.interactive = true;
+        p.on("pointerover" ,this._pIN_state  ,this);
+        p.on("mouseout"    ,this._pOUT_state ,this);
     }
 
-    _pIN(e){
+    //TODO: RENDUICI Alternet entre description general et description context {base:influ:infli}
+    _pIN_state(e){
         $mouse.pointer.removeChild(this.tipsBox);
         this._timeOut = setTimeout(() => {
-            const txt = new PIXI.Text(this._desc,{fill:"white",fontFamily:"ArchitectsDaughter",fontSize:15,strokeThickness:4});
+            const txt = $txt.area(this.getContext_desciptions(), null, {wordWrapWidth:500});
             const graphicInfoBox = new PIXI.Graphics();
-            graphicInfoBox.beginFill(0x000000,0.7).drawRect(0, 0, txt.width, txt.height).endFill();
-            graphicInfoBox.addChild(txt);
+            graphicInfoBox.beginFill(0x000000,0.8).drawRect(0, 0, txt.width, txt.height).endFill();
             graphicInfoBox.alpha = 0;
             graphicInfoBox.scale.x = 0;
             this.tipsBox = graphicInfoBox;
+            graphicInfoBox.addChild(txt);
             $mouse.pointer.addChild(graphicInfoBox);
             TweenMax.to(graphicInfoBox, 0.2, { alpha:1 , ease: Power4 .easeOut});
             TweenMax.to(graphicInfoBox.scale, 0.35, { x:1 , ease: Elastic.easeOut.config(1, 0.5) });
         },600);
     };
 
-    _pOUT(e){
+    _pOUT_state(e){
         clearTimeout(this._timeOut);
         $mouse.pointer.removeChild(this.tipsBox)
+    };
+
+    /** link le base au context d'appellation */
+    attacheContext(base){
+        if(base){
+            if( Array.isArray(base) ){
+                base.forEach( b => { b.childContext.push(this) });
+            }else{ base.childContext.push(this) };
+            this.parentContext = base;
+        };
+    };
+
+    /** renvoi la descriptions du states et ces context si nessesaire */
+    getContext_desciptions(){
+        return this.descBase;
+    };
+
+    addContext_descriptions(contextName){
+        /*const desc = $txt._[contextName]
+        .replace('[$S.ATK]', this.source.atk)
+        .replace('[$T.DEF]', this.target.def)
+        .replace('[$S.CCR]', this.source.ccr)
+        .replace('[$T.EVA]', this.target.eva);
+        this.contextsDescriptions.push(desc);*/
     };
 
 };
 // endregion
 
+//#region [rgba(200, 0, 160, 0.05)]
+// ┌------------------------------------------------------------------------------┐
+// _stateBase
+// └------------------------------------------------------------------------------┘
 /**@description state attack: inglige une value selon la source atk*/
 class _stateAttack extends _stateBase{  // data2/System/states/SOURCE/images/sIcon_atk.png
-    constructor(source,target,originState){
-        super(source,target,originState);
-        this.createSprites('sIcon_atk','sIcon_atk_n');
-        /** list des context states lier au state origin */
-        this.linkedContext = [];
-        this._desc = `Inflige ${this.source.st.atk} physic a la cible.` //FIXME: lier SCV
+    constructor(source,target,contextName,base){
+        super(source,target,contextName,base,'sIcon_atk');
+        
     };
-    
-    /**Evalue si le context est nessesaire selon source,target ou origin , puit etablie les connextions*/
-    static evalContextFrom(source,target,originState) {
-        const cond1 = source.st.atk>0;
-        return cond1 && new this(source,target,originState) ;
+
+    /** check si rempli des custom condition pour infliger ou influer */
+    static getContextsFrom(source,target) {
+        //if(source.isStun || source.isSleep || source.isOutRange || source.isConfuse){return false};
+        return new this(source,target,'CONTEXT_baseAtk');
     };
 
 
-    /**creer les conext possible pour l'attak */
-    createContext(source,target){
+
+
+    /**creer les conext possible pour _stateAttack */
+    /*createContext(baseA,baseB){
        let ctx = null;
        //! ajoute de defense
-       (ctx = _stateDefense.evalContextFrom(source,target,this)) && this.linkedContext.push(ctx);
+       (ctx = _stateDefense.evalContextFrom(this.source,this.target,this)) && this.linkedContext.push(ctx);
        //! peut etre moduler avec range
        //ctx = _state_range.evalContextFrom(this,source,target) && this.linkedContext.push(ctx);
-    };
-
-    /** compute et module une valeur selon le states, voir _desc pour customiser.
+    };*/
+    //TODO: LA LUCK GENERER GENERE UN PAR MULTIPLE DE 10 UN POSSIBILITER REUSSIS
+    /** //? _stateAttack valeur de souce.st.atk et a 90% chance critique + target.st.lck pour evade.
+     * a 10% missing / s.luck * t.luck
      * @description stateAttack ajoute atk de la source
-     * @argument useContext utilise les context attacher
-     * @argument min remplace les random ou % par minimum possible selon context
-     * @argument max remplace les random ou % par maximum possible selon context
+     * @param options.useContext utilise les context attacher
+     * @param options.min remplace les random ou % par minimum possible selon context
+     * @param options.max remplace les random ou % par maximum possible selon context
      */
-    computeValue(value,useContext,min,max){
-        value+=this.source.st.atk;
-        useContext && this.linkedContext.forEach(ctx => { value=ctx.computeValue(...arguments) });
-        return value>0&&value||0;
+    computeValue(tracker,options={}){
+        // TODO, VOIR SI ON DOI INJETER OPTIONS DANS SOURCE ET TARGET POUR les st baser sur luck
+        const s = this.source;
+        const t = this.target;
+        const result =  Math.max(0, s.atk-t.def);
+        tracker.values.push(result);
+        // this.contexts.forEach(ctx => { ctx.computeValue(...arguments) });
     };
 
 };
@@ -183,10 +183,26 @@ class _stateDefense extends _stateBase{  // data2/System/states/SOURCE/images/sI
      * @argument min remplace les random ou % par minimum possible selon context
      * @argument max remplace les random ou % par maximum possible selon context
      */
-    computeValue(value,useContext,min,max){
-        value-=this.target.st.def;
-        useContext && this.linkedContext.forEach(ctx => { value=ctx.computeValue(...arguments) });
-        return value;
+    computeValue(values,options={}){
+        const s_crt = this.source.st.crt; // multiplicateur critique
+        const s_lck = this.source.st.lck;
+        const t_lck = this.target.st.lck;
+        const t_miss = this.target.st.eva;
+        if(options.min || options.max){
+            values.update(options.min?s_atk:s_atk*0.2,this); // atk return 
+        }else{
+            const miss = !Math.ranLuckFrom(s_lck-t_lck/10,90); // 10% chance de miss * iteration de luck (target enleve la luck de source)
+            const critik = !Math.ranLuckFrom(s_lck,5); // 10% chance de miss * iteration de luck
+            let _value = miss? 0 : critik? s_atk+(s_atk*s_crt) : s_atk;
+            values.update(s_atk,this);
+        }
+        options.useContext && this.linkedContext.forEach(ctx => { ctx.computeValue(...arguments) });
+
+
+        const _value = this.target.st.def;
+        values.update(_value,this);
+        useContext && this.linkedContext.forEach(ctx => { ctx.computeValue(...arguments) });
+        return this;
     };
 };
 
@@ -205,29 +221,47 @@ class _stateMagic {  // data2/System/states/SOURCE/images/sIcon_mp.png
 
 /**@description state item inflige des items au monstre*/
 class _stateItem extends _stateBase {  // data2/Objets/gameItems/gameItems.png
-    constructor(source,target,originState,itemID){
-        super(source,target,originState);
-        this._itemID = itemID;
-        this.createSprites(itemID);
-        this.linkedContext = [];
-        this._desc = `Inflic dmg between ${$items.list[this._itemID].minDMG} and ${$items.list[this._itemID].maxDMG} from type ${$items.list[this._itemID]._cType} ` //FIXME: lier SCV
+    constructor(source,target,contextName,base){
+        super(source,target,contextName,base,contextName);
+        this._id = contextName;
+        this.contextName = contextName;
+        this.contexts = [];
+    };
+    /** check si rempli des custom condition pour infliger ou influer */
+    static getContextsFrom(source,target,items) {
+        let context = [];
+        items.forEach(id => {
+            context.push(new this(source,target,id)); 
+        });
+        return context;
     };
 
     createSprites(itemID){ // hack create sprite
         const dataBase = $Loader.Data2.gameItems;
+        const p = new PIXI.Container();
         const d = new PIXI.Sprite(dataBase.textures   [itemID] );
         const n = new PIXI.Sprite(dataBase.textures_n [itemID+'_n'] );
-        this.addChild(d,n);
-        this.sprites = {d,n};
+        p.addChild(d,n);
         // displayGroup
-        //this.parentGroup = $displayGroup.group[4];
+        p.parentGroup = $displayGroup.group[4];
         d.parentGroup = PIXI.lights.diffuseGroup;
         n.parentGroup = PIXI.lights.normalGroup ;
+        this.sprites = {p,d,n};
         // FIXME: normaliser le size dans photoshop
-        this.width  = 48;
-        this.height = 48;
+        
+        p.width  = 54;
+        p.height = 54;
     };
 
+    /** renvoi la descriptions du states et ces context si nessesaire POUR ITEMS */
+    getContext_desciptions(){
+        const it = $items.list[this._id];
+        const txt = `${this.descBase}[N]${it.descBase}[N]`+
+        `${$txt._.__boostDMG}: [#a0ff0c]${it.descDMG}[#][N]`+
+        `${$txt._.__boostElements}: [#999999]${this._cType}[#]`
+        return txt;
+    };
+    
     /**Evalue si le context est nessesaire selon source ? et connect a l'origin */
     static evalContextFrom(source,target,originState) {
         const cond1 = true; // si source a x>quantity item
@@ -243,33 +277,68 @@ class _stateItem extends _stateBase {  // data2/Objets/gameItems/gameItems.png
     };
 
     /** compute une valeur selon le states */
-    computeValue(value,useContext,min,max){
-        min?value+=$items.list[this._itemID].minDMG : max?value+=$items.list[this._itemID].maxDMG : value+=$items.list[this._itemID].dmg;
-        useContext && this.linkedContext.forEach(ctx => { value = ctx.computeValue(value,useContext) });
-        return value;
+    computeValue(tracker,options={}){
+        const s = this.source;
+        const t = this.target;
+        const it = $items.list[this._id];
+       // this.contexts.forEach(ctx => { ctx.computeValue(...arguments) });
+       const result =  options.min? it.minDMG : options.max? it.maxDMG : Math.max(0, it.dmg);
+       tracker.values.push(result);
     };
 };
 
-/**@description state poison*/
-class _statePoison extends PIXI.Container{  // data2/System/states/SOURCE/images/st_poison.png
-    constructor(source,target,mode,item){
-        this.source = source;
-        this.target = target;
-        this.mode = mode;
-        this.item = item;
+//#endregion
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
-        this.child = this.createSprites();
+
+/**@description state poison*/
+class _statePoison extends _stateBase{  // data2/System/states/SOURCE/images/st_poison.png
+    constructor(source,target,contextName,base){
+        super(source,target,contextName,base,'st_poison');
     };
-    /**Calcul des conditions pour verifier si besoin */
-    static isNeed(source,target) {
+
+
+    /**verifi si un context de recette est valide */
+    static checkRecipeFrom(baseA,items) {
+        const strI = items.join(); // items string format for compare;
+        if( ["7,7,7","8,8,8","9,9,9","10,10,10","11,11,11","12,12,12","13,13,13"].contains(strI)){
+            return "CONTEXT_recipeGGG";
+        }
+    };
+    /**check si rempli des custom condition pour infliger ou influer */
+    static getContextsFrom(source,target,items,baseA,baseB) {
+        let context = [];
+        const recipe = _statePoison.checkRecipeFrom(baseA, items); // return une recette ?
+        if(recipe){ // porte des gant poison
+            context.push(new this(source,target,recipe,baseB) );
+        }
         //todo si source porte des gan de poison
         //todo si source a 3 diceGem vert
         //todo si source a items inglige poisons
         //todo si source 3 powerObs vert et que target nest pas imuniser
         //todo si source a status toxic
-        return true;
+        return context;
+    };
+
+    /**
+     * a 10% missing / s.luck * t.luck
+     * @description stateAttack ajoute atk de la source
+     * @param options.useContext utilise les context attacher
+     * @param options.min remplace les random ou % par minimum possible selon context
+     * @param options.max remplace les random ou % par maximum possible selon context
+     */
+    computeValue(values,opt={}){
+        if(this.contextName === "poisonGlove"){
+            const s = this.st.s;
+            const t = this.st.t;
+
+            const eva = values.eva;
+            const crt = values.ctr;
+            let result = Math.ranLuckFrom(s.lck,30);
+            this.result = result;
+            values.update(result,this);
+            this.contexts.forEach(ctx => { ctx.computeValue(...arguments) });
+            return values;
+        };
     };
 };
 
@@ -281,8 +350,8 @@ class _stateDeath extends PIXI.Container{  // data2/System/states/SOURCE/images/
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */
@@ -301,8 +370,8 @@ class _stateStun extends PIXI.Container{  // data2/System/states/SOURCE/images/s
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */
@@ -322,8 +391,8 @@ class _stateToxic extends PIXI.Container{  // data2/System/states/SOURCE/images/
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */
@@ -336,21 +405,71 @@ class _stateToxic extends PIXI.Container{  // data2/System/states/SOURCE/images/
 
 /**@description state range*/
 class _state_range extends PIXI.Container{  // data2/System/states/SOURCE/images/st_range.png
-    constructor(source,target,mode,item){
-        this.source = source;
-        this.target = target;
-        this.mode = mode;
-        this.item = item;
+    constructor(source,target,contextName){
+        super(source,target,'sIcon_atk');
+        this.contextName = contextName;
+        this.contexts = [];
+    };
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
-        this.child = this.createSprites();
+    /**check si rempli des custom condition pour infliger ou influer */
+    static getContextsFrom(stateMode,infligers) {
+        let context = [];
+        if(stateMode.poisonGlove || true){ // porte des gant poison
+            context.push(new this(stateMode,infligers,'poisonGlove'));
+        }
+        if(infligers.checkRecipe_recipeX3GreenGem || true){ // porte des gant poison
+            context.push(new this(stateMode,infligers,'recipeX3GreenGem'));
+        }
+        //todo si source porte des gan de poison
+        //todo si source a 3 diceGem vert
+        //todo si source a items inglige poisons
+        //todo si source 3 powerObs vert et que target nest pas imuniser
+        //todo si source a status toxic
+        return context;
     };
-    /**Calcul des conditions pour verifier si besoin */
-    static isNeed(source,target) {
-        //todo si distance entre source et target est superieur a target._rangeFactor
-        return true;
+
+
+    /**creer les conext possible pour _stateAttack */
+    createContext(source,target){
+       let ctx = null;
+       //! ajoute de defense
+       (ctx = _stateDefense.evalContextFrom(source,target,this)) && this.linkedContext.push(ctx);
+       //! peut etre moduler avec range
+       //ctx = _state_range.evalContextFrom(this,source,target) && this.linkedContext.push(ctx);
     };
+    //TODO: LA LUCK GENERER GENERE UN PAR MULTIPLE DE 10 UN POSSIBILITER REUSSIS
+    /** //? _stateAttack valeur de souce.st.atk et a 90% chance critique + target.st.lck pour evade.
+     * a 10% missing / s.luck * t.luck
+     * @description stateAttack ajoute atk de la source
+     * @param options.useContext utilise les context attacher
+     * @param options.min remplace les random ou % par minimum possible selon context
+     * @param options.max remplace les random ou % par maximum possible selon context
+     */
+    computeValue(values,opt={}){
+        if(this.contextName === "base"){
+            const s = this.st.s;
+            const t = this.st.t;
+
+            const eva = Math.ranLuckFrom(t.lck,t.eva) && 0;  // chance evasion ennemie
+            const crt = Math.ranLuckFrom(s.lck,s.ccrt) && s.crt; // ces un coup critique ?
+            let result;
+            if(opt.min){
+                result = Math.max(0, s.atk-t.def);
+            }else
+            if(opt.max){
+                result = Math.max(0, ((s.atk-t.def)*s.crt));
+            }else{
+                result = Math.max(0, ((s.atk-t.def)*crt)*eva);
+            };
+            values.eva = eva;
+            values.crt = crt;
+            values.update(result,this);
+            this.result = result;
+            this.contexts.forEach(ctx => { ctx.computeValue(...arguments) });
+            return values;
+        };
+    };
+
 };
 
 /**@description state confuse*/
@@ -361,8 +480,8 @@ class _state_confuse extends PIXI.Container{  // data2/System/states/SOURCE/imag
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */
@@ -381,8 +500,8 @@ class _state_combo extends PIXI.Container{  // data2/System/states/SOURCE/images
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */
@@ -394,21 +513,19 @@ class _state_combo extends PIXI.Container{  // data2/System/states/SOURCE/images
 };
 
 /**@description state powerOrbType*/
-class _state_powerOrbType extends PIXI.Container{  // data2/System/states/SOURCE/images/st_powerOrbType.png
-    constructor(source,target,mode,item){
-        this.source = source;
-        this.target = target;
-        this.mode = mode;
-        this.item = item;
-
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
-        this.child = this.createSprites();
+class _state_powerOrbType extends _stateBase{  // data2/System/states/SOURCE/images/st_powerOrbType.png
+    constructor(source,target,contextName,base){
+        super(source,target,contextName,base,'st_powerOrbType');
+        
     };
-    /**Calcul des conditions pour verifier si besoin */
-    static isNeed(source,target) {
-        //todo les item contien gemdice de meme couleur que source orbPower 
-        return true;
+    /** check si rempli des custom condition pour infliger ou influer */
+    static getContextsFrom(source,target,items,baseA,baseB) {
+        let context = [];
+        if(source.containerRedSlotsInStamina && target.containRedSlotInOrbType || true){ // orb roudans dans displacement et target orb faibless
+            context.push(new this(source,target,'CONTEXT_PowerOrbs+',baseA) );
+        }
+        
+        return context;
     };
 };
 
@@ -420,8 +537,8 @@ class _state_gemDiceDef extends PIXI.Container{  // data2/System/states/SOURCE/i
         this.mode = mode;
         this.item = item;
 
-        this._name = $texts['idname'] || "Attaque";
-        this._desc = $texts['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
+        this._name = $txt['idname'] || "Attaque";
+        this._desc = $txt['iddesc'] || "Indiquateur de dammage, inflige %n a la cible";
         this.child = this.createSprites();
     };
     /**Calcul des conditions pour verifier si besoin */

@@ -7,12 +7,159 @@
 └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 dans les class, . pour les objects, function deep (non Json), _ pour les props array bool,
 */
+/** class Battler on des method comune avec les MONSTER */
+class _battler  {
+    constructor() {
+        /** timer de tour en combat */
+        this._battleTime = 0;
+
+        /** Les status active sur le battler (heriter)*/
+        this.active_status = [
+
+        ];
+        //TODO: VOIR SI SA A SA PLACE ICI influer
+        /** Les status passif sur le battler (temporaire selon action)*/
+        this.passives_status = [
+
+        ];
+    };
+    /** timer de tour en combat, return _battleTime-this.sta */
+    get battleTime(){
+        return this._battleTime-=this.sta;
+    };
+    /** setter du timer tour de combat */
+    set battleTime(turnTimeMax){
+        this._battleTime = turnTimeMax;
+    };
+    /** check if the battler is death */
+    get isDeath(){
+        return this._hp<=0;
+    };
+
+    get level (){ return this._level }
+    get mhp (){ return this._mhp } //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
+    get hp  (){ return this._hp  }
+    get mmp (){ return this._mmp } //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
+    get mp  (){ return this._mp  }
+    get mhg (){ return this._mhg } //data2\Icons\statsIcons\SOURCE\images\sIcon_hg.png
+    get hg  (){ return this._hg  }
+    get mhy (){ return this._mhy } //data2\Icons\statsIcons\SOURCE\images\sIcon_hy.png
+    get hy  (){ return this._hy  }
+    get atk(){ return this.effective(this._atk,'_atk')} //data2\Icons\statsIcons\SOURCE\images\sIcon_atk.png
+    get def(){ return this.effective(this._def,'_def')} //data2\Icons\statsIcons\SOURCE\images\sIcon_def.png
+    get sta(){ return this.effective(this._sta,'_sta')} //data2\Icons\statsIcons\SOURCE\images\sIcon_sta.png
+    get lck(){ return this.effective(this._lck,'_lck')} //data2\Icons\statsIcons\SOURCE\images\sIcon_lck.png
+    get exp(){ return this.effective(this._exp,'_exp')} //data2\Icons\statsIcons\SOURCE\images\sIcon_exp.png
+    get int(){ return this.effective(this._int,'_int')} //data2\Icons\statsIcons\SOURCE\images\sIcon_int.png
+    get mic(){ return this.effective(this._mic,'_mic')} //data2\Icons\statsIcons\SOURCE\images\sIcon_mic.png
+    get miw(){ return this.effective(this._miw,'_miw')} //data2\Icons\statsIcons\SOURCE\images\sIcon_miw.png
+    get crt(){ return this.effective(this._crt,'_crt')} //data2\Icons\statsIcons\SOURCE\images\sIcon_crt.png
+    get ccr(){ return this.effective(this._ccr,'_ccr')} //data2\Icons\statsIcons\SOURCE\images\sIcon_ccr.png
+    get eva(){ return Math.max(this.effective(this._eva,'_eva')*this.sta-this.hg-this.hy) };
+
+    add_hp(value){
+        this._hp = Math.min(this._hp+value, this._mhp);
+    };
+    
+    initialize_battler(level,evo){
+        this._level = level||1 , // bonus point //FIXME: METTRE AILLEUR
+        this._mhp   = this.computeEvo(evo.hp) ,
+        this._hp    = this._mhp ,
+        this._mmp   = this.computeEvo(evo.mp) ,
+        this._mp    = this._mmp ,
+        this._mhg   = this.computeEvo(evo.hg) ,
+        this._hg    = this._mhg ,
+        this._mhy   = this.computeEvo(evo.hy) ,
+        this._hy    = this._mhy ,
+        this._atk   = this.computeEvo(evo.atk) ,
+        this._def   = this.computeEvo(evo.def) ,
+        this._sta   = this.computeEvo(evo.sta) ,
+        this._lck   = this.computeEvo(evo.lck) ,
+        this._exp   = this.computeEvo(evo.exp) ,
+        this._int   = this.computeEvo(evo.int) ,
+        this._mic  = 10 ,
+        this._miw  = 10 ,
+        this._crt  = 1  , // multiplicateur coup critique, atk*crt si actif
+        this._ccrt = 10 , // chance de coup critique 10%- ~%hg/2 - ~%hy/2  baser sur literation luck : TODO: la famine et soiffe
+        this._eva  = 2  ; // sur 100 a 5%+sta/10
+    };
+    
+    /** test random critial hit
+     * @param target la cible a tester si elle peut prevenir les criticals de la source
+     * @returns Boolean
+     */
+    isCriticalHit(target){
+        // if target.cantCritical() //check if cant not critical on target from flag or status ? 
+        if (this.cantCriticalHit()){return 0};
+        return Math.ranLuckFrom(this.lck,this.ccrt) && s.crt; // ces un coup critique ?
+    };
+
+    /** test si ne peut pas effectuer de coup critique */
+    cantCriticalHit(){
+        //! si desydrater ou faim a partir d'un seuil
+        //! si a le status poison
+        if(!this._hy || this._hg){ return true}; // TODO:
+    };
+
+    /** test random si evade
+     * @param target la cible a tester si elle peut prevenir les criticals de la source
+     * @returns Boolean
+     */
+    isEvade(target){
+        // if target.cantCritical() //check if cant not critical on target from flag or status ? 
+        if (this.cantEvade()){return false};
+        return Math.ranLuckFrom(this.lck,this.eva); // ces un coup critique ?
+    };
+
+    /** test si ne peut pas s'evader */
+    cantEvade(){
+        //! si desydrater ou faim a partir d'un seuil
+        //! si a le status poison
+        //if(!this._hy || this._hg){ return true}; // TODO:
+    };
+
+
+    /** ajoute des passive temporaire */
+    add_passives_status(infligers){
+        
+    };
+
+    clear_passives_status(){
+        this.passives_status = [];
+    };
+
+    /** module une value selon le status */
+    effective(value,prop){
+        const list = this.active_status.filter(status => { status._propType === prop });
+        this.active_status.forEach(status => {
+            value = status._propType === prop? status.effective() : value;
+        });
+        this.passives_status.forEach(status => {
+            value = status._propType === prop? status.effective() : value;
+        });
+        return Math.max(0,value);
+    };
+
+
+
+    /** check si on peut ajouter au slots memoire, register et return true ou false */
+    addItemToCombatSlot(itemID,slotID,combatMode){
+        this._battleSlotsItems[combatMode][slotID] = itemID;
+        return true;
+    };
+
+    /** Formule evolution par level */
+    computeEvo(ev){
+        return ~~(ev.b*(1+(this._level-1)*ev.r) + (ev.f*(this._level-1)));
+    }
+};
 
 // ┌------------------------------------------------------------------------------┐
 // GLOBAL $SLL $player: _player for player1
 //└------------------------------------------------------------------------------┘
-class _player {
+class _player extends _battler{
     constructor(dataBase, textureName, dataValues) {
+        super()
         Object.defineProperty(this, 'spine', { value: false, writable: true });
         this.inCase = null; //store the current player case ?
         this._nextTransferID = 0; // transfer case obj id 
@@ -25,39 +172,16 @@ class _player {
         this._battleturnSta = 0; // lorsque =< 0 , a droite de jouer en combat , baser sur le sta max de tous les monstres
         //[hp:heath point], [mp:magic point], [hg:hunger], [hy:hydratation], [miw:max items weight], [mic:max item capacity]
         //[atk:attack], [def:defense], [sta:stamina], [lck:luck], [exp:exploration], [int:intelligence]
-        this.st = {
-            level : 1    ,
-            hp    : 100  ,//data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
-            mp    : 100  ,//data2\Hubs\stats\SOURCE\images\mp_icon.png
-            hg    : 100  ,//data2\Hubs\stats\SOURCE\images\hg_icon.png
-            hy    : 100  ,//data2\Hubs\stats\SOURCE\images\hy_icon.png
-            atk   : 2    ,//data2\Hubs\stats\SOURCE\images\atk_icon.png
-            def   : 0    ,//data2\Hubs\stats\SOURCE\images\def_icon.png
-            sta   : 12    ,//data2\Hubs\stats\SOURCE\images\sta_icon.png
-            lck   : 0    ,//data2\Hubs\stats\SOURCE\images\lck_icon.png
-            exp   : 0    ,//data2\Hubs\stats\SOURCE\images\exp_icon.png
-            int   : 0    ,//data2\Hubs\stats\SOURCE\images\int_icon.png
-            mic   : 0    ,//data2\Hubs\stats\SOURCE\images\mic_icon.png
-            miw   : 0    ,//data2\Hubs\stats\SOURCE\images\miw_icon.png
-            orb   : 'red',
-            bp    : 10   , // bonus point
-            // affectera le huds stats ?
-            /**get current level */
-           //get level(){return this._level},
-           //get hp   (){return this._hp   },
-           //get mp   (){return this._mp   },
-           //get hg   (){return this._hg   },
-           //get hy   (){return this._hy   },
-           //get atk  (){return this._atk  },
-           //get def  (){return this._def  },
-           //get sta  (){return this._sta  },
-           //get lck  (){return this._lck  },
-           //get exp  (){return this._exp  },
-           //get int  (){return this._int  },
-           //get mic  (){return this._mic  },
-           //get miw  (){return this._miw  },
-           //get orb  (){return this._orb  },
-           //get bp   (){return this._bp   },
+        this._orb  = 'red';
+        this._bp    = 10   ; // bonus point //FIXME: METTRE AILLEUR
+
+        /** list des items dans le slots combats et selon le mode memoire */
+        this._battleSlotsItems = {
+            'attack':[],
+            'defense':[],
+            'move':[],
+            'run':[],
+            'magic':[]
         };
     };
     get s(){ return this.spine.s }
@@ -65,7 +189,27 @@ class _player {
     get d(){ return this.spine.d }
     get n(){ return this.spine.n }
 
+    get isRevers(){ return this._dirX === 4 }
+    /** L'orb equiper */ //data2\Characteres\a1\SOURCE\images\d\body1.png
+    get orb(){ return this._orb}//FIXME: mettre ailleur. parent
+    get bp (){ return this._bp }
+
     initialize() {
+        const evo = $Loader.CSV.dataBase_player.data[1];
+        let ii = 1;
+        const _evo = {// base:rate:flat from intialize CSV
+            hp  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hp.png
+            mp  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_mp.png
+            hg  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hg.png
+            hy  : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_hy.png
+            atk : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_atk.png
+            def : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_def.png
+            sta : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_sta.png
+            lck : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_lck.png
+            int : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_int.png
+            exp : { b: evo[ii++ ], r: evo[ii++ ], f: evo[ii++] }, //data2\Icons\statsIcons\SOURCE\images\sIcon_exp.png
+        };
+        this.initialize_battler(1,_evo);
         this.setupSprites();
         this.setupListeners();
         //this.setupTweens();

@@ -57,10 +57,13 @@ class _coreLoader {
         this.Scenes = {}; // store full scenes cache
         this.options = {};
         this.fonts = null;
-        this._textsSCVLoaded = null; // is textsSCV loaded
         this.loaderBuffers = [];
         this._isLoading = false;
-        this.SCV = {}; //store papaParse CSV
+        this.CSV = {
+            _loaded:false,
+            get dataString(){return Object.keys(this).filter(e=>e.contains('dataString_') && this[e]) },
+            get dataBase  (){return Object.keys(this).filter(e=>e.contains('dataBase_'  ) && this[e]) },
+        };
 
         this.sceneKits = []; // buffering scene kits for loader progress
         this.currentLoaded = []; // buffering scene kits for loader progress
@@ -128,7 +131,7 @@ class _coreLoader {
     load() {
         // firstBoot verifier que tous est deja preloader, ensuite verifier les kits
         if(!this.fonts){ return this.load_fonts() }; // load les fonts
-        if(!this._textsSCVLoaded){ return this.load_textsSCV() }; // load les SCV text
+        if(!this.CSV._loaded){ return this.loadCSV() }; // load les CSV text
         if(!this.DataScenes){ return this.load_dataScenes() }; // load JSON DataScenes
 
         // default loader, load les sceneKIT
@@ -158,29 +161,22 @@ class _coreLoader {
         this.loadSheets(className, true);
     };
 
-    load_textsSCV(){
+    /** load les excel CSV et les parse avec papa parse */
+    loadCSV(){
+        const dataString = ['dataString_keyword','dataString_monster','dataString_name','dataString_message','dataString_huds','dataString_states','dataString_items']; // les strings translate in game
+        const dataBase   = ['dataBase_items','dataBase_player','dataBase_monster']; // les data value base in game
         const loader = new PIXI.loaders.Loader();
-        loader.add('eventMessagesData', `data/eventMessage.csv`)
-        .add('monsterDataBase', `data/monsterDataBase.csv`)
-        .add('dataItems', `data/dataItems.csv`);
+        dataString.concat(dataBase).forEach(ref => {
+            loader.add(ref, `data/${ref}.csv`);
+        });
         loader.load();
         loader.onProgress.add((loader, res) => {
-            if(res.name==='eventMessagesData'){
-                $texts.initializeFromData( Papa.parse(res.data) );
-            }else
-            if(res.name==='monsterDataBase'){
-               // $dataMonsters.initializeFromData( Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true}) ); // compute monster data structure
-            }else 
-            if(res.name==='dataItems'){
-                this.SCV.dataItems = Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true});
-             };
-            
+            this.CSV[res.name] = Papa.parse(res.data,{skipEmptyLines: true, dynamicTyping: true});
         });
         loader.onComplete.add((loader, res) => {
-            this._textsSCVLoaded = true;
+            this.CSV._loaded = true;
             this.load();
         });
-        
     };
 
     load_fonts(){
@@ -394,15 +390,6 @@ class _coreLoader {
             };
         };
         return base;
-    };
-
-    loadCSV(){
-        const loader = new PIXI.loaders.Loader();
-        loader.add('ddd', `data/eventMessage.csv`);
-        loader.load();
-        loader.onProgress.add((loader, res) => {
-            console.log('res: ', res);
-        });
     };
 
 

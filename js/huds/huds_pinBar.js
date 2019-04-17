@@ -309,9 +309,11 @@ class _huds_pinBar extends PIXI.Container {
             slot.item = $mouse._holdItemID; // setter\
             const mXY = $mouse.holdItem.getGlobalPosition(); // get global XY from item in mouse
             const sXY = slot.item.getGlobalPosition(); // get global XY from item in mouse
-            $mouse.setItemId(null); // remove mouse item
             const xy = new PIXI.Point(mXY.x-sXY.x, mXY.y-sXY.y);
-            slot.item.position.copy(xy);
+            const localTest = $mouse.holdItem.toLocal(slot.item,slot.item);
+            $mouse.setItemId(null); // remove mouse item
+            
+            slot.item.position.copy(localTest);
             TweenLite.to(slot.item.position, 1, {x: 0, ease: Elastic.easeOut.config(1.2, 0.8)});
             TweenLite.to(slot.item.position, 0.6, {y: 0, ease: Bounce.easeOut });
         }else{

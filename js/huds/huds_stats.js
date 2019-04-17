@@ -82,7 +82,7 @@ class _huds_stats extends PIXI.Container {
         barC.addChild(iconC);
         // text stats
         const style = new PIXI.TextStyle({ fontSize: 22, fill: "white",strokeThickness: 8,fontFamily: "ArchitectsDaughter" });
-        const stext = new PIXI.Text(isLarge&&'9999/9999'||999, style);
+        const stext = new PIXI.Text(isLarge&&`${$player[stateName]}/${$player['m'+stateName]}`||$player[stateName], style);
         stext.anchor.set(0.5);
         stext.x = isLarge?125 : 85;
         barC.addChild(stext);

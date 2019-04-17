@@ -84,14 +84,15 @@ class _systems{
 
         /**@description list des filters preConfigurer*/
         this.filtersList = {
-            noiseGame                 : new PIXI.filters.NoiseFilter      (0.1, 1         ),
-            OutlineFilterx8Green      : new PIXI.filters.OutlineFilter    (4, 0x16b50e, 1 ),
-            OutlineFilterx4white      : new PIXI.filters.OutlineFilter    (4, 0xffffff, 1 ),
-            OutlineFilterx8Red        : new PIXI.filters.OutlineFilter    (4, 0xdb3d2b, 1 ),
-            OutlineFilterx8Yellow     : new PIXI.filters.OutlineFilter    (20, 0xd6d022, 1),
-            OutlineFilterx8Pink       : new PIXI.filters.OutlineFilter    (20, 0xc722d6, 1),
-            TiltShiftFilterBlur       : new PIXI.filters.TiltShiftFilter  (               ),
-            KawaseBlurFilter_combatBG : new PIXI.filters.KawaseBlurFilter (0, 12, true    ) //pour combat bg
+            noiseGame                 : new PIXI.filters.NoiseFilter      (0.1, 1          ),
+            OutlineFilterx8Green      : new PIXI.filters.OutlineFilter    (4, 0x16b50e, 1  ),
+            OutlineFilterx4Black     : new PIXI.filters.OutlineFilter    (4, 0x000000, 1 ),
+            OutlineFilterx4white      : new PIXI.filters.OutlineFilter    (4, 0xffffff, 1  ),
+            OutlineFilterx8Red        : new PIXI.filters.OutlineFilter    (4, 0xdb3d2b, 1  ),
+            OutlineFilterx8Yellow     : new PIXI.filters.OutlineFilter    (20, 0xd6d022, 1 ),
+            OutlineFilterx8Pink       : new PIXI.filters.OutlineFilter    (20, 0xc722d6, 1 ),
+            TiltShiftFilterBlur       : new PIXI.filters.TiltShiftFilter  (                ),
+            KawaseBlurFilter_combatBG : new PIXI.filters.KawaseBlurFilter (0, 12, true     ) //pour combat bg
         }
 
         /**@description influence math attribuer a chaque map 'scene' generer par new game*/

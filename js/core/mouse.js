@@ -18,6 +18,7 @@ class _mouse {
         this.mouseTrails  = null; // mouseTrail FX container
         this.interaction = null; // reference to plugin global interaction Graphics._renderer.plugins.interaction;
         this._isEnable = false; // disable enable mouse;
+        this._busy = false; // disable global event mouse
         this._holdItemID = null; // item id du item en main
         this.holdItem = null; // item Container reference
 
@@ -46,6 +47,7 @@ class _mouse {
         this.interaction.mouse.global.x = 100; // avoid start corner camera
         this.interaction.mouse.global.y = 100;
 
+        this.__XY = new PIXI.Point();
         this.setupSprites();
         this.setupInteraction();
         this.setupTrailsFX();
@@ -74,6 +76,7 @@ class _mouse {
         // GLOBAL INTERACTIONS ?
         this.interaction.on('pointerover' , this.pIN_global  ,this);
         this.interaction.on('pointerout'  , this.pOUT_global ,this);
+        this.interaction.on('pointerdown'   , this.pDW_global  ,this);
         this.interaction.on('pointerup'   , this.pUP_global  ,this);
     };
 
@@ -128,17 +131,26 @@ class _mouse {
     };
 
     pIN_global(e){
+        if(this._busy){return console.log(console.log('this._busy: ', this._busy) ); };
 
     };
     pOUT_global(e){
+        if(this._busy){return console.log(console.log('this._busy: ', this._busy) ); };
 
     };
+
+    pDW_global(e){
+        this.__XY = e.data.global.clone(); // store pour evaluer une distance
+    };
+
     pUP_global(e){
+        console.log('e: ', e);
+        if(this._busy){return console.log(console.log('this._busy: ', this._busy) ); };
         const isClickL = e.data.button === 0; // clickLeft <==
         const isClickR = e.data.button === 2; // clickRight ==>
         const isClickM = e.data.button === 1; // clickMiddle =|=
         if(isClickR && this.isHoldItem){ return this.setItemId(null) }; // remove item in mouse
-        if(isClickR && $systems.status._inCombat){ return $combats.pUP_global(e) }; // si en combat et mode selectionner.
+        if($systems.status._inCombat){ return $combats.pUP_global(e) }; // si en combat et mode selectionner.
 
     };
 
@@ -193,7 +205,7 @@ class _mouse {
         coor.x = 10;
         this.pointer.addChild(coor,global); 
         setInterval(() => {
-            coor.text = `x:${~~this.x}, y:${~~this.y}`;
+            coor.text = `x:${~~this.x}, y:${~~this.y}\n_x:${~~(this.x-this.__XY.x)}, _y:${~~(this.y-this.__XY.y)}`;
         }, 50);
     };
 };// end class

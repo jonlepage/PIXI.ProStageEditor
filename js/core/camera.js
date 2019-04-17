@@ -60,6 +60,7 @@ class _camera extends PIXI.projection.Container2d{
             {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.48},//7
             {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :2.07},//8 combat modes
             {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.20,_zoom :1.5},//9 combat modes attack
+            {_fpX:-371.94 ,_fpY:-1011.77,_fpF:0.21,_zoom :4},//10 combat zoom Hit
         ];
     };
 
@@ -88,7 +89,7 @@ class _camera extends PIXI.projection.Container2d{
         this.far.position.set(this._screenW/2,0);
         this.pivot.set(0);
         scene && this.addChild(scene);
-        this.debug();//FIXME: DELETEME
+       // this.debug();//FIXME: DELETEME
     };
 
     reset(){
@@ -134,25 +135,29 @@ class _camera extends PIXI.projection.Container2d{
     };
 
 
-    /**@description userfull to find a target with futur camera projection setting */
-    applyCameraSetup(setup){
+    /**@description userfull to find a target with futur camera projection setting, apply setup and return before*/
+    applyCameraSetup(setup){ 
         const props = Object.keys(setup);
         const before = {};
         for (let i=0, l=props.length; i<l; i++) {
             const name = props[i];
-            before[name] = this[name];
+            before[name] = this[name];// clone to before backup
             this[name] = setup[name];
         };
         this.updateProjection();
         return before;
     }
 
-    getLocalTarget(target){
-        return this.toLocal(target, this.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
+    /** obtien target position, to setup permet d'appliquer un setup avant obtenir une position fictive*/
+    getLocalTarget(target,toSetup){ // ex: // ex: {_fpX: 0,_fpY: 0,_fpF:0,_zoom :1}
+        toSetup? toSetup = this.applyCameraSetup(toSetup): void 0;
+        const pos = this.toLocal(target, this.scene, void 0, void 0, PIXI.projection.TRANSFORM_STEP.BEFORE_PROJ);
+        toSetup && this.applyCameraSetup(toSetup); // comeback
+        return pos;
     };
 
     //$camera.moveToTarget(null,f)
-    moveToTarget(target,setup,speed=3) { // camera objet setup {x,y,z,focal{x,y}
+    moveToTarget(target,setup,speed=3, ease) { // camera objet setup {x,y,z,focal{x,y}
         target = target? target.spine || target : this._target; // allow pass global $var obj, or default player
         setup = Number.isInteger(setup)? this.cameraSetup[setup] : setup || this.cameraSetup[0]; // pass setup id? or create new one
         if(target){
@@ -162,7 +167,7 @@ class _camera extends PIXI.projection.Container2d{
             before && this.applyCameraSetup(before);
             TweenLite.to(this.pivot, speed, {
                 x:to.x, y:to.y, 
-                ease: Elastic.easeOut.config(1, 0.6),
+                ease: ease||Elastic.easeOut.config(1, 0.6),
                 onComplete: () => {},
             });
         }
@@ -170,7 +175,7 @@ class _camera extends PIXI.projection.Container2d{
         Object.entries(setup).forEach(prop => {
             TweenLite.to(this, speed-speed/10, {
                 [prop[0]]:prop[1],
-                ease: Elastic.easeOut.config(1, 0.6),
+                ease: ease||Elastic.easeOut.config(1, 0.6),
             });
         });
     };
@@ -189,7 +194,7 @@ class _camera extends PIXI.projection.Container2d{
         // back to origin
         this._zoom = memZ;
         this.updateProjection();
-        
+        // zoom only
         TweenLite.to(this, speed, {
             _zoom:add? memZ+value : value,
             ease: Elastic.easeOut.config(0.4, 0.4),

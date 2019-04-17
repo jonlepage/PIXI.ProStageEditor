@@ -114,9 +114,15 @@ Object.defineProperties(Array.prototype, {
     contains : {
         enumerable: false,
         value: function(element) {
-            return this.indexOf(element) >= 0;
+            if(Array.isArray(element)){
+                for (let i=0, l=element.length; i<l; i++) {
+                    if(this.indexOf(element[i]) >= 0){return true}
+                };
+            }else{
+                return this.indexOf(element) >= 0;
+            };
         }
-    }
+    },
 });
 
 /**
@@ -131,19 +137,31 @@ String.prototype.contains = function(string) {
 };
 
 /**
- * Generates a random integer in the range 
+ * Generates a random integer in the range or float with precision
  *
  * @static
  * @method Math.randomInt
- * @param {Number} min 
+ * @param {Number} min negative value will allow random negative positive result
  * @param {Number} max 
+ * @param {Number} precision 
  * @return {Number} A random integer
  */
-Math.randomFrom = function(min=0,max=1) // min and max included
-{
-    return ~~(Math.random()*(max-min+1)+min);
+Math.randomFrom = function(min=0,max=1,precision=0) // min and max included
+{   
+    const ranNeg = min<0? (min*=-1) && this.random() >= 0.5 && 1 || -1  : 1;
+    return precision? parseFloat(Math.min(min + (Math.random() * (max - min)),max).toFixed(precision))*ranNeg : ~~(Math.random()*(max-min+1)+min)*ranNeg;
 }
 
+/** calcul la base de luck par multiple 10 */
+Math.ranLuckFrom = function(luck,pass) // min and max included
+{   
+    const rate = luck/10; // ex: lck:20 => 2;
+    for (let i=0, l=luck/10; i<l; i++) {
+        const test = this.randomFrom(0,100);
+        if(test<pass){return true};
+    };
+    return false;
+}
 
 /**
  * remove specific element in array by indexOf
