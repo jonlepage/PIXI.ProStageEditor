@@ -59,6 +59,7 @@ class _coreLoader {
         this.fonts = null;
         this.loaderBuffers = [];
         this._isLoading = false;
+        this._audioLoaded = false;
         this.CSV = {
             _loaded:false,
             get dataString(){return Object.keys(this).filter(e=>e.contains('dataString_') && this[e]) },
@@ -133,6 +134,7 @@ class _coreLoader {
         if(!this.fonts){ return this.load_fonts() }; // load les fonts
         if(!this.CSV._loaded){ return this.loadCSV() }; // load les CSV text
         if(!this.DataScenes){ return this.load_dataScenes() }; // load JSON DataScenes
+        if(!this._audioLoaded){ return this.load_audio()};
 
         // default loader, load les sceneKIT
         const next = this._sceneKit_queue.shift();
@@ -211,6 +213,41 @@ class _coreLoader {
                 this.load();
             }
         },60);
+    };
+
+    /** load les audio permanent et redondant*/
+    load_audio(){
+        this._audioLoaded = true;
+        // list des perma audio au SceneBoot, indic si ces un spriteAudio
+        const list = { //[bgm]:BackgroundMusic, [bgs]:BackgroundSound, [sfx]:soundFX, [mfx]:musicFX
+            setuniman__cozy_0_16       :{type:'bgm',ext:"mp3",sprite:false},
+            newBattle_0_04             :{type:'mfx',ext:"wav",sprite:false},
+            BT_BOING_Rubber_Band_Swing :{type:'sfx',ext:"wav",sprite:true },
+            jump_2a4d                  :{type:'sfx',ext:"wav",sprite:true },
+            laser_Rough_Up             :{type:'sfx',ext:"wav",sprite:true },
+            
+        };
+        const loader = new PIXI.loaders.Loader();
+        for (const key in list) {
+            const o = list[key];
+            loader.add(key, `audio/${o.type}/${key}.${o.ext}`);
+            o.sprite && loader.add(`${key}_data`,`audio/${o.type}/${key}.txt`)
+        }
+        loader.load((loader, res) => {
+            Object.keys(list).forEach(key => {
+               if(list[key].sprite){
+                    const data = res[`${key}_data`].data;
+                    const result = {};
+                    data.split('\n')
+                    .filter(line => !!line)
+                    .map(line => line.split('\t'))
+                    .forEach(([start, end, name]) => result[name.replace(/\r/,"")] = { start, end });
+                res[key].sound.addSprites(result);
+               }
+           });
+         
+        });
+        loader.onComplete.add((loader, res) => { this.load() });
     };
 
     // preload all data scene strings data, help for compute new random game

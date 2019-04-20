@@ -320,11 +320,14 @@ class _player extends _battler{
     };
 
     event_move() {
+        $audio._sounds.jump_2a4d.volume = 0.4; // TODO: A METTRE DANS INITIALISE ou corriger dans audacity
+        $audio._sounds.jump_2a4d.play("jump_1");
         this.toCase && TweenLite.to(this.spine.position, 0.8, { x:this.toCase.x, y:this.toCase.y, ease: Power3.easeOut });
         this.toCase && TweenLite.to(this.spine, 0.4, { zIndex:this.toCase.y, ease: Power3.easeOut });
     };
 
     event_hitCase(){
+        $audio._sounds.BT_BOING_Rubber_Band_Swing.play("boing_5");
         $huds.stamina.addStamina(-1);
         !this.toCase.scale.zero && this.toCase.scale.zeroSet(); // FIXME:  a mettre au debut
         TweenMax.to(this.toCase.scale, 0.35, {

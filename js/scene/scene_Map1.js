@@ -13,6 +13,7 @@ class Scene_Map1 extends _Scene_Base {
     constructor(sceneData,className) {
         super(sceneData,className);
         this.name = className;
+        this.audio = {bgm:null,bgs:null};
     };
 
 
@@ -26,6 +27,7 @@ class Scene_Map1 extends _Scene_Base {
         this.setupCamera();
         this.setupObjetInteractive(); // creer les listeners des objet click pour la map
         this.setupEventCases(); // setup interactivity for events case in map1?
+        this.setupAudio();
         //$camera.moveToTarget($player);
        //$stage.goto();
        
@@ -76,6 +78,14 @@ class Scene_Map1 extends _Scene_Base {
     // active les interactions sur cette map ? , les interaction exist deja
     setupObjetInteractive(){
        // $huds.setInteractive(true);
+    };
+
+    /** setup the audio from this map */
+    setupAudio(){
+        const bgm = $audio._sounds.setuniman__cozy_0_16.play();
+        bgm.loop = true;
+        bgm.speed = 0.95;
+        this.audio.bgm = bgm;
     };
 
     update(delta){

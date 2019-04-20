@@ -30,6 +30,8 @@ class Scene_Boot extends _Scene_Base {
         //$gui.initialize(); 
         //$avatar.initialize();
         $dataMonsters.initialize();
+        $audio.initialize();
+
         //SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
         //$player.transferMap(1); // HACKED FOR DEBUG// FIXME: SceneManager.goto(Scene_Loader,"Scene_IntroVideo_data",Scene_IntroVideo);
         //$stage.goto(Scene_IntroVideo);

@@ -434,6 +434,11 @@ class dataObj_case extends dataObj_base{
 
     // execution de levent type
     executeCaseEventTypeFrom(){
+        //TODO: AUDIO SELON EVENTS
+        $audio._sounds.laser_Rough_Up.play("sloteEvent_4");
+        $audio._sounds.laser_Rough_Up.play("sloteEvent_4");
+        TweenLite.to($stage.scene.audio.bgm, 3, { speed:0, ease: Expo.easeOut }); 
+
         //TODO: fair un eventCase Managers
         $player.spine.s.state.addAnimation(3, "visiteCase", false);
         const td = this.attache.Sprites.td;
